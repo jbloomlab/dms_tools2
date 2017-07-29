@@ -6,6 +6,22 @@ This package is for analyzing deep mutational scanning (DMS) data.
 
 See http://jbloomlab.github.io/dms_tools2 for documentation.
 
+Package-level constants
+-------------------------
+The following constants are defined for the package:
+
+`AAS` : alphabetized list of all 20 amino acids
+
+`AAS_WITHSTOP` : like `AAS` but includes stop codon (`*`) at end
+
+`NTS` : alphabetized list of all nucleotides
+
+`CODONS` : alphabetized list of all codons
+
+`CODON_TO_AA` : dict translating codons to amino acids
+
+`AA_TO_CODONS` : dict back-translating amino acid to list of codons.
+
 """
 
 # import package-level metadata
@@ -13,7 +29,6 @@ from ._metadata import __version__
 from ._metadata import __author__
 from ._metadata import __author_email__
 from ._metadata import __url__
-from ._metadata import __acknowledgments__
 
 # import all modules as here
 import os.path 

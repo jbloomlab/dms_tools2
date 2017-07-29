@@ -26,7 +26,7 @@ for dataname in ['version', 'author', 'author_email', 'url']:
     for line in lines:
         entries = line.split('=')
         assert len(entries) == 2, "Failed parsing metadata:\n{0}".format(line)
-        if entries[0].strip() == '__{0}__'.format(dataname)
+        if entries[0].strip() == '__{0}__'.format(dataname):
             if dataname in metadata:
                 raise ValueError("Duplicate metadata for {0}".format(dataname))
             else:
@@ -54,7 +54,7 @@ setup(
     platforms = 'Linux and Mac OS X).',
     packages = ['dms_tools2'],
     package_dir = {'dms_tools2':'dms_tools2'},
-    ext_modules = [Extension('dms_tools2.cutils', ['dms_tools2/cutils.c'])],
+#    ext_modules = [Extension('dms_tools2.cutils', ['dms_tools2/cutils.c'])],
     scripts = [
             'scripts/dms2_barcodedsubamplicons',
             ],
