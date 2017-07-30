@@ -1,8 +1,9 @@
 """
-===========================
+======================
 dms_tools2
-===========================
-This package is for analyzing deep mutational scanning (DMS) data.
+======================
+
+Python package for analyzing deep mutational scanning (DMS) data.
 
 See http://jbloomlab.github.io/dms_tools2 for documentation.
 
@@ -30,14 +31,6 @@ from ._metadata import __author__
 from ._metadata import __author_email__
 from ._metadata import __url__
 
-# import all modules as here
-import os.path 
-import glob
-__all__ = [os.path.basename(f)[ : -3] for f in 
-        glob.glob(os.path.join(os.path.dirname(__file__), "*.py"))
-        if os.path.isfile(f) and not f.endswith('__init__.py')]
-
-
 # define constants related to nucleotides / amino acids / codons
 import Bio.Alphabet.IUPAC
 import Bio.Seq
@@ -63,5 +56,6 @@ for aa in AAS_WITHSTOP:
 
 # following lines needed because list comprehension variables remain
 # in Python2 but not Python3, and we want to be compatible with both
-for var in ['f', 'aa', 'nt', 'nt1', 'nt2', 'nt3', 'codon']:
-    del locals()[var]
+for var in ['aa', 'nt', 'nt1', 'nt2', 'nt3', 'codon']:
+    if var in locals():
+        del locals()[var]
