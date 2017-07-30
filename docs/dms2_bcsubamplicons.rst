@@ -116,6 +116,7 @@ Command-line usage
 
    \-\-name
     The `Output files`_ will have a prefix equal to the name specified here.
+    This name should only contain letters, numbers, and dashes (-).
 
    \-\-alignspecs
     It is important to set ``--alignspecs`` so that you don't count the part of the subamplicon that is in the primer binding site, since the nucleotide identities in this region come from the primers rather than the templates being sequenced. See `Barcoded subamplicon sequencing`_ for an example.

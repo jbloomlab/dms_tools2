@@ -4,12 +4,14 @@
 
 
 import os
+import sys
+import re
 import logging
 import gzip
 import random
-import argparse
 import Bio.SeqIO
 import dms_tools2.parseargs
+import dms_tools2.utils
 
 
 
@@ -20,45 +22,43 @@ def main():
     args = vars(parser.parse_args())
     prog = parser.prog
 
-    sys.exit()
-
     random.seed(args['seed'])
 
-    # set up logging
-    logging.shutdown()
-    logfile = "%s.log" % args['outprefix']
-    if os.path.isfile(logfile):
-        os.remove(logfile)
-    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
-    logger = logging.getLogger(prog)
-    logfile_handler = logging.FileHandler(logfile)
-    logger.addHandler(logfile_handler)
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    logfile_handler.setFormatter(formatter)
-    logger.info("Beginning execution of %s in directory %s\n" % (prog, os.getcwd()))
-    logger.info("Progress will be logged to %s" % logfile)
+    # set up names of output files
+    assert re.search('^[a-zA-Z0-9\-]+$', args['name']), \
+            "--name should contain only letters, numbers, and dashes"
+    if args['outdir']:
+        if not os.path.isdir(args['outdir']):
+            os.mkdir(args['outdir'])
+    else:
+        args['outdir'] = ''
+    filesuffixes = {
+            'log':'.log',
+            'counts':'_counts.csv',
+            'summarystats':'_summarystats.csv'
+            }
+    if args['bcinfo']:
+        filesuffixes['bcinfo'] = '_bcinfo.txt.gz'
+    files = dict([(f, '{0}/{1}{2}'.format(args['outdir'], args['name'], s))
+            for (f, s) in filesuffixes.items()])
 
-    # define file names and delete existing files
-    countsfilename = "%scounts.txt" % args['outprefix']
-    summarystatsfilename = '%ssummarystats.txt' % args['outprefix']
-    barcodeinfofilename = '%sbarcodeinfo.txt.gz' % args['outprefix']
-    outfilenames = [countsfilename, summarystatsfilename, barcodeinfofilename]
-    for f in outfilenames:
-        if os.path.isfile(f):
-            os.remove(f)
-            logger.info("Removing existing file %s" % f)
-    countsfile = open(countsfilename, 'w')
-    summarystatsfile = open(summarystatsfilename, 'w')
-    outfiles = [countsfile, summarystatsfile]
-    if args['barcodeinfo']:
-        barcodeinfofile = gzip.open(barcodeinfofilename, 'w')
-        outfiles.append(barcodeinfofile)
+    # do we need to proceed?
+    if args['use_existing'] and all(map(os.path.isfile, files.values())):
+        print("Output files already exist and '--use_existing' specified, "
+              "so exiting with no further action.")
+        sys.exit(0)
+
+    logger = dms_tools2.utils.initLogger(files['log'], prog, args)
 
     # log in try / except loop
     try:
-        versionstring = dms_tools.file_io.Versions() 
-        logger.info("%s\n" % versionstring)
-        logger.info('Parsed the following arguments:\n%s\n' % '\n'.join(['\t%s = %s' % tup for tup in args.iteritems()]))
+
+        for f in files:
+            if os.path.isfile(f):
+                logger.info("Removing existing file {0}".format(f))
+                os.remove(f)
+
+        sys.exit(0)
 
         # read refseq
         refseq = [seq for seq in Bio.SeqIO.parse(open(args['refseq']), 'fasta')]
@@ -217,23 +217,15 @@ def main():
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))
-        for f in outfiles:
-            try:
-                f.close()
-            except:
-                pass
-        for f in outfilenames:
-            if os.path.isfile(f):
-                os.remove(f)
-                logger.exception('Deleting file %s' % f)
+        for (fname, fpath) in files.items():
+            if fname != 'log' and os.path.isfile(fpath):
+                logger.exception("Deleting file {0}".format(fpath))
+                os.remove(fpath)
+
     else:
         logger.info('Successful completion of {0}'.format(prog))
+
     finally:
-        for f in outfiles:
-            try:
-                f.close()
-            except:
-                pass
         logging.shutdown()
 
 
