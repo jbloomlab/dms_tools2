@@ -56,7 +56,7 @@ setup(
     package_dir = {'dms_tools2':'dms_tools2'},
 #    ext_modules = [Extension('dms_tools2.cutils', ['dms_tools2/cutils.c'])],
     scripts = [
-            'scripts/dms2_barcodedsubamplicons',
+            'scripts/dms2_bcsubamplicons',
             ],
     package_data = {'dms_tools2':['_weblogo_template.eps']}, 
 )

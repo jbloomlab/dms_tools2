@@ -28,3 +28,4 @@
 .. _`PyPI`: https://pypi.python.org/pypi
 .. _`Crooks et al, Genome Research, 14:1188-1190`: http://genome.cshlp.org/content/14/6/1188
 .. _`full list of contributors`: https://github.com/jbloomlab/dms_tools2/contributors
+.. _`Doud and Bloom (2016)`: http://www.mdpi.com/1999-4915/8/6/155
