@@ -1,6 +1,6 @@
 """
 ===========================
-``dms_tools2`` package
+dms_tools2
 ===========================
 This package is for analyzing deep mutational scanning (DMS) data.
 
