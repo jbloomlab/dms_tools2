@@ -1,0 +1,5 @@
+total read pairs = 500
+read pairs that fail Illumina filter = 0
+low quality read pairs = 476
+barcodes randomly purged = 0
+discarded barcodes with 1 reads = 24
