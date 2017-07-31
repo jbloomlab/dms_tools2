@@ -50,6 +50,7 @@ setup(
     license = 'GPLv3',
     install_requires = [
         'biopython>=1.68',
+        'HTSeq>=0.9',
         ],
     platforms = 'Linux and Mac OS X).',
     packages = ['dms_tools2'],
