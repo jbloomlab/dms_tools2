@@ -1,0 +1,3 @@
+pytest
+biopython==1.68
+HTSeq==0.9
