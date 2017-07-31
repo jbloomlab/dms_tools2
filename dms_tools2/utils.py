@@ -98,6 +98,7 @@ def iteratePairedFASTQ(r1files, r2files):
 
     We run a simple test by first writing an example FASTQ file and
     then testing on it.
+
     >>> n1_1 = '@DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1984 1:N:0:CGATGT'
     >>> r1_1 = 'ATGCAATTG'
     >>> q1_1 = 'GGGGGIIII'

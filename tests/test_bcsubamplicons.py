@@ -17,8 +17,11 @@ class test_bcsubamplicons(unittest.TestCase):
     def setUp(self):
         """Gets files set up appropriately."""
 
+        self.currdir = os.path.abspath(os.path.dirname(__file__))
+
         # defines expected files
-        self.expectdir = './expected_bcsubamplicons_files/'
+        self.expectdir = os.path.join(self.currdir, 
+                './expected_bcsubamplicons_files/')
         self.refseq = os.path.join(self.expectdir, 'WSN-HA.fasta')
         self.r1 = os.path.join(self.expectdir, 'test_R1.fastq.gz')
         self.r2 = self.r1.replace('_R1', '_R2')
@@ -35,7 +38,8 @@ class test_bcsubamplicons(unittest.TestCase):
             assert os.path.isfile(f), "Missing file {0}".format(f)
 
         # defines output files
-        self.outdir = './test_bcsubamplicons_files/' 
+        self.outdir = os.path.join(self.currdir,
+                './test_bcsubamplicons_files/')
         self.name = 'test'
         self.counts = '{0}/{1}_counts.csv'.format(self.outdir, self.name)
         self.stats = '{0}/{1}_summarystats.csv'.format(self.outdir, self.name)

@@ -61,7 +61,8 @@ author = u'the Bloom lab'
 #
 # The short X.Y version.
 # Read in the version from file
-versionfile = '../dms_tools2/_metadata.py'
+versionfile = os.path.abspath(os.path.join(
+        os.path.dirname(__file__), '../dms_tools2/_metadata.py'))
 with open(versionfile) as f:
     versiontext = f.read()
 versionstring = re.search("__version__ = ['\"]([^'\"]+)['\"]", versiontext)

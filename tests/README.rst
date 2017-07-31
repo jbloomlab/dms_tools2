@@ -8,7 +8,10 @@ Each ``test_*.py`` file runs a different test, and can be executed with commands
 
     python test_bcsubamplicons.py
 
-You can run all of the ``test_*.py`` files with::
+The recommended way to run all these tests **and** the doctests in the individual modules is using `pytest`_.
+To do this, first install `pytest`_ if it is not already installed.
+Then navigate to the **top directory** of ``dms_tools2`` (not this ``tests`` directory) and run::
 
-    python run_tests.py
+    pytest --doctest-modules --ignore=setup.py
 
+.. _`pytest`: https://docs.pytest.org/en/latest/
