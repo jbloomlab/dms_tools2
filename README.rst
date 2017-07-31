@@ -1,3 +1,9 @@
+=================
+``dms_tools2``
+=================
+.. image:: https://travis-ci.org/jbloomlab/dms_tools2.svg?branch=master
+    :target: https://travis-ci.org/jbloomlab/dms_tools2.svg?branch=master
+
 ``dms_tools2`` is a `Python`_ package for analyzing and visualizing **d**\eep **m**\utational **s**\canning data.
 
 See the `dms_tools2 documentation`_ for information on how to install and use ``dms_tools2``.
