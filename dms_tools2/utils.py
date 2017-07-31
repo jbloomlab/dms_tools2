@@ -12,6 +12,7 @@ import sys
 import time
 import platform
 import importlib
+import logging
 import dms_tools2
 
 
@@ -67,6 +68,7 @@ def initLogger(logfile, prog, args):
     logger.info("Parsed the following arguments:\n\t{0}".format(
             '\n\t'.join(['{0} = {1}'.format(arg, val) for (arg, val)
             in args.items()])))
+    return logger
 
 
 if __name__ == '__main__':
