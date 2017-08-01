@@ -16,3 +16,4 @@ build/
 dist/
 dms_tools2.egg-info/
 *(busy)
+__*
