@@ -123,11 +123,6 @@ def bcsubampliconsParser():
             help=('For retained barcodes, only make calls when >= '
             'this fraction of reads concur.'))
 
-    parser.add_argument('--maxreadtrim', type=int, default=3, 
-            help=("If R1 or R2 reads for barcode not all same length, "
-            "trim up to this many nts from 3' end; if still not same "
-            "length then discard."))
-
     parser.set_defaults(R1antisense=False)
     parser.add_argument('--R1antisense', dest='R1antisense', 
             action='store_true', help="R1 is antisense of 'refseq'.")

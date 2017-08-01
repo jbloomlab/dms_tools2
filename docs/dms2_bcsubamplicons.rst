@@ -84,21 +84,18 @@ The algorithm implemented by ``dms_barcodedsubamplicons`` is as follows:
 
 3) We discard any read pairs for which there are any ``N`` nucleotides in the barcode.
 
-3) We discard any read pairs for which any of the following conditions are met:
+4) We then collect all remaining read pairs for each barcode (concatenating the barcodes on the paired reads for a total barcode length that is twice ``--bclen``) and perform all subsequent operations on these barcodes.
 
-    - There is a low-quality site in the barcode region of either read.
+5) Any barcode with less than ``--minreads`` read pairs is discarded.
 
-    - Either read has more than ``--maxlowqfrac`` of its nucleotides that are low quality.
+6) The R1 and R2 reads for each barcode are each assembled into consensus sequences. The consensus sequences is built by applying the following algorithm to each site:
 
-4) We then collect all remaining read pairs for each barcode (concatenating the barcodes on the paired reads to give a total barcode length that is twice ``--barcodelength``) and perform all subsequent operations on these barcodes.
+    - We collect the identities for all reads, ignoring ``N`` nucleotides.
+    
+    - If there are less than ``--minreads`` called (non ``N``) nucleotides, set the consensus identity for that site to ``N``.
+    
+    - If there are at least ``--minreads`` called nucleotides, set the consensus identity to ``N`` if the fraction of called identities that are identical is less than ``--minconcur``, and set it to the consensus called identity if at least ``--minconcur`` of the reads are identical at the site.
 
-5) Any barcode with less than ``--minreadsperbarcode`` read pairs is discarded.
-
-6) The R1 and R2 reads for each remaining barcode are assembled into consensus sequences. At each site, these consensus sequences have the consensus nucleotide if that nucleotide is found in at least ``--minreadconcurrence`` of the reads; otherwise the nucleotide is set to ``N``. During the process of building these consensus sequences, the barcode is discarded if any of the following conditions are met for either the R1 or R2 read:
-
-    - The reads cannot all be made the same length by trimming no more ``--maxreadtrim`` from the 3' end.
-
-    - Any of the reads fail to have at least ``--minreadidentity`` identical and high-quality (not ``N``) nucleotides when compared pairwise.
 
 7) For each remaining barcode, we attempt to align the consensus sequence to each of the subamplicons specified by ``alignspecs``. The attempted alignment does **not** accommodate gaps; the consensus sequence for the reads is required to align gaplessly at the position specified by ``alignspecs``. In any region where the reads overlap (which may happen near the center of the subamplicon), if both consensus sequences (R1 and R2) report high quality nucleotides, the identity is considered ambiguous if the sequences disagree. An alignment is considered valid only if the following conditions are met:
 
@@ -140,9 +137,6 @@ Command-line usage
 
    \-\-chartype
     If ``chartype`` is ``codon`` then ``--refseq`` must provide a valid coding sequence (length a multiple of 3).
-
-   \-\-maxreadtrim
-    This option exists because it appears that Illumina runs of a given read length don't always return all of the reads with exactly that read length.
 
    \-\-purgeread
     Why would you want to purge some of the read pairs? You may be trying to determine whether sequencing to a higher depth will improve your results. If you set ``--purgeread`` to a value > 0 (say 0.5), you'll see how the results would be affected if you had fewer reads. If these results are noticeably worse, this supports that idea that you might be in regime where more reads would help.

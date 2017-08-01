@@ -109,6 +109,10 @@ def main():
         bclen = args['bclen']
         assert bclen > 0, 'bclen not > 0'
 
+        assert args['minconcur'] > 0.5
+
+        assert args['minreads'] > 0
+
         # check validity of alignspecs
         alignspecs = []
         for s in args['alignspecs']:
@@ -126,6 +130,7 @@ def main():
 
         # set up R1 and R2 trims based on alignspecs
         trims = {} # keyed by R1, R2, values are list of trims
+        maxtrim = {}
         for r in ['R1', 'R2']:
             trimarg = args['{0}trim'.format(r)]
             if isinstance(trimarg, int):
@@ -138,9 +143,9 @@ def main():
                     "one value or same length as --alignspecs".format(r))
             assert all([t > bclen for t in trims[r]]), ("--{0}trim must "
                     "all be greater than --bclen of {1}".format(r, bclen))
-        print(trimarg, trims, len(alignspecs), [trimarg[0]] * len(alignspecs))
-        maxr1trim = max(trims['R1'])
-        maxr2trim = max(trims['R2'])
+            maxtrim[r] = max(trims[r])
+            # we remove barcodes from reads below, so adjust trims
+            trims[r] = [t - bclen for t in trims[r]]
 
         # check on read files
         r1files = args['R1']
@@ -175,7 +180,7 @@ def main():
         barcodes = {} # barcodes key list of (R1, R2) after trimming barcode
 
         for read_tup in dms_tools2.utils.iteratePairedFASTQ(r1files, r2files,
-                    maxr1trim, maxr2trim):
+                    maxtrim['R1'], maxtrim['R2']):
 
             nreads['total'] += 1
             if nreads['total'] % 1e5 == 0:
@@ -243,6 +248,12 @@ def main():
                     bcinfofile.write(bcInfo(bc, bcreads, retained=False, 
                             consensus=None, desc='too few reads'))
                 continue
+
+            consensus = {}
+            for (itup, r) in enumerate(['R1', 'R2']):
+                consensus[r] = dms_tools.utils.buildReadConsensus(
+                        [tup[itup] for tup in bcreads],
+                        args['minreads'], args['minconcur'])
 
         if args['bcinfo']:
             bcinfofile.close()

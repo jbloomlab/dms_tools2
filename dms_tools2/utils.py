@@ -199,6 +199,62 @@ def lowQtoN(r, q, minq):
             for (ri, qi) in zip(r, q)])
 
 
+def buildReadConsensus(reads, minreads, minconcur):
+    """Builds consensus sequence of some reads.
+
+    You may want to pre-fill low-quality sites with ``N``
+    using `lowQtoN`. An ``N`` is considered a non-called identity.
+
+    Args:
+        `reads` (list)
+            List of reads as strings. If reads are not all same
+            length, shorter ones are extended from 3' end with ``N``
+            to match maximal length. 
+        `minreads` (int)
+            Only call consensus at a site if at least this many reads 
+            have called identity.
+        `minconcur` (float)
+            Only call consensus at site if >= this fraction of called
+            identities agree.
+
+    Returns:
+        A string giving the consensus sequence. Non-called 
+        sites are returned as ``N```.
+
+    >>> reads = ['ATGCAT',
+    ...          'NTGNANA',
+    ...          'ACGNNTAT',
+    ...          'NTGNTA']
+    >>> buildReadConsensus(reads, 2, 0.75) == 'ATGNNNAN'
+    True
+    >>> reads.append('CTGCATAT')
+    >>> buildReadConsensus(reads, 2, 0.75) == 'NTGCATAT'
+    True
+    """
+    maxlen = max(map(len, reads))
+    consensus = []
+    for i in range(maxlen):
+        counts = {}
+        for r in reads:
+            if len(r) > i:
+                x = r[i]
+                if x != 'N':
+                    if x in counts:
+                        counts[x] += 1
+                    else:
+                        counts[x] = 1
+        ntot = sum(counts.values())
+        if ntot < minreads:
+            consensus.append('N')
+        else:
+            (nmax, xmax) = sorted([(n, x) for (x, n) in counts.items()])[-1]
+            if nmax / float(ntot) >= minconcur:
+                consensus.append(xmax)
+            else:
+                consensus.append('N')
+    return ''.join(consensus)
+
+
 
 if __name__ == '__main__':
     import doctest
