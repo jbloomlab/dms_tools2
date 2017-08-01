@@ -67,8 +67,8 @@ def initLogger(logfile, prog, args):
     logger.info("Beginning execution of {0} in directory {1}\n".format(
             prog, os.getcwd()))
     logger.info("Progress is being logged to {0}".format(logfile))
-    logger.info(sessionInfo())
-    logger.info("Parsed the following arguments:\n\t{0}".format(
+    logger.info("{0}\n".format(sessionInfo()))
+    logger.info("Parsed the following arguments:\n\t{0}\n".format(
             '\n\t'.join(['{0} = {1}'.format(arg, val) for (arg, val)
             in args.items()])))
     return logger
@@ -155,6 +155,35 @@ def iteratePairedFASTQ(r1files, r2files):
             except IndexError:
                 pass # header does not specify chastity filter
             yield (name1, r1, r2, q1, q2, fail)
+
+
+def lowQtoN(r, q, minq):
+    """Replaces low quality nucleotides with ``N`` characters.
+
+    Args:
+        `r` (str)
+            A string representing a sequencing read.
+        `q` (iterable)
+            Iterable of same length as `r` holding Q scores.
+        `minq` (int or length-one string)
+            Replace all positions in `r` where `q` is < this.
+
+    Returns:
+        A version of `r` where all positions `i` where 
+        `q[i] < minq` have been replaced with ``N``.
+
+    >>> r = 'ATGCAT'
+    >>> q = 'GB<.0+'
+    >>> minq = '0'
+    >>> qn = [38, 33, 27, 13, 15, 10]
+    >>> minqn = 15
+    >>> lowQtoN(r, q, minq) == lowQtoN(r, qn, minqn) == 'ATGNAN'
+    True
+    """
+    assert len(r) == len(q)
+    return ''.join([ri if qi >= minq else 'N'
+            for (ri, qi) in zip(r, q)])
+
 
 
 if __name__ == '__main__':

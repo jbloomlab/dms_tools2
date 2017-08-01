@@ -105,7 +105,7 @@ def main():
             r2files = args['R2']
             assert len(r1files) == len(r2files), "R1 and R2 must be same length"
         assert all(map(os.path.isfile, r2files)), "Missing R2 files"
-        logger.info("Reads are in the following FASTQ pairs:\n\t{0}".format(
+        logger.info("Reads are in these FASTQ pairs:\n\t{0}\n".format(
                 '\n\t'.join(['{0} and {1}'.format(r1, r2) for (r1, r2) in
                 zip(r1files, r2files)])))
 
@@ -117,16 +117,17 @@ def main():
                 'low Q barcode':0,
             }
         if args['purgeread']:
-            nreadspurged = 0
+            n['reads purged'] = 0
             logger.info("Purging read pairs with probability {0:.3f} to "
                     "subsample the data.".format(args['purgeread']))
+        minqchar = chr(args['minq'] + 33) # character for Q score cutoff
 
         barcodes = {}
         for read_tup in dms_tools2.utils.iteratePairedFASTQ(r1files, r2files):
 
             if args['purgeread']:
                 if random.random() < args['purgeread']:
-                    nreadspurged += 1
+                    n['reads purged'] += 1
                     continue
 
             n['total'] += 1
@@ -138,25 +139,25 @@ def main():
             if failfilter:
                 n['fail filter'] += 1
                 continue
-            sys.exit(0)
+
+            r1 = dms_tools2.utils.lowQtoN(r1, q1, minqchar)
+            r2 = dms_tools2.utils.lowQtoN(r2, q2, minqchar)
+
+            barcode = r1[ : args['bclen']] + r2[ : args['bclen']]
+            if 'N' in barcode:
+                n['low Q barcode'] += 1
+                continue
+
+            if barcode in barcodes:
+                barcodes[barcode].append((r1, r2))
+            else:
+                barcodes[barcode] = [(r1, r2)]
 
 
-            (r1, r2, q1, q2) = dms_tools.utils.TrimReads(r1, r2, q1, q2, args['R1trimlength'], args['R2trimlength'])
-            qcheckedreads = dms_tools.utils.CheckReadQuality(r1, r2, q1, q2, args['minq'], args['maxlowqfrac'], args['barcodelength'])
-            if qcheckedreads:
-                (r1, r2) = qcheckedreads
-                barcode = r1[ : args['barcodelength']] + r2[ : args['barcodelength']]
-                if barcode in barcodes:
-                    barcodes[barcode].append((r1, r2))
-                else:
-                    barcodes[barcode] = [(r1, r2)]
+        logger.info('Parsed {0} reads, found {1} unique barcodes.\n'.format(
+                n['total'], len(barcodes)))
 
-        logger.info('Finished parsing all %d reads; ended up with %d unique barcodes.\n' % (n['total read pairs'], len(barcodes)))
-        if args['purgereadfrac']:
-            n['read pairs randomly purged'] = nreadspurged
-            logger.info('Randomly purged %d of the %d read pairs, leaving %d readpairs.' %(nreadspurged, n['total read pairs'] + nreadspurged, n['total read pairs']))
-        else:
-            n['read pairs randomly purged'] = 0
+        sys.exit(0)
 
         readcategories.append('barcodes randomly purged')
         if args['purgefrac']:
