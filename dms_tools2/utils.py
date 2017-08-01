@@ -74,7 +74,7 @@ def initLogger(logfile, prog, args):
     return logger
 
 
-def iteratePairedFASTQ(r1files, r2files):
+def iteratePairedFASTQ(r1files, r2files, r1trim=None, r2trim=None):
     """Iterates over FASTQ file pairs for paired-end sequencing reads.
 
     Args:
@@ -83,6 +83,10 @@ def iteratePairedFASTQ(r1files, r2files):
             be gzipped.
         `r2files` (list or str)
             Like `r1files` but for R2 files.
+        `r1trim` (int or `None`)
+            If not `None`, trim `r1` and `q1` to be no longer than this.
+        `r2trim` (int or `None`)
+            Like `r1trim` but for R2.
 
     Returns:
         Each iteration returns `(name, r1, r2, q1, q2, fail)` where:
@@ -119,13 +123,17 @@ def iteratePairedFASTQ(r1files, r2files):
     ...             n2_1, r2_1, '+', q2_1,
     ...             ]))
     ...     r2file.flush()
-    ...     itr = iteratePairedFASTQ(r1file.name, r2file.name)
-    ...     next(itr) == (n1_1.split()[0][1 : ], r1_1, r2_1, q1_1, q2_1, False)
-    ...     next(itr) == (n1_1.split()[0][1 : ], r1_1, r2_1, q1_1, q2_1, True)
-    ...     next(itr) == (n1_1.split()[0][1 : ], r1_1, r2_1, q1_1, q2_1, None)
+    ...     itr = iteratePairedFASTQ(r1file.name, r2file.name, r1trim=4, r2trim=5)
+    ...     next(itr) == (n1_1.split()[0][1 : ], r1_1[ : 4], 
+    ...             r2_1[ : 5], q1_1[ : 4], q2_1[ : 5], False)
+    ...     next(itr) == (n1_1.split()[0][1 : ], r1_1[ : 4], 
+    ...             r2_1[ : 5], q1_1[ : 4], q2_1[ : 5], True)
+    ...     next(itr) == (n1_1.split()[0][1 : ], r1_1[ : 4], 
+    ...             r2_1[ : 5], q1_1[ : 4], q2_1[ : 5], None)
     True
     True
     True
+
     """
     if isinstance(r1files, str):
         r1files = [r1files]
@@ -154,6 +162,12 @@ def iteratePairedFASTQ(r1files, r2files):
                     fail = True
             except IndexError:
                 pass # header does not specify chastity filter
+            if r1trim is not None:
+                r1 = r1[ : r1trim]
+                q1 = q1[ : r1trim]
+            if r2trim is not None:
+                r2 = r2[ : r2trim]
+                q2 = q2[ : r2trim]
             yield (name1, r1, r2, q1, q2, fail)
 
 
