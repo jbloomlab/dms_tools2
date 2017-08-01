@@ -58,74 +58,98 @@ def main():
                 logger.info("Removing existing file {0}".format(f))
                 os.remove(f)
 
-        sys.exit(0)
+        assert not (args['purgeread'] and args['purgebc']), ("It does "
+                "not make sense to use both --purgeread and --purgebc "
+                "as they subsample the data in different ways.")
 
         # read refseq
-        refseq = [seq for seq in Bio.SeqIO.parse(open(args['refseq']), 'fasta')]
-        assert len(refseq) == 1, "refseq of %s does not specify exactly one sequence" % args['refseq']
+        refseq = [s for s in Bio.SeqIO.parse(args['refseq'], 'fasta')]
+        assert len(refseq) == 1, "refseq does not specify one sequence" 
         refseq = str(refseq[0].seq).upper()
         if args['chartype'] == 'codon':
-            assert len(refseq) % 3 == 0, "refseq does not specify a sequence of codons since its length of %d nucleotides is not a multiple of 3" % (len(refseq))
-            logger.info('Read a reference sequence of %d codons from %s\n' % (len(refseq) // 3, args['refseq']))
+            assert re.search('^[{0}]+$'.format(''.join(dms_tools2.NTS)), 
+                    refseq), "refseq does not contain only DNA nts"
+            assert len(refseq) % 3 == 0, "refseq length not multiple of 3"
+            logger.info('Read refseq of {0} codons from {1}'.format(
+                    len(refseq), args['refseq']))
         else:
             raise ValueError("Invalid chartype")
 
-        # do some checking on validity of alignspecs
-        for (refseqstart, refseqend, r1start, r2start) in args['alignspecs']:
+        assert args['bclen'] > 0, 'bclen not > 0'
+
+        # check validity of alignspecs
+        alignspecs = []
+        for s in alignspecs:
+            (refseqstart, refseqend, r1start, r2start) = map(int(s.split(',')))
+            for (rstart, rname) in [(r1start, 'R1START'), (r2start, 'R2START')]:
+                if (args['bclen'] > rstart):
+                    raise ValueError("alignspecs has {0} of {1}, which "
+                            "doesn't fully trim barcode of bclen {2}".format(
+                            rname, rstart, args['bclen']))
+                assert rstart >= 1, "{0} must be >= 1".format(rname)
             assert refseqend > refseqstart, "REFSEQEND <= REFSEQSTART"
-            if args['barcodelength'] > r1start:
-                raise ValueError("One of the alignspecs specifies R1START of %d, which doesn't fully trim a barcode of barcodelength %d" % (r1start, args['barcodelength']))
-            if args['barcodelength'] > r2start:
-                raise ValueError("One of the alignspecs specifies R2START of %d, which doesn't fully trim a barcode of barcodelength %d" % (r2start, args['barcodelength']))
-            if r1start < 1:
-                raise ValueError("R1START must be >= 1; you specified %d" % r1start)
-            if r2start < 1:
-                raise ValueError("R2START must be >= 1; you specified %d" % r2start)
-            if (refseqstart < 0 or refseqend > len(refseq) or refseqstart >= refseqend):
-                raise ValueError("One of the alignspecs specifies REFSEQSTART of %d and REFSEQEND of %d, which are not valid values for a refseq of length %d nucleotides." % (refseqstart, refseqend, len(refseq)))
+            assert refseqstart >= 0, "REFSEQSTART < 1"
+            assert refseqend <= len(refseq), "REFSEQEND > len(refseq)"
+            alignspecs.append((refseqstart, refseqend, r1start, r2start))
 
         # check on read files
-        assert len(args['r1files']) == len(args['r2files']), "r1files and r2files do not specify the same number of files."
-        if all([os.path.splitext(f)[1].lower() == '.gz' for f in args['r1files'] + args['r2files']]):
-            gzipped = True
+        r1files = args['R1']
+        assert all(map(os.path.isfile, r1files)), "Missing R1 files"
+        if not args['R2']:
+            r2files = []
+            for r1 in r1files:
+                assert r1.count('_R1') == 1, ("Can't guess R2 file for R1 "
+                        "file {0}".format(r1))
+                r2files.append(r1.replace('_R1', '_R2'))
         else:
-            if any([os.path.splitext(f)[1].lower() == '.gz' for f in args['r1files'] + args['r2files']]):
-                raise ValueError("Some but not all of the r1files and r2files are gzipped. Either all or no files can be gzipped.")
-            gzipped = False
+            r2files = args['R2']
+            assert len(r1files) == len(r2files), "R1 and R2 must be same length"
+        assert all(map(os.path.isfile, r2files)), "Missing R2 files"
+        logger.info("Reads are in the following FASTQ pairs:\n\t{0}".format(
+                '\n\t'.join(['{0} and {1}'.format(r1, r2) for (r1, r2) in
+                zip(r1files, r2files)])))
 
         # collect reads by barcode while iterating over reads
-        readcategories = ['total read pairs', 'read pairs that fail Illumina filter', 'low quality read pairs']
-        n = dict([(category, 0) for category in readcategories])
-        barcodes = {}
-        logger.info('Now parsing reads from the following:\n\tr1files: %s\n\tr2files: %s' % (' '.join(args['r1files']), ' '.join(args['r2files'])))
-        if args['purgereadfrac']:
+        logger.info("Now parsing read pairs...")
+        n = {
+                'total':0,
+                'fail filter':0,
+                'low Q barcode':0,
+            }
+        if args['purgeread']:
             nreadspurged = 0
-            if args['purgefrac']:
-                logger.warning('Both "--purgereadfrac" and "--purgefrac" are being used at the same time. This is not recommended, as these arguments subsample the data in different ways.')
-            logger.info('Randomly purging read pairs with probability %.3f to subsample the data.' % args['purgereadfrac'])
-        for read_tup in dms_tools.file_io.IteratePairedFASTQ(args['r1files'], args['r2files'], gzipped, applyfilter=True):
-            if args['purgereadfrac']:
-                if random.random() < args['purgereadfrac']:
+            logger.info("Purging read pairs with probability {0:.3f} to "
+                    "subsample the data.".format(args['purgeread']))
+
+        barcodes = {}
+        for read_tup in dms_tools2.utils.iteratePairedFASTQ(r1files, r2files):
+
+            if args['purgeread']:
+                if random.random() < args['purgeread']:
                     nreadspurged += 1
                     continue
-            n['total read pairs'] += 1
-            if read_tup:
-                (name, r1, r2, q1, q2) = read_tup
-                (r1, r2, q1, q2) = dms_tools.utils.TrimReads(r1, r2, q1, q2, args['R1trimlength'], args['R2trimlength'])
-                qcheckedreads = dms_tools.utils.CheckReadQuality(r1, r2, q1, q2, args['minq'], args['maxlowqfrac'], args['barcodelength'])
-                if qcheckedreads:
-                    (r1, r2) = qcheckedreads
-                    barcode = r1[ : args['barcodelength']] + r2[ : args['barcodelength']]
-                    if barcode in barcodes:
-                        barcodes[barcode].append((r1, r2))
-                    else:
-                        barcodes[barcode] = [(r1, r2)]
+
+            n['total'] += 1
+            if n['total'] % 1e5 == 0:
+                logger.info("Reads parsed so far: {0}".format(n['total']))
+
+            (name, r1, r2, q1, q2, failfilter) = read_tup
+
+            if failfilter:
+                n['fail filter'] += 1
+                continue
+            sys.exit(0)
+
+
+            (r1, r2, q1, q2) = dms_tools.utils.TrimReads(r1, r2, q1, q2, args['R1trimlength'], args['R2trimlength'])
+            qcheckedreads = dms_tools.utils.CheckReadQuality(r1, r2, q1, q2, args['minq'], args['maxlowqfrac'], args['barcodelength'])
+            if qcheckedreads:
+                (r1, r2) = qcheckedreads
+                barcode = r1[ : args['barcodelength']] + r2[ : args['barcodelength']]
+                if barcode in barcodes:
+                    barcodes[barcode].append((r1, r2))
                 else:
-                    n['low quality read pairs'] += 1
-            else:
-                n['read pairs that fail Illumina filter'] += 1
-            if n['total read pairs'] % 1e5 == 0:
-                logger.info('Reads parsed so far: %d' % n['total read pairs'])
+                    barcodes[barcode] = [(r1, r2)]
 
         logger.info('Finished parsing all %d reads; ended up with %d unique barcodes.\n' % (n['total read pairs'], len(barcodes)))
         if args['purgereadfrac']:
