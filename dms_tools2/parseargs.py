@@ -89,11 +89,11 @@ def bcsubampliconsParser():
             "'_R1' replaced by '_R2'. If that is not case, provide "
             "names here."))
 
-    parser.add_argument('--R1trim', type=int, nargs='+',
-        help=("Trim R1 at 3' end to this length. Give one value for "
+    parser.add_argument('--R1trim', type=int, default=300, nargs='+',
+        help=("Trim R1 from 3' end to this length. One value for "
         "all reads or values for each subamplicon in 'alignspecs'."))
 
-    parser.add_argument('--R2trim', type=int, nargs='+',
+    parser.add_argument('--R2trim', type=int, default=300, nargs='+',
         help="Like '--R1trim', but for R2.")
 
     parser.add_argument('--chartype', default='codon', choices=['codon'],

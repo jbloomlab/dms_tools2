@@ -15,6 +15,37 @@ import dms_tools2.utils
 
 
 
+def bcInfo(bc, bcreads, retained, consensus, desc):
+    """Returns string for writing to `bcinfofile`.
+   
+    Creates a string summarizing the barcode.
+
+    Args:
+        `bc` (str):
+            The barcode.
+        `bcreads` (list)
+            List of reads for barcode as `(R1, R2)` tuples.
+        `retained` (bool)
+            Is the barcode retained?
+        `consensus` (str or `None`)
+            The consensus sequence for the barcode if created.
+        `desc` (str)
+            String describing the barcode and its fate.
+
+    Returns:
+        A string summarizing the barcode.
+    """
+    return '\n'.join([
+            'BARCODE: {0}'.format(bc),
+            'RETAINED: {0}'.format(retained),
+            'DESCRIPTION: {0}'.format(desc),
+            'CONSENSUS: {0}'.format(consensus),
+            'READS: {0}'.format('\n\t'.join(['R1 = {0}; R2 = {1}'.format(
+                    r1, r2) for (r1, r2) in bcreads])),
+            '',
+            ])
+
+
 def main():
     """Main body of script."""
 
@@ -75,22 +106,41 @@ def main():
         else:
             raise ValueError("Invalid chartype")
 
-        assert args['bclen'] > 0, 'bclen not > 0'
+        bclen = args['bclen']
+        assert bclen > 0, 'bclen not > 0'
 
         # check validity of alignspecs
         alignspecs = []
-        for s in alignspecs:
-            (refseqstart, refseqend, r1start, r2start) = map(int(s.split(',')))
+        for s in args['alignspecs']:
+            (refseqstart, refseqend, r1start, r2start) = map(int, s.split(','))
             for (rstart, rname) in [(r1start, 'R1START'), (r2start, 'R2START')]:
-                if (args['bclen'] > rstart):
+                if (bclen > rstart):
                     raise ValueError("alignspecs has {0} of {1}, which "
                             "doesn't fully trim barcode of bclen {2}".format(
-                            rname, rstart, args['bclen']))
+                            rname, rstart, bclen))
                 assert rstart >= 1, "{0} must be >= 1".format(rname)
             assert refseqend > refseqstart, "REFSEQEND <= REFSEQSTART"
             assert refseqstart >= 0, "REFSEQSTART < 1"
             assert refseqend <= len(refseq), "REFSEQEND > len(refseq)"
             alignspecs.append((refseqstart, refseqend, r1start, r2start))
+
+        # set up R1 and R2 trims based on alignspecs
+        trims = {} # keyed by R1, R2, values are list of trims
+        for r in ['R1', 'R2']:
+            trimarg = args['{0}trim'.format(r)]
+            if isinstance(trimarg, int):
+                trimarg = [trimarg]
+            if len(trimarg) == 1:
+                trims[r] = [trimarg[0]] * len(alignspecs)
+            else:
+                trims[r] = trimarg
+            assert len(trims[r]) == len(alignspecs), ("--{0}trim must be "
+                    "one value or same length as --alignspecs".format(r))
+            assert all([t > bclen for t in trims[r]]), ("--{0}trim must "
+                    "all be greater than --bclen of {1}".format(r, bclen))
+        print(trimarg, trims, len(alignspecs), [trimarg[0]] * len(alignspecs))
+        maxr1trim = max(trims['R1'])
+        maxr2trim = max(trims['R2'])
 
         # check on read files
         r1files = args['R1']
@@ -111,69 +161,94 @@ def main():
 
         # collect reads by barcode while iterating over reads
         logger.info("Now parsing read pairs...")
-        n = {
+        nreads = {
                 'total':0,
                 'fail filter':0,
                 'low Q barcode':0,
             }
         if args['purgeread']:
-            n['reads purged'] = 0
+            nreads['purged'] = 0
             logger.info("Purging read pairs with probability {0:.3f} to "
                     "subsample the data.".format(args['purgeread']))
         minqchar = chr(args['minq'] + 33) # character for Q score cutoff
 
-        barcodes = {}
-        for read_tup in dms_tools2.utils.iteratePairedFASTQ(r1files, r2files):
+        barcodes = {} # barcodes key list of (R1, R2) after trimming barcode
+
+        for read_tup in dms_tools2.utils.iteratePairedFASTQ(r1files, r2files,
+                    maxr1trim, maxr2trim):
+
+            nreads['total'] += 1
+            if nreads['total'] % 1e5 == 0:
+                logger.info("Reads parsed so far: {0}".format(nreads['total']))
 
             if args['purgeread']:
                 if random.random() < args['purgeread']:
-                    n['reads purged'] += 1
+                    nreads['purged'] += 1
                     continue
-
-            n['total'] += 1
-            if n['total'] % 1e5 == 0:
-                logger.info("Reads parsed so far: {0}".format(n['total']))
 
             (name, r1, r2, q1, q2, failfilter) = read_tup
 
             if failfilter:
-                n['fail filter'] += 1
+                nreads['fail filter'] += 1
                 continue
 
             r1 = dms_tools2.utils.lowQtoN(r1, q1, minqchar)
             r2 = dms_tools2.utils.lowQtoN(r2, q2, minqchar)
 
-            barcode = r1[ : args['bclen']] + r2[ : args['bclen']]
+            barcode = r1[ : bclen] + r2[ : bclen]
             if 'N' in barcode:
-                n['low Q barcode'] += 1
+                nreads['low Q barcode'] += 1
                 continue
 
             if barcode in barcodes:
-                barcodes[barcode].append((r1, r2))
+                barcodes[barcode].append((r1[bclen : ], r2[bclen : ]))
             else:
-                barcodes[barcode] = [(r1, r2)]
-
+                barcodes[barcode] = [(r1[bclen : ], r2[bclen : ])]
 
         logger.info('Parsed {0} reads, found {1} unique barcodes.\n'.format(
-                n['total'], len(barcodes)))
+                nreads['total'], len(barcodes)))
 
-        sys.exit(0)
+        nbcs = {
+                'total':len(barcodes),
+                'too few reads':0,
+               }
 
-        readcategories.append('barcodes randomly purged')
-        if args['purgefrac']:
-            logger.info('Randomly purging barcodes with probability %.3f to subsample the data.' % args['purgefrac'])
-            npurged = 0
+        if args['purgebc']:
+            logger.info('Purging barcodes with probability {0:.3f}'
+                    'to subsample the data.'.format(args['purgebc']))
+            nbcs['purged'] = 0
             for barcode in list(barcodes.iterkeys()):
                 if random.random() < args['purgefrac']:
+                    nbcs['purged'] += 1
                     npurged += 1
                     del barcodes[barcode]
-            n['barcodes randomly purged'] = npurged
-            logger.info('Randomly purged %d of the %d barcodes (%.1f%%), leaving %d barcodes.\n' % (npurged, len(barcodes) + npurged, 100.0 * npurged / (npurged + len(barcodes)), len(barcodes)))
-        else:
-            n['barcodes randomly purged'] = 0
+            logger.info('Purged {0} of {1} barcodes ({2:.1f}%%).\n'.format(
+                    nbcs['purged'], nbcs['total'], 
+                    nbcs['purged'] / float(nbcs['total']) * 100))
 
-        # Examine barcodes to see if they pass criteria, if so align them and record mutation counts
-        # Set up *counts* as dict that will hold mutation counts in format for dms_tools.file_io.WriteDMSCounts
+        logger.info('Examining the {0} barcodes to see if they can be used '
+                'to build alignable subamplicons...'.format(len(barcodes)))
+
+        if args['bcinfo']:
+            bcinfofile = gzip.open(args['bcinfo'], 'w')
+
+        for (ibc, (bc, bcreads)) in enumerate(barcodes.items()):
+
+            if ibc % 1e5 == 0:
+                logger.info("Barcodes examined so far: {0}".format(ibc))
+
+            if len(bcreads) < args['minreads']:
+                nbcs['too few reads'] += 1
+                if args['bcinfo']:
+                    bcinfofile.write(bcInfo(bc, bcreads, retained=False, 
+                            consensus=None, desc='too few reads'))
+                continue
+
+        if args['bcinfo']:
+            bcinfofile.close()
+
+        sys.exit()
+
         counts = {}
         if args['chartype'] == 'codon':
             for r in range(1, len(refseq) // 3 + 1):
@@ -181,16 +256,12 @@ def main():
         else:
             raise ValueError("Invalid chartype %s" % args['chartype'])
         # Now start looping over barcodes
-        logger.info('Now examining the %d barcodes to see if reads meet criteria for retention' % len(barcodes))
         newreadcategories = []
         unalignedkeystring = 'un-alignable barcodes with %d reads'
         alignedkeystring = 'aligned barcodes with %d reads'
         discardedkeystring = 'discarded barcodes with %d reads'
         ibarcode = 0
         for barcode in list(barcodes.iterkeys()):
-            ibarcode += 1
-            if ibarcode % 1e5 == 0:
-                logger.info('Barcodes examined so far: %s' % ibarcode)
             nreads = len(barcodes[barcode])
             if nreads < args['minreadsperbarcode']:
                 if args['barcodeinfo']:
@@ -242,6 +313,10 @@ def main():
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))
+        try:
+            bcinfofile.close()
+        except:
+            pass
         for (fname, fpath) in files.items():
             if fname != 'log' and os.path.isfile(fpath):
                 logger.exception("Deleting file {0}".format(fpath))

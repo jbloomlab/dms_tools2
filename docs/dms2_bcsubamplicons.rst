@@ -78,9 +78,11 @@ Algorithm for assembling and aligning subamplicons
 ----------------------------------------------------
 The algorithm implemented by ``dms_barcodedsubamplicons`` is as follows:
 
-1) Any read pair in which either read fails the Illumina chastity filter is discarded.
+1) Read pairs are discarded if either read fails the Illumina chastity filter.
 
-2) All sites in each read pair are classified as "high quality" if the site is not an ``N`` (ambiguous nucleotide) and has a Q-score of at least ``--minq``, or as "low quality" otherwise. For all low-quality sites, the called identity in the read is simply set to ``N`` (so we treat a site with a Q-score of less than ``--minq`` as equivalent to an ``N``).
+2) All sites in each read are classified as "high quality" if the site is not an ``N`` (ambiguous nucleotide) and has a Q-score of at least ``--minq``, or as "low quality" otherwise. At low-quality sites, the identity in the read is then set to ``N`` for the remainder of the analysis.
+
+3) We discard any read pairs for which there are any ``N`` nucleotides in the barcode.
 
 3) We discard any read pairs for which any of the following conditions are met:
 
@@ -130,7 +132,11 @@ Command-line usage
     Most pipelines for generating Illumina FASTQ files have the read 1 sequences in a file that contains the string ``_R1`` and the read 2 sequences in a file that contains the string ``_R2``. If this is the case, the R2 file name can just be guessed from the R1 file name. However, you can use this option if your R2 files have a different name that you need to specify manually.
 
    \-\-R1trim
+    Often your reads will be longer than needed, so it is helpful to trim the low-quality nucleotides that tend to be at the end of long readfs.
+
     If you specify one number, then **all** R1 reads are trimmed to this length. If you specify a list of numbers equal to the entries for ``--alignspecs``, then each read is trimmed differently depending on which subamplicon it aligns to.
+
+    Note that the trimming is done to the initial read, and so the trimming length includes the barcode, the primer binding site, and then the part of the read that provides useful sequence information.
 
    \-\-chartype
     If ``chartype`` is ``codon`` then ``--refseq`` must provide a valid coding sequence (length a multiple of 3).
@@ -193,7 +199,7 @@ The formats of the output files are given below in terms of the file suffix that
 
 * ``.log`` : This is a text file that logs the progress of the program.
 
-* ``barcodeinfo.txt.gz`` : This file is only created if the ``--barcodeinfo`` option is used. In this case, the file will give all barcodes and their associated reads, and will explain whether or not the barcode was successfully retained during the alignment process.
+* ``barcodeinfo.txt.gz`` : This file is only created if the ``--barcodeinfo`` option is used. It gives all barcodes, their associated reads (after trimming the 5' barcode and any 3' sequence that extends beyond the maximal ``--R1trim`` / ``--R2trim``), and an explanation of whether or not the barcoded consensus sequence was successfully aligned to subamplicons.
 
 Memory usage
 ---------------------------
