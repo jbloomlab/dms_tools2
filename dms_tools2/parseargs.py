@@ -104,28 +104,19 @@ def bcsubampliconsParser():
             "mismatches counted in terms of character '--chartype'."))
 
     parser.add_argument('--minq', type=int, default=15,
-            help="Only consider nucleotides with Q score >= this.")
-
-    parser.add_argument('--maxlowq', default=0.1, type=float, 
-            help=("Only retain read pairs if no N or Q < 'minq' nts "
-               "in barcodes and total frac of such nts is <= this in "
-                "each read and eventual subamplicon."))
+            help="Only call nucleotides with Q score >= this.")
 
     parser.add_argument ('--minreads', type=int, default=2, 
-            help=("Retain only barcodes with >= this many reads that "
-            "align with >= 'minident' identical high-quality nts."))
+            help=("Require this many reads in a barcode to agree to "
+            "call consensus nucleotide identity."))
 
-    parser.add_argument('--minident', type=float, default=0.9, 
-            help=("Retain only barcodes where all reads have >= this "
-            "frac of identical high-quality nts that align gaplessly."))
+    parser.add_argument('--minfraccall', type=float, default=0.9, 
+            help=("Retain only barcodes where trimmed consensus "
+            "sequence for each read has >= this frac sites called."))
 
     parser.add_argument('--minconcur', default=0.75, type=float,
-            help=('For retained barcodes, only make calls when >= '
+            help=('Only call consensus identity for barcode when >= '
             'this fraction of reads concur.'))
-
-    parser.set_defaults(R1antisense=False)
-    parser.add_argument('--R1antisense', dest='R1antisense', 
-            action='store_true', help="R1 is antisense of 'refseq'.")
 
     parser.add_argument('--purgeread', type=float, default=0,
             help=("Randomly purge read pairs with this probability "

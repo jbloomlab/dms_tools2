@@ -43,6 +43,8 @@ Briefly, the steps are as follows:
         - ``Rnd1for850`` and ``Rnd1rev1275``: these primers create a subamplicon spanning nucleotides 850 to 1275 (codons 284 to 425).
 
         - ``Rnd1for1276`` and ``Rnd1rev1698``: these primers create a subamplicon spanning nucleotides 1276 to 1698 (codons 426 to 566).
+      
+       **Note that each of these subamplicons begins and ends on a full codon.** This is important; design your primers to do the same.
 
     2) The subamplicons are diluted so that the total number of ssDNA molecules is less than the sequencing depth. Since each subamplicon molecule has 8 ``N`` nucleotides at each end, there are :math:`4^{16} \approx 4.3 \times 10^9` unique barcodes. Since the number of unique barcodes is much greater than the total number of molecules in the dilution, each barcode will generally be associated with just one molecule.
 
@@ -90,16 +92,17 @@ The algorithm implemented by ``dms_barcodedsubamplicons`` is as follows:
 
 6) The R1 and R2 reads for each barcode are each assembled into consensus sequences. The consensus sequences is built by applying the following algorithm to each site:
 
-    - We collect the identities for all reads, ignoring ``N`` nucleotides.
+    a. We collect the identities for all reads, ignoring ``N`` nucleotides.
     
-    - If there are less than ``--minreads`` called (non ``N``) nucleotides, set the consensus identity for that site to ``N``.
+    b. If there are less than ``--minreads`` called (non ``N``) nucleotides, set the consensus identity for that site to ``N``.
     
-    - If there are at least ``--minreads`` called nucleotides, set the consensus identity to ``N`` if the fraction of called identities that are identical is less than ``--minconcur``, and set it to the consensus called identity if at least ``--minconcur`` of the reads are identical at the site.
+    c. If there are at least ``--minreads`` called nucleotides, set the consensus identity to ``N`` if the fraction of called identities that are identical is less than ``--minconcur``, and set it to the consensus called identity if at least ``--minconcur`` of the reads are identical at the site.
 
+7) We attempt to align the consensus read sequences for each barcode to subamplicon positions specified by ``--alignspecs``. The attempted alignment does **not** accommodate gaps; the consensus sequence must align gaplessly at the position specified by ``--alignspecs``. In any region where the reads overlap (which may happen near the center of the subamplicon), if both consensus sequences (R1 and R2) report high quality nucleotides, the identity is considered ambiguous if the sequences disagree. The alignmend procedure is as follows:
 
-7) For each remaining barcode, we attempt to align the consensus sequence to each of the subamplicons specified by ``alignspecs``. The attempted alignment does **not** accommodate gaps; the consensus sequence for the reads is required to align gaplessly at the position specified by ``alignspecs``. In any region where the reads overlap (which may happen near the center of the subamplicon), if both consensus sequences (R1 and R2) report high quality nucleotides, the identity is considered ambiguous if the sequences disagree. An alignment is considered valid only if the following conditions are met:
+    a. We trim the reads from the 3' end using the ``--R1trim`` and ``--R2trim`` parameters for that subamplicon.
 
-    - The total fraction of non-high-quality nucleotides in the aligned region exceeds ``--maxlowqfrac``.
+    b. We look at the total fraction of called (non ``N``) nucleotides in the trimmed consensus for each read. If the fraction of called nucleotides is not >= ``--minfraccall`` for both reads, we do not consider this possible alignment further.
 
     - The subamplicon alignment has no more than ``--maxmuts`` mutations relative to ``refseq`` when mutations are counted in terms of ``--chartype`` (so if ``--chartype`` is ``codon``, this is the number of **codon** mutations).
 
@@ -118,12 +121,12 @@ Command-line usage
     This name should only contain letters, numbers, and dashes (-).
 
    \-\-alignspecs
-    It is important to set ``--alignspecs`` so that you don't count the part of the subamplicon that is in the primer binding site, since the nucleotide identities in this region come from the primers rather than the templates being sequenced. See `Barcoded subamplicon sequencing`_ for an example.
+    It is important to set ``--alignspecs`` so that you don't count the part of the subamplicon that is the barocde or in the primer binding site, since the nucleotide identities in this region do not come from the templates being sequenced. See the `Barcoded subamplicon sequencing`_ above for an example.
 
     The alignments will fail if you don't set ``--alignspecs`` exactly correctly for each subamplicon. So if you have reads failing to align to part of your gene, carefully check ``--alignspecs`` to make sure it is correct.
 
    \-\-bclen
-    This is the length of the barcode on **each** primer. So a value of 8 corresponds to a total of 16 ``N`` nucleotides on the two primers. See `Barcoded subamplicon sequencing`_ for an example of primers with 8 ``N`` nucleotides.
+    This is the length of the barcode on **each** primer. So a value of 8 corresponds to a total of 16 ``N`` nucleotides on the two primers. See the `Barcoded subamplicon sequencing`_ section above for an example of primers with 8 ``N`` nucleotides.
 
    \-\-R2
     Most pipelines for generating Illumina FASTQ files have the read 1 sequences in a file that contains the string ``_R1`` and the read 2 sequences in a file that contains the string ``_R2``. If this is the case, the R2 file name can just be guessed from the R1 file name. However, you can use this option if your R2 files have a different name that you need to specify manually.

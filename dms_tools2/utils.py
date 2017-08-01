@@ -255,6 +255,12 @@ def buildReadConsensus(reads, minreads, minconcur):
     return ''.join(consensus)
 
 
+def alignSubamplicons(refseq, r1, r2, refseqstart, refseqend, maxmuts):
+    """
+
+    """
+    assert False, 'not yet implemented'
+
 
 if __name__ == '__main__':
     import doctest

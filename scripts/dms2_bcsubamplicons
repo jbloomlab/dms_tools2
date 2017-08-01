@@ -109,9 +109,10 @@ def main():
         bclen = args['bclen']
         assert bclen > 0, 'bclen not > 0'
 
-        assert args['minconcur'] > 0.5
-
+        assert 1 >= args['minconcur'] > 0.5
         assert args['minreads'] > 0
+        assert 1 >= args['minfraccall'] > 0
+        assert args['maxmuts'] >= 1
 
         # check validity of alignspecs
         alignspecs = []
@@ -126,7 +127,9 @@ def main():
             assert refseqend > refseqstart, "REFSEQEND <= REFSEQSTART"
             assert refseqstart >= 0, "REFSEQSTART < 1"
             assert refseqend <= len(refseq), "REFSEQEND > len(refseq)"
-            alignspecs.append((refseqstart, refseqend, r1start, r2start))
+            # subtract bclen from rstart because barcode trimmed before aligning
+            alignspecs.append((refseqstart, refseqend, 
+                    r1start - bclen, r2start - bclen))
 
         # set up R1 and R2 trims based on alignspecs
         trims = {} # keyed by R1, R2, values are list of trims
@@ -213,6 +216,7 @@ def main():
         logger.info('Parsed {0} reads, found {1} unique barcodes.\n'.format(
                 nreads['total'], len(barcodes)))
 
+        # now loop over barcodes and build / align subamplicons
         nbcs = {
                 'total':len(barcodes),
                 'too few reads':0,
@@ -255,42 +259,33 @@ def main():
                         [tup[itup] for tup in bcreads],
                         args['minreads'], args['minconcur'])
 
+            for (trim, (refseqstart, refseqend, r1start, r2start) in zip(
+                    trims, alignspecs):
+
+                trimconsensus = dict([consensus[r][ : trim[r]] for 
+                        r in ['R1', 'R2']])
+
+                if any([c.count('N') > len(c) * (1 - args['minfraccall'])
+                        for c in trimconsensus])
+                    continue # insufficient called sites
+
+                if r1start > trimconsensus['R1'] or r2start > trimconsensus['R2']:
+                    continue # reads to short to align
+
+                aligned = dms_tools2.utils.alignSubamplicons(refseq,
+                        trimconsensus['R1'][r1start - 1 : ], 
+                        trimconsensus['R2'][r2start - 1 : ],
+                        refseqstart, refseqend, args['maxmuts'])
+
+
         if args['bcinfo']:
             bcinfofile.close()
 
         sys.exit()
 
         counts = {}
-        if args['chartype'] == 'codon':
-            for r in range(1, len(refseq) // 3 + 1):
-                counts[str(r)] = dict([('WT', refseq[3 * r - 3 : 3 * r])] + [(codon, 0) for codon in dms_tools.codons])
-        else:
-            raise ValueError("Invalid chartype %s" % args['chartype'])
-        # Now start looping over barcodes
-        newreadcategories = []
-        unalignedkeystring = 'un-alignable barcodes with %d reads'
-        alignedkeystring = 'aligned barcodes with %d reads'
-        discardedkeystring = 'discarded barcodes with %d reads'
-        ibarcode = 0
-        for barcode in list(barcodes.iterkeys()):
-            nreads = len(barcodes[barcode])
-            if nreads < args['minreadsperbarcode']:
-                if args['barcodeinfo']:
-                    barcodeinfofile.write('BARCODE: %s\nRETAINED: no\nDESCRIPTION: too few reads\nCONSENSUS: none\nREADS:\n\t%s\n\n' % (barcode, '\n\t'.join(['R1 = %s; R2 = %s' % tup for tup in barcodes[barcode]])))
-                keystring = discardedkeystring % nreads
-            else:
-                consensus = dms_tools.utils.BuildReadConsensus(barcodes[barcode], args['minreadidentity'], args['minreadconcurrence'], args['maxreadtrim'], use_cutils=True)
-                if consensus:
-                    # try to align subamplicon
-                    (r1, r2) = consensus
-                    for (refseqstart, refseqend, r1start, r2start) in args['alignspecs']:
-                        maxN = int(args['maxlowqfrac'] * min(refseqend - refseqstart + 1, len(r1) + len(r2) - r1start - r2start + 2))
-                        if r1start >= len(r1) or r2start >= len(r2):
-                            aligned = False # reads too short toa align
-                        elif not args['R1_is_antisense']:
-                            aligned = dms_tools.utils.AlignSubamplicon(refseq, r1[r1start - 1 : ], r2[r2start - 1 : ], refseqstart, refseqend, args['maxmuts'], maxN, args['chartype'], counts, use_cutils=True)
-                        else:
-                            aligned = dms_tools.utils.AlignSubamplicon(refseq, r2[r2start - 1 : ], r1[r1start - 1 : ], refseqstart, refseqend, args['maxmuts'], maxN, args['chartype'], counts, use_cutils=True)
+
+
                         if aligned:
                             keystring = alignedkeystring % nreads
                             if args['barcodeinfo']:
