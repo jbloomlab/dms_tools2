@@ -10,6 +10,7 @@ import unittest
 import subprocess
 import random
 import gzip
+import pandas
 import dms_tools2
 import dms_tools2.utils
 
@@ -90,8 +91,8 @@ def generateReadPair(refseq, alignspec, bc1, bc2, r1ext=0, r2ext=0,
     name1 = '@{0} 1:{1}:18:ATCACG'.format(rname, {False:'N', True:'Y'}[r1fail])
     name2 = '@{0} 2:{1}:18:ATCACG'.format(rname, {False:'N', True:'Y'}[r2fail])
 
-    return ('{0}\n{1}\n+\n{2}'.format(name1, r1, q1),
-            '{0}\n{1}\n+\n{2}'.format(name2, r2, q2))
+    return ('{0}\n{1}\n+\n{2}\n'.format(name1, r1, q1),
+            '{0}\n{1}\n+\n{2}\n'.format(name2, r2, q2))
 
 
 class test_bcsubamplicons(unittest.TestCase):
@@ -118,8 +119,9 @@ class test_bcsubamplicons(unittest.TestCase):
 
         # now generate reads
         reads = []
-        self.nfailfilter = 1
-        for i in range(self.nfailfilter):
+
+        self.failfilter = 2
+        for i in range(self.failfilter):
             r1fail = random.choice([True, False])
             r2fail = not r1fail
             reads.append(generateReadPair(refseq, 
@@ -127,19 +129,24 @@ class test_bcsubamplicons(unittest.TestCase):
                     randSeq(self.bclen), randSeq(self.bclen),
                     r1fail=r1fail, r2fail=r2fail))
 
+        self.nreads = len(reads)
+
         # write reads files
         self.r1file = os.path.join(self.testdir, 'read_R1.fastq.gz')
         self.r2file = self.r1file.replace('_R1', '_R2')
-        with gzip.open(self.r1file, 'wt') as f1, gzip.open(self.r2file, 'wt') as f2:
+        with gzip.open(self.r1file, 'wt') as f1, \
+                gzip.open(self.r2file, 'wt') as f2:
             for (r1, r2) in reads:
                 f1.write(r1)
                 f2.write(r2)
 
         # defines output files
         self.name = 'test'
-        self.counts = '{0}/{1}_counts.csv'.format(self.testdir, self.name)
-        self.stats = '{0}/{1}_bcstats.csv'.format(self.testdir, self.name)
-        for f in [self.counts, self.stats]:
+        files = ['readstats']
+        self.outfiles = dict([(f, '{0}/{1}_{2}.csv'.format(
+                self.testdir, self.name, f)) for f in files])
+
+        for f in self.outfiles.values():
             if os.path.isfile(f):
                 os.remove(f)
 
@@ -157,11 +164,17 @@ class test_bcsubamplicons(unittest.TestCase):
         sys.stderr.write('\nRunning the following command:\n{0}\n'.format(
                 ' '.join(cmds)))
         subprocess.check_call(cmds)
-#        self.assertTrue(os.path.isfile(self.counts), 
-#                'Failed to create file {0}'.format(self.counts))
-#        self.assertTrue(os.path.isfile(self.stats), 
-#                'Failed to create file {0}'.format(self.stats))
 
+        for f in self.outfiles.values():
+            self.assertTrue(os.path.isfile(f), "Failed to create {0}".format(f))
+
+        # check on read stats
+        readstats = pandas.read_csv(self.outfiles['readstats'], 
+                index_col='category')
+        self.assertEqual(self.nreads, 
+                readstats.at['total', 'number of reads'])
+        self.assertEqual(self.failfilter, 
+                readstats.at['fail filter', 'number of reads'])
 
 
 

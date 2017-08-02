@@ -67,7 +67,8 @@ def main():
     filesuffixes = {
             'log':'.log',
             'counts':'_counts.csv',
-            'summarystats':'_summarystats.csv'
+            'readstats':'_readstats.csv',
+            'bcstats':'_bcstats.csv',
             }
     if args['bcinfo']:
         filesuffixes['bcinfo'] = '_bcinfo.txt.gz'
@@ -215,8 +216,14 @@ def main():
             else:
                 barcodes[barcode] = [(r1[bclen : ], r2[bclen : ])]
 
-        logger.info('Parsed {0} reads, found {1} unique barcodes.\n'.format(
+        logger.info('Parsed {0} reads, found {1} unique barcodes.'.format(
                 nreads['total'], len(barcodes)))
+        readstats = pandas.DataFrame(sorted(nreads.items()), columns=[
+                'category', 'number of reads']).set_index('category')
+        logger.info("Summary stats on reads:\n\t{0}".format(
+                readstats.to_string()))
+        logger.info("Writing read stats to {0}\n".format(files['readstats']))
+        readstats.to_csv(files['readstats'])
 
         # now loop over barcodes and build / align subamplicons
         nbcs = {
@@ -251,7 +258,6 @@ def main():
                 logger.info("Barcodes examined so far: {0}".format(ibc))
 
             if len(bcreads) < args['minreads']:
-                print(len(bcreads), args['minreads'])
                 nbcs['too few reads'] += 1
                 if args['bcinfo']:
                     bcinfofile.write(bcInfo(bc, bcreads, retained=False, 
@@ -293,11 +299,12 @@ def main():
         if args['bcinfo']:
             bcinfofile.close()
 
-        bcstats = pandas.DataFrame(sorted(nbcs.items())).set_index(0)
+        bcstats = pandas.DataFrame(sorted(nbcs.items()), columns=[
+                'category', 'number of barcodes']).set_index('category')
         logger.info("Examined all barcodes. Summary stats:\n\t{0}".format(
-                bcstats.to_csv(sep='\t', header=None).replace('\n', '\n\t')))
-
-        print(barcodes.keys())
+                bcstats.to_string()))
+        logger.info("Writing barcode stats to {0}\n".format(files['bcstats']))
+        bcstats.to_csv(files['bcstats'])
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))
