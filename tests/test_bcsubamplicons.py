@@ -156,7 +156,7 @@ class test_bcsubamplicons(unittest.TestCase):
         self.nbarcodesaligned = 0
         # create some perfect barcodes with 1 to 4 reads each
         self.barcodes_with_nreads = {}
-        for i in range(10):
+        for i in range(20):
             self.nbarcodes += 1
             nperbc = random.randint(1, 3)
             if nperbc > 1:
@@ -169,8 +169,11 @@ class test_bcsubamplicons(unittest.TestCase):
             bc2 = randSeq(self.bclen)
             alignspec = random.choice(self.alignspecs)
             for i in range(nperbc):
+                r1ext = random.randint(0, 2)
+                r2ext = random.randint(0, 2)
                 reads.append(generateReadPair(refseq,
-                        alignspec, bc1, bc2))
+                        alignspec, bc1, bc2,
+                        r1ext=r1ext, r2ext=r2ext))
 
         self.nreads = len(reads)
 
