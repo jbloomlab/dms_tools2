@@ -121,6 +121,7 @@ class test_bcsubamplicons(unittest.TestCase):
         # now generate reads
         reads = []
 
+        # some reads that fail chastity filter
         self.failfilter = 2
         for i in range(self.failfilter):
             r1fail = random.choice([True, False])
@@ -130,6 +131,7 @@ class test_bcsubamplicons(unittest.TestCase):
                     randSeq(self.bclen), randSeq(self.bclen),
                     r1fail=r1fail, r2fail=r2fail))
 
+        # some reads with low quality barcodes
         self.lowQbc = 4
         reads.append(generateReadPair(refseq,
                 random.choice(self.alignspecs),
@@ -150,6 +152,14 @@ class test_bcsubamplicons(unittest.TestCase):
                 randSeq(self.bclen),
                 r2bclowq=1))
 
+        # some barcodes with only one read
+        self.toofewreads = 3
+        for i in range(self.toofewreads):
+            reads.append(generateReadPair(refseq,
+                    random.choice(self.alignspecs),
+                    randSeq(self.bclen), 
+                    randSeq(self.bclen)))
+
         self.nreads = len(reads)
 
         # write reads files
@@ -163,7 +173,7 @@ class test_bcsubamplicons(unittest.TestCase):
 
         # defines output files
         self.name = 'test'
-        files = ['readstats']
+        files = ['readstats', 'bcstats']
         self.outfiles = dict([(f, '{0}/{1}_{2}.csv'.format(
                 self.testdir, self.name, f)) for f in files])
 
@@ -199,6 +209,11 @@ class test_bcsubamplicons(unittest.TestCase):
         self.assertEqual(self.lowQbc,
                 readstats.at['low Q barcode', 'number of reads'])
 
+        # check on barcode stats
+        bcstats = pandas.read_csv(self.outfiles['bcstats'], 
+                index_col='category')
+        self.assertEqual(self.toofewreads,
+                bcstats.at['too few reads', 'number of barcodes'])
 
 
 if __name__ == '__main__':
