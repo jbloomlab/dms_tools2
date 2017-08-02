@@ -15,13 +15,18 @@ import dms_tools2
 import dms_tools2.utils
 
 
-def randSeq(n):
-    """Returns a random nucleotide sequence of length `n`."""
-    return ''.join([random.choice(dms_tools2.NTS) for i in range(n)])
+def randSeq(n, num_N=0):
+    """Returns a random nucleotide sequence of length `n`.
+    
+    This sequence contains `num_N` ``N`` nucleotides."""
+    s = [random.choice(dms_tools2.NTS) for i in range(n)]
+    for i in random.sample(range(n), num_N):
+        s[i] = 'N'
+    return ''.join(s)
 
 
 def generateReadPair(refseq, alignspec, bc1, bc2, r1ext=0, r2ext=0,
-        minq=15, r1lowq=0, r2lowq=0, r1extlowq=0, r2extlowq=0, 
+        minq=15, r1lowq=0, r2lowq=0, r1bclowq=0, r2bclowq=0, 
         r1mut=0, r2mut=0, r1extmut=0, r2extmut=0, r1fail=False, 
         r2fail=False, rname='simulatedread'):
     """Generates a pair of FASTQ reads.
@@ -31,36 +36,22 @@ def generateReadPair(refseq, alignspec, bc1, bc2, r1ext=0, r2ext=0,
             reference sequence
         `alignspec` (str)
             alignment specs, require even length subamplicons
-        `bc1` (str)
-            R1 barcode
-        `bc2` (str)
-            R2 barcode
-        `r1ext` (int)
-            How many codons does R1 extend past center of subamplicon?
-        `r2ext` (int)
-            How many codons does R2 extend past center of subamplicon?
+        `bc1`, `bc2` (str)
+            R1 and R2 barcodes
+        `r1ext`, `r2ext` (int)
+            How many codons does R1 / R2 extend past center of subamplicon?
         `minq` (int)
             Q scores < this are low quality
-        `r1lowq` (int)
-            How many low quality codons in R1 prior to amplicon center?
-        `r2lowq` (int)
-            How many low quality codons in R2 prior to amplicon center?
-        `r1extlowq` (int)
-            How many low quality codons in R1 after amplicon center?
-        `r2extlowq` (int)
-            How many low quality codons in R2 after amplicon center?
-        `r1mut` (int)
-            How many codon mutations in R1 before amplicon center?
-        `r2mut` (int)
-            How many codon mutations in R2 before amplicon center?
-        `r1extmut` (int)
-            How many codon mutations in R1 after amplicon center?
-        `r2extmut` (int)
-            How many codon mutations in R2 after amplicon center?
-        `r1fail` (bool)
-            Does R1 fail the quality filter?
-        `r2fail` (bool) 
-            Does R2 fail the quality filter?
+        `r1lowq`, `r2lowq` (int)
+            How many low quality codons in R1 / R2 prior to amplicon center?
+        `r1bclowq`, `r2bclowq` (int)
+            How many low quality codons in R1 / R2 barcode?
+        `r1mut`, `r2mut` (int)
+            How many codon mutations in R1 / R2 before amplicon center?
+        `r1extmut`, `r2extmut` (int)
+            How many codon mutations in R1 / R2 after amplicon center?
+        `r1fail`, `r2fail` (bool)
+            Does R1 / R2 fail the quality filter?
         `rname` (str)
             Read name (first part, no spaces)
 
@@ -83,8 +74,18 @@ def generateReadPair(refseq, alignspec, bc1, bc2, r1ext=0, r2ext=0,
             dms_tools2.utils.reverseComplement(r2)
 
     # create Q scores
-    q1 = ''.join([chr(random.randint(minq, 40) + 33) for i in range(len(r1))])
-    q2 = ''.join([chr(random.randint(minq, 40) + 33) for i in range(len(r2))])
+    q1 = [chr(random.randint(minq, 40) + 33) for i in range(len(r1))]
+    for i in random.sample(range(len(bc1)), r1bclowq):
+        q1[i] = chr(random.randint(2, minq - 1))
+    for i in random.sample(range(refseqlen // 2), r1lowq):
+        q1[i + r1start - 1] = chr(random.randint(2, minq - 1))
+    q2 = [chr(random.randint(minq, 40) + 33) for i in range(len(r2))]
+    for i in random.sample(range(len(bc2)), r2bclowq):
+        q2[i] = chr(random.randint(2, minq - 1))
+    for i in random.sample(range(refseqlen // 2), r2lowq):
+        q2[i + r2start - 1] = chr(random.randint(2, minq - 1))
+    q1 = ''.join(q1)
+    q2 = ''.join(q2)
 
     # create names
     assert not re.search('\s', rname)
@@ -128,6 +129,26 @@ class test_bcsubamplicons(unittest.TestCase):
                     random.choice(self.alignspecs),
                     randSeq(self.bclen), randSeq(self.bclen),
                     r1fail=r1fail, r2fail=r2fail))
+
+        self.lowQbc = 4
+        reads.append(generateReadPair(refseq,
+                random.choice(self.alignspecs),
+                randSeq(self.bclen, num_N=1),
+                randSeq(self.bclen)))
+        reads.append(generateReadPair(refseq,
+                random.choice(self.alignspecs),
+                randSeq(self.bclen),
+                randSeq(self.bclen, num_N=1)))
+        reads.append(generateReadPair(refseq,
+                random.choice(self.alignspecs),
+                randSeq(self.bclen),
+                randSeq(self.bclen),
+                r1bclowq=1))
+        reads.append(generateReadPair(refseq,
+                random.choice(self.alignspecs),
+                randSeq(self.bclen),
+                randSeq(self.bclen),
+                r2bclowq=1))
 
         self.nreads = len(reads)
 
@@ -175,6 +196,8 @@ class test_bcsubamplicons(unittest.TestCase):
                 readstats.at['total', 'number of reads'])
         self.assertEqual(self.failfilter, 
                 readstats.at['fail filter', 'number of reads'])
+        self.assertEqual(self.lowQbc,
+                readstats.at['low Q barcode', 'number of reads'])
 
 
 
