@@ -51,6 +51,7 @@ setup(
     install_requires = [
         'biopython>=1.68',
         'HTSeq>=0.9',
+        'pandas>=0.19',
         ],
     platforms = 'Linux and Mac OS X).',
     packages = ['dms_tools2'],

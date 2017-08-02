@@ -98,13 +98,11 @@ The algorithm implemented by ``dms_barcodedsubamplicons`` is as follows:
     
     c. If there are at least ``--minreads`` called nucleotides, set the consensus identity to ``N`` if the fraction of called identities that are identical is less than ``--minconcur``, and set it to the consensus called identity if at least ``--minconcur`` of the reads are identical at the site.
 
-7) We attempt to align the consensus read sequences for each barcode to subamplicon positions specified by ``--alignspecs``. The attempted alignment does **not** accommodate gaps; the consensus sequence must align gaplessly at the position specified by ``--alignspecs``. In any region where the reads overlap (which may happen near the center of the subamplicon), if both consensus sequences (R1 and R2) report high quality nucleotides, the identity is considered ambiguous if the sequences disagree. The alignmend procedure is as follows:
+7) We attempt to align the consensus read sequences for each barcode to subamplicon positions specified by ``--alignspecs``. The attempted alignment does **not** accommodate gaps; the consensus sequence must align gaplessly at the position specified by ``--alignspecs``. In any region where the reads overlap (which may happen near the center of the subamplicon), if both consensus reads report high quality nucleotides, the identity is considered ambiguous if the sequences disagree. If one consensus read is ambiguous, we take the identity for the non-ambiguous read. The alignment procedure is as follows:
 
     a. We trim the reads from the 3' end using the ``--R1trim`` and ``--R2trim`` parameters for that subamplicon.
 
-    b. We look at the total fraction of called (non ``N``) nucleotides in the trimmed consensus for each read. If the fraction of called nucleotides is not >= ``--minfraccall`` for both reads, we do not consider this possible alignment further.
-
-    c. We then attempt to align the consensus reads at each position indicated in ``--alignspecs``. We consider an alignment acceptable if there are no more than ``--maxmuts`` mutations relative to ``refseq`` (with mutations counted in terms of character ``--chartype``) and if the fraction of called nucleotides in the aligned consensus is at least ``--minfraccall``. We take the first valid alignment that we find. But unless you are working with a very repetitive sequence or specify a very large ``--maxmuts``, there should be at most one valid alignment.
+    b. We then attempt to align the consensus reads at each position indicated in ``--alignspecs``. We consider an alignment acceptable if there are no more than ``--maxmuts`` mutations relative to ``refseq`` (with mutations counted in terms of character ``--chartype``) and if the fraction of called nucleotides in the aligned consensus is at least ``--minfraccall``. We take the first valid alignment that we find. But unless you are working with a very repetitive sequence or specify a very large ``--maxmuts``, there should be at most one valid alignment.
 
 
 Command-line usage

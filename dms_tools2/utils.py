@@ -29,7 +29,7 @@ def sessionInfo():
                     sys.version.replace('\n', ' ')),
             '\tdms_tools2 version: {0}'.format(dms_tools2.__version__),
             ]
-    for modname in ['Bio', 'HTSeq']:
+    for modname in ['Bio', 'HTSeq', 'pandas']:
         try:
             v = importlib.import_module(modname).__version__
             s.append('\t{0} version: {1}'.format(modname, v))

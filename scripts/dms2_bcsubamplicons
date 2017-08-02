@@ -9,6 +9,7 @@ import re
 import logging
 import gzip
 import random
+import pandas
 import Bio.SeqIO
 import dms_tools2.parseargs
 import dms_tools2.utils
@@ -127,7 +128,7 @@ def main():
             assert refseqend > refseqstart, "REFSEQEND <= REFSEQSTART"
             assert refseqstart >= 0, "REFSEQSTART < 1"
             assert refseqend <= len(refseq), "REFSEQEND > len(refseq)"
-            maxN = (refseqend - refseqstart + 1) * (1 - minfraccall)
+            maxN = (refseqend - refseqstart + 1) * (1 - args['minfraccall'])
             # subtract bclen from rstart because barcode trimmed before aligning
             alignspecs.append((refseqstart, refseqend, 
                     r1start - bclen, r2start - bclen, maxN))
@@ -221,6 +222,8 @@ def main():
         nbcs = {
                 'total':len(barcodes),
                 'too few reads':0,
+                'not alignable':0,
+                'aligned':0,
                }
 
         if args['purgebc']:
@@ -248,6 +251,7 @@ def main():
                 logger.info("Barcodes examined so far: {0}".format(ibc))
 
             if len(bcreads) < args['minreads']:
+                print(len(bcreads), args['minreads'])
                 nbcs['too few reads'] += 1
                 if args['bcinfo']:
                     bcinfofile.write(bcInfo(bc, bcreads, retained=False, 
@@ -266,58 +270,34 @@ def main():
                 trimconsensus = dict([consensus[r][ : trim[r]] for 
                         r in ['R1', 'R2']])
 
-                if any([c.count('N') > len(c) * (1 - args['minfraccall'])
-                        for c in trimconsensus]):
-                    continue # insufficient called sites
-
-                if r1start > trimconsensus['R1'] or r2start > trimconsensus['R2']:
-                    continue # reads to short to align
-
-                aligned = dms_tools2.utils.alignSubamplicon(refseq,
+                subamplicon = dms_tools2.utils.alignSubamplicon(refseq,
                         trimconsensus['R1'][r1start - 1 : ], 
                         trimconsensus['R2'][r2start - 1 : ],
                         refseqstart, refseqend, args['maxmuts'],
                         maxN, args['chartype'])
 
+                if subamplicon:
+                    if args['bcinfo']:
+                       bcinfofile.write(bcInfo(bc, bcreads, retained=True,
+                            consensus=subamplicon, desc='aligned at '
+                            'position {0}'.format(refseqstart)))
+                    nbcs['aligned'] += 1
+                    break
+
+            else: # read did not align
+                nbcs['not alignable'] += 1
+                if args['bcinfo']:
+                    bcinfofile.write(bcInfo(bc, bcreads, retained=False,
+                            consensus=None, desc='could not align'))
 
         if args['bcinfo']:
             bcinfofile.close()
 
-        sys.exit()
+        bcstats = pandas.DataFrame(sorted(nbcs.items())).set_index(0)
+        logger.info("Examined all barcodes. Summary stats:\n\t{0}".format(
+                bcstats.to_csv(sep='\t', header=None).replace('\n', '\n\t')))
 
-        counts = {}
-
-
-#                        if aligned:
-#                            keystring = alignedkeystring % nreads
-#                            if args['barcodeinfo']:
-#                                barcodeinfofile.write('BARCODE: %s\nRETAINED: yes\nDESCRIPTION: aligned from %d to %d with %d %s mutations\nCONSENSUS: R1 = %s; R2 = %s\nREADS:\n\t%s\n\n' % (barcode, refseqstart, refseqend, aligned[1], args['chartype'], r1, r2, '\n\t'.join(['R1 = %s; R2 = %s' % tup for tup in barcodes[barcode]])))
-#                            break
-#                    else:
-#                        keystring = unalignedkeystring % nreads
-#                        if args['barcodeinfo']:
-#                            barcodeinfofile.write('BARCODE: %s\nRETAINED: no\nDESCRIPTION: subamplicon could not be aligned to refseq\nCONSENSUS: R1 = %s; R2 = %s\nREADS:\n\t%s\n\n' % (barcode, r1, r2, '\n\t'.join(['R1 = %s; R2 = %s' % tup for tup in barcodes[barcode]])))
-#                else:
-#                    if args['barcodeinfo']:
-#                        barcodeinfofile.write('BARCODE: %s\nRETAINED: no\nDESCRIPTION: reads not sufficiently identical\nCONSENSUS: none\nREADS:\n\t%s\n\n' % (barcode, '\n\t'.join(['R1 = %s; R2 = %s' % tup for tup in barcodes[barcode]])))
-#                    keystring = discardedkeystring % nreads
-#            try:
-#                n[keystring] += 1
-#            except KeyError:
-#                n[keystring] = 1
-#                newreadcategories.append((nreads, keystring))
-#            del barcodes[barcode] # free up memory as we finish with barcodes
-#        newreadcategories.sort()
-#        readcategories = readcategories + [tup[1] for tup in newreadcategories]
-#        logger.info('Finished examining all %d barcodes\n' % ibarcode)
-
-        # Write the counts
-        logger.info('Writing the %s counts to %s' % (args['chartype'], countsfilename))
-        dms_tools.file_io.WriteDMSCounts(countsfile, counts)
-
-        # Summarize statistics
-        logger.info('Here are the summary statistics (these are also being written to %s):\n%s' % (summarystatsfilename, '\n'.join(['\t%s = %s' % (category, n[category]) for category in readcategories])))
-        summarystatsfile.write('\n'.join(['%s = %s' % (category, n[category]) for category in readcategories]))
+        print(barcodes.keys())
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))
