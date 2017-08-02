@@ -64,9 +64,15 @@ def generateReadPair(refseq, alignspec, bc1, bc2, r1ext=0, r2ext=0,
     assert refseqlen % 3 == 0
     assert (refseqlen // 3) % 2 == 0, "not even number of codons in subamplicon"
 
-    # first create "perfect" R1 and R2
-    r1 = refseq[refseqstart - 1 : refseqlen // 2 + 3 * r1ext]
-    r2 = refseq[refseqlen // 2 - 3 * r2ext : refseqend]
+    # first create "perfect" R1 and R2, then add mutations
+    r1 = list(refseq[refseqstart - 1 : refseqlen // 2 + 3 * r1ext])
+    r2 = list(refseq[refseqlen // 2 - 3 * r2ext : refseqend])
+    for i in random.sample(range(len(r1)), r1mut):
+        r1[i] = random.choice([nt for nt in dms_tools2.NTS if nt != r1[i]])
+    for i in random.sample(range(len(r2)), r2mut):
+        r2[i] = random.choice([nt for nt in dms_tools2.NTS if nt != r2[i]])
+    r1 = ''.join(r1)
+    r2 = ''.join(r2)
 
     # create full reads by adding barcodes and flanking regions
     r1 = bc1 + randSeq(r1start - len(bc1) - 1) + r1
@@ -97,8 +103,17 @@ def generateReadPair(refseq, alignspec, bc1, bc2, r1ext=0, r2ext=0,
 
 
 class test_bcsubamplicons(unittest.TestCase):
-    """Runs ``dms2_bcsubamplicons`` on test data.
+    """Runs ``dms2_bcsubamplicons`` on test data
+    
+    Use settings that tolerate of modest numbers of mutations
+    and low-quality nucleotides.
     """
+
+    # use approach here to run multiple tests:
+    # http://stackoverflow.com/questions/17260469/instantiate-python-unittest-testcase-with-arguments
+    MAXMUTS = 2
+    MINFRACCALL = 0.9
+    MINCONCUR = 0.75
 
     def setUp(self):
         """Set up input data."""
@@ -111,9 +126,9 @@ class test_bcsubamplicons(unittest.TestCase):
         random.seed(1)
         self.alignspecs = ['1,30,15,14', '31,66,12,14']
         self.bclen = 8
-        refseqlen = max([int(a.split(',')[1]) for a in self.alignspecs])
+        totrefseqlen = max([int(a.split(',')[1]) for a in self.alignspecs])
         refseq = ''.join([random.choice(dms_tools2.CODONS) for
-                i in range(refseqlen)])
+                i in range(totrefseqlen)])
         self.refseqfile = os.path.join(self.testdir, 'refseq.fasta')
         with open(self.refseqfile, 'w') as f:
             f.write('>refseq\n{0}'.format(refseq))
@@ -154,11 +169,12 @@ class test_bcsubamplicons(unittest.TestCase):
 
         self.nbarcodes = 0
         self.nbarcodesaligned = 0
-        # create some perfect barcodes with 1 to 4 reads each
+        self.nbarcodesunaligned = 0
+        # create some barcodes with 1 to 4 reads each
         self.barcodes_with_nreads = {}
-        for i in range(20):
+        for i in range(40):
             self.nbarcodes += 1
-            nperbc = random.randint(1, 3)
+            nperbc = random.randint(1, 4)
             if nperbc > 1:
                 self.nbarcodesaligned += 1
             if nperbc not in self.barcodes_with_nreads:
@@ -175,6 +191,26 @@ class test_bcsubamplicons(unittest.TestCase):
                         alignspec, bc1, bc2,
                         r1ext=r1ext, r2ext=r2ext))
 
+        # create a barcode with 3 of 4 reads concurring
+        self.barcodes_with_nreads[4] += 1
+        self.nbarcodes += 1
+        if self.MINCONCUR <= 0.75:
+            self.nbarcodesaligned += 1
+        else:
+            self.nbarcodesunaligned += 1
+        bc1 = randSeq(self.bclen)
+        bc2 = randSeq(self.bclen)
+        alignspec = random.choice(self.alignspecs)
+        (refseqstart, refseqend, r1start, r2start) = map(
+                int, alignspec.split(','))
+        refseqlen = refseqend - refseqstart + 1
+        for i in range(3):
+            reads.append(generateReadPair(refseq,
+                    alignspec, bc1, bc2))
+        reads.append(generateReadPair(refseq, alignspec,
+                bc1, bc2, r1mut=refseqlen // 2, r2mut=refseqlen // 2))
+
+        random.shuffle(reads)
         self.nreads = len(reads)
 
         # write reads files
@@ -205,7 +241,10 @@ class test_bcsubamplicons(unittest.TestCase):
                 '--refseq', self.refseqfile,
                 '--alignspecs'] + self.alignspecs + [
                 '--outdir', self.testdir,
-                '--R1', self.r1file
+                '--R1', self.r1file,
+                '--maxmuts', str(self.MAXMUTS),
+                '--minfraccall', str(self.MINFRACCALL),
+                '--minconcur', str(self.MINCONCUR),
                ] 
         sys.stderr.write('\nRunning the following command:\n{0}\n'.format(
                 ' '.join(cmds)))
@@ -240,7 +279,13 @@ class test_bcsubamplicons(unittest.TestCase):
                 bcstats.at['too few reads', 'number of barcodes'])
         self.assertEqual(self.nbarcodesaligned,
                 bcstats.at['aligned', 'number of barcodes'])
+        self.assertEqual(self.nbarcodesunaligned,
+                bcstats.at['not alignable', 'number of barcodes'])
 
+
+class test_bcsubamplicons_strictconcur(test_bcsubamplicons):
+    """Tests ``dms2_bcsubamplicons`` with stricter ``--minconcur``."""
+    MINCONCUR = 0.9
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
