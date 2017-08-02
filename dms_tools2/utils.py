@@ -255,11 +255,144 @@ def buildReadConsensus(reads, minreads, minconcur):
     return ''.join(consensus)
 
 
-def alignSubamplicons(refseq, r1, r2, refseqstart, refseqend, maxmuts):
-    """
+def reverseComplement(s):
+    """Gets reverse complement of DNA sequence `s`.
 
+    >>> s = 'ATGCAAN'
+    >>> reverseComplement(s) == 'NTTGCAT'
+    True
     """
-    assert False, 'not yet implemented'
+    return ''.join(reversed([dms_tools2.NTCOMPLEMENT[nt] for nt in s]))
+
+
+def alignSubamplicon(refseq, r1, r2, refseqstart, refseqend, maxmuts,
+        maxN, chartype):
+    """Try to align subamplicon to reference sequence at defined location.
+
+    Tries to align reads `r1` and `r2` to `refseq` at location
+    specified by `refseqstart` and `refseqend`. Determines how many
+    sites of type `chartype` have mutations, and if <= `maxmuts` conside
+    the subamplicon to align if fraction of ambiguous nucleotides <= `maxN`.
+    In `r1` and `r2`, an ``N`` indicates a non-called ambiguous identity.
+    If the reads disagree in a region of overlap that is set to ``N`` in
+    the final subamplicon, but if one read has ``N`` and the other a called
+    identity, then the called identity is used in the final subamplicon.
+
+    Args:
+        `refseq` (str)
+            Sequence to which we align. if `chartype` is 'codon',
+            must be a valid coding (length multiple of 3).
+        `r1` (str)
+            The forward sequence to align.
+        `r2` (str)
+            The reverse sequence to align. When reverse complemented,
+            should read backwards in `refseq`.
+        `refseqstart` (int)
+            The nucleotide in `refseq` (1, 2, ... numbering) where the
+            first nucleotide in `r1` aligns.
+        `refseqend` (int)
+            The nucleotide in `refseq` (1, 2, ... numbering) where the
+            first nucleotide in `r2` aligns (note that `r2` then reads
+            backwards towards the 5' end of `refseq`).
+        `maxmuts` (int)
+            Maximum number of mutations of character `chartype` that
+            are allowed in the aligned subamplicons from the two reads.
+        `maxN` (int or float)
+            Maximum number of nucleotides for which we allow
+            ambiguous (``N``) identities in final subamplicon.
+        `chartype` (str)
+            Character type for which we count mutations.
+            Currently, the only allowable value is 'codon'.
+
+    Returns:
+        If reads align, return aligned subamplicon as string (of length
+        `refseqend - refseqstart + 1`). Otherwise return `None`.
+
+    >>> refseq = 'ATGGGGAAA'
+    >>> s = alignSubamplicon(refseq, 'GGGGAA', 'TTTCCC', 3, 9, 1, 1, 'codon')
+    >>> s == 'GGGGAAA' 
+    True
+    >>> s = alignSubamplicon(refseq, 'GGGGAA', 'TTTCCC', 1, 9, 1, 1, 'codon')
+    >>> s == False
+    True
+    >>> s = alignSubamplicon(refseq, 'GGGGAT', 'TTTCCC', 3, 9, 1, 0, 'codon')
+    >>> s == False
+    True
+    >>> s = alignSubamplicon(refseq, 'GGGGAT', 'TTTCCC', 3, 9, 1, 1, 'codon')
+    >>> s == 'GGGGANA'
+    True
+    >>> s = alignSubamplicon(refseq, 'GGGGAT', 'TATCCC', 3, 9, 1, 0, 'codon')
+    >>> s == 'GGGGATA'
+    True
+    >>> s = alignSubamplicon(refseq, 'GGGGAT', 'TATCCC', 3, 9, 0, 0, 'codon')
+    >>> s == False
+    True
+    >>> s = alignSubamplicon(refseq, 'GGGNAA', 'TTTCCC', 3, 9, 0, 0, 'codon')
+    >>> s == 'GGGGAAA'
+    True
+    >>> s = alignSubamplicon(refseq, 'GGGNAA', 'TTNCCC', 3, 9, 0, 0, 'codon')
+    >>> s == 'GGGGAAA'
+    True
+    """
+    assert chartype in ['codon'], "Invalid chartype"
+    if chartype == 'codon':
+        assert len(refseq) % 3 == 0, "refseq length not divisible by 3"
+
+    r2 = reverseComplement(r2)
+
+    len_subamplicon = refseqend - refseqstart + 1
+    len_r1 = len(r1)
+    len_subamplicon_minus_len_r2 = len_subamplicon - len(r2)
+    subamplicon = []
+    for i in range(len_subamplicon):
+        if i < len_subamplicon_minus_len_r2: # site not in r2
+            if i < len_r1: # site in r1
+                subamplicon.append(r1[i])
+            else: # site not in r1
+                subamplicon.append('N')
+        else: # site in r2
+            if i < len_r1: # site in r1
+                r1i = r1[i]
+                r2i = r2[i - len_subamplicon_minus_len_r2]
+                if r1i == r2i:
+                    subamplicon.append(r1i)
+                elif r1i == 'N':
+                    subamplicon.append(r2i)
+                elif r2i == 'N':
+                    subamplicon.append(r1i)
+                else:
+                    subamplicon.append('N')
+            else: # site not in r1
+                subamplicon.append(r2[i - len_subamplicon_minus_len_r2])
+    subamplicon = ''.join(subamplicon)
+
+    if subamplicon.count('N') > maxN:
+        return False
+
+    if chartype == 'codon':
+        if refseqstart % 3 == 1:
+            startcodon = (refseqstart + 2) // 3
+            codonshift = 0
+        elif refseqstart % 3 == 2:
+            startcodon = (refseqstart + 1) // 3 + 1
+            codonshift = 2
+        elif refseqstart % 3 == 0:
+            startcodon = refseqstart // 3 + 1
+            codonshift = 1
+        nmuts = 0
+        for icodon in range(startcodon, refseqend // 3 + 1):
+            mutcodon = subamplicon[3 * (icodon - startcodon) + codonshift : 
+                    3 * (icodon - startcodon) + 3 + codonshift]
+            if ('N' not in mutcodon) and (mutcodon != 
+                    refseq[3 * icodon - 3 : 3 * icodon]):
+                nmuts += 1
+                if nmuts > maxmuts:
+                    return False
+    else:
+        raise ValueError("Invalid chartype")
+
+    return subamplicon
+
 
 
 if __name__ == '__main__':

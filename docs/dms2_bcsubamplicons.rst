@@ -104,9 +104,7 @@ The algorithm implemented by ``dms_barcodedsubamplicons`` is as follows:
 
     b. We look at the total fraction of called (non ``N``) nucleotides in the trimmed consensus for each read. If the fraction of called nucleotides is not >= ``--minfraccall`` for both reads, we do not consider this possible alignment further.
 
-    - The subamplicon alignment has no more than ``--maxmuts`` mutations relative to ``refseq`` when mutations are counted in terms of ``--chartype`` (so if ``--chartype`` is ``codon``, this is the number of **codon** mutations).
-
-   If the above criteria are met, then the identities (wildtype or mutant) are counted for each site of ``--chartype`` where the are no ambiguous nucleotides in the alignment, and this barcoded subamplicon contributes to the totals reported in the ``counts.txt`` output file. If the alignment criteria are not met, the barcode is discarded as un-alignable. Note that unless you are working with an extremely repetitive gene or specify an extremely large value of ``--maxmuts`` relative to the read length, spurious alignments should not occur. 
+    c. We then attempt to align the consensus reads at each position indicated in ``--alignspecs``. We consider an alignment acceptable if there are no more than ``--maxmuts`` mutations relative to ``refseq`` (with mutations counted in terms of character ``--chartype``) and if the fraction of called nucleotides in the aligned consensus is at least ``--minfraccall``. We take the first valid alignment that we find. But unless you are working with a very repetitive sequence or specify a very large ``--maxmuts``, there should be at most one valid alignment.
 
 
 Command-line usage

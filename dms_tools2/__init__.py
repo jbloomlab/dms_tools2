@@ -23,6 +23,7 @@ The following constants are defined for the package:
 
 `AA_TO_CODONS` : dict back-translating amino acid to list of codons.
 
+`NTCOMPLEMENT` : dict mapping each nucleotide to its complement.
 """
 
 # import package-level metadata
@@ -35,27 +36,30 @@ from ._metadata import __url__
 import Bio.Alphabet.IUPAC
 import Bio.Seq
 
-AAS = sorted([aa.upper() for aa in 
+AAS = sorted([_aa.upper() for _aa in 
         Bio.Alphabet.IUPAC.IUPACProtein.letters])
 
 AAS_WITHSTOP = AAS + ['*']
 
-NTS = sorted([nt.upper() for nt in 
+NTS = sorted([_nt.upper() for _nt in 
         Bio.Alphabet.IUPAC.IUPACUnambiguousDNA.letters])
 
-CODONS = ['{0}{1}{2}'.format(nt1, nt2, nt3) for nt1 in NTS 
-        for nt2 in NTS for nt3 in NTS]
+NTCOMPLEMENT = dict([(_nt, str(Bio.Seq.Seq(_nt).reverse_complement()))
+        for _nt in NTS] + [('N', 'N')])
 
-CODON_TO_AA = dict([(codon, str(Bio.Seq.Seq(codon).translate())) 
-        for codon in CODONS])
+CODONS = ['{0}{1}{2}'.format(_nt1, _nt2, _nt3) for _nt1 in NTS 
+        for _nt2 in NTS for _nt3 in NTS]
+
+CODON_TO_AA = dict([(_codon, str(Bio.Seq.Seq(_codon).translate())) 
+        for _codon in CODONS])
 
 AA_TO_CODONS = {}
-for aa in AAS_WITHSTOP:
-    AA_TO_CODONS[aa] = [codon for codon in CODONS if 
-            CODON_TO_AA[codon] == aa]
+for _aa in AAS_WITHSTOP:
+    AA_TO_CODONS[_aa] = [_codon for _codon in CODONS if 
+            CODON_TO_AA[_codon] == _aa]
 
 # following lines needed because list comprehension variables remain
 # in Python2 but not Python3, and we want to be compatible with both
-for var in ['aa', 'nt', 'nt1', 'nt2', 'nt3', 'codon']:
+for var in ['_aa', '_nt', '_nt1', '_nt2', '_nt3', '_codon']:
     if var in locals():
         del locals()[var]

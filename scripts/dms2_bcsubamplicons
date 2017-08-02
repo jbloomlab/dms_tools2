@@ -127,9 +127,10 @@ def main():
             assert refseqend > refseqstart, "REFSEQEND <= REFSEQSTART"
             assert refseqstart >= 0, "REFSEQSTART < 1"
             assert refseqend <= len(refseq), "REFSEQEND > len(refseq)"
+            maxN = (refseqend - refseqstart + 1) * (1 - minfraccall)
             # subtract bclen from rstart because barcode trimmed before aligning
             alignspecs.append((refseqstart, refseqend, 
-                    r1start - bclen, r2start - bclen))
+                    r1start - bclen, r2start - bclen, maxN))
 
         # set up R1 and R2 trims based on alignspecs
         trims = {} # keyed by R1, R2, values are list of trims
@@ -259,23 +260,24 @@ def main():
                         [tup[itup] for tup in bcreads],
                         args['minreads'], args['minconcur'])
 
-            for (trim, (refseqstart, refseqend, r1start, r2start) in zip(
-                    trims, alignspecs):
+            for (trim, (refseqstart, refseqend, r1start, r2start, maxN)) \
+                    in zip(trim, alignspecs):
 
                 trimconsensus = dict([consensus[r][ : trim[r]] for 
                         r in ['R1', 'R2']])
 
                 if any([c.count('N') > len(c) * (1 - args['minfraccall'])
-                        for c in trimconsensus])
+                        for c in trimconsensus]):
                     continue # insufficient called sites
 
                 if r1start > trimconsensus['R1'] or r2start > trimconsensus['R2']:
                     continue # reads to short to align
 
-                aligned = dms_tools2.utils.alignSubamplicons(refseq,
+                aligned = dms_tools2.utils.alignSubamplicon(refseq,
                         trimconsensus['R1'][r1start - 1 : ], 
                         trimconsensus['R2'][r2start - 1 : ],
-                        refseqstart, refseqend, args['maxmuts'])
+                        refseqstart, refseqend, args['maxmuts'],
+                        maxN, args['chartype'])
 
 
         if args['bcinfo']:
@@ -286,28 +288,28 @@ def main():
         counts = {}
 
 
-                        if aligned:
-                            keystring = alignedkeystring % nreads
-                            if args['barcodeinfo']:
-                                barcodeinfofile.write('BARCODE: %s\nRETAINED: yes\nDESCRIPTION: aligned from %d to %d with %d %s mutations\nCONSENSUS: R1 = %s; R2 = %s\nREADS:\n\t%s\n\n' % (barcode, refseqstart, refseqend, aligned[1], args['chartype'], r1, r2, '\n\t'.join(['R1 = %s; R2 = %s' % tup for tup in barcodes[barcode]])))
-                            break
-                    else:
-                        keystring = unalignedkeystring % nreads
-                        if args['barcodeinfo']:
-                            barcodeinfofile.write('BARCODE: %s\nRETAINED: no\nDESCRIPTION: subamplicon could not be aligned to refseq\nCONSENSUS: R1 = %s; R2 = %s\nREADS:\n\t%s\n\n' % (barcode, r1, r2, '\n\t'.join(['R1 = %s; R2 = %s' % tup for tup in barcodes[barcode]])))
-                else:
-                    if args['barcodeinfo']:
-                        barcodeinfofile.write('BARCODE: %s\nRETAINED: no\nDESCRIPTION: reads not sufficiently identical\nCONSENSUS: none\nREADS:\n\t%s\n\n' % (barcode, '\n\t'.join(['R1 = %s; R2 = %s' % tup for tup in barcodes[barcode]])))
-                    keystring = discardedkeystring % nreads
-            try:
-                n[keystring] += 1
-            except KeyError:
-                n[keystring] = 1
-                newreadcategories.append((nreads, keystring))
-            del barcodes[barcode] # free up memory as we finish with barcodes
-        newreadcategories.sort()
-        readcategories = readcategories + [tup[1] for tup in newreadcategories]
-        logger.info('Finished examining all %d barcodes\n' % ibarcode)
+#                        if aligned:
+#                            keystring = alignedkeystring % nreads
+#                            if args['barcodeinfo']:
+#                                barcodeinfofile.write('BARCODE: %s\nRETAINED: yes\nDESCRIPTION: aligned from %d to %d with %d %s mutations\nCONSENSUS: R1 = %s; R2 = %s\nREADS:\n\t%s\n\n' % (barcode, refseqstart, refseqend, aligned[1], args['chartype'], r1, r2, '\n\t'.join(['R1 = %s; R2 = %s' % tup for tup in barcodes[barcode]])))
+#                            break
+#                    else:
+#                        keystring = unalignedkeystring % nreads
+#                        if args['barcodeinfo']:
+#                            barcodeinfofile.write('BARCODE: %s\nRETAINED: no\nDESCRIPTION: subamplicon could not be aligned to refseq\nCONSENSUS: R1 = %s; R2 = %s\nREADS:\n\t%s\n\n' % (barcode, r1, r2, '\n\t'.join(['R1 = %s; R2 = %s' % tup for tup in barcodes[barcode]])))
+#                else:
+#                    if args['barcodeinfo']:
+#                        barcodeinfofile.write('BARCODE: %s\nRETAINED: no\nDESCRIPTION: reads not sufficiently identical\nCONSENSUS: none\nREADS:\n\t%s\n\n' % (barcode, '\n\t'.join(['R1 = %s; R2 = %s' % tup for tup in barcodes[barcode]])))
+#                    keystring = discardedkeystring % nreads
+#            try:
+#                n[keystring] += 1
+#            except KeyError:
+#                n[keystring] = 1
+#                newreadcategories.append((nreads, keystring))
+#            del barcodes[barcode] # free up memory as we finish with barcodes
+#        newreadcategories.sort()
+#        readcategories = readcategories + [tup[1] for tup in newreadcategories]
+#        logger.info('Finished examining all %d barcodes\n' % ibarcode)
 
         # Write the counts
         logger.info('Writing the %s counts to %s' % (args['chartype'], countsfilename))
