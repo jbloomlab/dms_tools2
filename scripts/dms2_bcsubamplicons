@@ -68,6 +68,7 @@ def main():
             'log':'.log',
             'counts':'_counts.csv',
             'readstats':'_readstats.csv',
+            'readsperbc':'_readsperbc.csv',
             'bcstats':'_bcstats.csv',
             }
     if args['bcinfo']:
@@ -222,10 +223,26 @@ def main():
                 nreads['total'], len(barcodes)))
         readstats = pandas.DataFrame(sorted(nreads.items()), columns=[
                 'category', 'number of reads']).set_index('category')
-        logger.info("Summary stats on reads:\n\t{0}".format(
+        logger.info("Summary stats on reads:\n{0}".format(
                 readstats.to_string()))
-        logger.info("Writing read stats to {0}\n".format(files['readstats']))
+        logger.info("Writing these stats to {0}\n".format(files['readstats']))
         readstats.to_csv(files['readstats'])
+
+        # collect stats on reads per barcode
+        readsperbc = {}
+        for bcreads in barcodes.values():
+            nforbc = len(bcreads)
+            if nforbc in readsperbc:
+                readsperbc[nforbc] += 1
+            else:
+                readsperbc[nforbc] = 1
+        readsperbcstats = pandas.DataFrame(sorted(readsperbc.items()),
+                columns=['number of reads', 'number of barcodes']
+                ).set_index('number of reads')
+        logger.info("Number of reads per barcode:\n{0}".format(
+                readsperbcstats.to_string()))
+        logger.info("Writing these stats to {0}\n".format(files['readsperbc']))
+        readsperbcstats.to_csv(files['readsperbc'])
 
         # now loop over barcodes and build / align subamplicons
         nbcs = {
@@ -304,9 +321,9 @@ def main():
 
         bcstats = pandas.DataFrame(sorted(nbcs.items()), columns=[
                 'category', 'number of barcodes']).set_index('category')
-        logger.info("Examined all barcodes. Summary stats:\n\t{0}".format(
+        logger.info("Examined all barcodes. Summary stats:\n{0}".format(
                 bcstats.to_string()))
-        logger.info("Writing barcode stats to {0}\n".format(files['bcstats']))
+        logger.info("Writing these stats to {0}\n".format(files['bcstats']))
         bcstats.to_csv(files['bcstats'])
 
     except:

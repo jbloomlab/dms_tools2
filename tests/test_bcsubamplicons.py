@@ -188,7 +188,7 @@ class test_bcsubamplicons(unittest.TestCase):
 
         # defines output files
         self.name = 'test'
-        files = ['readstats', 'bcstats']
+        files = ['readstats', 'bcstats', 'readsperbc']
         self.outfiles = dict([(f, '{0}/{1}_{2}.csv'.format(
                 self.testdir, self.name, f)) for f in files])
 
@@ -223,6 +223,13 @@ class test_bcsubamplicons(unittest.TestCase):
                 readstats.at['fail filter', 'number of reads'])
         self.assertEqual(self.lowQbc,
                 readstats.at['low Q barcode', 'number of reads'])
+
+        # check on reads per barcode
+        readsperbcstats = pandas.read_csv(self.outfiles['readsperbc'],
+                index_col=['number of reads'])
+        for (nreads, nbcs) in self.barcodes_with_nreads.items():
+            self.assertEqual(nbcs,
+                    readsperbcstats.at[nreads, 'number of barcodes'])
 
         # check on barcode stats
         bcstats = pandas.read_csv(self.outfiles['bcstats'], 
