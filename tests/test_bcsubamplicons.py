@@ -152,13 +152,25 @@ class test_bcsubamplicons(unittest.TestCase):
                 randSeq(self.bclen),
                 r2bclowq=1))
 
-        # some barcodes with only one read
-        self.toofewreads = 3
-        for i in range(self.toofewreads):
-            reads.append(generateReadPair(refseq,
-                    random.choice(self.alignspecs),
-                    randSeq(self.bclen), 
-                    randSeq(self.bclen)))
+        self.nbarcodes = 0
+        self.nbarcodesaligned = 0
+        # create some perfect barcodes with 1 to 4 reads each
+        self.barcodes_with_nreads = {}
+        for i in range(10):
+            self.nbarcodes += 1
+            nperbc = random.randint(1, 3)
+            if nperbc > 1:
+                self.nbarcodesaligned += 1
+            if nperbc not in self.barcodes_with_nreads:
+                self.barcodes_with_nreads[nperbc] = 1
+            else:
+                self.barcodes_with_nreads[nperbc] += 1
+            bc1 = randSeq(self.bclen)
+            bc2 = randSeq(self.bclen)
+            alignspec = random.choice(self.alignspecs)
+            for i in range(nperbc):
+                reads.append(generateReadPair(refseq,
+                        alignspec, bc1, bc2))
 
         self.nreads = len(reads)
 
@@ -212,8 +224,12 @@ class test_bcsubamplicons(unittest.TestCase):
         # check on barcode stats
         bcstats = pandas.read_csv(self.outfiles['bcstats'], 
                 index_col='category')
-        self.assertEqual(self.toofewreads,
+        self.assertEqual(self.nbarcodes,
+                bcstats.at['total', 'number of barcodes'])
+        self.assertEqual(self.barcodes_with_nreads[1],
                 bcstats.at['too few reads', 'number of barcodes'])
+        self.assertEqual(self.nbarcodesaligned,
+                bcstats.at['aligned', 'number of barcodes'])
 
 
 if __name__ == '__main__':
