@@ -192,7 +192,7 @@ def main():
                     maxtrim['R1'], maxtrim['R2']):
 
             nreads['total'] += 1
-            if nreads['total'] % 1e5 == 0:
+            if nreads['total'] % 5e5 == 0:
                 logger.info("Reads parsed so far: {0}".format(nreads['total']))
 
             if args['purgeread']:
@@ -284,7 +284,7 @@ def main():
 
         for (ibc, (bc, bcreads)) in enumerate(barcodes.items()):
 
-            if ibc % 1e5 == 0:
+            if ibc % 2e5 == 0:
                 logger.info("Barcodes examined so far: {0}".format(ibc))
 
             if len(bcreads) < args['minreads']:
