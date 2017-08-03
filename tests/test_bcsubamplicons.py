@@ -26,8 +26,9 @@ def randSeq(n, num_N=0):
 
 
 def generateReadPair(refseq, alignspec, bc1, bc2, r1ext=0, r2ext=0,
-        minq=15, r1lowq=0, r2lowq=0, r1bclowq=0, r2bclowq=0, r1mut=0,
-        r2mut=0, r1fail=False, r2fail=False, rname='simulatedread'):
+        minq=15, r1lowq=0, r2lowq=0, r1bclowq=0, r2bclowq=0, 
+        r1mut=0, r2mut=0, r1extmut=0, r2extmut=0,
+        r1fail=False, r2fail=False, rname='simulatedread'):
     """Generates a pair of FASTQ reads.
 
     Args:
@@ -38,15 +39,17 @@ def generateReadPair(refseq, alignspec, bc1, bc2, r1ext=0, r2ext=0,
         `bc1`, `bc2` (str)
             R1 and R2 barcodes
         `r1ext`, `r2ext` (int)
-            How many codons does R1 / R2 extend past center of subamplicon?
+            How many nucleotides R1 / R2 extend past center of subamplicon
         `minq` (int)
             Q scores < this are low quality
         `r1lowq`, `r2lowq` (int)
-            How many low quality codons in R1 / R2?
+            How many low quality nucleotides in R1 / R2?
         `r1bclowq`, `r2bclowq` (int)
-            How many low quality codons in R1 / R2 barcode?
+            How many low quality nucleotide in R1 / R2 barcode?
         `r1mut`, `r2mut` (int)
-            How many codon mutations in R1 / R2 before amplicon center?
+            How many nucleotide mutations in R1 / R2 before amplicon center?
+        `r1extmut`, `r2extmut` (int)
+            How many nucleotide mutations in R1 / R2 extensions.
         `r1fail`, `r2fail` (bool)
             Does R1 / R2 fail the quality filter?
         `rname` (str)
@@ -63,11 +66,15 @@ def generateReadPair(refseq, alignspec, bc1, bc2, r1ext=0, r2ext=0,
 
     # first create "perfect" R1 and R2, then add mutations
     r1 = list(refseq[refseqstart - 1 : 
-            refseqstart - 1 + refseqlen // 2 + 3 * r1ext])
-    r2 = list(refseq[refseqend - refseqlen // 2 - 3 * r2ext : refseqend])
-    for i in random.sample(range(len(r1)), r1mut):
+            refseqstart - 1 + refseqlen // 2 + r1ext])
+    r2 = list(refseq[refseqend - refseqlen // 2 - r2ext : refseqend])
+    for i in random.sample(range(len(r1) - r1ext), r1mut):
         r1[i] = random.choice([nt for nt in dms_tools2.NTS if nt != r1[i]])
-    for i in random.sample(range(len(r2)), r2mut):
+    for i in random.sample(range(len(r2) - r2ext), r2mut):
+        r2[i] = random.choice([nt for nt in dms_tools2.NTS if nt != r2[i]])
+    for i in random.sample(range(len(r1) - r1ext, len(r1)), r1extmut):
+        r1[i] = random.choice([nt for nt in dms_tools2.NTS if nt != r1[i]])
+    for i in random.sample(range(len(r2) - r2ext, len(r2)), r2extmut):
         r2[i] = random.choice([nt for nt in dms_tools2.NTS if nt != r2[i]])
     r1 = ''.join(r1)
     r2 = ''.join(r2)
@@ -101,6 +108,7 @@ def generateReadPair(refseq, alignspec, bc1, bc2, r1ext=0, r2ext=0,
             '{0}\n{1}\n+\n{2}\n'.format(name2, r2, q2))
 
 
+
 class test_bcsubamplicons(unittest.TestCase):
     """Runs ``dms2_bcsubamplicons`` on test data
     
@@ -121,7 +129,6 @@ class test_bcsubamplicons(unittest.TestCase):
         self.testdir = os.path.join(
                 os.path.abspath(os.path.dirname(__file__)),
                 './test_bcsubamplicons_files/')
-
         if not os.path.isdir(self.testdir):
             os.mkdir(self.testdir)
 
@@ -130,7 +137,7 @@ class test_bcsubamplicons(unittest.TestCase):
         self.alignspecs = ['1,30,15,14', '31,66,12,14']
         self.bclen = 8
         totrefseqlen = max([int(a.split(',')[1]) for a in self.alignspecs])
-        refseq = ''.join([random.choice(dms_tools2.CODONS) for
+        refseq = ''.join([random.choice(dms_tools2.NTS) for
                 i in range(totrefseqlen)])
         self.refseqfile = os.path.join(self.testdir, 'refseq.fasta')
         with open(self.refseqfile, 'w') as f:
@@ -259,7 +266,8 @@ class test_bcsubamplicons(unittest.TestCase):
         self.nreads = len(reads)
 
         # write reads files
-        self.r1file = os.path.join(self.testdir, 'reads_R1.fastq.gz')
+        self.r1file = os.path.join(self.testdir, 
+                '{0}_reads_R1.fastq.gz'.format(self.NAME))
         self.r2file = self.r1file.replace('_R1', '_R2')
         with gzip.open(self.r1file, 'wt') as f1, \
                 gzip.open(self.r2file, 'wt') as f2:
@@ -344,6 +352,96 @@ class test_bcsubamplicons_strictminfraccall(test_bcsubamplicons):
     """Tests ``dms2_bcsubamplicons`` with stricter ``--minfraccall``."""
     MINFRACCALL = 1.0
     NAME = 'test-minfraccall'
+
+
+class test_bcsubamplicons_trimreads(unittest.TestCase):
+
+    def setUp(self):
+        """Set up input data."""
+
+        self.testdir = os.path.join(
+                os.path.abspath(os.path.dirname(__file__)),
+                './test_bcsubamplicons_files/')
+        if not os.path.isdir(self.testdir):
+            os.mkdir(self.testdir)
+
+        self.name = 'test-trim'
+
+        # define alignment positions, barcode length, and refseq
+        random.seed(1)
+        self.alignspecs = ['1,30,15,14', '31,66,12,14']
+        self.bclen = 8
+        totrefseqlen = max([int(a.split(',')[1]) for a in self.alignspecs])
+        refseq = ''.join([random.choice(dms_tools2.NTS) for
+                i in range(totrefseqlen)])
+        self.refseqfile = os.path.join(self.testdir, 'refseq.fasta')
+        with open(self.refseqfile, 'w') as f:
+            f.write('>refseq\n{0}'.format(refseq))
+
+        # generate reads for each alignspec that need trimming
+        reads = []
+        r1ext = 6
+        r2ext = 9
+        for alignspec in self.alignspecs:
+            bc1 = randSeq(self.bclen)
+            bc2 = randSeq(self.bclen)
+            r = generateReadPair(refseq, alignspec, bc1, bc2,
+                    r1ext=r1ext, r2ext=r2ext, r1extmut=2, r2extmut=2)
+            reads += [r, r]
+
+        # write reads files
+        self.r1file = os.path.join(self.testdir, 
+                '{0}_reads_R1.fastq.gz'.format(self.name))
+        self.r2file = self.r1file.replace('_R1', '_R2')
+        with gzip.open(self.r1file, 'wt') as f1, \
+                gzip.open(self.r2file, 'wt') as f2:
+            for (r1, r2) in reads:
+                f1.write(r1)
+                f2.write(r2)
+
+    def test_dms2_bcsubamplicons(self):
+        """Runs ``dms2_bcsubamplicons`` on test data +/- trimming."""
+       
+        fullr1trim = []
+        fullr2trim = []
+        for alignspec in self.alignspecs:
+            (refseqstart, refseqend, r1start, r2start) = map(
+                    int, alignspec.split(','))
+            alignlen = refseqend - refseqstart + 1
+            fullr1trim.append(str(r1start + alignlen // 2 - 1))
+            fullr2trim.append(str(r2start + alignlen // 2 - 1))
+
+        for (r1trim, r2trim, aligned, unaligned, desc) in [
+                (['300'], ['300'], 0, len(self.alignspecs), 'notrim'),
+                (fullr1trim, fullr2trim, 0, len(self.alignspecs), 'trim')
+                ]:
+            name = '{0}-{1}'.format(self.name, desc)
+            cmds = [
+                    'dms2_bcsubamplicons',
+                    '--name', name,
+                    '--refseq', self.refseqfile,
+                    '--alignspecs'] + self.alignspecs + [
+                    '--outdir', self.testdir,
+                    '--R1', self.r1file,
+                    '--maxmuts', '0',
+                    '--minfraccall', '1.0',
+                    '--R1trim'] + r1trim + [
+                    '--R2trim'] + r2trim
+            sys.stderr.write('\nRunning:\n{0}\n'.format(
+                    ' '.join(cmds)))
+            subprocess.check_call(cmds)
+
+            # check on barcode stats
+            bcstatsfile = '{0}/{1}_bcstats.csv'.format(
+                    self.testdir, name)
+            bcstats = pandas.read_csv(bcstatsfile, index_col='category') 
+            self.assertEqual(max(aligned, unaligned),
+                    bcstats.at['total', 'number of barcodes'])
+            self.assertEqual(aligned,
+                    bcstats.at['aligned', 'number of barcodes'])
+            self.assertEqual(unaligned,
+                    bcstats.at['not alignable', 'number of barcodes'])
+
 
 
 if __name__ == '__main__':
