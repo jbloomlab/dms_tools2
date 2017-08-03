@@ -319,6 +319,8 @@ def main():
                             consensus=subamplicon, desc='aligned at '
                             'position {0}'.format(refseqstart)))
                     nbcs['aligned'] += 1
+                    dms_tools2.utils.incrementCounts(refseqstart,
+                            subamplicon, args['chartype'], counts)
                     break
 
             else: # read did not align

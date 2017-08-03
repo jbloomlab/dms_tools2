@@ -403,6 +403,74 @@ def alignSubamplicon(refseq, r1, r2, refseqstart, refseqend, maxmuts,
     return subamplicon
 
 
+def incrementCounts(refseqstart, subamplicon, chartype, counts):
+    """Increment counts dict based on an aligned subamplicon.
+
+    This is designed for keeping track of counts of different
+    mutations / identities when aligning many subamplicons to
+    a sequence.
+
+    Any positions where `subamplicon` has an ``N`` are ignored,
+    and not added to `counts`.
+
+    Args:
+        `refseqstart` (int)
+            First nucleotide position in 1, 2, ... numbering 
+            where `subamplicon` aligns.
+        `subamplicon` (str)
+            The subamplicon.
+        `chartype` (str)
+            Character type for which we are counting mutations.
+            Currently, only allowable value is 'codon'.
+        `counts` (dict)
+            Stores counts of identities, and is incremented by
+            this function. Is a dict keyed by every possible
+            character (e.g., codon), with values lists with
+            element `i` holding the counts for position `i`
+            in 0, 1, ... numbering.
+
+    Returns:
+        On completion, `counts` has been incremented.
+
+    >>> codonlen = 10
+    >>> counts = dict([(codon, [0] * codonlen) for codon 
+    ...         in dms_tools2.CODONS])
+    >>> subamplicon1 = 'ATGGACTTTC'
+    >>> incrementCounts(1, subamplicon1, 'codon', counts)
+    >>> subamplicon2 = 'GGTCTTTCCCGGN'
+    >>> incrementCounts(3, subamplicon2, 'codon', counts)
+    >>> counts['ATG'][0] == 1
+    True
+    >>> counts['GAC'][1] == 1
+    True
+    >>> counts['GTC'][1] == 1
+    True
+    >>> counts['TTT'][2] == 2
+    True
+    >>> counts['CCC'][3] == 1
+    True
+    >>> sum([sum(c) for c in counts.values()]) == 6
+    True
+    """
+    if chartype == 'codon':
+        if refseqstart % 3 == 1:
+            startcodon = (refseqstart + 2) // 3 - 1
+            codonshift = 0
+        elif refseqstart % 3 == 2:
+            startcodon = (refseqstart + 1) // 3 
+            codonshift = 2
+        elif refseqstart % 3 == 0:
+            startcodon = refseqstart // 3 
+            codonshift = 1
+    else:
+        raise ValueError("Invalid chartype")
+
+    shiftedsubamplicon = subamplicon[codonshift : ]
+    for i in range(len(shiftedsubamplicon) // 3):
+        codon = shiftedsubamplicon[3 * i : 3 * i + 3]
+        if 'N' not in codon:
+            counts[codon][startcodon + i] += 1
+
 
 if __name__ == '__main__':
     import doctest
