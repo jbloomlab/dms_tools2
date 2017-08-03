@@ -78,16 +78,17 @@ def generateReadPair(refseq, alignspec, bc1, bc2, r1ext=0, r2ext=0,
             dms_tools2.utils.reverseComplement(r2)
 
     # create Q scores
+    assert minq > 2, "2 assumed low quality"
     q1 = [chr(random.randint(minq, 40) + 33) for i in range(len(r1))]
     for i in random.sample(range(len(bc1)), r1bclowq):
-        q1[i] = chr(random.randint(2, minq - 1))
+        q1[i] = chr(2 + 33)
     for i in random.sample(range(refseqlen // 2), r1lowq):
-        q1[i + r1start - 1] = chr(random.randint(2, minq - 1))
+        q1[i + r1start - 1] = chr(2 + 33)
     q2 = [chr(random.randint(minq, 40) + 33) for i in range(len(r2))]
     for i in random.sample(range(len(bc2)), r2bclowq):
-        q2[i] = chr(random.randint(2, minq - 1))
+        q2[i] = chr(2 + 33)
     for i in random.sample(range(refseqlen // 2), r2lowq):
-        q2[i + r2start - 1] = chr(random.randint(2, minq - 1))
+        q2[i + r2start - 1] = chr(2 + 33)
     q1 = ''.join(q1)
     q2 = ''.join(q2)
 
@@ -258,7 +259,7 @@ class test_bcsubamplicons(unittest.TestCase):
         self.nreads = len(reads)
 
         # write reads files
-        self.r1file = os.path.join(self.testdir, 'read_R1.fastq.gz')
+        self.r1file = os.path.join(self.testdir, 'reads_R1.fastq.gz')
         self.r2file = self.r1file.replace('_R1', '_R2')
         with gzip.open(self.r1file, 'wt') as f1, \
                 gzip.open(self.r2file, 'wt') as f2:
