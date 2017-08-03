@@ -59,10 +59,11 @@ def generateReadPair(refseq, alignspec, bc1, bc2, r1ext=0, r2ext=0,
         The tuple `(r1, r2)` which are each a FASTQ block (4 lines)
         for that read.
     """
-    (refseqstart, refseqend, r1start, r2start) = map(int, alignspec.split(','))
+    (refseqstart, refseqend, r1start, r2start) = map(int, 
+            alignspec.split(','))
     refseqlen = refseqend - refseqstart + 1
     assert refseqlen % 3 == 0
-    assert (refseqlen // 3) % 2 == 0, "not even number of codons in subamplicon"
+    assert (refseqlen // 3) % 2 == 0, "odd number of codons"
 
     # first create "perfect" R1 and R2, then add mutations
     r1 = list(refseq[refseqstart - 1 : 
@@ -74,7 +75,7 @@ def generateReadPair(refseq, alignspec, bc1, bc2, r1ext=0, r2ext=0,
         r2[i] = random.choice([nt for nt in dms_tools2.NTS if nt != r2[i]])
     for i in random.sample(range(len(r1) - r1ext, len(r1)), r1extmut):
         r1[i] = random.choice([nt for nt in dms_tools2.NTS if nt != r1[i]])
-    for i in random.sample(range(len(r2) - r2ext, len(r2)), r2extmut):
+    for i in random.sample(range(0, r2ext), r2extmut):
         r2[i] = random.choice([nt for nt in dms_tools2.NTS if nt != r2[i]])
     r1 = ''.join(r1)
     r2 = ''.join(r2)
@@ -139,7 +140,8 @@ class test_bcsubamplicons(unittest.TestCase):
         totrefseqlen = max([int(a.split(',')[1]) for a in self.alignspecs])
         refseq = ''.join([random.choice(dms_tools2.NTS) for
                 i in range(totrefseqlen)])
-        self.refseqfile = os.path.join(self.testdir, 'refseq.fasta')
+        self.refseqfile = '{0}/{1}_refseq.fasta'.format(self.testdir,
+                self.NAME)
         with open(self.refseqfile, 'w') as f:
             f.write('>refseq\n{0}'.format(refseq))
 
@@ -374,7 +376,8 @@ class test_bcsubamplicons_trimreads(unittest.TestCase):
         totrefseqlen = max([int(a.split(',')[1]) for a in self.alignspecs])
         refseq = ''.join([random.choice(dms_tools2.NTS) for
                 i in range(totrefseqlen)])
-        self.refseqfile = os.path.join(self.testdir, 'refseq.fasta')
+        self.refseqfile = '{0}/{1}_refseq.fasta'.format(self.testdir,
+                self.name)
         with open(self.refseqfile, 'w') as f:
             f.write('>refseq\n{0}'.format(refseq))
 
@@ -386,7 +389,7 @@ class test_bcsubamplicons_trimreads(unittest.TestCase):
             bc1 = randSeq(self.bclen)
             bc2 = randSeq(self.bclen)
             r = generateReadPair(refseq, alignspec, bc1, bc2,
-                    r1ext=r1ext, r2ext=r2ext, r1extmut=2, r2extmut=2)
+                    r1ext=r1ext, r2ext=r2ext, r1extmut=2, r2extmut=3)
             reads += [r, r]
 
         # write reads files
@@ -413,7 +416,7 @@ class test_bcsubamplicons_trimreads(unittest.TestCase):
 
         for (r1trim, r2trim, aligned, unaligned, desc) in [
                 (['300'], ['300'], 0, len(self.alignspecs), 'notrim'),
-                (fullr1trim, fullr2trim, 0, len(self.alignspecs), 'trim')
+                (fullr1trim, fullr2trim, len(self.alignspecs), 0, 'trim')
                 ]:
             name = '{0}-{1}'.format(self.name, desc)
             cmds = [
@@ -425,6 +428,7 @@ class test_bcsubamplicons_trimreads(unittest.TestCase):
                     '--R1', self.r1file,
                     '--maxmuts', '0',
                     '--minfraccall', '1.0',
+                    '--bcinfo',
                     '--R1trim'] + r1trim + [
                     '--R2trim'] + r2trim
             sys.stderr.write('\nRunning:\n{0}\n'.format(
@@ -441,6 +445,13 @@ class test_bcsubamplicons_trimreads(unittest.TestCase):
                     bcstats.at['aligned', 'number of barcodes'])
             self.assertEqual(unaligned,
                     bcstats.at['not alignable', 'number of barcodes'])
+
+            # check on counts at each site
+            countsfile = '{0}/{1}_codoncounts.csv'.format(
+                    self.testdir, name)
+            counts = pandas.read_csv(countsfile).set_index('site')
+            self.assertTrue((int(bool(aligned)) == 
+                    counts[dms_tools2.CODONS].sum(axis=1)).all())
 
 
 
