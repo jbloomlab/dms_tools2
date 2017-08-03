@@ -73,8 +73,8 @@ def main():
             }
     if args['bcinfo']:
         filesuffixes['bcinfo'] = '_bcinfo.txt.gz'
-    files = dict([(f, '{0}/{1}{2}'.format(args['outdir'], args['name'], s))
-            for (f, s) in filesuffixes.items()])
+    files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
+            args['name'], s))) for (f, s) in filesuffixes.items()])
 
     # do we need to proceed?
     if args['use_existing'] and all(map(os.path.isfile, files.values())):
