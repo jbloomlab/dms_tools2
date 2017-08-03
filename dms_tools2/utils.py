@@ -235,12 +235,13 @@ def buildReadConsensus(reads, minreads, minconcur):
     >>> buildReadConsensus(reads, 2, 0.75) == 'NTGCATAT'
     True
     """
-    maxlen = max(map(len, reads))
+    readlens = list(map(len, reads))
+    maxlen = max(readlens)
     consensus = []
     for i in range(maxlen):
         counts = {}
-        for r in reads:
-            if len(r) > i:
+        for (r, lenr) in zip(reads, readlens):
+            if lenr > i:
                 x = r[i]
                 if x != 'N':
                     if x in counts:
