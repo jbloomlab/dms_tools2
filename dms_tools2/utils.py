@@ -150,6 +150,10 @@ def iteratePairedFASTQ(r1files, r2files, r1trim=None, r2trim=None):
             id2 = id2.split()
             name1 = id1[0]
             name2 = id2[0]
+            # next check trims last two chars, need for SRA downloaded files
+            if name1[-2 : ] == '.1' and name2[-2 : ] == '.2':
+                name1 = name1[ : -2]
+                name2 = name2[ : -2]
             assert name1 == name2, "{0} vs {1}".format(name1, name2)
             # parse chastity filter assuming CASAVA 1.8 header
             fail = None
