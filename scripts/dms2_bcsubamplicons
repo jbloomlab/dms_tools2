@@ -66,7 +66,7 @@ def main():
         args['outdir'] = ''
     filesuffixes = {
             'log':'.log',
-            'counts':'_counts.csv',
+            'counts':'_{0}counts.csv'.format(args['chartype']),
             'readstats':'_readstats.csv',
             'readsperbc':'_readsperbc.csv',
             'bcstats':'_bcstats.csv',
@@ -131,7 +131,7 @@ def main():
             assert refseqstart >= 0, "REFSEQSTART < 1"
             assert refseqend <= len(refseq), "REFSEQEND > len(refseq)"
             maxN = (refseqend - refseqstart + 1) * (1 - args['minfraccall'])
-            # subtract bclen from rstart because barcode trimmed before aligning
+            # subtract bclen because barcode trimmed before aligning
             alignspecs.append((refseqstart, refseqend, 
                     r1start - bclen, r2start - bclen, maxN))
 
@@ -167,7 +167,7 @@ def main():
                 r2files.append(r1.replace('_R1', '_R2'))
         else:
             r2files = args['R2']
-            assert len(r1files) == len(r2files), "R1 and R2 must be same length"
+            assert len(r1files) == len(r2files), "R1 and R2 not same length"
         assert all(map(os.path.isfile, r2files)), "Missing R2 files"
         logger.info("Reads are in these FASTQ pairs:\n\t{0}\n".format(
                 '\n\t'.join(['{0} and {1}'.format(r1, r2) for (r1, r2) in
@@ -265,8 +265,19 @@ def main():
                     nbcs['purged'], nbcs['total'], 
                     nbcs['purged'] / float(nbcs['total']) * 100))
 
-        logger.info('Examining the {0} barcodes to see if they can be used '
-                'to build alignable subamplicons...'.format(len(barcodes)))
+        logger.info('Examining the {0} barcodes to build and align '
+                'subamplicons...'.format(len(barcodes)))
+
+        counts = {} # dictionary to hold codon counts
+        if args['chartype'] == 'codon':
+            nsites = len(refseq) // 3
+            counts['site'] = list(range(1, nsites + 1))
+            counts['wildtype'] = [refseq[3 * i : 3 * i + 3] 
+                    for i in range(nsites)]
+            for codon in dms_tools2.CODONS:
+                counts[codon] = [0] * nsites
+        else:
+            raise ValueError("Invalid chartype")
 
         if args['bcinfo']:
             bcinfofile = gzip.open(files['bcinfo'], 'wt')
@@ -325,6 +336,12 @@ def main():
                 bcstats.to_string()))
         logger.info("Writing these stats to {0}\n".format(files['bcstats']))
         bcstats.to_csv(files['bcstats'])
+
+        counts = pandas.DataFrame.from_dict(counts).set_index('site')[
+                ['wildtype'] + dms_tools2.CODONS]
+        logger.info("Writing the counts of each {0} identity at each "
+                "site to {1}\n".format(args['chartype'], files['counts']))
+        counts.to_csv(files['counts'])
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))
