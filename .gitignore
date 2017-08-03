@@ -7,7 +7,6 @@
 !.gitignore
 !.travis.yml
 docs/_build/
-docs/_static/
 docs/_template/
 build/
 *.sbatch

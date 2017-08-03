@@ -104,7 +104,16 @@ html_theme = 'alabaster'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+        'logo':'BloomLogo.jpg',
+        'logo_name':'true',
+        'description':'Tools for analyzing deep mutational scanning data.',
+        'github_button':'true',
+        'github_user':'jbloomlab',
+        'github_repo':'dms_tools2',
+        'github_banner':'true',
+        'travis_button':'true',
+        }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

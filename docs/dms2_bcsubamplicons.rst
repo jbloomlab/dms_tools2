@@ -60,25 +60,14 @@ Briefly, the steps are as follows:
 
     5) The FASTQ files are analyzed with ``dms2_bcsubamplicons``. For the example here, the command might be::
 
-        dms_barcodedsubamplicons WSN_HA_ WSN-HA.fasta R1.fastq.gz R2.fastq.gz 1,426,36,38 427,849,32,32 850,1275,31,37 1276,1698,46,45
+        dms2_bcsubamplicons --name WSN-HA --refseq WSN-HA.fasta --R1 R1_L*.fastq.gz --alignspecs 1,426,36,38 427,849,32,32 850,1275,31,37 1276,1698,46,45 --R1trim 200 --R2trim 170
 
-       The meanings of the arguments are detailed in the `Command-line usage`_. Briefly:
+       The meanings of the arguments are detailed in the `Command-line usage`_. 
 
-        - ``WSN_HA_`` is the prefix attached to the created output files. 
-
-        - ``WSN-HA.fasta`` should be the name of a FASTA file containing the part of the gene that we are sequencing. In this example, it would be **only** the capitalized portion of the sequence shown above (as the lowercase parts are simply flanking sequences for primer binding). For instance, here is such a file::
-
-            >WSN HA coding sequence 
-            ATGAAGGCAAAACTACTGGTCCTGTTATATGCATTTGTAGCTACAGATGCAGACACAATATGTATAGGCTACCATGCGAACAACTCAACCGACACTGTTGACACAATACTCGAGAAGAATGTGGCAGTGACACATTCTGTTAACCTGCTCGAAGACAGCCACAACGGGAAACTATGTAAATTAAAAGGAATAGCCCCACTACAATTGGGGAAATGTAACATCACCGGATGGCTCTTGGGAAATCCAGAATGCGACTCACTGCTTCCAGCGAGATCATGGTCCTACATTGTAGAAACACCAAACTCTGAGAATGGAGCATGTTATCCAGGAGATCTCATCGACTATGAGGAACTGAGGGAGCAATTGAGCTCAGTATCATCATTAGAAAGATTCGAAATATTTCCCAAGGAAAGTTCATGGCCCAACCACACATTCAACGGAGTAACAGTATCATGCTCCCATAGGGGAAAAAGCAGTTTTTACAGAAATTTGCTATGGCTGACGAAGAAGGGGGATTCATACCCAAAGCTGACCAATTCCTATGTGAACAATAAAGGGAAAGAAGTCCTTGTACTATGGGGTGTTCATCACCCGTCTAGCAGTGATGAGCAACAGAGTCTCTATAGTAATGGAAATGCTTATGTCTCTGTAGCGTCTTCAAATTATAACAGGAGATTCACCCCGGAAATAGCTGCAAGGCCCAAAGTAAGAGATCAACATGGGAGGATGAACTATTACTGGACCTTGCTAGAACCCGGAGACACAATAATATTTGAGGCAACTGGTAATCTAATAGCACCATGGTATGCTTTCGCACTGAGTAGAGGGTTTGAGTCCGGCATCATCACCTCAAACGCGTCAATGCATGAGTGTAACACGAAGTGTCAAACACCCCAGGGAGCTATAAACAGCAATCTCCCTTTCCAGAATATACACCCAGTCACAATAGGAGAGTGCCCAAAATATGTCAGGAGTACCAAATTGAGGATGGTTACAGGACTAAGAAACATCCCATCCATTCAATACAGAGGTCTATTTGGAGCCATTGCTGGTTTTATTGAGGGGGGATGGACTGGAATGATAGATGGATGGTATGGTTATCATCATCAGAATGAACAGGGATCAGGCTATGCAGCGGATCAAAAAAGCACACAAAATGCCATTAACGGGATTACAAACAAGGTGAACTCTGTTATCGAGAAAATGAACACTCAATTCACAGCTGTGGGTAAAGAATTCAACAACTTAGAAAAAAGGATGGAAAATTTAAATAAAAAAGTTGATGATGGGTTTCTGGACATTTGGACATATAATGCAGAATTGTTAGTTCTACTGGAAAATGAAAGGACTTTGGATTTCCATGACTTAAATGTGAAGAATCTGTACGAGAAAGTAAAAAGCCAATTAAAGAATAATGCCAAAGAAATCGGAAATGGGTGTTTTGAGTTCTACCACAAGTGTGACAATGAATGCATGGAAAGTGTAAGAAATGGGACTTATGATTATCCAAAATATTCAGAAGAATCAAAGTTGAACAGGGAAAAGATAGATGGAGTGAAATTGGAATCAATGGGGGTGTATCAGATTCTGGCGATCTACTCAACTGTCGCCAGTTCACTGGTGCTTTTGGTCTCCCTGGGGGCAATCAGTTTCTGGATGTGTTCTAATGGGTCTTTGCAGTGCAGAATATGCATCTGA
-
-        - ``R1.fasta.gz`` and ``R2.fastq.gz`` are the FASTQ files with the R1 and R2 reads.
-
-        - The remaining arguments specify where the subamplicons might align.
-          For instance, ``1,426,36,38`` means that for the first subamplicon, the first sequenced nucleotide (first one outside primer binding site) aligns to nucleotide 1 of the reference sequence in ``WSN-HA.fasta``, the last sequence nucleotide aligns to nucleotide 426 of the reference sequence, the first nucleotide in R1 that we want to consider in the alignment is site 36 (there is an 8 nucleotide barcode plus a 27-nucleotide primer-binding site), and the first nucleotide in R2 that we want to consider in the alignment is site 38 (there is an 8-nucleotide barcode plus a 29-nucleotide primer-binding site). The arguments ``427,849,32,32``, ``850,1275,31,37``, and ``1276,1698,46,45`` are the similar specifications for the other three subamplicons.
 
 Algorithm for assembling and aligning subamplicons
 ----------------------------------------------------
-The algorithm implemented by ``dms_barcodedsubamplicons`` is as follows:
+The algorithm implemented by ``dms2_bcsubamplicons`` is as follows:
 
 1) Read pairs are discarded if either read fails the Illumina chastity filter.
 
@@ -104,6 +93,9 @@ The algorithm implemented by ``dms_barcodedsubamplicons`` is as follows:
 
     b. We then attempt to align the consensus reads at each position indicated in ``--alignspecs``. We consider an alignment acceptable if there are no more than ``--maxmuts`` mutations relative to ``refseq`` (with mutations counted in terms of character ``--chartype``) and if the fraction of called nucleotides in the aligned consensus is at least ``--minfraccall``. We take the first valid alignment that we find. But unless you are working with a very repetitive sequence or specify a very large ``--maxmuts``, there should be at most one valid alignment.
 
+8) For each aligned subamplicon, we count the identities at each site. We call an identity if at least ``--minreads`` reads with non-ambiguous identities span that site, and at least ``--minconcur`` of these agree on the identity. If both reads span a site and they disagree, we call that site as ``N``.
+
+9) The results are reported in the `Output files`_.
 
 Command-line usage
 ---------------------
@@ -135,7 +127,7 @@ Command-line usage
 
     If you specify one number, then **all** R1 reads are trimmed to this length. If you specify a list of numbers equal to the entries for ``--alignspecs``, then each read is trimmed differently depending on which subamplicon it aligns to.
 
-    Note that the trimming is done to the initial read, and so the trimming length includes the barcode, the primer binding site, and then the part of the read that provides useful sequence information.
+    Note that the trimming is done to the initial read, and so the trimmed length specifies here includes the barcode, the primer binding site, and then the part of the read that provides useful sequence information.
 
    \-\-chartype
     If ``chartype`` is ``codon`` then ``--refseq`` must provide a valid coding sequence (length a multiple of 3).
@@ -151,54 +143,93 @@ Command-line usage
 
 Output files
 --------------
-The formats of the output files are given below in terms of the file suffix that is appended to ``--outprefix``. The data in the first two output files (``counts.txt`` and ``summarystats.txt``) can be used as input to :ref:`dms_summarizealignments` to make plots that summarize the results for several samples.
+The program produces a variety of output files. 
+These files all have the prefix specified by ``--outdir`` and ``--name``.
+For instance, if you use ``--outdir results --name sample-1``, then the output files will have the prefix ``./results/sample-1`` and the suffixes described below.
 
-* ``counts.txt`` : This file gives the counts of the different characters of ``--chartype`` in the :ref:`dms_counts` format. So if ``--chartype`` is ``codon``, then these will be the counts of codon identities. Note that files in :ref:`dms_counts` format can be used directly as input to programs like :ref:`dms_inferprefs` and :ref:`dms_inferdiffprefs`.
+Here are the specific output files:
 
-* ``summarystats.txt`` : This text file summarizes the numbers of reads and barcodes parsed. For instance, here is an example::
+Log file
++++++++++++
+This file has the suffix ``.log``. 
+It is a text file that logs the progress of the program.
 
-    total read pairs = 4580258
-    read pairs that fail Illumina filter = 0
-    low quality read pairs = 915131
-    barcodes randomly purged = 0
-    discarded barcodes with 1 reads = 844768
-    aligned barcodes with 2 reads = 466387
-    discarded barcodes with 2 reads = 6457
-    un-alignable barcodes with 2 reads = 40753
-    aligned barcodes with 3 reads = 262149
-    discarded barcodes with 3 reads = 5426
-    un-alignable barcodes with 3 reads = 24891
-    aligned barcodes with 4 reads = 120828
-    discarded barcodes with 4 reads = 3281
-    un-alignable barcodes with 4 reads = 7675
-    aligned barcodes with 5 reads = 45342
-    discarded barcodes with 5 reads = 1516
-    un-alignable barcodes with 5 reads = 2863
-    aligned barcodes with 6 reads = 14545
-    discarded barcodes with 6 reads = 577
-    un-alignable barcodes with 6 reads = 934
-    aligned barcodes with 7 reads = 4060
-    discarded barcodes with 7 reads = 203
-    un-alignable barcodes with 7 reads = 243
-    aligned barcodes with 8 reads = 996
-    discarded barcodes with 8 reads = 65
-    un-alignable barcodes with 8 reads = 52
-    aligned barcodes with 9 reads = 250
-    discarded barcodes with 9 reads = 20
-    un-alignable barcodes with 9 reads = 11
-    aligned barcodes with 10 reads = 51
-    discarded barcodes with 10 reads = 3
-    un-alignable barcodes with 10 reads = 3
-    aligned barcodes with 11 reads = 10
-    discarded barcodes with 11 reads = 1
-    aligned barcodes with 12 reads = 2
+Read statistics file
+++++++++++++++++++++++
+This file has the suffix ``_readstats.csv``. 
+It gives the statistics on all the processed reads. 
+For instance::
 
-* ``.log`` : This is a text file that logs the progress of the program.
+    category,number of reads
+    fail filter,0
+    low Q barcode,791246
+    total,12607196
 
-* ``barcodeinfo.txt.gz`` : This file is only created if the ``--barcodeinfo`` option is used. It gives all barcodes, their associated reads (after trimming the 5' barcode and any 3' sequence that extends beyond the maximal ``--R1trim`` / ``--R2trim``), and an explanation of whether or not the barcoded consensus sequence was successfully aligned to subamplicons.
+Reads-per-barcode file
++++++++++++++++++++++++++
+This file has the suffix ``_readsperbc.csv``.
+It gives the number of reads associated with each barcode.
+For instance::
+
+    number of reads,number of barcodes
+    1,1283556
+    2,484522
+    3,544678
+    4,497192
+    5,382903
+    6,257677
+    7,153841
+    8,83522
+    9,41776
+    10,19171
+    11,8486
+    12,3525
+    13,1404
+    14,560
+    15,212
+    16,81
+    17,31
+    18,13
+    19,6
+    20,2
+    21,3
+    22,1
+
+Barcode statistics file
++++++++++++++++++++++++++
+This file has the suffix ``_bcstats.csv``.
+It provides information on how many of the barcodes could be successfully aligned.
+For instance::
+
+    category,number of barcodes
+    aligned,32
+    not alignable,0
+    too few reads,12
+    total,44
+
+Counts file
++++++++++++++
+This is output file that has the results that you will probably use for subsequent analyses.
+It has the suffix ``_codoncounts.csv`` if you are using ``--chartype codon``.
+It gives the number of called identities at each site in the sequence, as well as the wildtype sequence.
+For instance, here are the first few lines::
+
+    site,wildtype,AAA,AAC,AAG,AAT,ACA,ACC,ACG,ACT,AGA,AGC,AGG,AGT,ATA,ATC,ATG,ATT,CAA,CAC,CAG,CAT,CCA,CCC,CCG,CCT,CGA,CGC,CGG,CGT,CTA,CTC,CTG,CTT,GAA,GAC,GAG,GAT,GCA,GCC,GCG,GCT,GGA,GGC,GGG,GGT,GTA,GTC,GTG,GTT,TAA,TAC,TAG,TAT,TCA,TCC,TCG,TCT,TGA,TGC,TGG,TGT,TTA,TTC,TTG,TTT
+    1,ATT,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    2,CCC,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    3,GTA,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    4,ATC,0,0,0,0,0,0,0,0,0,0,0,0,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+
+Detailed barcode information file
+++++++++++++++++++++++++++++++++++
+This file has the suffix ``_bcinfo.txt.gz``. 
+It is a very large gzipped text file that contains information on all the reads and barcodes. 
+The format should be self explanatory.
+This file is only created if you use the ``--bcinfo`` option, and may be helpful for debugging if your reads aren't aligning as expected.
 
 Memory usage
 ---------------------------
-``dms_barcodedsubamplicons`` stores all of the reads in the FASTQ files in memory. Therefore, it uses a substantial amount of memory, typically around a gigabyte per million paired-end sequencing reads. However, for typical data sets such memory usage is well within the capacity of modern large-memory nodes.
+``dms2_bcsubamplicons`` stores all of the reads in the FASTQ files in memory. Therefore, it uses a substantial amount of memory, typically around a gigabyte per million paired-end sequencing reads. However, for typical data sets such memory usage is well within the capacity of modern large-memory nodes.
 
 .. include:: weblinks.txt
