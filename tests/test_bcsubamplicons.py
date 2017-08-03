@@ -26,9 +26,8 @@ def randSeq(n, num_N=0):
 
 
 def generateReadPair(refseq, alignspec, bc1, bc2, r1ext=0, r2ext=0,
-        minq=15, r1lowq=0, r2lowq=0, r1bclowq=0, r2bclowq=0, 
-        r1mut=0, r2mut=0, r1extmut=0, r2extmut=0, r1fail=False, 
-        r2fail=False, rname='simulatedread'):
+        minq=15, r1lowq=0, r2lowq=0, r1bclowq=0, r2bclowq=0, r1mut=0,
+        r2mut=0, r1fail=False, r2fail=False, rname='simulatedread'):
     """Generates a pair of FASTQ reads.
 
     Args:
@@ -43,13 +42,11 @@ def generateReadPair(refseq, alignspec, bc1, bc2, r1ext=0, r2ext=0,
         `minq` (int)
             Q scores < this are low quality
         `r1lowq`, `r2lowq` (int)
-            How many low quality codons in R1 / R2 prior to amplicon center?
+            How many low quality codons in R1 / R2?
         `r1bclowq`, `r2bclowq` (int)
             How many low quality codons in R1 / R2 barcode?
         `r1mut`, `r2mut` (int)
             How many codon mutations in R1 / R2 before amplicon center?
-        `r1extmut`, `r2extmut` (int)
-            How many codon mutations in R1 / R2 after amplicon center?
         `r1fail`, `r2fail` (bool)
             Does R1 / R2 fail the quality filter?
         `rname` (str)
@@ -65,8 +62,9 @@ def generateReadPair(refseq, alignspec, bc1, bc2, r1ext=0, r2ext=0,
     assert (refseqlen // 3) % 2 == 0, "not even number of codons in subamplicon"
 
     # first create "perfect" R1 and R2, then add mutations
-    r1 = list(refseq[refseqstart - 1 : refseqlen // 2 + 3 * r1ext])
-    r2 = list(refseq[refseqlen // 2 - 3 * r2ext : refseqend])
+    r1 = list(refseq[refseqstart - 1 : 
+            refseqstart - 1 + refseqlen // 2 + 3 * r1ext])
+    r2 = list(refseq[refseqend - refseqlen // 2 - 3 * r2ext : refseqend])
     for i in random.sample(range(len(r1)), r1mut):
         r1[i] = random.choice([nt for nt in dms_tools2.NTS if nt != r1[i]])
     for i in random.sample(range(len(r2)), r2mut):
@@ -114,6 +112,7 @@ class test_bcsubamplicons(unittest.TestCase):
     MAXMUTS = 2
     MINFRACCALL = 0.9
     MINCONCUR = 0.75
+    NAME = 'test'
 
     def setUp(self):
         """Set up input data."""
@@ -121,6 +120,9 @@ class test_bcsubamplicons(unittest.TestCase):
         self.testdir = os.path.join(
                 os.path.abspath(os.path.dirname(__file__)),
                 './test_bcsubamplicons_files/')
+
+        if not os.path.isdir(self.testdir):
+            os.mkdir(self.testdir)
 
         # define alignment positions, barcode length, and refseq
         random.seed(1)
@@ -210,6 +212,48 @@ class test_bcsubamplicons(unittest.TestCase):
         reads.append(generateReadPair(refseq, alignspec,
                 bc1, bc2, r1mut=refseqlen // 2, r2mut=refseqlen // 2))
 
+        # create a barcode with two mutations
+        self.barcodes_with_nreads[2] += 1
+        self.nbarcodes += 1
+        if self.MAXMUTS < 2:
+            self.nbarcodesunaligned += 1
+        else:
+            self.nbarcodesaligned += 1
+        bc1 = randSeq(self.bclen)
+        bc2 = randSeq(self.bclen)
+        alignspec = random.choice(self.alignspecs)
+        readtup = generateReadPair(refseq, alignspec, bc1, bc2,
+                r1mut=1, r2mut=1)
+        reads += [readtup, readtup]
+
+        # barcode with an uncalled nucleotide due to mutation in one read
+        self.barcodes_with_nreads[2] += 1
+        self.nbarcodes += 1
+        alignspec = random.choice(self.alignspecs)
+        if self.MINFRACCALL == 1:
+            self.nbarcodesunaligned += 1
+        else:
+            self.nbarcodesaligned += 1
+        bc1 = randSeq(self.bclen)
+        bc2 = randSeq(self.bclen)
+        reads += [generateReadPair(refseq, alignspec, bc1, bc2),
+                  generateReadPair(refseq, alignspec, bc1, bc2, r1mut=1)]
+
+        # barcode with an uncalled nucleotide due to low quality
+        self.barcodes_with_nreads[2] += 1
+        self.nbarcodes += 1
+        alignspec = random.choice(self.alignspecs)
+        if self.MINFRACCALL == 1:
+            self.nbarcodesunaligned += 1
+        else:
+            self.nbarcodesaligned += 1
+        bc1 = randSeq(self.bclen)
+        bc2 = randSeq(self.bclen)
+        reads += [generateReadPair(refseq, alignspec, bc1, bc2),
+                  generateReadPair(refseq, alignspec, bc1, bc2, r1lowq=1)]
+
+        # barcode with an uncalled nucleotide due to mutation in extension
+
         random.shuffle(reads)
         self.nreads = len(reads)
 
@@ -223,10 +267,9 @@ class test_bcsubamplicons(unittest.TestCase):
                 f2.write(r2)
 
         # defines output files
-        self.name = 'test'
         files = ['readstats', 'bcstats', 'readsperbc']
         self.outfiles = dict([(f, '{0}/{1}_{2}.csv'.format(
-                self.testdir, self.name, f)) for f in files])
+                self.testdir, self.NAME, f)) for f in files])
 
         for f in self.outfiles.values():
             if os.path.isfile(f):
@@ -237,7 +280,7 @@ class test_bcsubamplicons(unittest.TestCase):
         """Runs ``dms2_bcsubamplicons`` on test data."""
         cmds = [
                 'dms2_bcsubamplicons',
-                '--name', self.name,
+                '--name', self.NAME,
                 '--refseq', self.refseqfile,
                 '--alignspecs'] + self.alignspecs + [
                 '--outdir', self.testdir,
@@ -245,6 +288,7 @@ class test_bcsubamplicons(unittest.TestCase):
                 '--maxmuts', str(self.MAXMUTS),
                 '--minfraccall', str(self.MINFRACCALL),
                 '--minconcur', str(self.MINCONCUR),
+                '--bcinfo',
                ] 
         sys.stderr.write('\nRunning the following command:\n{0}\n'.format(
                 ' '.join(cmds)))
@@ -286,6 +330,20 @@ class test_bcsubamplicons(unittest.TestCase):
 class test_bcsubamplicons_strictconcur(test_bcsubamplicons):
     """Tests ``dms2_bcsubamplicons`` with stricter ``--minconcur``."""
     MINCONCUR = 0.9
+    NAME = 'test-minconcur'
+
+
+class test_bcsubamplicons_strictmaxmuts(test_bcsubamplicons):
+    """Tests ``dms2_bcsubamplicons`` with stricter ``--maxmuts``."""
+    MAXMUTS = 0
+    NAME = 'test-maxmuts'
+
+
+class test_bcsubamplicons_strictminfraccall(test_bcsubamplicons):
+    """Tests ``dms2_bcsubamplicons`` with stricter ``--minfraccall``."""
+    MINFRACCALL = 1.0
+    NAME = 'test-minfraccall'
+
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()

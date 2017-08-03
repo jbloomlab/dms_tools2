@@ -41,7 +41,7 @@ def bcInfo(bc, bcreads, retained, consensus, desc):
             'RETAINED: {0}'.format(retained),
             'DESCRIPTION: {0}'.format(desc),
             'CONSENSUS: {0}'.format(consensus),
-            'READS: {0}'.format('\n\t'.join(['R1 = {0}; R2 = {1}'.format(
+            'READS:\n\t{0}'.format('\n\t'.join(['R1 = {0}; R2 = {1}'.format(
                     r1, r2) for (r1, r2) in bcreads])),
             '',
             ])
@@ -115,7 +115,7 @@ def main():
         assert 1 >= args['minconcur'] > 0.5
         assert args['minreads'] > 0
         assert 1 >= args['minfraccall'] > 0
-        assert args['maxmuts'] >= 1
+        assert args['maxmuts'] >= 0
 
         # check validity of alignspecs
         alignspecs = []
@@ -269,7 +269,7 @@ def main():
                 'to build alignable subamplicons...'.format(len(barcodes)))
 
         if args['bcinfo']:
-            bcinfofile = gzip.open(args['bcinfo'], 'w')
+            bcinfofile = gzip.open(files['bcinfo'], 'wt')
 
         for (ibc, (bc, bcreads)) in enumerate(barcodes.items()):
 

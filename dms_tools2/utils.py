@@ -333,6 +333,15 @@ def alignSubamplicon(refseq, r1, r2, refseqstart, refseqend, maxmuts,
     >>> s = alignSubamplicon(refseq, 'GGGNAA', 'TTNCCC', 3, 9, 0, 0, 'codon')
     >>> s == 'GGGGAAA'
     True
+    >>> s = alignSubamplicon(refseq, 'GTTTAA', 'TTTAAA', 3, 9, 1, 0, 'codon')
+    >>> s == 'GTTTAAA' 
+    True
+    >>> s = alignSubamplicon(refseq, 'GGGGTA', 'TTACCC', 3, 9, 1, 0, 'codon')
+    >>> s == 'GGGGTAA' 
+    True
+    >>> s = alignSubamplicon(refseq, 'GGGCTA', 'TTAGCC', 3, 9, 1, 0, 'codon')
+    >>> s == False 
+    True
     """
     assert chartype in ['codon'], "Invalid chartype"
     if chartype == 'codon':
