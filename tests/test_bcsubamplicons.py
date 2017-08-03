@@ -278,10 +278,9 @@ class test_bcsubamplicons(unittest.TestCase):
                 f2.write(r2)
 
         # defines output files
-        files = ['readstats', 'bcstats', 'readsperbc']
+        files = ['readstats', 'bcstats', 'readsperbc', 'codoncounts']
         self.outfiles = dict([(f, '{0}/{1}_{2}.csv'.format(
                 self.testdir, self.NAME, f)) for f in files])
-
         for f in self.outfiles.values():
             if os.path.isfile(f):
                 os.remove(f)
@@ -357,6 +356,7 @@ class test_bcsubamplicons_strictminfraccall(test_bcsubamplicons):
 
 
 class test_bcsubamplicons_trimreads(unittest.TestCase):
+    """Tests trim reads feature of ``dms2_bcsubamplicons``."""
 
     def setUp(self):
         """Set up input data."""
@@ -452,6 +452,74 @@ class test_bcsubamplicons_trimreads(unittest.TestCase):
             counts = pandas.read_csv(countsfile).set_index('site')
             self.assertTrue((int(bool(aligned)) == 
                     counts[dms_tools2.CODONS].sum(axis=1)).all())
+
+
+class test_bcsubamplicons_counts(unittest.TestCase):
+    """Tests generation of counts file."""
+
+    def setUp(self):
+        """Set up input data."""
+
+        self.testdir = os.path.join(
+                os.path.abspath(os.path.dirname(__file__)),
+                './test_bcsubamplicons_files/')
+        if not os.path.isdir(self.testdir):
+            os.mkdir(self.testdir)
+
+        self.name = 'test-counts'
+
+        # define alignment positions, barcode length, and refseq
+        refseq = 'ATGGACTTCGGG'
+        self.refseqfile = '{0}/{1}_refseq.fasta'.format(self.testdir,
+                self.name)
+        with open(self.refseqfile, 'w') as f:
+            f.write('>refseq\n{0}'.format(refseq))
+
+        self.alignspec = '1,12,9,9'
+        bc1 = randSeq(8)
+        bc2 = randSeq(8)
+        r1s = [bc1 + 'ATGGACTNCGGG' + bc1,
+               bc1 + 'ATGGACTTCGGG' + bc1,
+               bc2 + 'GAGGACTTCGGG' + bc2,
+               bc2 + 'GAGGACTTCGAG' + bc2,
+              ]
+
+        # generate reads for each alignspec that need trimming
+        # write reads files
+        self.r1file = os.path.join(self.testdir, 
+                '{0}_reads_R1.fastq.gz'.format(self.name))
+        self.r2file = self.r1file.replace('_R1', '_R2')
+        with gzip.open(self.r1file, 'wt') as f1, \
+                gzip.open(self.r2file, 'wt') as f2:
+            for r1 in r1s:
+                q = chr(73) * len(r1)
+                f1.write('@name\n{0}\n+\n{1}\n'.format(r1, q))
+                f2.write('@name\n{0}\n+\n{1}\n'.format(
+                        dms_tools2.utils.reverseComplement(r1), q))
+
+    def test_counts(self):
+        """Make sure we generate the expected codon counts."""
+        cmds = [
+                'dms2_bcsubamplicons',
+                '--name', self.name,
+                '--refseq', self.refseqfile,
+                '--alignspecs', self.alignspec,
+                '--outdir', self.testdir,
+                '--R1', self.r1file,
+               ] 
+        sys.stderr.write('\nRunning the following command:\n{0}\n'.format(
+                ' '.join(cmds)))
+        subprocess.check_call(cmds)
+
+        counts = pandas.read_csv('{0}/{1}_codoncounts.csv'.format(
+                self.testdir, self.name)).set_index('site')
+        self.assertEqual(counts.at[1, 'ATG'], 1)
+        self.assertEqual(counts.at[1, 'GAG'], 1)
+        self.assertEqual(counts.at[2, 'GAC'], 2)
+        self.assertEqual(counts.at[3, 'TTC'], 1)
+        self.assertEqual(counts.at[4, 'GGG'], 1)
+        self.assertEqual(counts[dms_tools2.CODONS].sum(axis=1).sum(), 6)
+
 
 
 
