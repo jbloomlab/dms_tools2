@@ -269,11 +269,16 @@ class test_bcsubamplicons(unittest.TestCase):
 
         # write reads files
         self.r1file = os.path.join(self.testdir, 
-                '{0}_reads_R1.fastq.gz'.format(self.NAME))
+                '{0}_reads_R1_*.fastq.gz'.format(self.NAME))
         self.r2file = self.r1file.replace('_R1', '_R2')
-        with gzip.open(self.r1file, 'wt') as f1, \
-                gzip.open(self.r2file, 'wt') as f2:
-            for (r1, r2) in reads:
+        with gzip.open(self.r1file.replace('*', '1'), 'wt') as f1, \
+                gzip.open(self.r2file.replace('*', '1'), 'wt') as f2:
+            for (r1, r2) in reads[: 10]:
+                f1.write(r1)
+                f2.write(r2)
+        with gzip.open(self.r1file.replace('*', '2'), 'wt') as f1, \
+                gzip.open(self.r2file.replace('*', '2'), 'wt') as f2:
+            for (r1, r2) in reads[10 : ]:
                 f1.write(r1)
                 f2.write(r2)
 

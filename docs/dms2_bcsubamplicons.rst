@@ -124,6 +124,9 @@ Command-line usage
    \-\-bclen
     This is the length of the barcode on **each** primer. So a value of 8 corresponds to a total of 16 ``N`` nucleotides on the two primers. See the `Barcoded subamplicon sequencing`_ section above for an example of primers with 8 ``N`` nucleotides.
 
+   \-\-R1
+    You can specify multiple files using the ``*`` wildcard character, as in ``reads_R1_L*.fastq.gz``.
+
    \-\-R2
     Most pipelines for generating Illumina FASTQ files have the read 1 sequences in a file that contains the string ``_R1`` and the read 2 sequences in a file that contains the string ``_R2``. If this is the case, the R2 file name can just be guessed from the R1 file name. However, you can use this option if your R2 files have a different name that you need to specify manually.
 

@@ -4,6 +4,7 @@
 
 
 import os
+import glob
 import sys
 import re
 import logging
@@ -157,8 +158,10 @@ def main():
                 range(len(alignspecs))]
 
         # check on read files
-        r1files = args['R1']
-        assert all(map(os.path.isfile, r1files)), "Missing R1 files"
+        r1files = []
+        for f in args['R1']:
+            r1files += sorted(glob.glob(f))
+        assert r1files and all(map(os.path.isfile, r1files)), "Missing R1 files"
         if not args['R2']:
             r2files = []
             for r1 in r1files:
@@ -166,7 +169,9 @@ def main():
                         "file {0}".format(r1))
                 r2files.append(r1.replace('_R1', '_R2'))
         else:
-            r2files = args['R2']
+            r2files = []
+            for f in args['R2']:
+                r2files += sorted(glob.glob(f))
             assert len(r1files) == len(r2files), "R1 and R2 not same length"
         assert all(map(os.path.isfile, r2files)), "Missing R2 files"
         logger.info("Reads are in these FASTQ pairs:\n\t{0}\n".format(
