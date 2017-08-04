@@ -17,6 +17,7 @@ import tempfile
 import six
 import HTSeq
 import dms_tools2
+import dms_tools2._cutils
 
 
 def sessionInfo():
@@ -29,7 +30,7 @@ def sessionInfo():
                     sys.version.replace('\n', ' ')),
             '\tdms_tools2 version: {0}'.format(dms_tools2.__version__),
             ]
-    for modname in ['Bio', 'HTSeq', 'pandas']:
+    for modname in ['Bio', 'HTSeq', 'pandas', 'cython']:
         try:
             v = importlib.import_module(modname).__version__
             s.append('\t{0} version: {1}'.format(modname, v))
@@ -203,7 +204,7 @@ def lowQtoN(r, q, minq):
             for (ri, qi) in zip(r, q)])
 
 
-def buildReadConsensus(reads, minreads, minconcur):
+def buildReadConsensus(reads, minreads, minconcur, use_cutils=True):
     """Builds consensus sequence of some reads.
 
     You may want to pre-fill low-quality sites with ``N``
@@ -220,6 +221,8 @@ def buildReadConsensus(reads, minreads, minconcur):
         `minconcur` (float)
             Only call consensus at site if >= this fraction of called
             identities agree.
+        `use_cutils` (bool)
+            Use the faster implementation in the `_cutils` module.
 
     Returns:
         A string giving the consensus sequence. Non-called 
@@ -235,6 +238,9 @@ def buildReadConsensus(reads, minreads, minconcur):
     >>> buildReadConsensus(reads, 2, 0.75) == 'NTGCATAT'
     True
     """
+    if use_cutils:
+        return dms_tools2._cutils.buildReadConsensus(reads, 
+                minreads, minconcur)
     readlens = list(map(len, reads))
     maxlen = max(readlens)
     consensus = []

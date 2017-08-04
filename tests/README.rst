@@ -12,6 +12,8 @@ The recommended way to run all these tests **and** the doctests in the individua
 To do this, first install `pytest`_ if it is not already installed.
 Then navigate to the **top directory** of ``dms_tools2`` (not this ``tests`` directory) and run::
 
-    pytest --doctest-modules --ignore=setup.py
+    pytest 
+
+The `pytest.ini <../pytest.ini>`_ file sets necessary options for these tests.
 
 .. _`pytest`: https://docs.pytest.org/en/latest/
