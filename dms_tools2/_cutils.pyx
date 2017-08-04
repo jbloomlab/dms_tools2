@@ -21,31 +21,31 @@ def buildReadConsensus(list reads, int minreads, float minconcur):
     details on what this function does.
     """
     cdef:
-        int i, maxlen, ntot, lenr, nmax
+        int i, ntot, nmax
+        int maxlen = max(map(len, reads))
 
-    readlens = list(map(len, reads))
-    maxlen = max(readlens)
+    counts = [{} for i in range(maxlen)]
+    for r in reads:
+        for i in range(len(r)):
+            x = r[i]
+            if x != 'N':
+                if x in counts[i]:
+                    counts[i][x] += 1
+                else:
+                    counts[i][x] = 1
     consensus = []
     for i in range(maxlen):
-        counts = {}
-        for (r, lenr) in zip(reads, readlens):
-            if lenr > i:
-                x = r[i]
-                if x != 'N':
-                    if x in counts:
-                        counts[x] += 1
-                    else:
-                        counts[x] = 1
-        ntot = sum(counts.values())
+        ntot = sum(counts[i].values())
         if ntot < minreads:
             consensus.append('N')
         else:
-            (nmax, xmax) = sorted([(n, x) for (x, n) in counts.items()])[-1]
+            (nmax, xmax) = sorted([(n, x) for (x, n) in counts[i].items()])[-1]
             if nmax / float(ntot) >= minconcur:
                 consensus.append(xmax)
             else:
                 consensus.append('N')
     return ''.join(consensus)
+
 
 if __name__ == '__main__':
     import doctest

@@ -26,7 +26,7 @@ def bcInfo(bc, bcreads, retained, consensus, desc):
         `bc` (str):
             The barcode.
         `bcreads` (list)
-            List of reads for barcode as `(R1, R2)` tuples.
+            dict of `{'R1':r1list, 'R2':r2list}`
         `retained` (bool)
             Is the barcode retained?
         `consensus` (str or `None`)
@@ -42,8 +42,8 @@ def bcInfo(bc, bcreads, retained, consensus, desc):
             'RETAINED: {0}'.format(retained),
             'DESCRIPTION: {0}'.format(desc),
             'CONSENSUS: {0}'.format(consensus),
-            'READS:\n\t{0}'.format('\n\t'.join(['R1 = {0}; R2 = {1}'.format(
-                    r1, r2) for (r1, r2) in bcreads])),
+            'R1 READS:\n\t{0}'.format('\n\t'.join(bcreads['R1'])),
+            'R2 READS:\n\t{0}'.format('\n\t'.join(bcreads['R1'])),
             '',
             ])
 
@@ -191,7 +191,7 @@ def main():
                     "subsample the data.".format(args['purgeread']))
         minqchar = chr(args['minq'] + 33) # character for Q score cutoff
 
-        barcodes = {} # barcodes key list of (R1, R2) after trimming barcode
+        barcodes = {} # barcodes key {'R1':r1list, 'R2':r2list}
 
         for read_tup in dms_tools2.utils.iteratePairedFASTQ(r1files, r2files,
                     maxtrim['R1'], maxtrim['R2']):
@@ -220,9 +220,11 @@ def main():
                 continue
 
             if barcode in barcodes:
-                barcodes[barcode].append((r1[bclen : ], r2[bclen : ]))
+                barcodes[barcode]['R1'].append(r1[bclen : ])
+                barcodes[barcode]['R2'].append(r2[bclen : ])
             else:
-                barcodes[barcode] = [(r1[bclen : ], r2[bclen : ])]
+                barcodes[barcode] = {'R1':[r1[bclen : ]], 
+                                     'R2':[r2[bclen : ]]}
 
         logger.info('Parsed {0} reads, found {1} unique barcodes.'.format(
                 nreads['total'], len(barcodes)))
@@ -236,7 +238,8 @@ def main():
         # collect stats on reads per barcode
         readsperbc = {}
         for bcreads in barcodes.values():
-            nforbc = len(bcreads)
+            nforbc = len(bcreads['R1'])
+            assert nforbc == len(bcreads['R2'])
             if nforbc in readsperbc:
                 readsperbc[nforbc] += 1
             else:
@@ -292,7 +295,7 @@ def main():
             if ibc % 2e5 == 0:
                 logger.info("Barcodes examined so far: {0}".format(ibc))
 
-            if len(bcreads) < args['minreads']:
+            if len(bcreads['R1']) < args['minreads']:
                 nbcs['too few reads'] += 1
                 if args['bcinfo']:
                     bcinfofile.write(bcInfo(bc, bcreads, retained=False, 
@@ -302,7 +305,7 @@ def main():
             consensus = {}
             for (itup, r) in enumerate(['R1', 'R2']):
                 consensus[r] = dms_tools2.utils.buildReadConsensus(
-                        [tup[itup] for tup in bcreads],
+                        bcreads[r],
                         args['minreads'], args['minconcur'])
 
             for ((r1trim, r2trim), (refseqstart, refseqend,
@@ -370,3 +373,14 @@ def main():
 
 if __name__ == '__main__':
     main() # run the script
+#    import cProfile
+#    import pstats
+#    cProfile.run('main()', 'pstats')
+#    for psort in ['cumulative', 'tottime']:
+#        fname = 'pstats_{0}.txt'.format(psort)
+#        with open(fname, 'w') as f:
+#            s = pstats.Stats('pstats', stream=f)
+#            s.strip_dirs()
+#            s.sort_stats(psort)
+#            s.print_stats()
+
