@@ -14,6 +14,15 @@ the `use_cutils` argument.
 """
 
 
+import numpy
+cimport numpy
+import dms_tools2
+
+
+# define str such that _NTS[i] == dms_tools2.NTS[i]
+cdef str _NTS = ''.join(dms_tools2.NTS)
+
+
 def buildReadConsensus(list reads, int minreads, float minconcur):
     """Faster implementation of `utils.buildReadConsensus`.
 
@@ -21,29 +30,31 @@ def buildReadConsensus(list reads, int minreads, float minconcur):
     details on what this function does.
     """
     cdef:
-        int i, ntot, nmax
+        int i, j
         int maxlen = max(map(len, reads))
+        int n_nts = len(dms_tools2.NTS)
+        str r
+        cdef numpy.ndarray[numpy.int_t, ndim=2] counts = numpy.zeros(
+                [maxlen, n_nts], dtype=numpy.int)
 
-    counts = [{} for i in range(maxlen)]
     for r in reads:
         for i in range(len(r)):
-            x = r[i]
-            if x != 'N':
-                if x in counts[i]:
-                    counts[i][x] += 1
+            if r[i] != 'N':
+                for j in range(n_nts):
+                    if r[i] == _NTS[j]:
+                        counts[i][j] += 1
+                        break
                 else:
-                    counts[i][x] = 1
-    consensus = []
-    for i in range(maxlen):
-        ntot = sum(counts[i].values())
-        if ntot < minreads:
-            consensus.append('N')
-        else:
-            (nmax, xmax) = sorted([(n, x) for (x, n) in counts[i].items()])[-1]
-            if nmax / float(ntot) >= minconcur:
-                consensus.append(xmax)
-            else:
-                consensus.append('N')
+                    raise ValueError("Invalid nucleotide {0}".format(r[i]))
+    cdef:
+        numpy.ndarray[numpy.int_t, ndim=1] ntot = counts.sum(axis=1)
+        numpy.ndarray[numpy.int_t, ndim=1] xmax = counts.argmax(axis=1)
+    consensus = numpy.full(shape=maxlen, fill_value=_NTS[0])
+    for i in range(1, n_nts):
+        numpy.place(consensus, xmax == i, _NTS[i])
+    with numpy.errstate(divide='ignore'):
+        consensus[((ntot < minreads) |  ((counts.max(axis=1).astype('float') /
+                ntot) < minconcur))] = 'N'
     return ''.join(consensus)
 
 

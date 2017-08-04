@@ -59,9 +59,11 @@ class lazy_cythonize(list):
 def extensions():
     """Returns list of `cython` extensions for `lazy_cythonize`."""
     from Cython.Build import cythonize
+    import numpy
     ext = [
             Extension(name='dms_tools2._cutils',
                       sources=['dms_tools2/_cutils.pyx'],
+                      include_dirs=[numpy.get_include()],
                       extra_compile_args=['-Wno-unused-function']),
           ]
     return cythonize(ext)
@@ -83,6 +85,7 @@ setup(
         'HTSeq>=0.9',
         'pandas>=0.19',
         'cython>=0.25',
+        'numpy>=1.13',
         ],
     platforms = 'Linux and Mac OS X).',
     packages = ['dms_tools2'],
