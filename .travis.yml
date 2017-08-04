@@ -4,8 +4,8 @@ python:
   - "3.4"
 cache: pip
 install:
-  - pip install .
   - pip install -r test_requirements.txt
+  - pip install .
 script: 
   - pytest
 branches:
