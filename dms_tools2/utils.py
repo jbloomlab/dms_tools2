@@ -269,13 +269,15 @@ def buildReadConsensus(reads, minreads, minconcur, use_cutils=True):
     return ''.join(consensus)
 
 
-def reverseComplement(s):
+def reverseComplement(s, use_cutils=True):
     """Gets reverse complement of DNA sequence `s`.
 
     >>> s = 'ATGCAAN'
     >>> reverseComplement(s) == 'NTTGCAT'
     True
     """
+    if use_cutils:
+        return dms_tools2._cutils.reverseComplement(s)
     return ''.join(reversed([dms_tools2.NTCOMPLEMENT[nt] for nt in s]))
 
 

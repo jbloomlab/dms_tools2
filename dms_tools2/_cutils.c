@@ -9,13 +9,56 @@
 
 
 static PyObject *
+reverseComplement(PyObject *self, PyObject *args)
+{
+    // define variables
+    PyObject *py_rc;
+    const char *s;
+    size_t slen, i;
+
+    // parse arguments
+    if (! PyArg_ParseTuple(args, "s", &s)) {
+        return NULL;
+    }
+    slen = strlen(s);
+
+    // build up new string
+    char *rc = PyMem_New(char, slen + 1);
+    if (rc == NULL) {
+        PyErr_SetString(PyExc_MemoryError, "cannot allocate rc");
+        return NULL;
+    }
+    rc[slen] = '\0'; // string termination character
+    for (i = 0; i < slen; i++) {
+        switch (s[slen - 1 - i]) {
+            case 'A' : rc[i] = 'T';
+                       break;
+            case 'C' : rc[i] = 'G';
+                       break;
+            case 'G' : rc[i] = 'C';
+                       break;
+            case 'T' : rc[i] = 'A';
+                       break;
+            case 'N' : rc[i] = 'N';
+                       break;
+            default : PyErr_SetString(PyExc_ValueError, "invalid nt");
+                      return NULL;
+        }
+    }
+    py_rc = PyUnicode_FromString(rc);
+    PyMem_Del(rc);
+    return py_rc;
+}
+
+
+static PyObject *
 lowQtoN(PyObject *self, PyObject *args)
 {
     // define variables
     PyObject *py_newr;
     int minq;
     const char *r, *q;
-    Py_ssize_t rlen, i;
+    size_t rlen, i;
 
     // parse arguments
     if (! PyArg_ParseTuple(args, "ssC", &r, &q, &minq)) {
@@ -41,7 +84,7 @@ lowQtoN(PyObject *self, PyObject *args)
             newr[i] = 'N';
         }
     }
-    py_newr = PyUnicode_FromString(newr);    
+    py_newr = PyUnicode_FromString(newr);
     PyMem_Del(newr);
     return py_newr;
 }
@@ -150,6 +193,8 @@ static PyMethodDef cutilsMethods[] = {
             "Fast version of `dms_tools2.utils.buildReadConsensus`."},
     {"lowQtoN", lowQtoN, METH_VARARGS,
             "Fast version of `dms_tools2.utils.lowQtoN`."},
+    {"reverseComplement", reverseComplement, METH_VARARGS,
+            "Fast version of `dms_tools2.utils.reverseComplement`."},
     {NULL, NULL, 0, NULL}
 };
 
