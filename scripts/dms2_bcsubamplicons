@@ -292,8 +292,9 @@ def main():
 
         for (ibc, (bc, bcreads)) in enumerate(barcodes.items()):
 
-            if ibc % 2e5 == 0:
-                logger.info("Barcodes examined so far: {0}".format(ibc))
+            if (ibc + 1) % 2e5 == 0:
+                logger.info("Barcodes examined so far: {0}".format(
+                        ibc + 1))
 
             if len(bcreads['R1']) < args['minreads']:
                 nbcs['too few reads'] += 1
@@ -372,15 +373,15 @@ def main():
 
 
 if __name__ == '__main__':
-    main() # run the script
-#    import cProfile
-#    import pstats
-#    cProfile.run('main()', 'pstats')
-#    for psort in ['cumulative', 'tottime']:
-#        fname = 'pstats_{0}.txt'.format(psort)
-#        with open(fname, 'w') as f:
-#            s = pstats.Stats('pstats', stream=f)
-#            s.strip_dirs()
-#            s.sort_stats(psort)
-#            s.print_stats()
+#    main() # run the script
+    import cProfile
+    import pstats
+    cProfile.run('main()', 'pstats')
+    for psort in ['cumulative', 'tottime']:
+        fname = 'pstats_{0}.txt'.format(psort)
+        with open(fname, 'w') as f:
+            s = pstats.Stats('pstats', stream=f)
+            s.strip_dirs()
+            s.sort_stats(psort)
+            s.print_stats()
 
