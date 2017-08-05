@@ -37,36 +37,6 @@ for dataname in ['version', 'author', 'author_email', 'url']:
 with open('README.rst') as f:
     readme = f.read()
 
-class lazy_cythonize(list):
-    """Lazy evaluation of cythonize so it isn't needed until installed.
-    Following this:
-    http://stackoverflow.com/questions/11010151/distributing-a-shared-library-and-some-c-code-with-a-cython-extension-module
-    """
-    def __init__(self, callback):
-        self._list = None
-        self.callback = callback
-    def c_list(self):
-        if self._list is None:
-            self._list = self.callback()
-        return self._list
-    def __iter__(self):
-        for e in self.c_list(): yield e
-    def __getitem__(self, ii):
-        return self.c_list()[ii]
-    def __len__(self):
-        return len(self.c_list())
-
-def extensions():
-    """Returns list of `cython` extensions for `lazy_cythonize`."""
-    from Cython.Build import cythonize
-    import numpy
-    ext = [
-            Extension(name='dms_tools2._cutils',
-                      sources=['dms_tools2/_cutils.pyx'],
-                      include_dirs=[numpy.get_include()],
-                      extra_compile_args=['-Wno-unused-function']),
-          ]
-    return cythonize(ext)
 
 # main setup command
 setup(
@@ -84,7 +54,6 @@ setup(
         'biopython>=1.68',
         'HTSeq>=0.9',
         'pandas>=0.19',
-        'cython>=0.25',
         'numpy>=1.13',
         ],
     platforms = 'Linux and Mac OS X).',
@@ -94,5 +63,7 @@ setup(
             'scripts/dms2_bcsubamplicons',
             ],
     package_data = {'dms_tools2':['_weblogo_template.eps']}, 
-    ext_modules = lazy_cythonize(extensions),
+    ext_modules = [
+            Extension('dms_tools._cutils', ['dms_tools2/cutils.c'])
+            ],
 )
