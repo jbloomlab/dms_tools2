@@ -1,7 +1,6 @@
 *.pyc
 *.pyo
 *.so
-_cutils.c
 *slurm*
 .DS_Store
 .*

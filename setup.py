@@ -63,6 +63,6 @@ setup(
             ],
     package_data = {'dms_tools2':['_weblogo_template.eps']}, 
     ext_modules = [
-            Extension('dms_tools._cutils', ['dms_tools2/cutils.c'])
+            Extension('dms_tools2._cutils', ['dms_tools2/_cutils.c'])
             ],
 )
