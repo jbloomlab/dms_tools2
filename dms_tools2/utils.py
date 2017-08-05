@@ -176,16 +176,19 @@ def iteratePairedFASTQ(r1files, r2files, r1trim=None, r2trim=None):
             yield (name1, r1, r2, q1, q2, fail)
 
 
-def lowQtoN(r, q, minq):
+def lowQtoN(r, q, minq, use_cutils=True):
     """Replaces low quality nucleotides with ``N`` characters.
 
     Args:
         `r` (str)
             A string representing a sequencing read.
-        `q` (iterable)
-            Iterable of same length as `r` holding Q scores.
-        `minq` (int or length-one string)
+        `q` (str)
+            String of same length as `r` holding Q scores
+            in Sanger ASCII encoding.
+        `minq` (length-one string)
             Replace all positions in `r` where `q` is < this.
+        `use_cutils` (bool)
+            Use the faster implementation in the `_cutils` module.
 
     Returns:
         A version of `r` where all positions `i` where 
@@ -194,11 +197,11 @@ def lowQtoN(r, q, minq):
     >>> r = 'ATGCAT'
     >>> q = 'GB<.0+'
     >>> minq = '0'
-    >>> qn = [38, 33, 27, 13, 15, 10]
-    >>> minqn = 15
-    >>> lowQtoN(r, q, minq) == lowQtoN(r, qn, minqn) == 'ATGNAN'
+    >>> lowQtoN(r, q, minq) == 'ATGNAN'
     True
     """
+    if use_cutils:
+        return dms_tools2._cutils.lowQtoN(r, q, minq)
     assert len(r) == len(q)
     return ''.join([ri if qi >= minq else 'N'
             for (ri, qi) in zip(r, q)])

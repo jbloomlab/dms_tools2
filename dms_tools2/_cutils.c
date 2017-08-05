@@ -9,6 +9,44 @@
 
 
 static PyObject *
+lowQtoN(PyObject *self, PyObject *args)
+{
+    // define variables
+    PyObject *py_newr;
+    int minq;
+    const char *r, *q;
+    Py_ssize_t rlen, i;
+
+    // parse arguments
+    if (! PyArg_ParseTuple(args, "ssC", &r, &q, &minq)) {
+        return NULL;
+    }
+    rlen = strlen(r);
+    if (rlen != strlen(q)) {
+        PyErr_SetString(PyExc_ValueError, "r and q not of same length");
+        return NULL;
+    }
+
+    // build up new string
+    char *newr = PyMem_New(char, rlen + 1);
+    if (newr == NULL) {
+        PyErr_SetString(PyExc_MemoryError, "cannot allocate newr");
+        return NULL;
+    }
+    newr[rlen] = '\0'; // string termination character
+    for (i = 0; i < rlen; i++) {
+        if (q[i] >= minq) {
+            newr[i] = r[i];
+        } else {
+            newr[i] = 'N';
+        }
+    }
+    py_newr = PyUnicode_FromString(newr);    
+    PyMem_Del(newr);
+    return py_newr;
+}
+
+static PyObject *
 buildReadConsensus(PyObject *self, PyObject *args)
 {
     // define variables
@@ -110,6 +148,8 @@ buildReadConsensus(PyObject *self, PyObject *args)
 static PyMethodDef cutilsMethods[] = {
     {"buildReadConsensus", buildReadConsensus, METH_VARARGS,
             "Fast version of `dms_tools2.utils.buildReadConsensus`."},
+    {"lowQtoN", lowQtoN, METH_VARARGS,
+            "Fast version of `dms_tools2.utils.lowQtoN`."},
     {NULL, NULL, 0, NULL}
 };
 
