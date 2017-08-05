@@ -52,7 +52,7 @@ def buildReadConsensus(list reads, int minreads, float minconcur):
     consensus = numpy.full(shape=maxlen, fill_value=_NTS[0])
     for i in range(1, n_nts):
         numpy.place(consensus, xmax == i, _NTS[i])
-    with numpy.errstate(divide='ignore'):
+    with numpy.errstate(divide='ignore', invalid='ignore'):
         consensus[((ntot < minreads) |  ((counts.max(axis=1).astype('float') /
                 ntot) < minconcur))] = 'N'
     return ''.join(consensus)
