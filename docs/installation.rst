@@ -4,7 +4,7 @@
 Installation
 ================================
 
-`dms_tools2`_ is written in `Python`_, and is compatible with `Python`_ version 2.7 or 3.4 and higher. 
+`dms_tools2`_ is written in `Python`_, and is compatible with `Python`_ version 3.4 and higher. 
 
 .. contents::
 
@@ -27,7 +27,7 @@ The simplest solution is to install locally via the ``--user`` option to ``pip``
 In order for locally installed programs to be accessible, you need to add ``~/.local/bin/`` to the ``PATH`` variable, and ``~/.local/lib/`` to the ``PYTHONPATH`` variable. If you are using the `bash shell`_, you would do this by adding the following lines to your ``~/.bashrc`` file::
 
     PATH=$HOME/.local/bin/:$PATH
-    export PYTHONPATH=$HOME/.local/lib/python2.7:$PATH
+    export PYTHONPATH=$HOME/.local/lib/python3.4:$PATH
 
 You then want to make sure that your ``~/.bash_profile`` file simple sources your ``~/.bashrc`` file as `described here <http://www.joshstaiger.org/archives/2005/07/bash_profile_vs.html>`_ by making ``~/.bash_profile`` consist of the following contents::
 
@@ -46,9 +46,11 @@ First, make sure ``pip`` is installed
 
 First, check if you already have `pip`_ installed. You can do this by typing at the command line::
 
-    pip -h
+    pip --version
 
-If you get the help message for `pip`_, then `pip`_ is already installed and you can move to the next step. If you instead get an error message such as ``-bash: pip: command not found`` then you need to install `pip`_.
+If you get the help message for `pip`_, then `pip`_ is already installed and you can move to the next step. 
+Note that you need `pip`_ for **python3**, as `dms_tools2`_ requires Python 3.4+ and is **not** compatible with Python 2.*.
+If you instead get an error message such as ``-bash: pip: command not found`` then you need to install `pip`_.
 
 If you have ``easy_install`` installed, then you can simply install `pip`_ with::
 

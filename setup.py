@@ -13,9 +13,8 @@ try:
 except ImportError:
     raise ImportError("You must install `setuptools`")
 
-if not ((sys.version_info[0] == 2 and sys.version_info[1] == 7) or
-        (sys.version_info[0] == 3 and sys.version_info[1] >= 4)):
-    raise RuntimeError('phydms requires Python 2.7 or Python 3.4 or higher.\n'
+if not (sys.version_info[0] == 3 and sys.version_info[1] >= 4):
+        raise RuntimeError('dms_tools2 requires Python 3.4 or higher.\n'
             'You are using Python {0}.{1}'.format(
             sys.version_info[0], sys.version_info[1]))
 
