@@ -272,6 +272,15 @@ def buildReadConsensus(reads, minreads, minconcur, use_cutils=True):
 def reverseComplement(s, use_cutils=True):
     """Gets reverse complement of DNA sequence `s`.
 
+    Args:
+        `s` (str)
+            Sequence to reverse complement.
+        `use_cutils` (bool)
+            Use the faster implementation in the `_cutils` module.
+
+    Returns:
+        Reverse complement of `s` as a str.
+
     >>> s = 'ATGCAAN'
     >>> reverseComplement(s) == 'NTTGCAT'
     True
@@ -282,7 +291,7 @@ def reverseComplement(s, use_cutils=True):
 
 
 def alignSubamplicon(refseq, r1, r2, refseqstart, refseqend, maxmuts,
-        maxN, chartype):
+        maxN, chartype, use_cutils=True):
     """Try to align subamplicon to reference sequence at defined location.
 
     Tries to align reads `r1` and `r2` to `refseq` at location
@@ -310,7 +319,7 @@ def alignSubamplicon(refseq, r1, r2, refseqstart, refseqend, maxmuts,
             The nucleotide in `refseq` (1, 2, ... numbering) where the
             first nucleotide in `r2` aligns (note that `r2` then reads
             backwards towards the 5' end of `refseq`).
-        `maxmuts` (int)
+        `maxmuts` (int or float)
             Maximum number of mutations of character `chartype` that
             are allowed in the aligned subamplicons from the two reads.
         `maxN` (int or float)
@@ -319,6 +328,8 @@ def alignSubamplicon(refseq, r1, r2, refseqstart, refseqend, maxmuts,
         `chartype` (str)
             Character type for which we count mutations.
             Currently, the only allowable value is 'codon'.
+        `use_cutils` (bool)
+            Use the faster implementation in the `_cutils` module.
 
     Returns:
         If reads align, return aligned subamplicon as string (of length
@@ -359,11 +370,15 @@ def alignSubamplicon(refseq, r1, r2, refseqstart, refseqend, maxmuts,
     >>> s == False 
     True
     """
+    r2 = reverseComplement(r2)
+
+    if use_cutils:
+        return dms_tools2._cutils.alignSubamplicon(refseq, r1, r2, 
+                refseqstart, refseqend, maxmuts, maxN, chartype)
+
     assert chartype in ['codon'], "Invalid chartype"
     if chartype == 'codon':
         assert len(refseq) % 3 == 0, "refseq length not divisible by 3"
-
-    r2 = reverseComplement(r2)
 
     len_subamplicon = refseqend - refseqstart + 1
     len_r1 = len(r1)

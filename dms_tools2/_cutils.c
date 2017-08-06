@@ -9,6 +9,117 @@
 
 
 static PyObject *
+alignSubamplicon(PyObject *self, PyObject *args)
+{
+    // define variables
+    const char *refseq, *r1, *r2, *chartype;
+    double maxmuts, maxN;
+    long refseqstart, refseqend, i, j;
+    long startcodon, nmuts, codonshift;
+    char mutnt;
+    int hasN, hasmut;
+    PyObject *py_subamplicon;
+
+    // parse arguments
+    if (! PyArg_ParseTuple(args, "ssslldds", &refseq, &r1, &r2,
+            &refseqstart, &refseqend, &maxmuts, &maxN, &chartype)) {
+        return NULL;
+    }
+    if (strcmp(chartype, "codon")) {
+        PyErr_SetString(PyExc_ValueError, "chartype not codon");
+        return NULL;
+    }
+    long len_subamplicon = refseqend - refseqstart + 1;
+    long len_r1 = strlen(r1);
+    long len_r2 = strlen(r2);
+    long len_subamplicon_minus_len_r2 = len_subamplicon - len_r2;
+
+    // build subamplicon
+    char *subamplicon = PyMem_New(char, len_subamplicon + 1);
+    if (subamplicon == NULL) {
+        PyErr_SetString(PyExc_MemoryError, "cannot allocate subamplicon");
+        return NULL;
+    }
+    subamplicon[len_subamplicon] = '\0'; // string termination character
+    long nN = 0;
+    for (i = 0; i < len_subamplicon; i++) {
+        if (i < len_subamplicon_minus_len_r2) { // site not in r2
+            if (i < len_r1) { // site in r1
+                subamplicon[i] = r1[i];
+            } else { // site not in r1
+                subamplicon[i] = 'N';
+            }
+        } else { // site in r2
+            if (i < len_r1) { // site in r1
+                if (r1[i] == r2[i - len_subamplicon_minus_len_r2]) {
+                    subamplicon[i] = r1[i];
+                } else if (r1[i] == 'N') {
+                    subamplicon[i] = r2[i - len_subamplicon_minus_len_r2];
+                } else if (r2[i - len_subamplicon_minus_len_r2] == 'N') {
+                    subamplicon[i] = r1[i];
+                } else {
+                    subamplicon[i] = 'N';
+                }
+            } else { // site not in r1
+               subamplicon[i] = r2[i - len_subamplicon_minus_len_r2]; 
+            }
+        }
+        if (subamplicon[i] == 'N') {
+            nN++;
+            if (nN > maxN) {
+                Py_RETURN_FALSE;
+            }
+        }
+    }
+
+    // look for excessive mutations
+    if (! strcmp(chartype, "codon")) {
+        switch (refseqstart % 3) {
+            case 1 : startcodon = (refseqstart + 2) / 3;
+                     codonshift = 0;
+                     break;
+            case 2 : startcodon = (refseqstart + 1) / 3 + 1;
+                     codonshift = 2;
+                     break;
+            case 0 : startcodon = refseqstart / 3 + 1;
+                     codonshift = 1;
+                     break;
+            default : PyErr_SetString(PyExc_ValueError, "invalid case");
+                      return NULL;
+        }
+        nmuts = 0;
+        for (i = startcodon; i < (refseqend / 3 + 1); i++) {
+            hasN = 0;
+            hasmut = 0;
+            for (j = 0; j < 3; j++) {
+                mutnt = subamplicon[3 * (i - startcodon) + codonshift + j];
+                if (mutnt == 'N') {
+                    hasN = 1;
+                    break;
+                } else if (mutnt != refseq[3 * i - 3 + j]) {
+                    hasmut = 1;
+                }
+            }
+            if (hasmut && (! hasN)) {
+                nmuts++;
+                if (nmuts > maxmuts) {
+                    Py_RETURN_FALSE;
+                }
+            }
+        }
+    } else {
+        PyErr_SetString(PyExc_ValueError, "invalid chartype");
+        return NULL;
+    }
+
+    // return subamplicon
+    py_subamplicon = PyUnicode_FromString(subamplicon);
+    PyMem_Del(subamplicon);
+    return py_subamplicon;
+}
+
+
+static PyObject *
 reverseComplement(PyObject *self, PyObject *args)
 {
     // define variables
@@ -190,11 +301,14 @@ buildReadConsensus(PyObject *self, PyObject *args)
 
 static PyMethodDef cutilsMethods[] = {
     {"buildReadConsensus", buildReadConsensus, METH_VARARGS,
-            "Fast version of `dms_tools2.utils.buildReadConsensus`."},
+            "Same as `dms_tools2.utils.buildReadConsensus` but "
+            "`r2` should be reverse-complemented prior to call."},
+    {"alignSubamplicon", alignSubamplicon, METH_VARARGS,
+            "Same as `dms_tools2.utils.alignSubamplicon`."},
     {"lowQtoN", lowQtoN, METH_VARARGS,
-            "Fast version of `dms_tools2.utils.lowQtoN`."},
+            "Same as `dms_tools2.utils.lowQtoN`."},
     {"reverseComplement", reverseComplement, METH_VARARGS,
-            "Fast version of `dms_tools2.utils.reverseComplement`."},
+            "Same as `dms_tools2.utils.reverseComplement`."},
     {NULL, NULL, 0, NULL}
 };
 
