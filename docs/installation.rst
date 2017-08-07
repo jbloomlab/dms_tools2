@@ -4,9 +4,22 @@
 Installation
 ================================
 
-`dms_tools2`_ is written in `Python`_, and is compatible with `Python`_ version 3.4 and higher. 
-
 .. contents::
+
+dms_tools2 requires **Python 3**
+---------------------------------
+`dms_tools2`_ requires Python 3.4 or higher.
+Most computers currently have both Python 2 and Python 3 installed.
+You can check your current version of Python (and the Python installation program ``pip``) with::
+
+    python --version
+
+and::
+
+    pip --version
+
+If these commands indicate that your current default versions are Python 2, then you need to either re-set the defaults to be Python 3 or use the Python 3 specific commands on your computer (which are likely to be ``python3`` rather than ``python``, and ``pip3`` rather than ``pip``).
+
 
 Quick installation
 ---------------------
@@ -48,15 +61,8 @@ First, check if you already have `pip`_ installed. You can do this by typing at 
 
     pip --version
 
-If you get the help message for `pip`_, then `pip`_ is already installed and you can move to the next step. 
-Note that you need `pip`_ for **python3**, as `dms_tools2`_ requires Python 3.4+ and is **not** compatible with Python 2.*.
-If you instead get an error message such as ``-bash: pip: command not found`` then you need to install `pip`_.
-
-If you have ``easy_install`` installed, then you can simply install `pip`_ with::
-
-    easy_install pip --user
-
-If this fails (e.g., you don't have ``easy_install`` available either), then install `pip`_ by following the `instructions here <https://pip.pypa.io/en/latest/installing.html>`_.
+If this command indicates that you have `pip`_ for Python 3.4 or higher, then you can move to the next step. 
+If you do not have `pip`_, then you need to install it by following the `instructions here <https://pip.pypa.io/en/stable/installing/>`_.
 
 Next, use ``pip`` to install ``dms_tools2``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

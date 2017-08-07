@@ -5,7 +5,7 @@
 SPHINXOPTS    =
 SPHINXAPIDOC  = sphinx-apidoc
 PYTHONAPISRC  = ../dms_tools2
-SPHINXBUILD   = python -msphinx
+SPHINXBUILD   = python3 -msphinx
 SPHINXPROJ    = dms_tools2
 SOURCEDIR     = .
 BUILDDIR      = _build
