@@ -40,39 +40,51 @@ def sessionInfo():
 
 
 def initLogger(logfile, prog, args):
-    """Initialize `logging.Logger` for scripts.
+    """Initialize output logging for scripts.
 
     Args:
-        `logfile` (str)
-            Name of file to which log is written.
+        `logfile` (str or `sys.stdout`)
+            Name of file to which log is written, or 
+            `sys.stdout` if you just want to write information
+            to standard output.
         `prog` (str)
             Name of program for which we are logging.
         `args` (dict)
             Program arguments as arg / value pairs.
 
     Returns:
-        An opened and initialized `logging.Logger`.
-        Basic information about the program and args
-        will have already been written to this logger.
+        If `logfile` is a string giving a file name, returns
+        an opened and initialized `logging.Logger`. If `logfile`
+        is `sys.stdout`, then writes information to `sys.stdout`.
+        In either case, basic information is written about the program 
+        and args.
     """
-    if os.path.isfile(logfile):
-        os.remove(logfile)
-    logging.basicConfig(level=logging.INFO,
-            format='%(asctime)s - %(levelname)s - %(message)s')
-    logger = logging.getLogger(prog)
-    logfile_handler = logging.FileHandler(logfile)
-    logger.addHandler(logfile_handler)
-    formatter = logging.Formatter(
-            '%(asctime)s - %(levelname)s - %(message)s')
-    logfile_handler.setFormatter(formatter)
-    logger.info("Beginning execution of {0} in directory {1}\n".format(
-            prog, os.getcwd()))
-    logger.info("Progress is being logged to {0}".format(logfile))
-    logger.info("{0}\n".format(sessionInfo()))
-    logger.info("Parsed the following arguments:\n\t{0}\n".format(
-            '\n\t'.join(['{0} = {1}'.format(arg, val) for (arg, val)
-            in args.items()])))
-    return logger
+    if logfile == sys.stdout:
+        logger.write("Beginning execution of {0} in directory {1}\n\n".format(
+                prog, os.getcwd()))
+        logger.write("{0}\n\n".format(sessionInfo()))
+        logger.write("Parsed the following arguments:\n\t{0}\n\n".format(
+                '\n\t'.join(['{0} = {1}'.format(arg, val) for (arg, val)
+                in args.items()])))
+    else:
+        if os.path.isfile(logfile):
+            os.remove(logfile)
+        logging.basicConfig(level=logging.INFO,
+                format='%(asctime)s - %(levelname)s - %(message)s')
+        logger = logging.getLogger(prog)
+        logfile_handler = logging.FileHandler(logfile)
+        logger.addHandler(logfile_handler)
+        formatter = logging.Formatter(
+                '%(asctime)s - %(levelname)s - %(message)s')
+        logfile_handler.setFormatter(formatter)
+        logger.info("Beginning execution of {0} in directory {1}\n".format(
+                prog, os.getcwd()))
+        logger.info("Progress is being logged to {0}".format(logfile))
+        logger.info("{0}\n".format(sessionInfo()))
+        logger.info("Parsed the following arguments:\n\t{0}\n".format(
+                '\n\t'.join(['{0} = {1}'.format(arg, val) for (arg, val)
+                in args.items()])))
+        return logger
 
 
 def iteratePairedFASTQ(r1files, r2files, r1trim=None, r2trim=None):

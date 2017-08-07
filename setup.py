@@ -60,7 +60,7 @@ setup(
     package_dir = {'dms_tools2':'dms_tools2'},
     scripts = [
             'scripts/dms2_bcsubamp',
-#            'scripts/dms2_batch_bcsubamp',
+            'scripts/dms2_batch_bcsubamp',
             ],
     package_data = {'dms_tools2':['_weblogo_template.eps']}, 
     ext_modules = [

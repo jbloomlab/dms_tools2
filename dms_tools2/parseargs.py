@@ -53,16 +53,11 @@ def parserDescription(description):
             dms_tools2.__url__))
 
 
-def bcsubampParser():
-    """Returns `argparse.ArgumentParser` for ``dms2_bcsubamp``."""
+def bcsubampParentParser():
+    """Parent parser for ``dms2_bcsubamp`` / ``dms2_batch_bcsubamp``."""
     parser = argparse.ArgumentParser(
-            description=parserDescription(
-                'Align barcoded subamplicons and count mutations.'),
             parents=[parentParser()],
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
-    parser.add_argument('--name', required=True, 
-            help='Sample name used for output files.')
 
     parser.add_argument('--refseq', required=True, 
             help='Align subamplicons to gene in this FASTA file.')
@@ -74,10 +69,6 @@ def bcsubampParser():
             "'refseq' where nt R1START in R1 aligns. "
             "REFSEQEND is nt in 'refseq' where nt R2START "
             "in R2 aligns.'"))
-
-    parser.add_argument('--R1', required=True, nargs='+',
-            help="Read 1 (R1) FASTQ files, can be gzipped. "
-            "See also '--fastqdir'.")
 
     parser.add_argument('--bclen', type=int, default=8,
             help='Length of NNN... barcode at start of each read.')
@@ -137,9 +128,48 @@ def bcsubampParser():
 
     parser.add_argument('--seed', type=int, default=1, 
             help="Random number seed for '--purgeread' and '--purgebc'.")
-    
+
     return parser
 
+
+def bcsubampParser():
+    """Returns `argparse.ArgumentParser` for ``dms2_bcsubamp``."""
+    parser = argparse.ArgumentParser(
+            description=parserDescription(
+                'Align barcoded subamplicons and count mutations.'),
+            parents=[bcsubampParentParser()],
+            conflict_handler='resolve',
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--name', required=True, 
+            help='Sample name used for output files.')
+
+    parser.add_argument('--R1', required=True, nargs='+',
+            help="Read 1 (R1) FASTQ files, can be gzipped. "
+            "See also '--fastqdir'.")
+
+    return parser
+
+
+def batch_bcsubampParser():
+    """Returns `argparse.ArgumentParser` for ``dms2_batch_bcsubamp``."""
+    parser = argparse.ArgumentParser(
+            description=parserDescription(
+                'Perform many runs of `dms2_bcsubamp` and summarize results.'),
+            parents=[bcsubampParentParser()],
+            conflict_handler='resolve',
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--batchfile', help="CSV file wth details for "
+            "each `dms2_bcsubamp` run. Columns: name, R1, plotgroup")
+
+    parser.add_argument('--summaryprefix', required=True,
+            help="Prefix of output summary plots.")
+
+    parser.add_argument('--ncpus', type=int, default=-1, required=True,
+            help="Number of CPUs to use, -1 is all available.")
+
+    return parser
 
 
 if __name__ == '__main__':
