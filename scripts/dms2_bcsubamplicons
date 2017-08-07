@@ -373,15 +373,4 @@ def main():
 
 
 if __name__ == '__main__':
-#    main() # run the script
-    import cProfile
-    import pstats
-    cProfile.run('main()', 'pstats')
-    for psort in ['cumulative', 'tottime']:
-        fname = 'pstats_{0}.txt'.format(psort)
-        with open(fname, 'w') as f:
-            s = pstats.Stats('pstats', stream=f)
-            s.strip_dirs()
-            s.sort_stats(psort)
-            s.print_stats()
-
+    main() # run the script
