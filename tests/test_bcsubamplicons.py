@@ -299,7 +299,8 @@ class test_bcsubamplicons(unittest.TestCase):
                 '--refseq', self.refseqfile,
                 '--alignspecs'] + self.alignspecs + [
                 '--outdir', self.testdir,
-                '--R1', self.r1file,
+                '--R1', os.path.basename(self.r1file),
+                '--fastqdir', self.testdir,
                 '--maxmuts', str(self.MAXMUTS),
                 '--minfraccall', str(self.MINFRACCALL),
                 '--minconcur', str(self.MINCONCUR),

@@ -158,9 +158,13 @@ def main():
                 range(len(alignspecs))]
 
         # check on read files
+        if not args['fastqdir']:
+            args['fastqdir'] = ''
+        else:
+            assert os.path.isdir(args['fastqdir']), "Invalid --fastqdir"
         r1files = []
         for f in args['R1']:
-            r1files += sorted(glob.glob(f))
+            r1files += sorted(glob.glob(os.path.join(args['fastqdir'], f)))
         assert r1files and all(map(os.path.isfile, r1files)), "Missing R1 files"
         if not args['R2']:
             r2files = []
@@ -171,7 +175,7 @@ def main():
         else:
             r2files = []
             for f in args['R2']:
-                r2files += sorted(glob.glob(f))
+                r2files += sorted(glob.glob(os.path.join(args['fastqdir'], f)))
             assert len(r1files) == len(r2files), "R1 and R2 not same length"
         assert all(map(os.path.isfile, r2files)), "Missing R2 files"
         logger.info("Reads are in these FASTQ pairs:\n\t{0}\n".format(

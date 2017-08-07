@@ -76,13 +76,17 @@ def bcsubampliconsParser():
             "in R2 aligns.'"))
 
     parser.add_argument('--R1', required=True, nargs='+',
-            help='Read 1 (R1) FASTQ files, can be gzipped')
+            help="Read 1 (R1) FASTQ files, can be gzipped. "
+            "See also '--fastqdir'.")
 
     parser.add_argument('--bclen', type=int, default=8,
             help='Length of NNN... barcode at start of each read.')
 
     parser.add_argument('--outdir',  
             help='Output files to this directory (create if needed).')
+
+    parser.add_argument('--fastqdir',
+            help='R1 and R2 files in this directory.')
 
     parser.add_argument('--R2', nargs='+', help=("Read 2 (R2) FASTQ "
             "files assumed to have same names as R1 but with "

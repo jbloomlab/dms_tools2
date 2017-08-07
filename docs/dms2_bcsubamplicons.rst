@@ -119,6 +119,12 @@ Command-line usage
    \-\-R1
     You can specify multiple files using the ``*`` wildcard character, as in ``reads_R1_L*.fastq.gz``.
 
+    If you have multiple files that are all in the same directory, it may be convenient to specify this directory using ``--fastqdir`` and then avoid repeatedly listing the directory name for each file.
+
+   \-\-fastqdir
+    This option can be useful if the ``--R1`` / ``--R2`` files are found in a common directory. 
+    Instead of repeatedly listing that directory name, you can just provide it here and then give the file (or subdirectory/file) names for the files via ``--R1`` / ``--R2``.
+
    \-\-R2
     Most pipelines for generating Illumina FASTQ files have the read 1 sequences in a file that contains the string ``_R1`` and the read 2 sequences in a file that contains the string ``_R2``. If this is the case, the R2 file name can just be guessed from the R1 file name. However, you can use this option if your R2 files have a different name that you need to specify manually.
 
