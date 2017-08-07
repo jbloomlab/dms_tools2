@@ -51,7 +51,7 @@ def bcInfo(bc, bcreads, retained, consensus, desc):
 def main():
     """Main body of script."""
 
-    parser = dms_tools2.parseargs.bcsubampliconsParser()
+    parser = dms_tools2.parseargs.bcsubampParser()
     args = vars(parser.parse_args())
     prog = parser.prog
 

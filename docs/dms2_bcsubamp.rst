@@ -1,7 +1,7 @@
-.. _dms2_bcsubamplicons:
+.. _dms2_bcsubamp:
 
 ==========================================
-``dms2_bcsubamplicons``
+``dms2_bcsubamp``
 ==========================================
 
 .. contents::
@@ -23,7 +23,7 @@ The barcoded subamplicons are then diluted such that the number of unique ssDNA 
 Finally, these molecules are sequenced.
 
 In analyzing the sequencing, we can then identify barcodes that are sequenced multiple times, and a consensus sequence for the subamplicon can be built from the multiple reads. 
-The ``dms2_bcsubamplicons`` script performs this analysis.
+The ``dms2_bcsubamp`` script performs this analysis.
 
 To understand how the sequencing is done in detail, example primers are shown below for sequencing of the hemagglutinin (HA) from A/WSN/1933 (H1N1) influenza::
 
@@ -58,16 +58,16 @@ Briefly, the steps are as follows:
 
     4) The products of the round 2 PCRs are sequenced with overlapping paired-end reads of sufficient length to cover the entire subamplicon, and the sequencing data are analyzed with the standard Illumina pipeline to generate FASTQ files with the R1 and R2 reads.
 
-    5) The FASTQ files are analyzed with ``dms2_bcsubamplicons``. For the example here, the command might be::
+    5) The FASTQ files are analyzed with ``dms2_bcsubamp``. For the example here, the command might be::
 
-        dms2_bcsubamplicons --name WSN-HA --refseq WSN-HA.fasta --R1 R1_L*.fastq.gz --alignspecs 1,426,36,38 427,849,32,32 850,1275,31,37 1276,1698,46,45 --R1trim 200 --R2trim 170
+        dms2_bcsubamp --name WSN-HA --refseq WSN-HA.fasta --R1 R1_L*.fastq.gz --alignspecs 1,426,36,38 427,849,32,32 850,1275,31,37 1276,1698,46,45 --R1trim 200 --R2trim 170
 
        The meanings of the arguments are detailed in the `Command-line usage`_. 
 
 
 Algorithm for assembling and aligning subamplicons
 ----------------------------------------------------
-The algorithm implemented by ``dms2_bcsubamplicons`` is as follows:
+The algorithm implemented by ``dms2_bcsubamp`` is as follows:
 
 1) Read pairs are discarded if either read fails the Illumina chastity filter.
 
@@ -101,8 +101,8 @@ Command-line usage
 ---------------------
 .. argparse::
    :module: dms_tools2.parseargs
-   :func: bcsubampliconsParser
-   :prog: dms2_bcsubamplicons
+   :func: bcsubampParser
+   :prog: dms2_bcsubamp
 
    \-\-name
     The `Output files`_ will have a prefix equal to the name specified here.
@@ -235,6 +235,6 @@ This file is only created if you use the ``--bcinfo`` option, and may be helpful
 
 Memory usage
 ---------------------------
-``dms2_bcsubamplicons`` stores all of the reads in the FASTQ files in memory. Therefore, it uses a substantial amount of memory, typically around a gigabyte per million paired-end sequencing reads. However, for typical data sets such memory usage is well within the capacity of modern large-memory nodes.
+``dms2_bcsubamp`` stores all of the reads in the FASTQ files in memory. Therefore, it uses a substantial amount of memory, typically around a gigabyte per million paired-end sequencing reads. However, for typical data sets such memory usage is well within the capacity of modern large-memory nodes.
 
 .. include:: weblinks.txt

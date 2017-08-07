@@ -53,8 +53,8 @@ def parserDescription(description):
             dms_tools2.__url__))
 
 
-def bcsubampliconsParser():
-    """Returns `argparse.ArgumentParser` for ``dms2_bcsubamplicons``."""
+def bcsubampParser():
+    """Returns `argparse.ArgumentParser` for ``dms2_bcsubamp``."""
     parser = argparse.ArgumentParser(
             description=parserDescription(
                 'Align barcoded subamplicons and count mutations.'),

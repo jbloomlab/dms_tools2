@@ -1,4 +1,4 @@
-"""Tests ``dms2_bcsubamplicons``.
+"""Tests ``dms2_bcsubamp``.
 
 Written by Jesse Bloom."""
 
@@ -110,8 +110,8 @@ def generateReadPair(refseq, alignspec, bc1, bc2, r1ext=0, r2ext=0,
 
 
 
-class test_bcsubamplicons(unittest.TestCase):
-    """Runs ``dms2_bcsubamplicons`` on test data
+class test_bcsubamp(unittest.TestCase):
+    """Runs ``dms2_bcsubam`` on test data
     
     Use settings that tolerate of modest numbers of mutations
     and low-quality nucleotides.
@@ -129,7 +129,7 @@ class test_bcsubamplicons(unittest.TestCase):
 
         self.testdir = os.path.join(
                 os.path.abspath(os.path.dirname(__file__)),
-                './test_bcsubamplicons_files/')
+                './test_bcsubamp_files/')
         if not os.path.isdir(self.testdir):
             os.mkdir(self.testdir)
 
@@ -291,10 +291,10 @@ class test_bcsubamplicons(unittest.TestCase):
                 os.remove(f)
 
 
-    def test_dms2_bcsubamplicons(self):
-        """Runs ``dms2_bcsubamplicons`` on test data."""
+    def test_dms2_bcsubamp(self):
+        """Runs ``dms2_bcsubamp`` on test data."""
         cmds = [
-                'dms2_bcsubamplicons',
+                'dms2_bcsubamp',
                 '--name', self.NAME,
                 '--refseq', self.refseqfile,
                 '--alignspecs'] + self.alignspecs + [
@@ -343,33 +343,33 @@ class test_bcsubamplicons(unittest.TestCase):
                 bcstats.at['not alignable', 'number of barcodes'])
 
 
-class test_bcsubamplicons_strictconcur(test_bcsubamplicons):
-    """Tests ``dms2_bcsubamplicons`` with stricter ``--minconcur``."""
+class test_bcsubamp_strictconcur(test_bcsubamp):
+    """Tests ``dms2_bcsubamp`` with stricter ``--minconcur``."""
     MINCONCUR = 0.9
     NAME = 'test-minconcur'
 
 
-class test_bcsubamplicons_strictmaxmuts(test_bcsubamplicons):
-    """Tests ``dms2_bcsubamplicons`` with stricter ``--maxmuts``."""
+class test_bcsubamp_strictmaxmuts(test_bcsubamp):
+    """Tests ``dms2_bcsubamp`` with stricter ``--maxmuts``."""
     MAXMUTS = 0
     NAME = 'test-maxmuts'
 
 
-class test_bcsubamplicons_strictminfraccall(test_bcsubamplicons):
-    """Tests ``dms2_bcsubamplicons`` with stricter ``--minfraccall``."""
+class test_bcsubamp_strictminfraccall(test_bcsubamp):
+    """Tests ``dms2_bcsubamp`` with stricter ``--minfraccall``."""
     MINFRACCALL = 1.0
     NAME = 'test-minfraccall'
 
 
-class test_bcsubamplicons_trimreads(unittest.TestCase):
-    """Tests trim reads feature of ``dms2_bcsubamplicons``."""
+class test_bcsubamp_trimreads(unittest.TestCase):
+    """Tests trim reads feature of ``dms2_bcsubamp``."""
 
     def setUp(self):
         """Set up input data."""
 
         self.testdir = os.path.join(
                 os.path.abspath(os.path.dirname(__file__)),
-                './test_bcsubamplicons_files/')
+                './test_bcsubamp_files/')
         if not os.path.isdir(self.testdir):
             os.mkdir(self.testdir)
 
@@ -408,8 +408,8 @@ class test_bcsubamplicons_trimreads(unittest.TestCase):
                 f1.write(r1)
                 f2.write(r2)
 
-    def test_dms2_bcsubamplicons(self):
-        """Runs ``dms2_bcsubamplicons`` on test data +/- trimming."""
+    def test_dms2_bcsubamp(self):
+        """Runs ``dms2_bcsubamp`` on test data +/- trimming."""
        
         fullr1trim = []
         fullr2trim = []
@@ -426,7 +426,7 @@ class test_bcsubamplicons_trimreads(unittest.TestCase):
                 ]:
             name = '{0}-{1}'.format(self.name, desc)
             cmds = [
-                    'dms2_bcsubamplicons',
+                    'dms2_bcsubamp',
                     '--name', name,
                     '--refseq', self.refseqfile,
                     '--alignspecs'] + self.alignspecs + [
@@ -460,7 +460,7 @@ class test_bcsubamplicons_trimreads(unittest.TestCase):
                     counts[dms_tools2.CODONS].sum(axis=1)).all())
 
 
-class test_bcsubamplicons_counts(unittest.TestCase):
+class test_bcsubamp_counts(unittest.TestCase):
     """Tests generation of counts file."""
 
     def setUp(self):
@@ -468,7 +468,7 @@ class test_bcsubamplicons_counts(unittest.TestCase):
 
         self.testdir = os.path.join(
                 os.path.abspath(os.path.dirname(__file__)),
-                './test_bcsubamplicons_files/')
+                './test_bcsubamp_files/')
         if not os.path.isdir(self.testdir):
             os.mkdir(self.testdir)
 
@@ -506,7 +506,7 @@ class test_bcsubamplicons_counts(unittest.TestCase):
     def test_counts(self):
         """Make sure we generate the expected codon counts."""
         cmds = [
-                'dms2_bcsubamplicons',
+                'dms2_bcsubamp',
                 '--name', self.name,
                 '--refseq', self.refseqfile,
                 '--alignspecs', self.alignspec,

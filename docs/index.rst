@@ -22,7 +22,7 @@ Contents
    :maxdepth: 1
 
    installation
-   dms2_bcsubamplicons
+   dms2_bcsubamp
    api
    citations
 
