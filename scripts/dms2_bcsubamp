@@ -85,7 +85,7 @@ def main():
 
     logger = dms_tools2.utils.initLogger(files['log'], prog, args)
 
-    # log in try / except loop
+    # log in try / except / finally loop
     try:
 
         for f in files:

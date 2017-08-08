@@ -7,6 +7,7 @@ import os
 import glob
 import sys
 import re
+import logging
 import pandas
 import dms_tools2.parseargs
 import dms_tools2.utils
@@ -19,14 +20,58 @@ def main():
     args = vars(parser.parse_args())
     prog = parser.prog
 
-    dms_tools2.utils.initLogger(sys.stdout, prog, args)
-
-    assert os.path.isfile(args['batchfile']), "Cannot find batchfile"
-    batchruns = pandas.read_csv(args['batchfile'])
-
+    # set up names of output files
+    assert re.search('^[a-zA-Z0-9\-]+$', args['summaryprefix']), \
+            "--summaryprefix should contain only letters, numbers, and dashes"
+    if args['outdir']:
+        if not os.path.isdir(args['outdir']):
+            os.mkdir(args['outdir'])
+        else:
+            args['outdir'] = ''
     filesuffixes = {
-            'nbarcodes':'nbarcodes.pdf',
+            'log':'.log',
+            'nbarcodes':'_nbarcodes.pdf',
             }
+    files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
+            args['summaryprefix'], s))) for (f, s) in filesuffixes.items()])
+
+    # do we need to proceed
+    if args['use_existing'] and all(map(os.path.isfile, files.values())):
+            print("Output summary files already exist and '--use_existing' "
+                    "specified, so exiting with no further action.")
+            sys.exit(0)
+
+    logger = dms_tools2.utils.initLogger(files['log'], prog, args)
+
+    # log in try / except / finally loop
+    try:
+
+        # read batchfile, strip any whitespace from strings
+        logger.info("Parsing sample info from {0}".format(args['batchfile']))
+        assert os.path.isfile(args['batchfile']), "no batchfile"
+        batchruns = pandas.read_csv(args['batchfile'])
+        batchruns.columns = batchruns.columns.str.strip()
+        colnames = ['name', 'R1', 'plotgroup']
+        assert set(batchruns.columns) == set(colnames), ("batchfile lacks "
+                "required column names of: {0}".format(', '.join(colnames)))
+        for c in batchruns.columns:
+            batchruns[c] = (batchruns[c].map(str).map(str.strip).
+                    replace('nan', ''))
+        logger.info("Read the following sample information:\n{0}".format(
+                batchruns.to_csv(index=False)))
+
+    except:
+        logger.exception('Terminating {0} with ERROR'.format(prog))
+        for (fname, fpath) in files.items():
+            if fname != 'log' and os.path.isfile(fpath):
+                logger.exception("Deleting file {0}".format(fpath))
+                os.remove(fpath)
+
+    else:
+        logger.info('Successful completion of {0}'.format(prog))
+
+    finally:
+        logging.shutdown()
 
 
 

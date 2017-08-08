@@ -166,7 +166,7 @@ def batch_bcsubampParser():
     parser.add_argument('--summaryprefix', required=True,
             help="Prefix of output summary plots.")
 
-    parser.add_argument('--ncpus', type=int, default=-1, required=True,
+    parser.add_argument('--ncpus', type=int, default=-1, 
             help="Number of CPUs to use, -1 is all available.")
 
     return parser

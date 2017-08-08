@@ -60,10 +60,10 @@ def initLogger(logfile, prog, args):
         and args.
     """
     if logfile == sys.stdout:
-        logger.write("Beginning execution of {0} in directory {1}\n\n".format(
+        logfile.write("Beginning execution of {0} in directory {1}\n\n".format(
                 prog, os.getcwd()))
-        logger.write("{0}\n\n".format(sessionInfo()))
-        logger.write("Parsed the following arguments:\n\t{0}\n\n".format(
+        logfile.write("{0}\n\n".format(sessionInfo()))
+        logfile.write("Parsed the following arguments:\n\t{0}\n\n".format(
                 '\n\t'.join(['{0} = {1}'.format(arg, val) for (arg, val)
                 in args.items()])))
     else:
