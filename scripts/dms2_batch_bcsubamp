@@ -8,6 +8,10 @@ import glob
 import sys
 import re
 import logging
+import functools
+import subprocess
+import multiprocessing
+import multiprocessing.dummy
 import pandas
 import dms_tools2.parseargs
 import dms_tools2.utils
@@ -26,8 +30,8 @@ def main():
     if args['outdir']:
         if not os.path.isdir(args['outdir']):
             os.mkdir(args['outdir'])
-        else:
-            args['outdir'] = ''
+    else:
+        args['outdir'] = ''
     filesuffixes = {
             'log':'.log',
             'nbarcodes':'_nbarcodes.pdf',
@@ -57,26 +61,45 @@ def main():
         for c in batchruns.columns:
             batchruns[c] = (batchruns[c].map(str).map(str.strip).
                     replace('nan', ''))
-        logger.info("Read the following sample information:\n{0}".format(
+        logger.info("Read the following sample information:\n{0}\n".format(
                 batchruns.to_csv(index=False)))
         assert len(batchruns['name']) == len(set(batchruns['name'].values)),\
                 "Duplicated name"
 
+        # determine how many cpus to use
+        if args['ncpus'] == -1:
+            ncpus = multiprocessing.cpu_count()
+        elif args['ncpus'] > 0:
+            ncpus = min(args['ncpus'], multiprocessing.cpu_count())
+        else:
+            raise ValueError("--ncpus must be -1 or > 0")
+
         # run dms2_bcsubamp for each sample in batchfile
+        logger.info("Running dms2_bcsubamp on all samples using "
+                "{0} CPUs...".format(ncpus))
+        argslist = []
         for (i, row) in batchruns.iterrows():
             # define newargs to pass to dms2_bcsubamp
-            newargs = {'name':row['name'], 'R1':row['R1']}
+            newargs = ['dms2_bcsubamp', '--name', row['name'], 
+                    '--R1', row['R1']]
+            if args['use_existing']:
+                newargs.append('--use_existing')
             for (arg, val) in args.items():
-                if arg in ['batchfile', 'ncpus', 'summaryprefix']:
+                if arg in ['batchfile', 'ncpus', 'summaryprefix', 
+                        'use_existing']:
                     continue
                 elif val:
+                    newargs.append('--{0}'.format(arg))
                     if isinstance(val, list):
-                        val = ' '.join(map(str, val))
+                        newargs += map(str, val)
                     else:
-                        val = str(val)
-                    newargs[arg] = val
-            newargs = ' '.join(['--{0} {1}'.format(arg, val) for (arg, val)
-                    in newargs.items()])
+                        newargs.append(str(val))
+            argslist.append(newargs)
+        pool = multiprocessing.dummy.Pool(ncpus)
+        pool.imap(functools.partial(subprocess.check_output, 
+                stderr=subprocess.STDOUT), argslist)
+        pool.close()
+        pool.join()
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))
