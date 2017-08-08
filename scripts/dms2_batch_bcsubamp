@@ -59,6 +59,24 @@ def main():
                     replace('nan', ''))
         logger.info("Read the following sample information:\n{0}".format(
                 batchruns.to_csv(index=False)))
+        assert len(batchruns['name']) == len(set(batchruns['name'].values)),\
+                "Duplicated name"
+
+        # run dms2_bcsubamp for each sample in batchfile
+        for (i, row) in batchruns.iterrows():
+            # define newargs to pass to dms2_bcsubamp
+            newargs = {'name':row['name'], 'R1':row['R1']}
+            for (arg, val) in args.items():
+                if arg in ['batchfile', 'ncpus', 'summaryprefix']:
+                    continue
+                elif val:
+                    if isinstance(val, list):
+                        val = ' '.join(map(str, val))
+                    else:
+                        val = str(val)
+                    newargs[arg] = val
+            newargs = ' '.join(['--{0} {1}'.format(arg, val) for (arg, val)
+                    in newargs.items()])
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))
