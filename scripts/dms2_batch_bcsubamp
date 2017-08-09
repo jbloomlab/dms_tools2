@@ -100,6 +100,29 @@ def main():
                 stderr=subprocess.STDOUT), argslist)
         pool.close()
         pool.join()
+        logger.info("Completed runs of dms2_bcsubamp.\n")
+
+        # define expected output files and make sure they exist 
+        for (filename, filesuffix) in [
+                ('counts', '_{0}counts.csv'.format(args['chartype'])),
+                ('readstats', '_readstats.csv'),
+                ('readsperbc', '_readsperbc.csv'),
+                ('bcstats', '_bcstats.csv')]:
+            batchruns[filename] = (args['outdir'] + '/' + batchruns['name'] +
+                    filesuffix)
+            assert all(map(os.path.isfile, batchruns[filename].values)),\
+                    "Did not create all of these files:\n{0}".format(
+                    '\n'.join(batchruns[filename].values))
+
+        # make plots for each plot group
+        plotgroups = set(batchruns['plotgroup'].values)
+        logger.info("Making summary plots for the {0} plotgroups.".format(
+                len(plotgroups)))
+        for plotgroup in plotgroups:
+            if len(plotgroups) > 1:
+                logger.info("Plotting for plotgroup: {0}".format(
+                    lambda x: x if x else '<empty name>'))
+            groupruns = batchruns.loc[batchruns['plotgroup'] == plotgroup]
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))
