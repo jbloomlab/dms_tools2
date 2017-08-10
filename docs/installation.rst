@@ -92,7 +92,7 @@ To install from source, first clone the `dms_tools2 source code`_ from GitHub::
 Then install locally with::
 
     cd dms_tools2
-    python setup.py install --user
+    pip install -e . --user
 
 
 .. _license:
