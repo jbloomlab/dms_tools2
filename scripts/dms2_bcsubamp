@@ -78,8 +78,9 @@ def main():
             args['name'], s))) for (f, s) in filesuffixes.items()])
 
     # do we need to proceed?
-    if args['use_existing'] and all(map(os.path.isfile, files.values())):
-        print("Output files already exist and '--use_existing' specified, "
+    if args['use_existing'] == 'yes' and all(map(
+                os.path.isfile, files.values())):
+        print("Output files already exist and '--use_existing' is 'yes', "
               "so exiting with no further action.")
         sys.exit(0)
 
@@ -232,12 +233,11 @@ def main():
 
         logger.info('Parsed {0} reads, found {1} unique barcodes.'.format(
                 nreads['total'], len(barcodes)))
-        readstats = pandas.DataFrame(sorted(nreads.items()), columns=[
-                'category', 'number of reads']).set_index('category')
+        readstats = pandas.DataFrame(nreads, index=[0])
         logger.info("Summary stats on reads:\n{0}".format(
-                readstats.to_string()))
+                readstats.to_string(index=False)))
         logger.info("Writing these stats to {0}\n".format(files['readstats']))
-        readstats.to_csv(files['readstats'])
+        readstats.to_csv(files['readstats'], index=False)
 
         # collect stats on reads per barcode
         readsperbc = {}
@@ -345,12 +345,11 @@ def main():
         if args['bcinfo']:
             bcinfofile.close()
 
-        bcstats = pandas.DataFrame(sorted(nbcs.items()), columns=[
-                'category', 'number of barcodes']).set_index('category')
+        bcstats = pandas.DataFrame(nbcs, index=[0])
         logger.info("Examined all barcodes. Summary stats:\n{0}".format(
-                bcstats.to_string()))
+                bcstats.to_string(index=False)))
         logger.info("Writing these stats to {0}\n".format(files['bcstats']))
-        bcstats.to_csv(files['bcstats'])
+        bcstats.to_csv(files['bcstats'], index=False)
 
         counts = pandas.DataFrame.from_dict(counts).set_index('site')[
                 ['wildtype'] + dms_tools2.CODONS]

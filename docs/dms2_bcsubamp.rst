@@ -166,10 +166,8 @@ This file has the suffix ``_readstats.csv``.
 It gives the statistics on all the processed reads. 
 For instance::
 
-    category,number of reads
-    fail filter,0
-    low Q barcode,791246
-    total,12607196
+    fail filter,low Q barcode,total
+    0,785663,12691176
 
 Reads-per-barcode file
 +++++++++++++++++++++++++
@@ -178,28 +176,31 @@ It gives the number of reads associated with each barcode.
 For instance::
 
     number of reads,number of barcodes
-    1,1283556
-    2,484522
-    3,544678
-    4,497192
-    5,382903
-    6,257677
-    7,153841
-    8,83522
-    9,41776
-    10,19171
-    11,8486
-    12,3525
-    13,1404
-    14,560
-    15,212
-    16,81
-    17,31
-    18,13
-    19,6
-    20,2
-    21,3
-    22,1
+    1,1248294
+    2,400579
+    3,471893
+    4,456661
+    5,376158
+    6,272020
+    7,174295
+    8,102660
+    9,56302
+    10,28079
+    11,13125
+    12,5747
+    13,2518
+    14,1035
+    15,403
+    16,177
+    17,78
+    18,34
+    19,12
+    20,9
+    21,1
+    22,2
+    24,1
+    25,1
+    75,1
 
 Barcode statistics file
 +++++++++++++++++++++++++
@@ -207,11 +208,8 @@ This file has the suffix ``_bcstats.csv``.
 It provides information on how many of the barcodes could be successfully aligned.
 For instance::
 
-    category,number of barcodes
-    aligned,2246649
-    not alignable,232957
-    too few reads,1283556
-    total,3763162
+    aligned,not alignable,too few reads,total
+    2129522,232269,1248294,3610085
 
 Counts file
 +++++++++++++
@@ -221,10 +219,9 @@ It gives the number of called identities at each site in the sequence, as well a
 For instance, here are the first few lines::
 
     site,wildtype,AAA,AAC,AAG,AAT,ACA,ACC,ACG,ACT,AGA,AGC,AGG,AGT,ATA,ATC,ATG,ATT,CAA,CAC,CAG,CAT,CCA,CCC,CCG,CCT,CGA,CGC,CGG,CGT,CTA,CTC,CTG,CTT,GAA,GAC,GAG,GAT,GCA,GCC,GCG,GCT,GGA,GGC,GGG,GGT,GTA,GTC,GTG,GTT,TAA,TAC,TAG,TAT,TCA,TCC,TCG,TCT,TGA,TGC,TGG,TGT,TTA,TTC,TTG,TTT
-    1,ATG,0,0,0,0,0,0,0,0,0,0,0,0,3,1,378573,56,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-    2,AAG,5,1,378402,23,0,0,9,0,0,0,24,0,0,0,7,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,23,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-    3,GCA,0,0,0,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,46,0,0,0,378245,0,2,0,0,0,0,0,13,0,0,0,0,0,0,0,29,0,0,0,0,0,0,0,0,0,0,0
-    4,AAA,378721,0,0,0,2,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    1,ATG,0,0,0,0,0,0,2,0,0,0,0,0,8,0,333985,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    2,AAG,16,20,333132,41,13,12,27,14,8,6,67,8,9,13,29,9,10,11,12,8,10,15,15,11,6,9,3,7,8,10,17,4,3,7,49,7,9,14,9,4,10,7,7,7,9,11,11,5,14,14,11,6,13,16,15,14,9,9,15,8,9,11,8,15
+    3,GCA,2,3,8,3,34,11,7,6,7,6,9,8,4,3,5,0,6,14,10,12,6,8,7,10,5,11,7,6,6,1,3,12,19,6,11,9,333250,10,6,9,15,3,5,5,37,9,9,7,8,4,8,3,23,5,7,8,6,11,7,10,7,9,3,6
 
 Detailed barcode information file
 ++++++++++++++++++++++++++++++++++
