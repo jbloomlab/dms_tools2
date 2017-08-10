@@ -15,6 +15,7 @@ import multiprocessing.dummy
 import pandas
 import dms_tools2.parseargs
 import dms_tools2.utils
+import dms_tools2.plot
 
 
 def main():
@@ -34,15 +35,17 @@ def main():
         args['outdir'] = ''
     filesuffixes = {
             'log':'.log',
+            'readstats':'_readstats.pdf',
             'nbarcodes':'_nbarcodes.pdf',
             }
     files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
             args['summaryprefix'], s))) for (f, s) in filesuffixes.items()])
 
     # do we need to proceed
-    if args['use_existing'] and all(map(os.path.isfile, files.values())):
+    if args['use_existing'] == 'yes' and all(map(
+                os.path.isfile, files.values())):
             print("Output summary files already exist and '--use_existing' "
-                    "specified, so exiting with no further action.")
+                    "is 'yes', so exiting with no further action.")
             sys.exit(0)
 
     logger = dms_tools2.utils.initLogger(files['log'], prog, args)
@@ -82,11 +85,8 @@ def main():
             # define newargs to pass to dms2_bcsubamp
             newargs = ['dms2_bcsubamp', '--name', row['name'], 
                     '--R1', row['R1']]
-            if args['use_existing']:
-                newargs.append('--use_existing')
             for (arg, val) in args.items():
-                if arg in ['batchfile', 'ncpus', 'summaryprefix', 
-                        'use_existing']:
+                if arg in ['batchfile', 'ncpus', 'summaryprefix']:
                     continue
                 elif val:
                     newargs.append('--{0}'.format(arg))
@@ -102,7 +102,7 @@ def main():
         pool.join()
         logger.info("Completed runs of dms2_bcsubamp.\n")
 
-        # define expected output files and make sure they exist 
+        # define dms2_bcsubamp output files and make sure they exist 
         for (filename, filesuffix) in [
                 ('counts', '_{0}counts.csv'.format(args['chartype'])),
                 ('readstats', '_readstats.csv'),
@@ -123,6 +123,8 @@ def main():
                 logger.info("Plotting for plotgroup: {0}".format(
                     lambda x: x if x else '<empty name>'))
             groupruns = batchruns.loc[batchruns['plotgroup'] == plotgroup]
+            dms_tools2.plot.plotReadStats(groupruns['name'], 
+                    groupruns['readstats'], files['readstats'])
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))

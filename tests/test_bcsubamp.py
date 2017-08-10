@@ -314,14 +314,10 @@ class test_bcsubamp(unittest.TestCase):
             self.assertTrue(os.path.isfile(f), "Failed to create {0}".format(f))
 
         # check on read stats
-        readstats = pandas.read_csv(self.outfiles['readstats'], 
-                index_col='category')
-        self.assertEqual(self.nreads, 
-                readstats.at['total', 'number of reads'])
-        self.assertEqual(self.failfilter, 
-                readstats.at['fail filter', 'number of reads'])
-        self.assertEqual(self.lowQbc,
-                readstats.at['low Q barcode', 'number of reads'])
+        readstats = pandas.read_csv(self.outfiles['readstats'])
+        self.assertEqual(self.nreads, readstats.at[0, 'total'])
+        self.assertEqual(self.failfilter, readstats.at[0, 'fail filter'])
+        self.assertEqual(self.lowQbc, readstats.at[0, 'low Q barcode'])
 
         # check on reads per barcode
         readsperbcstats = pandas.read_csv(self.outfiles['readsperbc'],
@@ -331,16 +327,14 @@ class test_bcsubamp(unittest.TestCase):
                     readsperbcstats.at[nreads, 'number of barcodes'])
 
         # check on barcode stats
-        bcstats = pandas.read_csv(self.outfiles['bcstats'], 
-                index_col='category')
-        self.assertEqual(self.nbarcodes,
-                bcstats.at['total', 'number of barcodes'])
-        self.assertEqual(self.barcodes_with_nreads[1],
-                bcstats.at['too few reads', 'number of barcodes'])
+        bcstats = pandas.read_csv(self.outfiles['bcstats'])
+        self.assertEqual(self.nbarcodes, bcstats.at[0, 'total'])
+        self.assertEqual(self.barcodes_with_nreads[1], 
+                bcstats.at[0, 'too few reads'])
         self.assertEqual(self.nbarcodesaligned,
-                bcstats.at['aligned', 'number of barcodes'])
+                bcstats.at[0, 'aligned'])
         self.assertEqual(self.nbarcodesunaligned,
-                bcstats.at['not alignable', 'number of barcodes'])
+                bcstats.at[0, 'not alignable'])
 
 
 class test_bcsubamp_strictconcur(test_bcsubamp):
@@ -444,13 +438,11 @@ class test_bcsubamp_trimreads(unittest.TestCase):
             # check on barcode stats
             bcstatsfile = '{0}/{1}_bcstats.csv'.format(
                     self.testdir, name)
-            bcstats = pandas.read_csv(bcstatsfile, index_col='category') 
+            bcstats = pandas.read_csv(bcstatsfile)
             self.assertEqual(max(aligned, unaligned),
-                    bcstats.at['total', 'number of barcodes'])
-            self.assertEqual(aligned,
-                    bcstats.at['aligned', 'number of barcodes'])
-            self.assertEqual(unaligned,
-                    bcstats.at['not alignable', 'number of barcodes'])
+                    bcstats.at[0, 'total'])
+            self.assertEqual(aligned, bcstats.at[0, 'aligned'])
+            self.assertEqual(unaligned, bcstats.at[0, 'not alignable'])
 
             # check on counts at each site
             countsfile = '{0}/{1}_codoncounts.csv'.format(

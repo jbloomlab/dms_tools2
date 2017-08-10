@@ -24,10 +24,9 @@ def parentParser():
     """
     parser = argparse.ArgumentParser(add_help=False)
 
-    parser.set_defaults(use_existing=False)
-    parser.add_argument('--use_existing', dest='use_existing',
-            action='store_true', help=('Do nothing if files with '
-            'names of all expected output already exist.'))
+    parser.add_argument('--use_existing', choices=['yes', 'no'],
+            default='no', help=('If files with names of expected '
+            'output already exist, do not re-run.'))
 
     parser.add_argument('-v', '--version', action='version', 
             version='%(prog)s {0}'.format(dms_tools2.__version__))
