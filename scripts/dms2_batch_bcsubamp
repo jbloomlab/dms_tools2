@@ -36,7 +36,7 @@ def main():
     filesuffixes = {
             'log':'.log',
             'readstats':'_readstats.pdf',
-            'nbarcodes':'_nbarcodes.pdf',
+            'bcstats':'_bcstats.pdf',
             }
     files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
             args['summaryprefix'], s))) for (f, s) in filesuffixes.items()])
@@ -63,8 +63,8 @@ def main():
         assert os.path.isfile(args['batchfile']), "no batchfile"
         batchruns = pandas.read_csv(args['batchfile'])
         batchruns.columns = batchruns.columns.str.strip()
-        colnames = ['name', 'R1', 'plotgroup']
-        assert set(batchruns.columns) == set(colnames), ("batchfile lacks "
+        colnames = set(['name', 'R1', 'plotgroup'])
+        assert set(batchruns.columns) >= colnames, ("batchfile lacks "
                 "required column names of: {0}".format(', '.join(colnames)))
         for c in batchruns.columns:
             batchruns[c] = (batchruns[c].map(str).map(str.strip).
@@ -128,8 +128,12 @@ def main():
                 logger.info("Plotting for plotgroup: {0}".format(
                     lambda x: x if x else '<empty name>'))
             groupruns = batchruns.loc[batchruns['plotgroup'] == plotgroup]
+            logger.info("Plotting read stats to {0}".format(files['readstats']))
             dms_tools2.plot.plotReadStats(groupruns['name'], 
                     groupruns['readstats'], files['readstats'])
+            logger.info("Plotting barcode stats to {0}".format(files['bcstats']))
+            dms_tools2.plot.plotBCStats(groupruns['name'], 
+                    groupruns['bcstats'], files['bcstats'])
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))

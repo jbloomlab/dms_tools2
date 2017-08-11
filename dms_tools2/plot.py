@@ -20,8 +20,7 @@ def plotReadStats(names, readstatfiles, plotfile):
         `names` (list or series)
             Names of the samples for which we are plotting statistics.
         `readstatfiles` (list or series)
-            Names of ``*_readstats.csv`` files created by ``dms2_bcsubamp``
-            containing the data to plot.
+            Names of ``*_readstats.csv`` files created by ``dms2_bcsubamp``.
         `plotfile` (str)
             Name of PDF plot file to create.
     """
@@ -41,6 +40,34 @@ def plotReadStats(names, readstatfiles, plotfile):
                     axis_title_x=element_blank()) 
             )
     p.save(plotfile, height=2.7, width=(1.2 + 0.4 * len(names)))
+
+
+def plotBCStats(names, bcstatsfiles, plotfile):
+    """Plots `dms2_bcsubamp` barcode statistics for a set of samples.
+
+    Args:
+        `names` (list or series)
+            Names of the samples for which we are plotting statistics.
+        `bcstatsfiles` (list or series)
+            Names of ``*_bcstats.csv`` files created by ``dms2_bcsubamp``.
+        `plotfile` (str)
+            Name of PDF plot file to create.
+    """
+    assert len(names) == len(bcstatsfiles)
+    assert os.path.splitext(plotfile)[1].lower() == '.pdf'
+    bcstats = pandas.concat([pandas.read_csv(f).assign(name=name) for
+                (name, f) in zip(names, bcstatsfiles)], ignore_index=True)
+    bcstats_melt = bcstats.melt(id_vars='name', 
+            value_vars=['aligned', 'not alignable', 'too few reads'],
+            value_name='number of barcodes', var_name='barcode fate')
+    p = (ggplot(bcstats_melt)
+            + geom_col(aes(x='name', y='number of barcodes', 
+                fill='barcode fate'), position='stack')
+            + theme(axis_text_x=element_text(angle=90, vjust=1, hjust=0.5),
+                    axis_title_x=element_blank()) 
+            )
+    p.save(plotfile, height=2.7, width=(1.2 + 0.4 * len(names)))
+
 
 
 if __name__ == '__main__':
