@@ -37,6 +37,7 @@ def main():
             'log':'.log',
             'readstats':'_readstats.pdf',
             'bcstats':'_bcstats.pdf',
+            'readsperbc':'_readsperbc.pdf',
             }
     files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
             args['summaryprefix'], s))) for (f, s) in filesuffixes.items()])
@@ -128,12 +129,19 @@ def main():
                 logger.info("Plotting for plotgroup: {0}".format(
                     lambda x: x if x else '<empty name>'))
             groupruns = batchruns.loc[batchruns['plotgroup'] == plotgroup]
+
             logger.info("Plotting read stats to {0}".format(files['readstats']))
             dms_tools2.plot.plotReadStats(groupruns['name'], 
                     groupruns['readstats'], files['readstats'])
+
             logger.info("Plotting barcode stats to {0}".format(files['bcstats']))
             dms_tools2.plot.plotBCStats(groupruns['name'], 
                     groupruns['bcstats'], files['bcstats'])
+
+            logger.info("Plotting reads per barcode to {0}".format(
+                    files['readsperbc']))
+            dms_tools2.plot.plotReadsPerBC(groupruns['name'],
+                    groupruns['readsperbc'], files['readsperbc'])
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))

@@ -132,6 +132,62 @@ def plotBCStats(names, bcstatsfiles, plotfile):
     p.save(plotfile, height=2.7, width=(1.2 + 0.3 * len(names)))
 
 
+def plotReadsPerBC(names, readsperbcfiles, plotfile, maxreads=10):
+    """Plots `dms2_bcsubamp` reads-per-barcode stats for set of samples.
+
+    Args:
+        `names` (list or series)
+            Names of samples for which are are plotting statistics.
+        `readsperbcfiles` (list or series)
+            Names of ``*_readsperbc.csv`` files created by ``dms2_bcsubamp``.
+        `plotfile` (str)
+            Name of PDF plot file to create.
+        `maxreads` (int)
+            For any barcodes with > this many reads, just make a category
+            of >= this.
+    """
+    assert len(names) == len(readsperbcfiles)
+    assert os.path.splitext(plotfile)[1].lower() == '.pdf'
+
+    # read data frames and do some complex stuff to ensure that
+    # each one has 'number of reads' going from 1 to >=maxreads
+    dfs = []
+    for (name, f) in zip(names, readsperbcfiles):
+        df = pandas.read_csv(f)
+        # make 'number of reads' maxreads hold number >= maxreads barcodes
+        n_ge = df[df['number of reads'] >= maxreads]['number of reads'].sum()
+        df = df.append(pandas.DataFrame({'number of reads':[maxreads],
+                'number of barcodes':[n_ge]}))
+        for nreads in range(1, maxreads):
+            if nreads not in df['number of reads']:
+                df.append(pandas.DataFrame({'number of reads':[nreads],
+                        'number of barcodes':[0]}))
+        df = df[df['number of reads'] <= maxreads]
+        df = df.assign(name=name)
+        dfs.append(df)
+    df = pandas.concat(dfs)
+
+    maxcol = 6
+    ncol = min(maxcol, len(names))
+    nrow = int(math.ceil(len(names) / float(ncol)))
+    p = (ggplot(df)
+            + geom_col(aes(x='number of reads', y='number of barcodes'),
+                position='stack')
+#            + theme(axis_text_x=element_text(angle=90, vjust=1, hjust=0.5),
+#                    axis_title_x=element_blank())
+            + scale_x_continuous(breaks=[1, maxreads // 2, maxreads],
+                    labels=['$1$', '${0}$'.format(maxreads // 2), 
+                    '$\geq {0}$'.format(maxreads)])
+            + scale_y_continuous(labels=latexSciNot)
+            + facet_wrap('~name', ncol=ncol) 
+            + theme(strip_text=element_text(lineheight=1.8)))
+
+
+    p.save(plotfile, 
+            height=1.2 * (0.4 + nrow),
+            width=(1.5 * (0.8 + ncol)))
+
+
 
 if __name__ == '__main__':
     import doctest
