@@ -14,17 +14,17 @@ from plotnine import *
 theme_set(theme_classic()) # classic ggplot theme
 
 
-def latexSciNot(xlist, exp_cutoff=3, maxddigits=1):
+def latexSciNot(xlist, exp_cutoff=3, ddigits=1):
     """Converts list of numbers to LaTex scientific notation.
 
-    Useful for axis tick formatting.
+    Useful for nice axis-tick formatting.
 
     Args:
         `xlist` (list)
             Numbers to format.
         `exp_cutoff` (int)
             Convert to scientific notation if `abs(math.log10(x))` >= this.
-        `maxddigits` (int)
+        `ddigits` (int)
             Show at most this many digits after the decimal place, shows
             less if not needed to precisely express all numbers.
 
