@@ -53,6 +53,11 @@ def main():
     # log in try / except / finally loop
     try:
 
+        for f in files:
+            if os.path.isfile(f):
+                logger.info("Removing existing file {0}".format(f))
+                os.remove(f)
+
         # read batchfile, strip any whitespace from strings
         logger.info("Parsing sample info from {0}".format(args['batchfile']))
         assert os.path.isfile(args['batchfile']), "no batchfile"
