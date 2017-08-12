@@ -123,9 +123,6 @@ def main():
                     "Did not create all of these files:\n{0}".format(
                     '\n'.join(batchruns[filename].values))
 
-        # make plots 
-        logger.info("Making summary plots:")
-
         logger.info("Plotting read stats to {0}".format(files['readstats']))
         dms_tools2.plot.plotReadStats(batchruns['name'], 
                 batchruns['readstats'], files['readstats'])
@@ -150,7 +147,8 @@ def main():
 
         logger.info("Plotting average frequencies of codon mutation "
                 "types to {0}".format(files['codonmuttypes']))
-#        dms_tools2.plot.plotCodonMutTypes(batchruns['name'],
+        dms_tools2.plot.plotCodonMutTypes(batchruns['name'],
+                batchruns['counts'], files['codonmuttypes'])
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))

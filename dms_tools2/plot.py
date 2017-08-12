@@ -4,6 +4,17 @@ plot
 ===================
 
 Plotting functions for ``dms_tools2``.
+
+The plotting is done with ``plotnine``.
+
+The default ``plotnine`` color palette is **not** color-blind safe.
+Therefore, this module defines the constant `COLOR_BLIND_PALETTE`
+which gives the color-blind safe scale described here:
+http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/
+
+You can use this scale by adding the following to your plots:
+`scale_fill_manual(COLOR_BLIND_PALETTE)` or
+`scale_color_manual(COLOR_BLIND_PALETTE)`.
 """
 
 
@@ -11,8 +22,11 @@ import os
 import math
 import pandas
 from plotnine import *
-theme_set(theme_classic()) # classic ggplot theme
+theme_set(theme_classic()) # use classic ggplot theme
 import dms_tools2.utils
+
+COLOR_BLIND_PALETTE = ["#000000", "#E69F00", "#56B4E9", "#009E73",
+                       "#F0E442", "#0072B2", "#D55E00", "#CC79A7"]
 
 
 def latexSciNot(xlist, exp_cutoff=3, ddigits=1):
@@ -100,7 +114,8 @@ def plotReadStats(names, readstatfiles, plotfile):
                 position='stack')
             + theme(axis_text_x=element_text(angle=90, vjust=1, hjust=0.5),
                     axis_title_x=element_blank()) 
-            + scale_y_continuous(labels=latexSciNot)
+            + scale_y_continuous(labels=latexSciNot) 
+            + scale_fill_manual(COLOR_BLIND_PALETTE)
             )
     p.save(plotfile, height=2.7, width=(1.2 + 0.3 * len(names)))
 
@@ -129,6 +144,7 @@ def plotBCStats(names, bcstatsfiles, plotfile):
             + theme(axis_text_x=element_text(angle=90, vjust=1, hjust=0.5),
                     axis_title_x=element_blank())
             + scale_y_continuous(labels=latexSciNot)
+            + scale_fill_manual(COLOR_BLIND_PALETTE)
             )
     p.save(plotfile, height=2.7, width=(1.2 + 0.3 * len(names)))
 
@@ -139,7 +155,7 @@ def plotReadsPerBC(names, readsperbcfiles, plotfile,
 
     Args:
         `names` (list or series)
-            Names of samples for which are are plotting statistics.
+            Names of samples for which we plot statistics.
         `readsperbcfiles` (list or series)
             Names of ``*_readsperbc.csv`` files created by ``dms2_bcsubamp``.
         `plotfile` (str)
@@ -192,9 +208,9 @@ def plotDepth(names, countsfiles, plotfile, maxcol=5):
 
     Args:
         `names` (list or series)
-            Names of samples for which are are plotting statistics.
+            Names of samples for which we plot statistics.
         `countsfiles` (list or series)
-            ``*_counts.csv`` files of type created by ``dms2_bcsubamp``.
+            ``*_codoncounts.csv`` files of type created by ``dms2_bcsubamp``.
         `plotfile` (str)
             Name of created PDF plot file containing count depth.
         `maxcol` (int)
@@ -229,9 +245,9 @@ def plotMutFreq(names, countsfiles, plotfile, maxcol=5):
 
     Args:
         `names` (list or series)
-            Names of samples for which are are plotting statistics.
+            Names of samples for which we plot statistics.
         `countsfiles` (list or series)
-            ``*_counts.csv`` files of type created by ``dms2_bcsubamp``.
+            ``*_codoncounts.csv`` files of type created by ``dms2_bcsubamp``.
         `plotfile` (str)
             Name of created PDF plot file.
         `maxcol` (int)
@@ -260,6 +276,51 @@ def plotMutFreq(names, countsfiles, plotfile, maxcol=5):
     p.save(plotfile, 
             height=1.2 * (0.4 + nrow),
             width=(1.8 * (0.6 + ncol)))
+
+
+def plotCodonMutTypes(names, countsfiles, plotfile):
+    """Plot average frequency codon mutation types.
+
+    The averages are determined by summing counts for all sites.
+    Categorizes as *synonymous*, *nonsynonymous*, and *stop codon*.
+
+    Args:
+        `names` (list or series)
+            Names of samples for which we plot statistics.
+        `countsfiles` (list or series)
+            ``*_codoncounts.csv`` files of type created by ``dms2_bcsubamp``.
+        `plotfile` (str)
+            Name of created PDF plot file.
+    """
+    assert len(names) == len(countsfiles)
+    assert os.path.splitext(plotfile)[1].lower() == '.pdf'
+
+    counts = pandas.concat([dms_tools2.utils.annotateCodonCounts(f).assign(
+            name=name) for (name, f) in zip(names, countsfiles)], 
+            ignore_index=True)
+
+    df = (counts[['nstop', 'nsyn', 'nnonsyn', 'ncounts', 'name']]
+            .groupby('name', as_index=False)
+            .sum(axis=1)
+            .assign(ncounts=lambda x: x['ncounts'].astype('float'))
+            .assign(stop=lambda x: x['nstop'] / x['ncounts'])
+            .assign(synonymous=lambda x: x['nsyn'] / x['ncounts'])
+            .assign(nonsynonymous=lambda x: x['nnonsyn'] / x['ncounts'])
+            .melt(id_vars='name', var_name='mutation type',
+                    value_vars=['stop', 'synonymous', 'nonsynonymous'],
+                    value_name='per-codon frequency')
+            )
+
+    p = (ggplot(df)
+            + geom_col(aes(x='name', y='per-codon frequency', 
+                fill='mutation type'), position='stack')
+            + theme(axis_text_x=element_text(angle=90, vjust=1, hjust=0.5),
+                    axis_title_x=element_blank())
+            + scale_y_continuous(labels=latexSciNot)
+            + scale_fill_manual(COLOR_BLIND_PALETTE)
+            )
+
+    p.save(plotfile, height=2.7, width=(1.2 + 0.3 * len(names)))
 
 
 
