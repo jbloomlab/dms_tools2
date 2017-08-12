@@ -42,7 +42,7 @@ def showPDF(pdfs, width=None):
         png = os.path.join(os.path.dirname(pdfs[0]), '._' +
                 os.path.splitext(os.path.basename(pdfs[0]))[0] + '.png')
         x = subprocess.check_output(['convert', '-density', '134', '-trim'] +\
-                ['-splice', '50x50'] + pdfs + ['+append', png])
+                ['-splice', '50x0'] + pdfs + ['+append', png])
         time.sleep(0.5)
         IPython.display.display(IPython.display.Image(png, width=width))
     finally:
