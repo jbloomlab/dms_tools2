@@ -40,6 +40,7 @@ def main():
             'readsperbc':'_readsperbc.pdf',
             'depth':'_depth.pdf',
             'mutfreq':'_mutfreq.pdf',
+            'codonmuttypes':'_codonmuttypes.pdf',
             }
     files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
             args['summaryprefix'], s))) for (f, s) in filesuffixes.items()])
@@ -66,7 +67,7 @@ def main():
         assert os.path.isfile(args['batchfile']), "no batchfile"
         batchruns = pandas.read_csv(args['batchfile'])
         batchruns.columns = batchruns.columns.str.strip()
-        colnames = set(['name', 'R1', 'plotgroup'])
+        colnames = set(['name', 'R1'])
         assert set(batchruns.columns) >= colnames, ("batchfile lacks "
                 "required column names of: {0}".format(', '.join(colnames)))
         for c in batchruns.columns:
@@ -122,37 +123,34 @@ def main():
                     "Did not create all of these files:\n{0}".format(
                     '\n'.join(batchruns[filename].values))
 
-        # make plots for each plot group
-        plotgroups = set(batchruns['plotgroup'].values)
-        logger.info("Making summary plots for the {0} plotgroups.".format(
-                len(plotgroups)))
-        for plotgroup in plotgroups:
-            if len(plotgroups) > 1:
-                logger.info("Plotting for plotgroup: {0}".format(
-                    lambda x: x if x else '<empty name>'))
-            groupruns = batchruns.loc[batchruns['plotgroup'] == plotgroup]
+        # make plots 
+        logger.info("Making summary plots:")
 
-            logger.info("Plotting read stats to {0}".format(files['readstats']))
-            dms_tools2.plot.plotReadStats(groupruns['name'], 
-                    groupruns['readstats'], files['readstats'])
+        logger.info("Plotting read stats to {0}".format(files['readstats']))
+        dms_tools2.plot.plotReadStats(batchruns['name'], 
+                batchruns['readstats'], files['readstats'])
 
-            logger.info("Plotting barcode stats to {0}".format(files['bcstats']))
-            dms_tools2.plot.plotBCStats(groupruns['name'], 
-                    groupruns['bcstats'], files['bcstats'])
+        logger.info("Plotting barcode stats to {0}".format(files['bcstats']))
+        dms_tools2.plot.plotBCStats(batchruns['name'], 
+                batchruns['bcstats'], files['bcstats'])
 
-            logger.info("Plotting reads per barcode to {0}".format(
-                    files['readsperbc']))
-            dms_tools2.plot.plotReadsPerBC(groupruns['name'],
-                    groupruns['readsperbc'], files['readsperbc'])
+        logger.info("Plotting reads per barcode to {0}".format(
+                files['readsperbc']))
+        dms_tools2.plot.plotReadsPerBC(batchruns['name'],
+                batchruns['readsperbc'], files['readsperbc'])
 
-            logger.info("Plotting count depth to {0}".format(files['depth']))
-            dms_tools2.plot.plotDepth(groupruns['name'], 
-                    groupruns['counts'], files['depth'])
+        logger.info("Plotting count depth to {0}".format(files['depth']))
+        dms_tools2.plot.plotDepth(batchruns['name'], 
+                batchruns['counts'], files['depth'])
 
-            logger.info("Plotting mutation frequencies to {0}".format(
-                    files['mutfreq']))
-            dms_tools2.plot.plotDepth(groupruns['name'], 
-                    groupruns['counts'], files['mutfreq'])
+        logger.info("Plotting mutation frequencies to {0}".format(
+                files['mutfreq']))
+        dms_tools2.plot.plotMutFreq(batchruns['name'], 
+                batchruns['counts'], files['mutfreq'])
+
+        logger.info("Plotting average frequencies of codon mutation "
+                "types to {0}".format(files['codonmuttypes']))
+#        dms_tools2.plot.plotCodonMutTypes(batchruns['name'],
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))

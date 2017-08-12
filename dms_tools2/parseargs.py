@@ -161,7 +161,7 @@ def batch_bcsubampParser():
 
     parser.add_argument('--batchfile', help="CSV file specifying each "
             "`dms2_bcsubamp` run. Must have these columns (can also have "
-            "others): name, R1, plotgroup")
+            "others): name, R1")
 
     parser.add_argument('--summaryprefix', required=True,
             help="Prefix of output summary plots.")
