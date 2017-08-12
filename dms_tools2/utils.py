@@ -536,11 +536,25 @@ def annotateCodonCounts(countsfile):
         `df` (`pandas.DataFrame`)
             The DataFrame with the information in `countsfile` plus
             the following added columns for each site:
+
                 `ncounts` : number of counts at site
+
                 `mutfreq` : mutation frequency at site
 
+                `nstop` : number of stop-codon mutations
+
+                `nsyn` : number of synonymous mutations
+
+                `nnonsyn` : number of nonsynonymous mutations
+
+                `n1nt` : number of 1-nucleotide codon mutations
+
+                `n2nt` : number of 2-nucleotide codon mutations
+                
+                `n3nt` : number of 3-nucleotide codon mutations
+
     >>> d = {'site':[1, 2], 'wildtype':['ATG', 'GGG'], 'ATG':[105, 1],
-    ...         'GGG':[3, 117], 'GGA':[2, 20]}
+    ...         'GGG':[3, 117], 'GGA':[2, 20], 'TGA':[0, 1]}
     >>> for codon in dms_tools2.CODONS:
     ...     if codon not in d:
     ...         d[codon] = [0, 0]
@@ -551,9 +565,21 @@ def annotateCodonCounts(countsfile):
     ...     df = annotateCodonCounts(f.name)
     >>> all([all(df[col] == counts[col]) for col in counts.columns])
     True
-    >>> all(df['ncounts'] == [110, 138])
+    >>> all(df['ncounts'] == [110, 139])
     True
-    >>> all(df['mutfreq'] == [5 / 110., 21 / 138.])
+    >>> all(df['mutfreq'] == [5 / 110., 22 / 139.])
+    True
+    >>> all(df['nstop'] == [0, 1])
+    True
+    >>> all(df['nsyn'] == [0, 20])
+    True
+    >>> all(df['nnonsyn'] == [5, 1])
+    True
+    >>> all(df['n1nt'] == [0, 20])
+    True
+    >>> all(df['n2nt'] == [3, 2])
+    True
+    >>> all(df['n3nt'] == [2, 0])
     True
     """
     df = pandas.read_csv(countsfile)
@@ -564,6 +590,34 @@ def annotateCodonCounts(countsfile):
 
     df['mutfreq'] = (df['ncounts'] - df.lookup(df['wildtype'].index,
             df['wildtype'].values)) / df['ncounts'].astype('float')
+
+    nstoplist = []
+    nsynlist = []
+    nnonsynlist = []
+    nXntlists = dict([(n + 1, []) for n in range(3)])
+    for (i, row) in df.iterrows():
+        nstop = nsyn = nnonsyn = 0
+        nXnt = dict([(n + 1, 0) for n in range(3)])
+        wt = row['wildtype']
+        wtaa = dms_tools2.CODON_TO_AA[wt]
+        for c in dms_tools2.CODONS:
+            if c == wt:
+                continue
+            aa = dms_tools2.CODON_TO_AA[c]
+            if aa == '*':
+                nstop += row[c]
+            elif aa == wtaa:
+                nsyn += row[c]
+            else:
+                nnonsyn += row[c]
+            nXnt[sum([nt1 != nt2 for (nt1, nt2) in zip(wt, c)])] += row[c]
+        nstoplist.append(nstop)
+        nsynlist.append(nsyn)
+        nnonsynlist.append(nnonsyn)
+        for n in range(3):
+            nXntlists[n + 1].append(nXnt[n + 1])
+    df = df.assign(nstop=nstoplist, nsyn=nsynlist, nnonsyn=nnonsynlist)
+    df = df.assign(n1nt=nXntlists[1], n2nt=nXntlists[2], n3nt=nXntlists[3])
 
     return df
 
