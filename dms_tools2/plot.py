@@ -22,7 +22,7 @@ import os
 import math
 import pandas
 from plotnine import *
-theme_set(theme_classic()) # use classic ggplot theme
+theme_set(theme_gray()) # use classic ggplot theme
 import dms_tools2.utils
 
 COLOR_BLIND_PALETTE = ["#000000", "#E69F00", "#56B4E9", "#009E73",
@@ -203,7 +203,7 @@ def plotReadsPerBC(names, readsperbcfiles, plotfile,
             width=(1.5 * (0.8 + ncol)))
 
 
-def plotDepth(names, countsfiles, plotfile, maxcol=5):
+def plotDepth(names, countsfiles, plotfile, maxcol=4):
     """Plot sequencing depth along primary sequence.
 
     Args:
@@ -237,10 +237,10 @@ def plotDepth(names, countsfiles, plotfile, maxcol=5):
 
     p.save(plotfile, 
             height=1.2 * (0.4 + nrow),
-            width=(1.8 * (0.6 + ncol)))
+            width=(2.25 * (0.6 + ncol)))
 
 
-def plotMutFreq(names, countsfiles, plotfile, maxcol=5):
+def plotMutFreq(names, countsfiles, plotfile, maxcol=4):
     """Plot mutation frequency along primary sequence.
 
     Args:
@@ -275,7 +275,7 @@ def plotMutFreq(names, countsfiles, plotfile, maxcol=5):
 
     p.save(plotfile, 
             height=1.2 * (0.4 + nrow),
-            width=(1.8 * (0.6 + ncol)))
+            width=(2.25 * (0.6 + ncol)))
 
 
 def plotCodonMutTypes(names, countsfiles, plotfile,
@@ -294,9 +294,11 @@ def plotCodonMutTypes(names, countsfiles, plotfile,
         `classification` (str)
             The method used to classify the mutation types. Can be:
 
-                `aachange` : classify as stop, synonymous, nonsynonymous
+                `aachange` : stop, synonymous, nonsynonymous
 
-                `n_ntchanges` : classify by number of nucleotide changes
+                `n_ntchanges` : number of nucleotide changes per codon
+
+                `singlentchanges` : nucleotide change in 1-nt mutations
     """
     assert len(names) == len(countsfiles)
     assert os.path.splitext(plotfile)[1].lower() == '.pdf'
@@ -311,6 +313,10 @@ def plotCodonMutTypes(names, countsfiles, plotfile,
     elif classification == 'n_ntchanges':
         muttypes = dict([('{0} nucleotide'.format(n), 'n{0}nt'.format(n))
                 for n in [1, 2, 3]])
+    elif classification == 'singlentchanges':
+        muttypes = dict([(ntchange, ntchange) for ntchange in [
+                '{0}to{1}'.format(nt1, nt2) for nt1 in dms_tools2.NTS
+                for nt2 in dms_tools2.NTS if nt1 != nt2]])
     else:
         raise ValueError("Invalid classification {0}".format(classification))
 
@@ -331,8 +337,9 @@ def plotCodonMutTypes(names, countsfiles, plotfile,
             + theme(axis_text_x=element_text(angle=90, vjust=1, hjust=0.5),
                     axis_title_x=element_blank())
             + scale_y_continuous(labels=latexSciNot)
-            + scale_fill_manual(COLOR_BLIND_PALETTE)
             )
+    if len(muttypes) <= len(COLOR_BLIND_PALETTE):
+        p += scale_fill_manual(COLOR_BLIND_PALETTE)
 
     p.save(plotfile, height=2.7, width=(1.2 + 0.3 * len(names)))
 

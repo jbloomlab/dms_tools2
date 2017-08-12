@@ -552,6 +552,9 @@ def annotateCodonCounts(countsfile):
                 
                 `n3nt` : number of 3-nucleotide codon mutations
 
+                `AtoC`, `AtoG`, etc : number of each nucleotide mutation
+                type among codon mutations with **one** nucleotide change.
+
     >>> d = {'site':[1, 2], 'wildtype':['ATG', 'GGG'], 'ATG':[105, 1],
     ...         'GGG':[3, 117], 'GGA':[2, 20], 'TGA':[0, 1]}
     >>> for codon in dms_tools2.CODONS:
@@ -580,6 +583,10 @@ def annotateCodonCounts(countsfile):
     True
     >>> all(df['n3nt'] == [2, 0])
     True
+    >>> all(df['GtoA'] == [0, 20])
+    True
+    >>> all(df['AtoC'] == [0, 0])
+    True
     """
     df = pandas.read_csv(countsfile)
     assert set(dms_tools2.CODONS) <= set(df.columns), \
@@ -590,13 +597,18 @@ def annotateCodonCounts(countsfile):
     df['mutfreq'] = (df['ncounts'] - df.lookup(df['wildtype'].index,
             df['wildtype'].values)) / df['ncounts'].astype('float')
 
+    ntchanges = ['{0}to{1}'.format(nt1, nt2) for nt1 in dms_tools2.NTS
+            for nt2 in dms_tools2.NTS if nt1 != nt2]
+
     nstoplist = []
     nsynlist = []
     nnonsynlist = []
     nXntlists = dict([(n + 1, []) for n in range(3)])
+    nntchangeslists = dict([(ntchange, []) for ntchange in ntchanges])
     for (i, row) in df.iterrows():
         nstop = nsyn = nnonsyn = 0
         nXnt = dict([(n + 1, 0) for n in range(3)])
+        nntchanges = dict([(ntchange, 0) for ntchange in ntchanges])
         wt = row['wildtype']
         wtaa = dms_tools2.CODON_TO_AA[wt]
         for c in dms_tools2.CODONS:
@@ -609,14 +621,22 @@ def annotateCodonCounts(countsfile):
                 nsyn += row[c]
             else:
                 nnonsyn += row[c]
-            nXnt[sum([nt1 != nt2 for (nt1, nt2) in zip(wt, c)])] += row[c]
+            ntdiffs = ['{0}to{1}'.format(nt1, nt2) for (nt1, nt2) 
+                    in zip(wt, c) if nt1 != nt2]
+            nXnt[len(ntdiffs)] += row[c]
+            if len(ntdiffs) == 1:
+                nntchanges[ntdiffs[0]] += row[c]
         nstoplist.append(nstop)
         nsynlist.append(nsyn)
         nnonsynlist.append(nnonsyn)
         for n in range(3):
             nXntlists[n + 1].append(nXnt[n + 1])
+        for ntchange in ntchanges:
+            nntchangeslists[ntchange].append(nntchanges[ntchange])
     df = df.assign(nstop=nstoplist, nsyn=nsynlist, nnonsyn=nnonsynlist)
     df = df.assign(n1nt=nXntlists[1], n2nt=nXntlists[2], n3nt=nXntlists[3])
+    for ntchange in ntchanges:
+        df[ntchange] = nntchangeslists[ntchange]
 
     return df
 
