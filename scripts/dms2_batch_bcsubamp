@@ -38,6 +38,8 @@ def main():
             'readstats':'_readstats.pdf',
             'bcstats':'_bcstats.pdf',
             'readsperbc':'_readsperbc.pdf',
+            'depth':'_depth.pdf',
+            'mutfreq':'_mutfreq.pdf',
             }
     files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
             args['summaryprefix'], s))) for (f, s) in filesuffixes.items()])
@@ -142,6 +144,11 @@ def main():
                     files['readsperbc']))
             dms_tools2.plot.plotReadsPerBC(groupruns['name'],
                     groupruns['readsperbc'], files['readsperbc'])
+
+            logger.info("Plotting count and mutation depth to {0} and "
+                    "{1}".format(files['depth'], files['mutfreq']))
+            dms_tools2.plot.plotDepth(groupruns['name'], 
+                    groupruns['counts'], files['depth'], files['mutfreq'])
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))
