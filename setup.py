@@ -50,7 +50,6 @@ setup(
     long_description = readme,
     license = 'GPLv3',
     install_requires = [
-        'six>=1.10',
         'biopython>=1.68',
         'HTSeq>=0.9',
         'pandas>=0.19',

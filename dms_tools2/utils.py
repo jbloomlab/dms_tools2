@@ -14,7 +14,6 @@ import platform
 import importlib
 import logging
 import tempfile
-import six
 import pandas
 import HTSeq
 import dms_tools2
@@ -31,7 +30,7 @@ def sessionInfo():
                     sys.version.replace('\n', ' ')),
             '\tdms_tools2 version: {0}'.format(dms_tools2.__version__),
             ]
-    for modname in ['six', 'Bio', 'HTSeq', 'pandas', 'numpy', 'IPython',
+    for modname in ['Bio', 'HTSeq', 'pandas', 'numpy', 'IPython',
             'plotnine']:
         try:
             v = importlib.import_module(modname).__version__
@@ -159,7 +158,7 @@ def iteratePairedFASTQ(r1files, r2files, r1trim=None, r2trim=None):
     for (r1file, r2file) in zip(r1files, r2files):
         r1reader = HTSeq.FastqReader(r1file, raw_iterator=True)
         r2reader = HTSeq.FastqReader(r2file, raw_iterator=True)
-        for ((r1, id1, q1, qs1), (r2, id2, q2, qs2)) in six.moves.zip(
+        for ((r1, id1, q1, qs1), (r2, id2, q2, qs2)) in zip(
                 r1reader, r2reader):
             id1 = id1.split()
             id2 = id2.split()
