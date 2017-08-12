@@ -278,11 +278,11 @@ def plotMutFreq(names, countsfiles, plotfile, maxcol=5):
             width=(1.8 * (0.6 + ncol)))
 
 
-def plotCodonMutTypes(names, countsfiles, plotfile):
+def plotCodonMutTypes(names, countsfiles, plotfile,
+        classification='aachange'):
     """Plot average frequency codon mutation types.
 
     The averages are determined by summing counts for all sites.
-    Categorizes as *synonymous*, *nonsynonymous*, and *stop codon*.
 
     Args:
         `names` (list or series)
@@ -291,6 +291,12 @@ def plotCodonMutTypes(names, countsfiles, plotfile):
             ``*_codoncounts.csv`` files of type created by ``dms2_bcsubamp``.
         `plotfile` (str)
             Name of created PDF plot file.
+        `classification` (str)
+            The method used to classify the mutation types. Can be:
+
+                `aachange` : classify as stop, synonymous, nonsynonymous
+
+                `n_ntchanges` : classify by number of nucleotide changes
     """
     assert len(names) == len(countsfiles)
     assert os.path.splitext(plotfile)[1].lower() == '.pdf'
@@ -299,17 +305,25 @@ def plotCodonMutTypes(names, countsfiles, plotfile):
             name=name) for (name, f) in zip(names, countsfiles)], 
             ignore_index=True)
 
-    df = (counts[['nstop', 'nsyn', 'nnonsyn', 'ncounts', 'name']]
+    if classification == 'aachange':
+        muttypes = {'stop':'nstop', 'synonymous':'nsyn', 
+                'nonsynonymous':'nnonsyn'}
+    elif classification == 'n_ntchanges':
+        muttypes = dict([('{0} nucleotide'.format(n), 'n{0}nt'.format(n))
+                for n in [1, 2, 3]])
+    else:
+        raise ValueError("Invalid classification {0}".format(classification))
+
+    df = (counts[list(muttypes.values()) + ['ncounts', 'name']]
             .groupby('name', as_index=False)
             .sum(axis=1)
             .assign(ncounts=lambda x: x['ncounts'].astype('float'))
-            .assign(stop=lambda x: x['nstop'] / x['ncounts'])
-            .assign(synonymous=lambda x: x['nsyn'] / x['ncounts'])
-            .assign(nonsynonymous=lambda x: x['nnonsyn'] / x['ncounts'])
-            .melt(id_vars='name', var_name='mutation type',
-                    value_vars=['stop', 'synonymous', 'nonsynonymous'],
-                    value_name='per-codon frequency')
             )
+    for (newcol, n) in muttypes.items():
+        df[newcol] = df[n] / df['ncounts']
+    df = df.melt(id_vars='name', var_name='mutation type',
+                value_vars=list(muttypes.keys()),
+                value_name='per-codon frequency')
 
     p = (ggplot(df)
             + geom_col(aes(x='name', y='per-codon frequency', 

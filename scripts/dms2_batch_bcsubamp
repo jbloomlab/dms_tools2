@@ -41,6 +41,7 @@ def main():
             'depth':'_depth.pdf',
             'mutfreq':'_mutfreq.pdf',
             'codonmuttypes':'_codonmuttypes.pdf',
+            'codonntchanges':'_codonntchanges.pdf',
             }
     files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
             args['summaryprefix'], s))) for (f, s) in filesuffixes.items()])
@@ -148,7 +149,14 @@ def main():
         logger.info("Plotting average frequencies of codon mutation "
                 "types to {0}".format(files['codonmuttypes']))
         dms_tools2.plot.plotCodonMutTypes(batchruns['name'],
-                batchruns['counts'], files['codonmuttypes'])
+                batchruns['counts'], files['codonmuttypes'],
+                classification='aachange')
+
+        logger.info("Plotting average number of nucleotide changes per "
+                "codon mutation to {0}".format(files['codonntchanges']))
+        dms_tools2.plot.plotCodonMutTypes(batchruns['name'],
+                batchruns['counts'], files['codonntchanges'],
+                classification='n_ntchanges')
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))
