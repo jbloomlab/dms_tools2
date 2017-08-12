@@ -12,6 +12,7 @@ import math
 import pandas
 from plotnine import *
 theme_set(theme_classic()) # classic ggplot theme
+import dms_tools2.utils
 
 
 def latexSciNot(xlist, exp_cutoff=3, ddigits=1):
@@ -186,49 +187,79 @@ def plotReadsPerBC(names, readsperbcfiles, plotfile,
             width=(1.5 * (0.8 + ncol)))
 
 
-def plotDepth(names, files, depthplotfile, mutfreqplotfile,
-        maxcol=5):
-    """Plot sequencing depth and mutation frequency long primary sequence.
+def plotDepth(names, countsfiles, plotfile, maxcol=5):
+    """Plot sequencing depth along primary sequence.
 
     Args:
         `names` (list or series)
             Names of samples for which are are plotting statistics.
-        `files` (list or series)
+        `countsfiles` (list or series)
             ``*_counts.csv`` files of type created by ``dms2_bcsubamp``.
-        `countplotfile` (str)
+        `plotfile` (str)
             Name of created PDF plot file containing count depth.
-        `mutfreqplotfile` (str)
-            Name of created PDF plot file containing mutation frequencies.
         `maxcol` (int)
             Number of columns in faceted plot.
     """
-    assert len(names) == len(files)
-    counts = pandas.concat([pandas.read_csv(f).assign(name=name) for
-            (name, f) in zip(names, files)], ignore_index=True)
-    
-    counts['sequencing depth'] = counts.drop(['site', 'wildtype', 'name'], 
-            axis=1).sum(axis=1)
-    counts['mutation frequency'] = (counts['sequencing depth'] - 
-            counts.lookup(counts['wildtype'].index, counts[
-            'wildtype'].values)) / counts['sequencing depth'].astype(float)
+    assert len(names) == len(countsfiles)
+    assert os.path.splitext(plotfile)[1].lower() == '.pdf'
 
+    counts = pandas.concat([dms_tools2.utils.annotateCodonCounts(f).assign(
+            name=name) for (name, f) in zip(names, countsfiles)], 
+            ignore_index=True)
+    
     ncol = min(maxcol, len(names))
     nrow = int(math.ceil(len(names) / float(ncol)))
-    for (y, plotfile) in [('sequencing depth', depthplotfile),
-            ('mutation frequency', mutfreqplotfile)]:
-        assert os.path.splitext(plotfile)[1].lower() == '.pdf'
-        p = (ggplot(counts, aes(x='site', y=y))
-                + geom_line()
-                + scale_y_continuous(labels=latexSciNot, 
-                        limits=(0, counts[y].max()))
-                + scale_x_continuous(limits=(counts['site'].min(),
-                        counts['site'].max()))
-                + facet_wrap('~name', ncol=ncol) 
-                + theme(strip_text=element_text(lineheight=1.8)))
 
-        p.save(plotfile, 
-                height=1.2 * (0.4 + nrow),
-                width=(1.8 * (0.6 + ncol)))
+    p = (ggplot(counts, aes(x='site', y='ncounts'))
+            + geom_line()
+            + scale_y_continuous(labels=latexSciNot, 
+                    limits=(0, counts['ncounts'].max()), name='number of counts')
+            + scale_x_continuous(limits=(counts['site'].min(),
+                    counts['site'].max()))
+            + facet_wrap('~name', ncol=ncol) 
+            + theme(strip_text=element_text(lineheight=1.8)))
+
+    p.save(plotfile, 
+            height=1.2 * (0.4 + nrow),
+            width=(1.8 * (0.6 + ncol)))
+
+
+def plotMutFreq(names, countsfiles, plotfile, maxcol=5):
+    """Plot mutation frequency along primary sequence.
+
+    Args:
+        `names` (list or series)
+            Names of samples for which are are plotting statistics.
+        `countsfiles` (list or series)
+            ``*_counts.csv`` files of type created by ``dms2_bcsubamp``.
+        `plotfile` (str)
+            Name of created PDF plot file.
+        `maxcol` (int)
+            Number of columns in faceted plot.
+    """
+    assert len(names) == len(countsfiles)
+    assert os.path.splitext(plotfile)[1].lower() == '.pdf'
+
+    counts = pandas.concat([dms_tools2.utils.annotateCodonCounts(f).assign(
+            name=name) for (name, f) in zip(names, countsfiles)], 
+            ignore_index=True)
+    
+    ncol = min(maxcol, len(names))
+    nrow = int(math.ceil(len(names) / float(ncol)))
+
+    p = (ggplot(counts, aes(x='site', y='mutfreq'))
+            + geom_line()
+            + scale_y_continuous(labels=latexSciNot, 
+                    limits=(0, counts['mutfreq'].max()), 
+                    name='mutation frequency')
+            + scale_x_continuous(limits=(counts['site'].min(),
+                    counts['site'].max()))
+            + facet_wrap('~name', ncol=ncol) 
+            + theme(strip_text=element_text(lineheight=1.8)))
+
+    p.save(plotfile, 
+            height=1.2 * (0.4 + nrow),
+            width=(1.8 * (0.6 + ncol)))
 
 
 

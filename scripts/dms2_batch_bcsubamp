@@ -145,10 +145,14 @@ def main():
             dms_tools2.plot.plotReadsPerBC(groupruns['name'],
                     groupruns['readsperbc'], files['readsperbc'])
 
-            logger.info("Plotting count and mutation depth to {0} and "
-                    "{1}".format(files['depth'], files['mutfreq']))
+            logger.info("Plotting count depth to {0}".format(files['depth']))
             dms_tools2.plot.plotDepth(groupruns['name'], 
-                    groupruns['counts'], files['depth'], files['mutfreq'])
+                    groupruns['counts'], files['depth'])
+
+            logger.info("Plotting mutation frequencies to {0}".format(
+                    files['mutfreq']))
+            dms_tools2.plot.plotDepth(groupruns['name'], 
+                    groupruns['counts'], files['mutfreq'])
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))

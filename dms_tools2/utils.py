@@ -15,6 +15,7 @@ import importlib
 import logging
 import tempfile
 import six
+import pandas
 import HTSeq
 import dms_tools2
 import dms_tools2._cutils
@@ -30,7 +31,7 @@ def sessionInfo():
                     sys.version.replace('\n', ' ')),
             '\tdms_tools2 version: {0}'.format(dms_tools2.__version__),
             ]
-    for modname in ['Bio', 'HTSeq', 'pandas', 'numpy', 'IPython',
+    for modname in ['six', 'Bio', 'HTSeq', 'pandas', 'numpy', 'IPython',
             'plotnine']:
         try:
             v = importlib.import_module(modname).__version__
@@ -514,6 +515,57 @@ def incrementCounts(refseqstart, subamplicon, chartype, counts):
         codon = shiftedsubamplicon[3 * i : 3 * i + 3]
         if 'N' not in codon:
             counts[codon][startcodon + i] += 1
+
+
+def annotateCodonCounts(countsfile):
+    """Gets annotated `pandas` DataFrame from ``*_codoncounts.csv`` files.
+
+    Some of the programs (e.g., `dms2_bcsubamplicons`) create 
+    ``*_codoncounts.csv`` files when run with ``--chartype codon``.
+    These CSV files have columns indicating the `site` and `wildtype`
+    codon, as well as a column for each codon giving the counts for that 
+    codon. This function reads that file to return a `pandas` DataFrame
+    where a variety of additional useful annotations have been added
+    for each site.
+
+    Args:
+        `countsfile` (str)
+            Name of existing codon counts file.
+
+    Returns:
+        `df` (`pandas.DataFrame`)
+            The DataFrame with the information in `countsfile` plus
+            the following added columns for each site:
+                `ncounts` : number of counts at site
+                `mutfreq` : mutation frequency at site
+
+    >>> d = {'site':[1, 2], 'wildtype':['ATG', 'GGG'], 'ATG':[105, 1],
+    ...         'GGG':[3, 117], 'GGA':[2, 20]}
+    >>> for codon in dms_tools2.CODONS:
+    ...     if codon not in d:
+    ...         d[codon] = [0, 0]
+    >>> counts = pandas.DataFrame(d)
+    >>> with tempfile.NamedTemporaryFile(mode='w') as f:
+    ...     counts.to_csv(f, index=False)
+    ...     f.flush()
+    ...     df = annotateCodonCounts(f.name)
+    >>> all([all(df[col] == counts[col]) for col in counts.columns])
+    True
+    >>> all(df['ncounts'] == [110, 138])
+    True
+    >>> all(df['mutfreq'] == [5 / 110., 21 / 138.])
+    True
+    """
+    df = pandas.read_csv(countsfile)
+    assert set(dms_tools2.CODONS) <= set(df.columns), \
+            "{0} does not have counts for all codons".format(countsfile)
+
+    df['ncounts'] = df[dms_tools2.CODONS].sum(axis=1)
+
+    df['mutfreq'] = (df['ncounts'] - df.lookup(df['wildtype'].index,
+            df['wildtype'].values)) / df['ncounts'].astype('float')
+
+    return df
 
 
 if __name__ == '__main__':
