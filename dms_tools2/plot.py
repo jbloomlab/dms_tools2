@@ -144,7 +144,7 @@ def plotReadStats(names, readstatfiles, plotfile):
             + scale_y_continuous(labels=latexSciNot) 
             + scale_fill_manual(COLOR_BLIND_PALETTE)
             )
-    p.save(plotfile, height=2.7, width=(1.2 + 0.3 * len(names)))
+    p.save(plotfile, height=2.7, width=(1.2 + 0.25 * len(names)))
 
 
 def plotBCStats(names, bcstatsfiles, plotfile):
@@ -173,7 +173,7 @@ def plotBCStats(names, bcstatsfiles, plotfile):
             + scale_y_continuous(labels=latexSciNot)
             + scale_fill_manual(COLOR_BLIND_PALETTE)
             )
-    p.save(plotfile, height=2.7, width=(1.2 + 0.3 * len(names)))
+    p.save(plotfile, height=2.7, width=(1.2 + 0.25 * len(names)))
 
 
 def plotReadsPerBC(names, readsperbcfiles, plotfile, 
@@ -376,7 +376,7 @@ def plotCodonMutTypes(names, countsfiles, plotfile,
     else:
         p += guides(fill=guide_legend(ncol=2))
 
-    p.save(plotfile, height=2.7, width=(1.2 + 0.3 * len(names)))
+    p.save(plotfile, height=2.7, width=(1.2 + 0.25 * len(names)))
 
 
 
