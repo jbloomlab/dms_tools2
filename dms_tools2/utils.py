@@ -31,7 +31,7 @@ def sessionInfo():
             '\tdms_tools2 version: {0}'.format(dms_tools2.__version__),
             ]
     for modname in ['Bio', 'HTSeq', 'pandas', 'numpy', 'IPython',
-            'plotnine']:
+            'matplotlib', 'plotnine']:
         try:
             v = importlib.import_module(modname).__version__
             s.append('\t{0} version: {1}'.format(modname, v))

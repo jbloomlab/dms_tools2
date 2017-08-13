@@ -55,6 +55,7 @@ setup(
         'pandas>=0.20.3',
         'numpy>=1.13',
         'IPython>=5.1',
+        'matplotlib>=2.0.2',
         'plotnine>=0.2.1',
         ],
     platforms = 'Linux and Mac OS X).',

@@ -22,6 +22,8 @@ import os
 import math
 import pandas
 import numpy
+import matplotlib
+matplotlib.use('pdf')
 from plotnine import *
 # set ggplot theme
 theme_set(theme_bw(base_size=12)) 
