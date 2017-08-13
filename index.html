@@ -1,0 +1,202 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Documentation for dms_tools2 &#8212; dms_tools2 2.0a0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0a0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="installation.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="documentation-for-dms-tools2">
+<h1>Documentation for <code class="docutils literal"><span class="pre">dms_tools2</span></code><a class="headerlink" href="#documentation-for-dms-tools2" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> is a software package for analyzing <strong>d</strong>eep <strong>m</strong>utational <strong>s</strong>canning data.
+It is tailored to analyze libraries created using <a class="reference external" href="https://github.com/jbloomlab/CodonTilingPrimers">comprehensive codon mutagenesis</a> of protein-coding genes, and perform analyses that are common to the <a class="reference external" href="https://research.fhcrc.org/bloom/en.html">Bloom lab</a>, such as:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Process deep-sequencing data generated <a class="reference internal" href="bcsubamp.html#bcsubamp"><span class="std std-ref">Barcoded-subamplicon sequencing</span></a>.</li>
+<li>Estimate the amino-acid preferences of a protein.</li>
+<li>Estimate differential selection when imposing a pressure such as antibody selection.</li>
+</ul>
+</div></blockquote>
+<p>The <a class="reference external" href="https://github.com/jbloomlab/dms_tools2">dms_tools2 source code</a> is freely available under a <a class="reference external" href="http://www.gnu.org/copyleft/gpl.html">GPLv3</a> license.
+<a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> is a re-write of the earlier <a class="reference external" href="http://github.com/jbloomlab/dms_tools">dms_tools</a> package.</p>
+<p>If you use <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> for your work, <strong>please cite the references</strong> in <a class="reference internal" href="citations.html#citations"><span class="std std-ref">Citations</span></a>.</p>
+<p><a class="reference internal" href="installation.html#installation"><span class="std std-ref">Installation</span></a> of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> installs a collection of <a class="reference internal" href="programs.html#programs"><span class="std std-ref">Executable programs</span></a> as well as a <a class="reference internal" href="api.html#api"><span class="std std-ref">Python API</span></a>.</p>
+<p>The easiest way to learn to use <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> is to look at the <a class="reference internal" href="examples.html#examples"><span class="std std-ref">Examples</span></a>.</p>
+<div class="section" id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#make-sure-you-have-python-3">Make sure you have Python <strong>3</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-with-pip">Installing with <code class="docutils literal"><span class="pre">pip</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#upgrading-with-pip">Upgrading with <code class="docutils literal"><span class="pre">pip</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#install-from-source-code">Install from source code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#license">License</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#deep-mutational-scanning-of-influenza-hemagglutinin-by-doud-and-bloom-2016">Deep mutational scanning of influenza hemagglutinin by Doud and Bloom (2016)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#downloading-and-running-the-example-notebooks">Downloading and running the example notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bcsubamp.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bcsubamp.html#how-does-barcoded-subamplicon-sequencing-work">How does barcoded-subamplicon sequencing work?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bcsubamp.html#workflow">Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bcsubamp.html#programs-to-analyze-the-data-and-examples">Programs to analyze the data and examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bcsubamp.html#more-details-and-notes">More details and notes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="programs.html">Executable programs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dms2_bcsubamp.html"><code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms2_batch_bcsubamp.html"><code class="docutils literal"><span class="pre">dms2_batch_bcsubamp</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Python API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dms_tools2.html">dms_tools2 package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="citations.html">Citations</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="#">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="programs.html">Executable programs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="installation.html" title="next chapter">Installation</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

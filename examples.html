@@ -1,0 +1,194 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Examples &#8212; dms_tools2 2.0a0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0a0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Barcoded-subamplicon sequencing" href="bcsubamp.html" />
+    <link rel="prev" title="Installation" href="installation.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="examples">
+<span id="id1"></span><h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><a class="reference internal" href="#deep-mutational-scanning-of-influenza-hemagglutinin-by-doud-and-bloom-2016" id="id2">Deep mutational scanning of influenza hemagglutinin by Doud and Bloom (2016)</a></li>
+<li><a class="reference internal" href="#downloading-and-running-the-example-notebooks" id="id3">Downloading and running the example notebooks</a></li>
+</ul>
+</div>
+<div class="section" id="deep-mutational-scanning-of-influenza-hemagglutinin-by-doud-and-bloom-2016">
+<h2><a class="toc-backref" href="#id2">Deep mutational scanning of influenza hemagglutinin by Doud and Bloom (2016)</a><a class="headerlink" href="#deep-mutational-scanning-of-influenza-hemagglutinin-by-doud-and-bloom-2016" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="http://www.mdpi.com/1999-4915/8/6/155">Doud and Bloom (2016)</a> performed deep mutational scanning of influenza hemagglutinin using <a class="reference internal" href="bcsubamp.html#bcsubamp"><span class="std std-ref">Barcoded-subamplicon sequencing</span></a> to obtain high sequencing accuracy.
+You can see a <a class="reference external" href="https://ipython.org/notebook.html">Jupyter notebook</a> that analyzes their data by clicking here: <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2016/analysis_notebook.ipynb">Doud2016 example</a>.</p>
+</div>
+<div class="section" id="downloading-and-running-the-example-notebooks">
+<h2><a class="toc-backref" href="#id3">Downloading and running the example notebooks</a><a class="headerlink" href="#downloading-and-running-the-example-notebooks" title="Permalink to this headline">¶</a></h2>
+<p>Each example analysis is available on the GitHub repository that hosts the <a class="reference external" href="https://github.com/jbloomlab/dms_tools2">dms_tools2 source code</a>.
+Each analysis is in the form of a <a class="reference external" href="https://ipython.org/notebook.html">Jupyter notebook</a>, and other necessary input data is also provided.
+<a class="reference external" href="https://github.com/jbloomlab/dms_tools2/tree/master/examples">Navigate here</a> to access these notebooks and the associated data.</p>
+<p>To run an example <a class="reference external" href="https://ipython.org/notebook.html">Jupyter notebook</a>, you will need to install <code class="docutils literal"><span class="pre">jupyter</span></code> for Python 3.
+If you don’t have that already installed, you can install it via:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">jupyter</span> <span class="o">--</span><span class="n">user</span>
+</pre></div>
+</div>
+<p>assuming that you have already set up your paths as described for the <a class="reference internal" href="installation.html#installation"><span class="std std-ref">Installation</span></a> of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a>.
+Note that as for <a class="reference internal" href="installation.html#installation"><span class="std std-ref">Installation</span></a> of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a>, if <code class="docutils literal"><span class="pre">pip</span></code> points to the Python 2 version on your computer, then you need to use <code class="docutils literal"><span class="pre">pip3</span></code>.
+Most of the notebooks also have other requirements (such as <a class="reference external" href="https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?view=toolkit_doc&amp;f=fastq-dump">fastq-dump</a> to download the deep sequencing data from the <a class="reference external" href="https://www.ncbi.nlm.nih.gov/sra">Sequence Read Archive</a>), and these dependencies are described in the notebooks.</p>
+<p>To run a notebook interactively, type:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">jupyter</span> <span class="n">notebook</span> <span class="n">analysis_notebook</span><span class="o">.</span><span class="n">ipynb</span>
+</pre></div>
+</div>
+<p>To run a notebook in command-line mode, run:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">jupyter</span> <span class="n">nbconvert</span> <span class="o">--</span><span class="n">to</span> <span class="n">notebook</span> <span class="o">--</span><span class="n">execute</span> <span class="o">--</span><span class="n">inplace</span> <span class="o">--</span><span class="n">ExecutePreprocessor</span><span class="o">.</span><span class="n">timeout</span><span class="o">=-</span><span class="mi">1</span> <span class="n">analysis_notebook</span><span class="o">.</span><span class="n">ipynb</span>
+</pre></div>
+</div>
+<p>You should <strong>not</strong> open the notebook while it is being run in command-line mode.</p>
+<p>If you are in the <a class="reference external" href="https://research.fhcrc.org/bloom/en.html">Bloom lab</a> and using the Hutch server, you can run a notebook via <a class="reference external" href="https://slurm.schedmd.com/">slurm</a> by creating a file <code class="docutils literal"><span class="pre">run.sbatch</span></code> that looks like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="ch">#!/bin/sh</span>
+<span class="c1">#SBATCH</span>
+<span class="c1">#PBS -l walltime=24:00:00</span>
+<span class="n">jupyter</span> <span class="n">nbconvert</span> <span class="o">--</span><span class="n">to</span> <span class="n">notebook</span> <span class="o">--</span><span class="n">execute</span> <span class="o">--</span><span class="n">inplace</span> <span class="o">--</span><span class="n">ExecutePreprocessor</span><span class="o">.</span><span class="n">timeout</span><span class="o">=-</span><span class="mi">1</span> <span class="n">analysis_notebook</span><span class="o">.</span><span class="n">ipynb</span>
+</pre></div>
+</div>
+<p>and then running the file with:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sbatch</span> <span class="o">-</span><span class="n">p</span> <span class="n">largenode</span> <span class="o">-</span><span class="n">c</span> <span class="mi">14</span> <span class="o">--</span><span class="n">mem</span><span class="o">=</span><span class="mi">140000</span> <span class="n">run</span><span class="o">.</span><span class="n">sbatch</span>
+</pre></div>
+</div>
+<p>where the number of CPUs requested with <code class="docutils literal"><span class="pre">-c</span></code> should match the number specified for multi-processor operations in the notebook.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#deep-mutational-scanning-of-influenza-hemagglutinin-by-doud-and-bloom-2016">Deep mutational scanning of influenza hemagglutinin by Doud and Bloom (2016)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#downloading-and-running-the-example-notebooks">Downloading and running the example notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="programs.html">Executable programs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="installation.html" title="previous chapter">Installation</a></li>
+      <li>Next: <a href="bcsubamp.html" title="next chapter">Barcoded-subamplicon sequencing</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/examples.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

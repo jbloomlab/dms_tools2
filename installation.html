@@ -1,0 +1,254 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Installation &#8212; dms_tools2 2.0a0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0a0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Examples" href="examples.html" />
+    <link rel="prev" title="Documentation for dms_tools2" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="installation">
+<span id="id1"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><a class="reference internal" href="#make-sure-you-have-python-3" id="id3">Make sure you have Python <strong>3</strong></a></li>
+<li><a class="reference internal" href="#installing-with-pip" id="id4">Installing with <code class="docutils literal"><span class="pre">pip</span></code></a><ul>
+<li><a class="reference internal" href="#quick-installation" id="id5">Quick installation</a></li>
+<li><a class="reference internal" href="#where-to-install" id="id6">Where to install</a></li>
+<li><a class="reference internal" href="#make-sure-pip-is-installed" id="id7">Make sure <code class="docutils literal"><span class="pre">pip</span></code> is installed</a></li>
+<li><a class="reference internal" href="#use-pip-to-install-dms-tools2" id="id8">Use <code class="docutils literal"><span class="pre">pip</span></code> to install <code class="docutils literal"><span class="pre">dms_tools2</span></code></a></li>
+<li><a class="reference internal" href="#using-a-virtual-environment" id="id9">Using a virtual environment</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#upgrading-with-pip" id="id10">Upgrading with <code class="docutils literal"><span class="pre">pip</span></code></a></li>
+<li><a class="reference internal" href="#install-from-source-code" id="id11">Install from source code</a></li>
+<li><a class="reference internal" href="#license" id="id12">License</a></li>
+</ul>
+</div>
+<div class="section" id="make-sure-you-have-python-3">
+<h2><a class="toc-backref" href="#id3">Make sure you have Python <strong>3</strong></a><a class="headerlink" href="#make-sure-you-have-python-3" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> requires <a class="reference external" href="https://www.python.org">Python</a> 3.4 or higher.
+Most computers have both Python 2 and Python 3 installed.
+You can check your current version of <a class="reference external" href="https://www.python.org">Python</a> (and the Python installation program <a class="reference external" href="https://pypi.python.org/pypi/pip">pip</a>) with:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">--</span><span class="n">version</span>
+</pre></div>
+</div>
+<p>and:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="o">--</span><span class="n">version</span>
+</pre></div>
+</div>
+<p>If these commands indicate that your current default versions are Python 2, then you need to either re-set the defaults to be Python 3 or use the Python 3 specific commands on your computer (which are likely to be <code class="docutils literal"><span class="pre">python3</span></code> rather than <code class="docutils literal"><span class="pre">python</span></code>, and <code class="docutils literal"><span class="pre">pip3</span></code> rather than <code class="docutils literal"><span class="pre">pip</span></code>).</p>
+</div>
+<div class="section" id="installing-with-pip">
+<h2><a class="toc-backref" href="#id4">Installing with <code class="docutils literal"><span class="pre">pip</span></code></a><a class="headerlink" href="#installing-with-pip" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="quick-installation">
+<h3><a class="toc-backref" href="#id5">Quick installation</a><a class="headerlink" href="#quick-installation" title="Permalink to this headline">¶</a></h3>
+<p>If your system already has the appropriate version of <code class="docutils literal"><span class="pre">pip</span></code> and appropriate paths, you can install <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> with the simple command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">dms_tools2</span> <span class="o">--</span><span class="n">user</span>
+</pre></div>
+</div>
+<p>If this command fails, then read the instructions below.</p>
+</div>
+<div class="section" id="where-to-install">
+<h3><a class="toc-backref" href="#id6">Where to install</a><a class="headerlink" href="#where-to-install" title="Permalink to this headline">¶</a></h3>
+<p>You need to figure out where you want to install <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a>.
+Global installation using <code class="docutils literal"><span class="pre">sudo</span></code> <a class="reference external" href="http://stackoverflow.com/questions/21055859/what-are-the-risks-of-running-sudo-pip/21056000#21056000">is not recommended for Python packages in general</a>.</p>
+<p>The simplest solution is to install locally via the <code class="docutils literal"><span class="pre">--user</span></code> option to <code class="docutils literal"><span class="pre">pip</span></code>, which by default on Linux will install into the <code class="docutils literal"><span class="pre">~/.local/</span></code> directory.</p>
+<p>In order for locally installed programs to be accessible, you need to add <code class="docutils literal"><span class="pre">~/.local/bin/</span></code> to the <code class="docutils literal"><span class="pre">PATH</span></code> variable, and <code class="docutils literal"><span class="pre">~/.local/lib/</span></code> to the <code class="docutils literal"><span class="pre">PYTHONPATH</span></code> variable. If you are using the <a class="reference external" href="http://www.gnu.org/software/bash/">bash shell</a>, you would do this by adding the following lines to your <code class="docutils literal"><span class="pre">~/.bashrc</span></code> file:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>PATH=$HOME/.local/bin/:$PATH
+export PYTHONPATH=$HOME/.local/lib/python3.4:$PATH
+</pre></div>
+</div>
+<p>You then want to make sure that your <code class="docutils literal"><span class="pre">~/.bash_profile</span></code> file simple sources your <code class="docutils literal"><span class="pre">~/.bashrc</span></code> file as <a class="reference external" href="http://www.joshstaiger.org/archives/2005/07/bash_profile_vs.html">described here</a> by making <code class="docutils literal"><span class="pre">~/.bash_profile</span></code> consist of the following contents:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="p">[</span> <span class="o">-</span><span class="n">f</span> <span class="o">~/.</span><span class="n">bashrc</span> <span class="p">];</span> <span class="n">then</span>
+    <span class="n">source</span> <span class="o">~/.</span><span class="n">bashrc</span>
+<span class="n">fi</span>
+</pre></div>
+</div>
+<p>On Mac OS X, the default directory for <code class="docutils literal"><span class="pre">--user</span></code> may be <code class="docutils literal"><span class="pre">$HOME/Library/Python/x.y/</span></code> rather than <code class="docutils literal"><span class="pre">~/.local/</span></code> where <code class="docutils literal"><span class="pre">x.y</span></code> indicates the version number (e.g., <code class="docutils literal"><span class="pre">3.4</span></code>.</p>
+</div>
+<div class="section" id="make-sure-pip-is-installed">
+<h3><a class="toc-backref" href="#id7">Make sure <code class="docutils literal"><span class="pre">pip</span></code> is installed</a><a class="headerlink" href="#make-sure-pip-is-installed" title="Permalink to this headline">¶</a></h3>
+<p>Check if you already have <a class="reference external" href="https://pypi.python.org/pypi/pip">pip</a> installed. You can do this by typing at the command line:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="o">--</span><span class="n">version</span>
+</pre></div>
+</div>
+<p>If this command indicates that you have <a class="reference external" href="https://pypi.python.org/pypi/pip">pip</a> for Python 3.4 or higher, then you can move to the next step.
+If you do not have <a class="reference external" href="https://pypi.python.org/pypi/pip">pip</a>, then you need to install it by following the <a class="reference external" href="https://pip.pypa.io/en/stable/installing/">instructions here</a>.</p>
+</div>
+<div class="section" id="use-pip-to-install-dms-tools2">
+<h3><a class="toc-backref" href="#id8">Use <code class="docutils literal"><span class="pre">pip</span></code> to install <code class="docutils literal"><span class="pre">dms_tools2</span></code></a><a class="headerlink" href="#use-pip-to-install-dms-tools2" title="Permalink to this headline">¶</a></h3>
+<p>Once <a class="reference external" href="https://pypi.python.org/pypi/pip">pip</a> is installed, you can do a local installation with:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">dms_tools2</span> <span class="o">--</span><span class="n">user</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-a-virtual-environment">
+<h3><a class="toc-backref" href="#id9">Using a virtual environment</a><a class="headerlink" href="#using-a-virtual-environment" title="Permalink to this headline">¶</a></h3>
+<p>The other good option rather than <code class="docutils literal"><span class="pre">--user</span></code> is to use <code class="docutils literal"><span class="pre">pip</span></code> to install into a virtual environment <a class="reference external" href="http://docs.python-guide.org/en/latest/dev/virtualenvs/">as described here</a></p>
+</div>
+</div>
+<div class="section" id="upgrading-with-pip">
+<h2><a class="toc-backref" href="#id10">Upgrading with <code class="docutils literal"><span class="pre">pip</span></code></a><a class="headerlink" href="#upgrading-with-pip" title="Permalink to this headline">¶</a></h2>
+<p>If you have previously installed <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> but are not sure that you have the latest version, you can upgrade using <a class="reference external" href="https://pypi.python.org/pypi/pip">pip</a>. To do this for a local installation, use:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">dms_tools2</span> <span class="o">--</span><span class="n">user</span> <span class="o">--</span><span class="n">upgrade</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="install-from-source-code">
+<h2><a class="toc-backref" href="#id11">Install from source code</a><a class="headerlink" href="#install-from-source-code" title="Permalink to this headline">¶</a></h2>
+<p>You can also install the latest version of the <a class="reference external" href="https://github.com/jbloomlab/dms_tools2">dms_tools2 source code</a> on GitHub.</p>
+<p>To install from source, first clone the <a class="reference external" href="https://github.com/jbloomlab/dms_tools2">dms_tools2 source code</a> from GitHub:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">jbloomlab</span><span class="o">/</span><span class="n">dms_tools2</span>
+</pre></div>
+</div>
+<p>Then install locally with:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">dms_tools2</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span> <span class="o">--</span><span class="n">user</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="license">
+<span id="id2"></span><h2><a class="toc-backref" href="#id12">License</a><a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://github.com/jbloomlab/dms_tools2">dms_tools2 source code</a> is available on GitHub under an open-source <a class="reference external" href="http://www.gnu.org/copyleft/gpl.html">GPLv3</a> license. Part of the code utilized by <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> is based on <a class="reference external" href="https://code.google.com/p/weblogo/">weblogo</a>, which is licensed under the GPL-compatible BSD 3-clause license.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#make-sure-you-have-python-3">Make sure you have Python <strong>3</strong></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-with-pip">Installing with <code class="docutils literal"><span class="pre">pip</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#upgrading-with-pip">Upgrading with <code class="docutils literal"><span class="pre">pip</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-from-source-code">Install from source code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#license">License</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="programs.html">Executable programs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Documentation for <code class="docutils literal"><span class="pre">dms_tools2</span></code></a></li>
+      <li>Next: <a href="examples.html" title="next chapter">Examples</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/installation.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

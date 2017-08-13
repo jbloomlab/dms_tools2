@@ -1,7 +1,0 @@
-pytest
-biopython==1.68
-HTSeq==0.9
-pandas==0.19
-numpy==1.13
-IPython==5.1
-plotnine==0.2.1
