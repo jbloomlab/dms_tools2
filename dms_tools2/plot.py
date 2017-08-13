@@ -280,7 +280,7 @@ def plotMutFreq(names, countsfiles, plotfile, maxcol=4):
 
 
 def plotCodonMutTypes(names, countsfiles, plotfile,
-        classification='aachange'):
+        classification='aachange', csvfile=None):
     """Plot average frequency codon mutation types.
 
     The averages are determined by summing counts for all sites.
@@ -300,6 +300,9 @@ def plotCodonMutTypes(names, countsfiles, plotfile,
                 `n_ntchanges` : number of nucleotide changes per codon
 
                 `singlentchanges` : nucleotide change in 1-nt mutations
+
+        `csvfile` (str or `None`)
+            `None` or name of CSV file to which numerical data are written.
     """
     assert len(names) == len(countsfiles)
     assert os.path.splitext(plotfile)[1].lower() == '.pdf'
@@ -328,6 +331,10 @@ def plotCodonMutTypes(names, countsfiles, plotfile,
             )
     for (newcol, n) in muttypes.items():
         df[newcol] = df[n] / df['ncounts']
+
+    if csvfile:
+        df[['name'] + list(muttypes.keys())].to_csv(csvfile, index=False) 
+
     df = df.melt(id_vars='name', var_name='mutation type',
                 value_vars=list(muttypes.keys()),
                 value_name='per-codon frequency')
