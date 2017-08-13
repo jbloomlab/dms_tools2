@@ -7,11 +7,11 @@ Installation
 .. contents::
    :local:
 
-dms_tools2 requires Python **3**
+Make sure you have Python **3**
 ---------------------------------
-`dms_tools2`_ requires Python 3.4 or higher.
-Most computers currently have both Python 2 and Python 3 installed.
-You can check your current version of Python (and the Python installation program ``pip``) with::
+`dms_tools2`_ requires `Python`_ 3.4 or higher.
+Most computers have both Python 2 and Python 3 installed.
+You can check your current version of `Python`_ (and the Python installation program `pip`_) with::
 
     python --version
 
@@ -22,17 +22,19 @@ and::
 If these commands indicate that your current default versions are Python 2, then you need to either re-set the defaults to be Python 3 or use the Python 3 specific commands on your computer (which are likely to be ``python3`` rather than ``python``, and ``pip3`` rather than ``pip``).
 
 
+Installing with ``pip`` 
+----------------------------------------------------
+
 Quick installation
----------------------
-If your system already has the appropriate required software, you can install `dms_tools2`_ with the simple command::
+++++++++++++++++++++++++++
+If your system already has the appropriate version of ``pip`` and appropriate paths, you can install `dms_tools2`_ with the simple command::
 
     pip install dms_tools2 --user
 
 If this command fails, then read the instructions below.
 
-
 Where to install
----------------------------------------
++++++++++++++++++
 You need to figure out where you want to install `dms_tools2`_.
 Global installation using ``sudo`` `is not recommended for Python packages in general <http://stackoverflow.com/questions/21055859/what-are-the-risks-of-running-sudo-pip/21056000#21056000>`_.
 
@@ -51,29 +53,25 @@ You then want to make sure that your ``~/.bash_profile`` file simple sources you
 
 On Mac OS X, the default directory for ``--user`` may be ``$HOME/Library/Python/x.y/`` rather than ``~/.local/`` where ``x.y`` indicates the version number (e.g., ``3.4``.
 
-Installing with ``pip`` and ``--user``
-----------------------------------------------------
-Once you have taken care of the steps above, you can then simply install with ``pip``.
-
-First, make sure ``pip`` is installed
+Make sure ``pip`` is installed
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-First, check if you already have `pip`_ installed. You can do this by typing at the command line::
+Check if you already have `pip`_ installed. You can do this by typing at the command line::
 
     pip --version
 
 If this command indicates that you have `pip`_ for Python 3.4 or higher, then you can move to the next step. 
 If you do not have `pip`_, then you need to install it by following the `instructions here <https://pip.pypa.io/en/stable/installing/>`_.
 
-Next, use ``pip`` to install ``dms_tools2``
+Use ``pip`` to install ``dms_tools2``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Once `pip`_ is installed, you can do a local installation with::
 
     pip install dms_tools2 --user
 
 Using a virtual environment
------------------------------
-The other good option is to use ``pip`` to install into a virtual environment `as described here <http://docs.python-guide.org/en/latest/dev/virtualenvs/>`_
+++++++++++++++++++++++++++++++
+The other good option rather than ``--user`` is to use ``pip`` to install into a virtual environment `as described here <http://docs.python-guide.org/en/latest/dev/virtualenvs/>`_
 
 Upgrading with ``pip``
 --------------------------------------------------

@@ -34,3 +34,4 @@
 .. _`fastq-dump`: https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?view=toolkit_doc&f=fastq-dump
 .. _`Sequence Read Archive`: https://www.ncbi.nlm.nih.gov/sra
 .. _`slurm`: https://slurm.schedmd.com/
+.. _`comprehensive codon mutagenesis`: https://github.com/jbloomlab/CodonTilingPrimers
