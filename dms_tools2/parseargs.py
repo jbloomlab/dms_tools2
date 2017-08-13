@@ -104,7 +104,7 @@ def bcsubampParentParser():
             help=("Require this many reads in a barcode to agree to "
             "call consensus nucleotide identity."))
 
-    parser.add_argument('--minfraccall', type=float, default=0.9, 
+    parser.add_argument('--minfraccall', type=float, default=0.95, 
             help=("Retain only barcodes where trimmed consensus "
             "sequence for each read has >= this frac sites called."))
 
