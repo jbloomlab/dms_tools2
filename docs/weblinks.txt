@@ -35,3 +35,11 @@
 .. _`Sequence Read Archive`: https://www.ncbi.nlm.nih.gov/sra
 .. _`slurm`: https://slurm.schedmd.com/
 .. _`comprehensive codon mutagenesis`: https://github.com/jbloomlab/CodonTilingPrimers
+.. _`Hiatt et al (2010)`: https://www.nature.com/nmeth/journal/v7/n2/full/nmeth.1416.html
+.. _`Kinde et al (2011)`: http://www.pnas.org/content/108/23/9530.short
+.. _`Jabara et al (2011)`: http://www.pnas.org/content/108/50/20166.short
+.. _`Wu et al (2014)`: https://www.ncbi.nlm.nih.gov/pubmed/24820965
+.. _`Zhang et al (2016)`: https://www.ncbi.nlm.nih.gov/pubmed/26868371
+.. _`Dingens et al (2017)`: http://dx.doi.org/10.1016/j.chom.2017.05.003
+.. _`Haddox et al (2016)`: http://dx.doi.org/10.1371/journal.ppat.1006114
+.. _`Doud et al (2017)`: http://journals.plos.org/plospathogens/article?id=10.1371/journal.ppat.1006271

@@ -27,6 +27,8 @@ sys.path.insert(0, '{0}/../dms_tools2'.format(os.path.abspath('.')))
 #
 # needs_sphinx = '1.0'
 
+numfig = True
+
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.

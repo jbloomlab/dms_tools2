@@ -24,7 +24,13 @@ Notes
 
 Note that the configuration automatically created by ``sphinx-quickstart`` has been modified in the following ways:
 
-    * ``conf.py`` has been modified to using `sphinx-argparse`_ and read the version and package information from ``../dms_tools2/_metadata.py``
+    * ``conf.py`` has been modified to:
+    
+        - use `sphinx-argparse`_ to enable parsing of command-line program arguments
+        
+        - read the version and package information from ``../dms_tools2/_metadata.py``
+
+        - specify `numfig = True` to enable figure numbering
 
     * ``Makefile`` has been modified to automatically run `sphinx-apidoc`_.
 

@@ -54,7 +54,7 @@ You then want to make sure that your ``~/.bash_profile`` file simple sources you
 On Mac OS X, the default directory for ``--user`` may be ``$HOME/Library/Python/x.y/`` rather than ``~/.local/`` where ``x.y`` indicates the version number (e.g., ``3.4``.
 
 Make sure ``pip`` is installed
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+++++++++++++++++++++++++++++++++++++++++++
 
 Check if you already have `pip`_ installed. You can do this by typing at the command line::
 
@@ -64,7 +64,7 @@ If this command indicates that you have `pip`_ for Python 3.4 or higher, then yo
 If you do not have `pip`_, then you need to install it by following the `instructions here <https://pip.pypa.io/en/stable/installing/>`_.
 
 Use ``pip`` to install ``dms_tools2``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+++++++++++++++++++++++++++++++++++++++++++
 Once `pip`_ is installed, you can do a local installation with::
 
     pip install dms_tools2 --user

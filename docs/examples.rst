@@ -35,7 +35,7 @@ To run a notebook in command-line mode, run::
 
     jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=-1 analysis_notebook.ipynb
 
-Note that you should **not** open the notebook interactively while it is being run in command-line mode.
+You should **not** open the notebook while it is being run in command-line mode.
 
 If you are in the `Bloom lab`_ and using the Hutch server, you can run a notebook via `slurm`_ by creating a file ``run.sbatch`` that looks like this::
 

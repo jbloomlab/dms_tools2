@@ -7,9 +7,9 @@ Documentation for ``dms_tools2``
 ======================================
 
 `dms_tools2`_ is a software package for analyzing **d**\eep **m**\utational **s**\canning data.
-It is tailored to analyze libraries created using `comprehensive codon mutagenesis`_ of protein-coding genes, and performs analyses that are common to the `Bloom lab`_, such as:
+It is tailored to analyze libraries created using `comprehensive codon mutagenesis`_ of protein-coding genes, and perform analyses that are common to the `Bloom lab`_, such as:
 
-    * Process Illumina deep-sequencing generated using a :ref:`bcsubamp` strategy.
+    * Process deep-sequencing data generated :ref:`bcsubamp`.
 
     * Estimate the amino-acid preferences of a protein.
 
