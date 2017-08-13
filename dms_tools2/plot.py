@@ -21,8 +21,10 @@ You can use this scale by adding the following to your plots:
 import os
 import math
 import pandas
+import numpy
 from plotnine import *
-theme_set(theme_gray()) # use classic ggplot theme
+# set ggplot theme
+theme_set(theme_bw(base_size=12)) 
 import dms_tools2.utils
 
 COLOR_BLIND_PALETTE = ["#000000", "#E69F00", "#56B4E9", "#009E73",
@@ -53,14 +55,16 @@ def latexSciNot(xlist, exp_cutoff=3, ddigits=1):
     ['$10^{-3}$', '$1$', '$10^{3}$', '$10^{6}$']
     """
     # can all numbers be expressed as 10**integer?
-    if all([10**int(math.log10(x)) == x for x in xlist if x != 0]):
+    if numpy.allclose(xlist, list(map(lambda x: x if x == 0 else
+            10**math.floor(math.log10(x)), xlist))):
         all_exp10 = True
     else:
         all_exp10 = False
 
     # can all numbers be expressed as integer * 10**integer?
-    if all([x == (10**int(math.log10(x))) * int(x / 10**(int(math.log10(x))))
-            for x in xlist if x != 0]):
+    if numpy.allclose(xlist, list(map(lambda x: x if x == 0 else 
+            (10**math.floor(math.log10(x))) * 
+            math.floor(x / 10**(math.floor(math.log10(x)))), xlist))):
         ddigits = 0
 
     # make formatted numbers
@@ -71,9 +75,7 @@ def latexSciNot(xlist, exp_cutoff=3, ddigits=1):
         elif x == 0:
             formatlist.append('$0$')
             continue
-        exponent = int(math.log10(x))
-        if math.log10(x) < exponent and x < 1:
-            exponent -= 1
+        exponent = math.floor(math.log10(x))
         if all_exp10:
             if abs(exponent) >= exp_cutoff:
                 xformat = '10^{{{0}}}'.format(exponent)
@@ -187,7 +189,7 @@ def plotReadsPerBC(names, readsperbcfiles, plotfile,
     df = pandas.concat(dfs, ignore_index=True)
 
     ncol = min(maxcol, len(names))
-    nrow = int(math.ceil(len(names) / float(ncol)))
+    nrow = math.ceil(len(names) / float(ncol))
     p = (ggplot(df)
             + geom_col(aes(x='number of reads', y='number of barcodes'),
                 position='stack')
@@ -221,15 +223,15 @@ def plotDepth(names, countsfiles, plotfile, maxcol=4):
 
     counts = pandas.concat([dms_tools2.utils.annotateCodonCounts(f).assign(
             name=name) for (name, f) in zip(names, countsfiles)], 
-            ignore_index=True)
+            ignore_index=True).rename(columns={'ncounts':'number of counts'})
     
     ncol = min(maxcol, len(names))
-    nrow = int(math.ceil(len(names) / float(ncol)))
+    nrow = math.ceil(len(names) / float(ncol))
 
-    p = (ggplot(counts, aes(x='site', y='ncounts'))
+    p = (ggplot(counts, aes(x='site', y='number of counts'))
             + geom_line()
             + scale_y_continuous(labels=latexSciNot, 
-                    limits=(0, counts['ncounts'].max()), name='number of counts')
+                    limits=(0, counts['number of counts'].max()))
             + scale_x_continuous(limits=(counts['site'].min(),
                     counts['site'].max()))
             + facet_wrap('~name', ncol=ncol) 
@@ -258,16 +260,15 @@ def plotMutFreq(names, countsfiles, plotfile, maxcol=4):
 
     counts = pandas.concat([dms_tools2.utils.annotateCodonCounts(f).assign(
             name=name) for (name, f) in zip(names, countsfiles)], 
-            ignore_index=True)
+            ignore_index=True).rename(columns={'mutfreq':'mutation frequency'})
     
     ncol = min(maxcol, len(names))
-    nrow = int(math.ceil(len(names) / float(ncol)))
+    nrow = math.ceil(len(names) / float(ncol))
 
-    p = (ggplot(counts, aes(x='site', y='mutfreq'))
+    p = (ggplot(counts, aes(x='site', y='mutation frequency'))
             + geom_line()
             + scale_y_continuous(labels=latexSciNot, 
-                    limits=(0, counts['mutfreq'].max()), 
-                    name='mutation frequency')
+                    limits=(0, counts['mutation frequency'].max()))
             + scale_x_continuous(limits=(counts['site'].min(),
                     counts['site'].max()))
             + facet_wrap('~name', ncol=ncol) 
@@ -340,6 +341,8 @@ def plotCodonMutTypes(names, countsfiles, plotfile,
             )
     if len(muttypes) <= len(COLOR_BLIND_PALETTE):
         p += scale_fill_manual(COLOR_BLIND_PALETTE)
+    else:
+        p += guides(fill=guide_legend(ncol=2))
 
     p.save(plotfile, height=2.7, width=(1.2 + 0.3 * len(names)))
 

@@ -160,7 +160,7 @@ def main():
                 classification='n_ntchanges')
 
         logger.info("Plotting frequencies of nucleotide changes in 1-"
-                "-nucleotide mutations to {0}".format(files['singlentchanges']))
+                "nucleotide mutations to {0}".format(files['singlentchanges']))
         dms_tools2.plot.plotCodonMutTypes(batchruns['name'],
                 batchruns['counts'], files['singlentchanges'],
                 classification='singlentchanges')
