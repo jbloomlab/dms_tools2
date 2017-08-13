@@ -458,6 +458,8 @@ class test_bcsubamp_counts(unittest.TestCase):
     def setUp(self):
         """Set up input data."""
 
+        random.seed(1)
+
         self.testdir = os.path.join(
                 os.path.abspath(os.path.dirname(__file__)),
                 './test_bcsubamp_files/')
@@ -504,6 +506,7 @@ class test_bcsubamp_counts(unittest.TestCase):
                 '--alignspecs', self.alignspec,
                 '--outdir', self.testdir,
                 '--R1', self.r1file,
+                '--minfraccall', '0.9',
                ] 
         sys.stderr.write('\nRunning the following command:\n{0}\n'.format(
                 ' '.join(cmds)))
