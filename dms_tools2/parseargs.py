@@ -154,14 +154,14 @@ def batch_bcsubampParser():
     """Returns `argparse.ArgumentParser` for ``dms2_batch_bcsubamp``."""
     parser = argparse.ArgumentParser(
             description=parserDescription(
-                'Perform many runs of `dms2_bcsubamp` and summarize results.'),
+                'Perform many runs of ``dms2_bcsubamp`` and plot results.'),
             parents=[bcsubampParentParser()],
             conflict_handler='resolve',
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--batchfile', help="CSV file specifying each "
-            "`dms2_bcsubamp` run. Must have these columns (can also have "
-            "others): name, R1")
+            "``dms2_bcsubamp`` run. Must have these columns (can also have "
+            "others): `name`, `R1`")
 
     parser.add_argument('--summaryprefix', required=True,
             help="Prefix of output summary plots.")

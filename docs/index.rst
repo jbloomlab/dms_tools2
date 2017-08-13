@@ -6,7 +6,7 @@
 Documentation for ``dms_tools2``
 ======================================
 
-`dms_tools2`_ is a software package that contains tools for analyzing **d**\eep **m**\utational **s**\canning data.
+`dms_tools2`_ is a software package for analyzing **d**\eep **m**\utational **s**\canning data.
 
 `dms_tools2`_ is written in `Python`_ by the `Bloom lab`_.
 
@@ -22,7 +22,8 @@ Contents
    :maxdepth: 1
 
    installation
-   dms2_bcsubamp
+   bcsubamp
+   programs
    api
    citations
 
