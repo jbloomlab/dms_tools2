@@ -53,36 +53,59 @@ def latexSciNot(xlist, exp_cutoff=3, ddigits=1):
 
     >>> latexSciNot([0.001, 1, 1000, 1e6])
     ['$10^{-3}$', '$1$', '$10^{3}$', '$10^{6}$']
+
+    >>> latexSciNot([-0.002, 0.003])
+    ['$-2 \\\\times 10^{-3}$', '$3 \\\\times 10^{-3}$']
+
+    >>> latexSciNot([-0.1, 0.0, 0.1, 0.2])
+    ['$-0.1$', '$0$', '$0.1$', '$0.2$']
+
+    >>> latexSciNot([0, 1, 2])
+    ['$0$', '$1$', '$2$']
     """
+
+    def _roundlog10(x):
+        return math.floor(math.log10(abs(x))) 
+
+    def _numericsign(x):
+        if x < 0:
+            return -1
+        else:
+            return 1
+
     # can all numbers be expressed as 10**integer?
     if numpy.allclose(xlist, list(map(lambda x: x if x == 0 else
-            10**math.floor(math.log10(x)), xlist))):
+            _numericsign(x) * 10**_roundlog10(x), xlist))):
         all_exp10 = True
     else:
         all_exp10 = False
 
     # can all numbers be expressed as integer * 10**integer?
     if numpy.allclose(xlist, list(map(lambda x: x if x == 0 else 
-            (10**math.floor(math.log10(x))) * 
-            math.floor(x / 10**(math.floor(math.log10(x)))), xlist))):
+            (10**_roundlog10(x)) * 
+            math.floor(x / 10**(_roundlog10(x))), xlist))):
+        expddigits = 0
+    else:
+        expddigits = ddigits
+
+    # are all numbers integers?
+    if all([int(x) == x for x in xlist]):
         ddigits = 0
 
     # make formatted numbers
     formatlist = []
     for x in xlist:
-        if x < 0:
-            raise ValueError("only handles numbers >= 0")
-        elif x == 0:
+        if x == 0:
             formatlist.append('$0$')
             continue
-        exponent = math.floor(math.log10(x))
+        exponent = _roundlog10(x)
         if all_exp10:
             if abs(exponent) >= exp_cutoff:
                 xformat = '10^{{{0}}}'.format(exponent)
             else:
                 xformat = str(int(x))
         elif abs(exponent) >= exp_cutoff:
-            formatstr = '{0:.' + str(ddigits) + 'f} \\times 10^{{{1}}}'
+            formatstr = '{0:.' + str(expddigits) + 'f} \\times 10^{{{1}}}'
             xformat = formatstr.format(x / 10.**exponent, exponent)
         else:
             formatstr = '{0:.' + str(ddigits) + 'f}'
@@ -330,7 +353,7 @@ def plotCodonMutTypes(names, countsfiles, plotfile,
             .assign(ncounts=lambda x: x['ncounts'].astype('float'))
             )
     for (newcol, n) in muttypes.items():
-        df[newcol] = df[n] / df['ncounts']
+        df[newcol] = (df[n] / df['ncounts']).fillna(0)
 
     if csvfile:
         df[['name'] + list(muttypes.keys())].to_csv(csvfile, index=False) 

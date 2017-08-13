@@ -594,8 +594,9 @@ def annotateCodonCounts(countsfile):
 
     df['ncounts'] = df[dms_tools2.CODONS].sum(axis=1)
 
-    df['mutfreq'] = (df['ncounts'] - df.lookup(df['wildtype'].index,
-            df['wildtype'].values)) / df['ncounts'].astype('float')
+    df['mutfreq'] = (((df['ncounts'] - df.lookup(df['wildtype'].index,
+            df['wildtype'].values)) / df['ncounts'].astype('float'))
+            .fillna(0))
 
     ntchanges = ['{0}to{1}'.format(nt1, nt2) for nt1 in dms_tools2.NTS
             for nt2 in dms_tools2.NTS if nt1 != nt2]
