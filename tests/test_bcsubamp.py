@@ -111,9 +111,9 @@ def generateReadPair(refseq, alignspec, bc1, bc2, r1ext=0, r2ext=0,
 
 
 class test_bcsubamp(unittest.TestCase):
-    """Runs ``dms2_bcsubam`` on test data
+    """Runs ``dms2_bcsubamp`` on test data
     
-    Use settings that tolerate of modest numbers of mutations
+    Use settings that tolerate modest numbers of mutations
     and low-quality nucleotides.
     """
 
