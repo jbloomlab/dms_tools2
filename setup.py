@@ -52,7 +52,7 @@ setup(
     install_requires = [
         'biopython>=1.68',
         'HTSeq>=0.9',
-        'pandas>=0.19',
+        'pandas>=0.20.3',
         'numpy>=1.13',
         'IPython>=5.1',
         'plotnine>=0.2.1',
