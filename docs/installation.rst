@@ -5,8 +5,9 @@ Installation
 ================================
 
 .. contents::
+   :local:
 
-dms_tools2 requires **Python 3**
+dms_tools2 requires Python **3**
 ---------------------------------
 `dms_tools2`_ requires Python 3.4 or higher.
 Most computers currently have both Python 2 and Python 3 installed.

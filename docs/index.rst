@@ -7,21 +7,27 @@ Documentation for ``dms_tools2``
 ======================================
 
 `dms_tools2`_ is a software package for analyzing **d**\eep **m**\utational **s**\canning data.
+It can perform a variety of analyses that are common to workflows in the `Bloom lab`_.
+These include:
 
-`dms_tools2`_ is written in `Python`_ by the `Bloom lab`_.
+    * Processing Illumina deep-sequencing data generated using a :ref:`bcsubamp` strategy to reduce the sequencing error rate.
 
 The `dms_tools2 source code`_ is freely available under a `GPLv3`_ license.
-
-If you use `dms_tools2`_, please cite the references in :ref:`citations`.
-
 `dms_tools2`_ is a re-write of the earlier `dms_tools <http://github.com/jbloomlab/dms_tools>`_ package.
+
+If you use `dms_tools2`_ for your work, **please cite the references** in :ref:`citations`.
+
+:ref:`installation` of `dms_tools2`_ installs a collection of :ref:`programs` as well as a :ref:`api`.
+
+The easiest way to learn to use `dms_tools2`_ is to look at the :ref:`examples`.
 
 Contents
 ----------
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    installation
+   examples
    bcsubamp
    programs
    api

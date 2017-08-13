@@ -1,3 +1,5 @@
+.. _programs:
+
 =========================
 Executable programs
 =========================
@@ -8,8 +10,8 @@ Once you install the `dms_tools2`_ package, all of these programs should be avai
 .. toctree::
    :maxdepth: 1
 
-   dms2_batch_bcsubamp
    dms2_bcsubamp
+   dms2_batch_bcsubamp
 
 
 .. include:: weblinks.txt

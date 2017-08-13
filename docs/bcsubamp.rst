@@ -1,7 +1,7 @@
 .. _bcsubamp:
 
 ==========================================
-Barcoded-subamplicon sequencing
+Barcoded subamplicons
 ==========================================
 
 .. toctree::
