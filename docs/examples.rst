@@ -12,6 +12,11 @@ Deep mutational scanning of influenza hemagglutinin by Doud and Bloom (2016)
 `Doud and Bloom (2016)`_ performed deep mutational scanning of influenza hemagglutinin using :ref:`bcsubamp` to obtain high sequencing accuracy.
 You can see a `Jupyter notebook`_ that analyzes their data by clicking here: `Doud2016 example`_.
 
+Mutational antigenic profiling of influenza hemagglutinin by Doud et al (2017)
+------------------------------------------------------------------------------
+`Doud et al (2017)`_ performed mutational antigenic profiling of influenza hemagglutinin against a set of strain-sepcific antibodies, using :ref:`bcsubamp` to obtain high sequencing accuracy.
+You can see a `Jupyter notebook`_ that analyzes their data by clicking here: `Doud2017 example`_.
+
 Downloading and running the example notebooks
 -------------------------------------------------
 Each example analysis is available on the GitHub repository that hosts the `dms_tools2 source code`_. 
