@@ -55,7 +55,7 @@ def main():
     args = vars(parser.parse_args())
     prog = parser.prog
 
-    random.seed(args['seed'])
+    random.seed(1)
 
     # set up names of output files
     assert re.search('^[a-zA-Z0-9\-]+$', args['name']), \
