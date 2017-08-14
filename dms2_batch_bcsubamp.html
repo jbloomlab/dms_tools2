@@ -79,8 +79,8 @@ It then creates the summary plots described in <a class="reference internal" hre
                            <span class="p">[</span><span class="o">--</span><span class="n">minreads</span> <span class="n">MINREADS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">minfraccall</span> <span class="n">MINFRACCALL</span><span class="p">]</span>
                            <span class="p">[</span><span class="o">--</span><span class="n">minconcur</span> <span class="n">MINCONCUR</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">purgeread</span> <span class="n">PURGEREAD</span><span class="p">]</span>
                            <span class="p">[</span><span class="o">--</span><span class="n">purgebc</span> <span class="n">PURGEBC</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">bcinfo</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">seed</span> <span class="n">SEED</span><span class="p">]</span>
-                           <span class="p">[</span><span class="o">--</span><span class="n">batchfile</span> <span class="n">BATCHFILE</span><span class="p">]</span> <span class="o">--</span><span class="n">summaryprefix</span>
-                           <span class="n">SUMMARYPREFIX</span> <span class="p">[</span><span class="o">--</span><span class="n">ncpus</span> <span class="n">NCPUS</span><span class="p">]</span>
+                           <span class="o">--</span><span class="n">batchfile</span> <span class="n">BATCHFILE</span> <span class="o">--</span><span class="n">summaryprefix</span> <span class="n">SUMMARYPREFIX</span>
+                           <span class="p">[</span><span class="o">--</span><span class="n">ncpus</span> <span class="n">NCPUS</span><span class="p">]</span>
 </pre></div>
 </div>
 <div class="section" id="Named Arguments">
@@ -152,7 +152,7 @@ It then creates the summary plots described in <a class="reference internal" hre
 <tr><td class="option-group">
 <kbd>--minfraccall</kbd></td>
 <td><p class="first">Retain only barcodes where trimmed consensus sequence for each read has &gt;= this frac sites called.</p>
-<p class="last">Default: 0.9</p>
+<p class="last">Default: 0.95</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd>--minconcur</kbd></td>
