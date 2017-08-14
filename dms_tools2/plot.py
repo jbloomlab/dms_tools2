@@ -222,12 +222,10 @@ def plotReadsPerBC(names, readsperbcfiles, plotfile,
                     labels=['$1$', '${0}$'.format(maxreads // 2), 
                     '$\geq {0}$'.format(maxreads)])
             + scale_y_continuous(labels=latexSciNot)
-            + facet_wrap('~name', ncol=ncol) 
+            + facet_wrap('~name', ncol=ncol)
+            + theme(figure_size=(1.5 * (0.8 + ncol), 1.2 * (0.4 + nrow)))
             )
-
-    p.save(plotfile, 
-            height=1.2 * (0.4 + nrow),
-            width=(1.5 * (0.8 + ncol)))
+    p.save(plotfile)
 
 
 def plotDepth(names, countsfiles, plotfile, maxcol=4):
@@ -260,11 +258,9 @@ def plotDepth(names, countsfiles, plotfile, maxcol=4):
             + scale_x_continuous(limits=(counts['site'].min(),
                     counts['site'].max()))
             + facet_wrap('~name', ncol=ncol) 
+            + theme(figure_size=(2.25 * (0.6 + ncol), 1.3 * (0.3 + nrow)))
             )
-
-    p.save(plotfile, 
-            height=1.3 * (0.3 + nrow),
-            width=(2.25 * (0.6 + ncol)))
+    p.save(plotfile)
 
 
 def plotMutFreq(names, countsfiles, plotfile, maxcol=4):
@@ -297,11 +293,9 @@ def plotMutFreq(names, countsfiles, plotfile, maxcol=4):
             + scale_x_continuous(limits=(counts['site'].min(),
                     counts['site'].max()))
             + facet_wrap('~name', ncol=ncol) 
+            + theme(figure_size=(2.25 * (0.6 + ncol), 1.3 * (0.3 + nrow)))
             )
-
-    p.save(plotfile, 
-            height=1.3 * (0.3 + nrow),
-            width=(2.25 * (0.6 + ncol)))
+    p.save(plotfile)
 
 
 def plotCodonMutTypes(names, countsfiles, plotfile,
