@@ -223,7 +223,7 @@ def plotReadsPerBC(names, readsperbcfiles, plotfile,
                     '$\geq {0}$'.format(maxreads)])
             + scale_y_continuous(labels=latexSciNot)
             + facet_wrap('~name', ncol=ncol) 
-            + theme(strip_text=element_text(lineheight=1.8)))
+            )
 
     p.save(plotfile, 
             height=1.2 * (0.4 + nrow),
@@ -260,10 +260,10 @@ def plotDepth(names, countsfiles, plotfile, maxcol=4):
             + scale_x_continuous(limits=(counts['site'].min(),
                     counts['site'].max()))
             + facet_wrap('~name', ncol=ncol) 
-            + theme(strip_text=element_text(lineheight=1.8)))
+            )
 
     p.save(plotfile, 
-            height=1.2 * (0.4 + nrow),
+            height=1.3 * (0.3 + nrow),
             width=(2.25 * (0.6 + ncol)))
 
 
@@ -297,10 +297,10 @@ def plotMutFreq(names, countsfiles, plotfile, maxcol=4):
             + scale_x_continuous(limits=(counts['site'].min(),
                     counts['site'].max()))
             + facet_wrap('~name', ncol=ncol) 
-            + theme(strip_text=element_text(lineheight=1.8)))
+            )
 
     p.save(plotfile, 
-            height=1.2 * (0.4 + nrow),
+            height=1.3 * (0.3 + nrow),
             width=(2.25 * (0.6 + ncol)))
 
 
