@@ -4,17 +4,7 @@ plot
 ===================
 
 Plotting functions for ``dms_tools2``.
-
-The plotting is done with ``plotnine``.
-
-The default ``plotnine`` color palette is **not** color-blind safe.
-Therefore, this module defines the constant `COLOR_BLIND_PALETTE`
-which gives the color-blind safe scale described here:
-http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/
-
-You can use this scale by adding the following to your plots:
-`scale_fill_manual(COLOR_BLIND_PALETTE)` or
-`scale_color_manual(COLOR_BLIND_PALETTE)`.
+Uses `plotnine <https://plotnine.readthedocs.io/en/stable>`_.
 """
 
 
@@ -29,6 +19,10 @@ from plotnine import *
 theme_set(theme_bw(base_size=12)) 
 import dms_tools2.utils
 
+#: `color-blind safe palette <http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/>`_
+#: use by adding to your plots the following
+#: `scale_fill_manual(COLOR_BLIND_PALETTE)` or
+#: `scale_color_manual(COLOR_BLIND_PALETTE)`.
 COLOR_BLIND_PALETTE = ["#000000", "#E69F00", "#56B4E9", "#009E73",
                        "#F0E442", "#0072B2", "#D55E00", "#CC79A7"]
 
