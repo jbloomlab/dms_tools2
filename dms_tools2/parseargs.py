@@ -24,6 +24,12 @@ def parentParser():
     """
     parser = argparse.ArgumentParser(add_help=False)
 
+    parser.add_argument('--outdir',  
+            help='Output files to this directory (create if needed).')
+
+    parser.add_argument('--ncpus', type=int, default=-1, 
+            help="Number of CPUs to use, -1 is all available.")
+
     parser.add_argument('--use_existing', choices=['yes', 'no'],
             default='no', help=('If files with names of expected '
             'output already exist, do not re-run.'))
@@ -45,9 +51,8 @@ def parserDescription(description):
         A string with `description` augmented with information
         on the `dms_tools2` package / version.
     """
-    return ("{0} Part of {1} (version {2}) written by {3}. "
-            "See {4} for documentation.".format(
-            description, dms_tools2.__name__,
+    return ("{0} Part of `{1} <{4}>`_ (version {2}) written by {3}."
+            .format(description, dms_tools2.__name__,
             dms_tools2.__version__, dms_tools2.__author__,
             dms_tools2.__url__))
 
@@ -71,9 +76,6 @@ def bcsubampParentParser():
 
     parser.add_argument('--bclen', type=int, default=8,
             help='Length of NNN... barcode at start of each read.')
-
-    parser.add_argument('--outdir',  
-            help='Output files to this directory (create if needed).')
 
     parser.add_argument('--fastqdir',
             help='R1 and R2 files in this directory.')
@@ -125,9 +127,6 @@ def bcsubampParentParser():
             help=("Create file with suffix 'bcinfo.txt.gz' with info "
             "about each barcode."))
 
-    parser.add_argument('--seed', type=int, default=1, 
-            help="Random number seed for '--purgeread' and '--purgebc'.")
-
     return parser
 
 
@@ -166,8 +165,54 @@ def batch_bcsubampParser():
     parser.add_argument('--summaryprefix', required=True,
             help="Prefix of output summary plots.")
 
-    parser.add_argument('--ncpus', type=int, default=-1, 
-            help="Number of CPUs to use, -1 is all available.")
+    return parser
+
+
+def prefsParser():
+    """Returns `argparse.ArgumentParser` for ``dms2_prefs``."""
+    parser = argparse.ArgumentParser(
+            description=parserDescription(
+                'Estimate preferences from mutation counts.'),
+            parents=[parentParser()],
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--pre', required=True, 
+            help='Pre-selection counts.')
+
+    parser.add_argument('--post', required=True, 
+            help='Post-selection counts.')
+
+    parser.add_argument('--name', required=True, 
+            help='Name used for output files.')
+
+    parser.add_argument('--method', required=True, 
+            choices=['ratio', 'bayesian'], help="Method to "
+            "estimate preferences.")
+
+    parser.add_argument('--err', nargs=2, metavar=('ERRPRE', 'ERRPOST'),
+            help="Counts for control(s) to estimate errors over ``--pre`` "
+            "and ``--post``. Specify same file twice for same control "
+            "for both.")
+
+    parser.add_argument('--indir', help="Input counts files in this "
+            "directory.")
+
+    parser.add_argument('--chartype', default='codon_to_aa',
+            choices=['codon_to_aa'], help="Characters for which "
+            "preferences are estimated. `codon_to_aa` = amino acids "
+            "from codon counts.")
+
+    parser.add_argument('--excludestop', default='yes', choices=['yes', 'no'],
+            help="Exclude stop codons as a possible amino acid?")
+
+    parser.add_argument('--conc', nargs=3, default=[1, 1, 1],
+            metavar=('Cprefs', 'Cmut', 'Cerr'),
+            help="Concentration parameters for priors for "
+            "``--method bayesian``. Priors are over preferences, "
+            "mutagenesis rate, and error rate(s).")
+
+    parser.add_argument('--pseudocount', default=1,
+            help="Pseudocount used with ``--method ratio``.")
 
     return parser
 

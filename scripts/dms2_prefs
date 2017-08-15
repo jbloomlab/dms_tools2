@@ -1,0 +1,68 @@
+#!python
+
+"""Aligns and counts mutations in barcoded subamplicons."""
+
+
+import os
+import sys
+import logging
+import pandas
+import dms_tools2.parseargs
+
+
+
+def main():
+    """Main body of script."""
+
+    parser = dms_tools2.parseargs.prefsParser()
+    args = vars(parser.parse_args())
+    prog = parser.prog
+
+    random.seed(1)
+
+    # set up names of output files
+    assert re.search('^[a-zA-Z0-9\-]+$', args['name']), \
+            "--name should contain only letters, numbers, and dashes"
+    if args['outdir']:
+        if not os.path.isdir(args['outdir']):
+            os.mkdir(args['outdir'])
+    else:
+        args['outdir'] = ''
+    filesuffixes = {
+            }
+    files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
+            args['name'], s))) for (f, s) in filesuffixes.items()])
+
+    # do we need to proceed?
+    if args['use_existing'] == 'yes' and all(map(
+                os.path.isfile, files.values())):
+        print("Output files already exist and '--use_existing' is 'yes', "
+              "so exiting with no further action.")
+        sys.exit(0)
+
+    logger = dms_tools2.utils.initLogger(files['log'], prog, args)
+
+    # log in try / except / finally loop
+    try:
+
+        for f in files:
+            if os.path.isfile(f):
+                logger.info("Removing existing file {0}".format(f))
+                os.remove(f)
+
+    except:
+        logger.exception('Terminating {0} with ERROR'.format(prog))
+        for (fname, fpath) in files.items():
+            if fname != 'log' and os.path.isfile(fpath):
+                logger.exception("Deleting file {0}".format(fpath))
+                os.remove(fpath)
+
+    else:
+        logger.info('Successful completion of {0}'.format(prog))
+
+    finally:
+        logging.shutdown()
+
+
+if __name__ == '__main__':
+    main() # run the script
