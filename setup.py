@@ -57,6 +57,7 @@ setup(
         'IPython>=5.1',
         'matplotlib>=2.0.2',
         'plotnine>=0.2.1',
+        'natsort>=5.0.3',
         ],
     platforms = 'Linux and Mac OS X).',
     packages = ['dms_tools2'],
