@@ -6,6 +6,7 @@
 import os
 import sys
 import logging
+import natsort
 import pandas
 import dms_tools2.parseargs
 
@@ -45,10 +46,42 @@ def main():
     # log in try / except / finally loop
     try:
 
+        # remove expected output files if they already exist
         for f in files:
             if os.path.isfile(f):
                 logger.info("Removing existing file {0}".format(f))
                 os.remove(f)
+
+        # read in the counts files
+        if not args['indir']:
+            args['indir'] = ''
+        else:
+            assert os.path.isdir(args['indir']), "Cannot find --indir"
+        counts = {}
+        for ctype in ['pre', 'post']:
+            fname = os.path.join(args['indir'], args[ctype])
+            logger.info("Reading {0}-selection counts from {1}".format(
+                    ctype, fname))
+            assert os.path.isfile(fname), "Can not find {0}".format(fname)
+            counts[ctype] = pandas.read_csv(fname)
+        if args['err']:
+            (fpre, fpost) = [os.path.join(args['indir'], f) for 
+                    f in args['err']]
+            assert all(map(os.path.isfile, [fpre, fpost])),\
+                    "Missing --err files {0}, {1}".format(fpre, fpost)
+            if os.path.realpath(fpre) == os.path.realpath(fpost):
+                logger.info("Reading error-control counts from {1}"
+                        .format(fpre))
+                counts['err'] = pandas.read_csv(fpre)
+            else:
+                for (ctype, f) in [('pre', fpre), ('post', fpost)]:
+                    logger.info("Reading {0}-selection error-control "
+                            "counts from {0}".format(ctype, f))
+                    counts['err{0}'.format(ctype)] = pandas.read_csv(args[f])
+        assert all(['site' in df.columns for df in counts.values()]),\
+                "counts file do not all have column titled 'site'"
+        sites = natsort.natsorted(list(counts.values())[0]['site'].values)
+        MAKE SURE ALL SITES ARE THE SAME
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))
