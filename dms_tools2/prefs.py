@@ -25,7 +25,9 @@ PRIOR_MIN_VALUE = 1.0e-7
 
 
 class StanModelNoneErr(object):
-    """PyStan model for *error_model* of 'none' for *InferSitePreferences*."""
+    """``pystan`` model when `error_model` is `none`.
+    
+    For use by inferSitePrefs`."""
     def __init__(self):
         self.pystancode =\
 """
@@ -55,7 +57,9 @@ model {
 
 
 class StanModelSameErr:
-    """PyStan model for *error_model* of 'same' for *InferSitePreferences*."""
+    """``pystan`` model when `error_model` is `same`.
+    
+    For use by inferSitePrefs`."""
     def __init__(self):
         self.pystancode =\
 """
@@ -100,7 +104,9 @@ model {
 
 
 class StanModelDifferentErr:
-    """PyStan model for *error_model* of 'different' for *InferSitePreferences*."""
+    """``pystan`` model when `error_model` is `different`.
+    
+    For use by inferSitePrefs`."""
     def __init__(self):
         self.pystancode =\
 """
