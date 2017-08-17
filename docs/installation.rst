@@ -82,7 +82,7 @@ If you have previously installed `dms_tools2`_ but are not sure that you have th
 
 Install from source code
 -----------------------------------------------------------------------
-You can also install the latest version of the `dms_tools2 source code`_ on GitHub. 
+You can also install the latest version of the `dms_tools2 source code`_ from GitHub. 
 
 To install from source, first clone the `dms_tools2 source code`_ from GitHub::
 
