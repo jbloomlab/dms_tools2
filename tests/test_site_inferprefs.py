@@ -27,7 +27,7 @@ class TestInferSitePreferences(unittest.TestCase):
     errors does **not** converge.
     """
     SEED = 1
-    CHARTYPE = 'amino acid'
+    CHARLIST = NTS
 
     def setUp(self):
         """Configuration information for test."""
@@ -45,10 +45,9 @@ class TestInferSitePreferences(unittest.TestCase):
 
         random.seed(self.SEED)
         numpy.random.seed(self.SEED)
-        charlist = {'DNA':NTS, 'amino acid':AAS, 'codon':CODONS}[self.CHARTYPE]
-        wtchar = random.choice(charlist)
-        iwtchar = charlist.index(wtchar)
-        nchars = len(charlist)
+        wtchar = random.choice(self.CHARLIST)
+        iwtchar = self.CHARLIST.index(wtchar)
+        nchars = len(self.CHARLIST)
         mur = []
         pir = []
         epsilonr = []
@@ -77,17 +76,16 @@ class TestInferSitePreferences(unittest.TestCase):
         deltar[iwtchar] = 1.0
         priors = {
                 'pir_prior_params':dict([(char, pir[i] * nchars) 
-                        for (i, char) in enumerate(charlist)]),
+                        for (i, char) in enumerate(self.CHARLIST)]),
                 'mur_prior_params':dict([(char, mur[i] * nchars) 
-                        for (i, char) in enumerate(charlist)]),
+                        for (i, char) in enumerate(self.CHARLIST)]),
                 'epsilonr_prior_params':dict([(char, epsilonr[i] * nchars) 
-                        for (i, char) in enumerate(charlist)]),
+                        for (i, char) in enumerate(self.CHARLIST)]),
                 'rhor_prior_params':dict([(char, rhor[i] * nchars) 
-                        for (i, char) in enumerate(charlist)]),
+                        for (i, char) in enumerate(self.CHARLIST)]),
                 }
         difflist = []
         for (depth, maxdiffsum) in [(1e9, 0.01)]:
-            sys.stderr.write("Testing with sequencing depth of %d...\n" % depth)
 
             # first with no errors
             nrpre = numpy.random.multinomial(depth, mur)
@@ -95,15 +93,15 @@ class TestInferSitePreferences(unittest.TestCase):
                     numpy.dot(mur, pir))
             counts = {
                     'nrpre':dict([(char, nrpre[i]) for (i, char) 
-                            in enumerate(charlist)]),
+                            in enumerate(self.CHARLIST)]),
                     'nrpost':dict([(char, nrpost[i]) for (i, char) 
-                            in enumerate(charlist)]),
+                            in enumerate(self.CHARLIST)]),
             }
             (converged, pi_means, pi_95credint, logstring) = \
-                    dms_tools2.prefs.inferSitePrefs(charlist, wtchar, 
+                    dms_tools2.prefs.inferSitePrefs(self.CHARLIST, wtchar, 
                     'none', counts, priors, n_jobs=self.n_jobs)
             self.assertTrue(converged, 'failed to converge')
-            inferred_pi = [pi_means[char] for char in charlist]
+            inferred_pi = [pi_means[char] for char in self.CHARLIST]
             diffsum = sum([abs(x - y) for (x, y) in zip(pir, inferred_pi)])
             self.assertTrue(diffsum < maxdiffsum, 'wrong preferences')
 
@@ -114,17 +112,17 @@ class TestInferSitePreferences(unittest.TestCase):
             nrerr = numpy.random.multinomial(depth, epsilonr)
             counts = {
                     'nrpre':dict([(char, nrpre[i]) for (i, char) 
-                            in enumerate(charlist)]),
+                            in enumerate(self.CHARLIST)]),
                     'nrpost':dict([(char, nrpost[i]) for (i, char) 
-                            in enumerate(charlist)]),
+                            in enumerate(self.CHARLIST)]),
                     'nrerr':dict([(char, nrerr[i]) for (i, char) 
-                            in enumerate(charlist)]),
+                            in enumerate(self.CHARLIST)]),
                     }
             (converged, pi_means, pi_95credint, logstring) = \
-                    dms_tools2.prefs.inferSitePrefs(charlist, wtchar, 
+                    dms_tools2.prefs.inferSitePrefs(self.CHARLIST, wtchar, 
                     'same', counts, priors, n_jobs=self.n_jobs)
             self.assertTrue(converged, 'failed to converge')
-            inferred_pi = [pi_means[char] for char in charlist]
+            inferred_pi = [pi_means[char] for char in self.CHARLIST]
             diffsum = sum([abs(x - y) for (x, y) in zip(pir, inferred_pi)])
             self.assertTrue(diffsum < maxdiffsum, 'wrong preferences')
 
@@ -136,28 +134,28 @@ class TestInferSitePreferences(unittest.TestCase):
             nrerrpost = numpy.random.multinomial(depth, rhor)
             counts = {
                     'nrpre':dict([(char, nrpre[i]) for (i, char) 
-                            in enumerate(charlist)]),
+                            in enumerate(self.CHARLIST)]),
                     'nrpost':dict([(char, nrpost[i]) for (i, char) 
-                            in enumerate(charlist)]),
+                            in enumerate(self.CHARLIST)]),
                     'nrerrpre':dict([(char, nrerrpre[i]) for (i, char) 
-                            in enumerate(charlist)]),
+                            in enumerate(self.CHARLIST)]),
                     'nrerrpost':dict([(char, nrerrpost[i]) for (i, char) 
-                            in enumerate(charlist)]),
+                            in enumerate(self.CHARLIST)]),
                     }
             (converged, pi_means, pi_95credint, logstring) = \
-                    dms_tools2.prefs.inferSitePrefs(charlist, wtchar, 
+                    dms_tools2.prefs.inferSitePrefs(self.CHARLIST, wtchar, 
                     'different', counts, priors, n_jobs=self.n_jobs)
             self.assertTrue(converged, 'failed to converge')
-            inferred_pi = [pi_means[char] for char in charlist]
+            inferred_pi = [pi_means[char] for char in self.CHARLIST]
             diffsum = sum([abs(x - y) for (x, y) in zip(pir, inferred_pi)])
             self.assertTrue(diffsum < maxdiffsum, 'wrong preferences')
 
             # make sure does NOT converge without error estimates
             (converged, pi_means, pi_95credint, logstring) = \
-                    dms_tools2.prefs.inferSitePrefs(charlist, wtchar, 
+                    dms_tools2.prefs.inferSitePrefs(self.CHARLIST, wtchar, 
                     'none', counts, priors, n_jobs=self.n_jobs)
             self.assertTrue(converged, 'prefs failed to converge')
-            inferred_pi = [pi_means[char] for char in charlist]
+            inferred_pi = [pi_means[char] for char in self.CHARLIST]
             diffsum = sum([abs(x - y) for (x, y) in zip(pir, inferred_pi)])
             self.assertFalse(diffsum < maxdiffsum, 'incorrectly converged')
 
