@@ -8,6 +8,7 @@ Uses `plotnine <https://plotnine.readthedocs.io/en/stable>`_.
 """
 
 
+import re
 import os
 import math
 import pandas
@@ -27,7 +28,7 @@ COLOR_BLIND_PALETTE = ["#000000", "#E69F00", "#56B4E9", "#009E73",
                        "#F0E442", "#0072B2", "#D55E00", "#CC79A7"]
 
 
-def latexSciNot(xlist, exp_cutoff=3, ddigits=1):
+def latexSciNot(xlist):
     """Converts list of numbers to LaTex scientific notation.
 
     Useful for nice axis-tick formatting.
@@ -35,23 +36,18 @@ def latexSciNot(xlist, exp_cutoff=3, ddigits=1):
     Args:
         `xlist` (list)
             Numbers to format.
-        `exp_cutoff` (int)
-            Convert to scientific notation if `abs(math.log10(x))` >= this.
-        `ddigits` (int)
-            Show at most this many digits after the decimal place, shows
-            less if not needed to precisely express all numbers.
 
     Returns:
         List of latex scientific notation formatted strings.
 
-    >>> latexSciNot([0, 3, 3120, 0.07, 0.000927])
-    ['$0$', '$3.0$', '$3.1 \\\\times 10^{3}$', '$0.1$', '$9.3 \\\\times 10^{-4}$']
+    >>> latexSciNot([0, 3, 3120, -0.0000927])
+    ['$0$', '$3$', '$3.1 \\\\times 10^{3}$', '$-9.3 \\\\times 10^{-5}$']
 
     >>> latexSciNot([0.001, 1, 1000, 1e6])
-    ['$10^{-3}$', '$1$', '$10^{3}$', '$10^{6}$']
+    ['$0.001$', '$1$', '$10^{3}$', '$10^{6}$']
 
-    >>> latexSciNot([-0.002, 0.003])
-    ['$-2 \\\\times 10^{-3}$', '$3 \\\\times 10^{-3}$']
+    >>> latexSciNot([-0.002, 0.003, 0.000011])
+    ['$-0.002$', '$0.003$', '$1.1 \\\\times 10^{-5}$']
 
     >>> latexSciNot([-0.1, 0.0, 0.1, 0.2])
     ['$-0.1$', '$0$', '$0.1$', '$0.2$']
@@ -59,54 +55,19 @@ def latexSciNot(xlist, exp_cutoff=3, ddigits=1):
     >>> latexSciNot([0, 1, 2])
     ['$0$', '$1$', '$2$']
     """
-
-    def _roundlog10(x):
-        return math.floor(math.log10(abs(x))) 
-
-    def _numericsign(x):
-        if x < 0:
-            return -1
-        else:
-            return 1
-
-    # can all numbers be expressed as 10**integer?
-    if numpy.allclose(xlist, list(map(lambda x: x if x == 0 else
-            _numericsign(x) * 10**_roundlog10(x), xlist))):
-        all_exp10 = True
-    else:
-        all_exp10 = False
-
-    # can all numbers be expressed as integer * 10**integer?
-    if numpy.allclose(xlist, list(map(lambda x: x if x == 0 else 
-            (10**_roundlog10(x)) * 
-            math.floor(x / 10**(_roundlog10(x))), xlist))):
-        expddigits = 0
-    else:
-        expddigits = ddigits
-
-    # are all numbers integers?
-    if all([int(x) == x for x in xlist]):
-        ddigits = 0
-
-    # make formatted numbers
     formatlist = []
     for x in xlist:
-        if x == 0:
-            formatlist.append('$0$')
-            continue
-        exponent = _roundlog10(x)
-        if all_exp10:
-            if abs(exponent) >= exp_cutoff:
-                xformat = '10^{{{0}}}'.format(exponent)
-            else:
-                xformat = str(int(x))
-        elif abs(exponent) >= exp_cutoff:
-            formatstr = '{0:.' + str(expddigits) + 'f} \\times 10^{{{1}}}'
-            xformat = formatstr.format(x / 10.**exponent, exponent)
+        xf = "{0:.2g}".format(x)
+        if xf[ : 2] == '1e':
+            xf = "$10^{{{0}}}$".format(int(xf[2 : ]))
+        elif xf[ : 3] == '-1e':
+            xf = "$-10^{{{0}}}$".format(int(xf[3 : ]))
+        elif 'e' in xf:
+            (d, exp) = xf.split('e')
+            xf = '${0} \\times 10^{{{1}}}$'.format(d, int(exp))
         else:
-            formatstr = '{0:.' + str(ddigits) + 'f}'
-            xformat = formatstr.format(x)
-        formatlist.append('${0}$'.format(xformat))
+            xf = '${0}$'.format(xf)
+        formatlist.append(xf)
     return formatlist
 
 
