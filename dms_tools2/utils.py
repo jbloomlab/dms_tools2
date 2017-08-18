@@ -555,6 +555,9 @@ def annotateCodonCounts(countsfile):
                 `AtoC`, `AtoG`, etc : number of each nucleotide mutation
                 type among codon mutations with **one** nucleotide change.
 
+                `mutfreq1nt`, `mutfreq2nt`, `mutfreq3nt` : frequency
+                of 1-, 2-, and 3-nucleotide codon mutations at site.
+
     >>> d = {'site':[1, 2], 'wildtype':['ATG', 'GGG'], 'ATG':[105, 1],
     ...         'GGG':[3, 117], 'GGA':[2, 20], 'TGA':[0, 1]}
     >>> for codon in dms_tools2.CODONS:
@@ -586,6 +589,10 @@ def annotateCodonCounts(countsfile):
     >>> all(df['GtoA'] == [0, 20])
     True
     >>> all(df['AtoC'] == [0, 0])
+    True
+    >>> all(df['mutfreq1nt'] == [0, 20 / 139.])
+    True
+    >>> all(df['mutfreq3nt'] == [2 / 110., 0])
     True
     """
     df = pandas.read_csv(countsfile)
@@ -638,6 +645,10 @@ def annotateCodonCounts(countsfile):
     df = df.assign(n1nt=nXntlists[1], n2nt=nXntlists[2], n3nt=nXntlists[3])
     for ntchange in ntchanges:
         df[ntchange] = nntchangeslists[ntchange]
+
+    for nnt in range(3):
+        df['mutfreq{0}nt'.format(nnt + 1)] = (df['n{0}nt'.format(nnt + 1)]
+            / df['ncounts'].astype('float')).fillna(0)
 
     return df
 
