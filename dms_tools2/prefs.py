@@ -31,27 +31,27 @@ class StanModelNoneErr(object):
     def __init__(self):
         self.pystancode =\
 """
-data {
+data {{
     int<lower=1> Nchar; // 64 for codons, 20 for amino acids, 4 for nucleotides
     int<lower=0> nrpre[Nchar]; // counts pre-selection
     int<lower=0> nrpost[Nchar]; // counts post-selection
     vector<lower={0:g}>[Nchar] pir_prior_params; // Dirichlet prior params
     vector<lower={0:g}>[Nchar] mur_prior_params; // Dirichlet prior params
-}
-parameters {
+}}
+parameters {{
     simplex[Nchar] pir;
     simplex[Nchar] mur;
-}
-transformed parameters {
+}}
+transformed parameters {{
     simplex[Nchar] fr;
-    fr <- pir .* mur / dot_product(pir, mur);
-}
-model {
+    fr = pir .* mur / dot_product(pir, mur);
+}}
+model {{
     pir ~ dirichlet(pir_prior_params);
     mur ~ dirichlet(mur_prior_params);
     nrpre ~ multinomial(mur);
     nrpost ~ multinomial(fr);
-}
+}}
 """.format(PRIOR_MIN_VALUE)
         self.model = pystan.StanModel(model_code=self.pystancode)
 
@@ -63,7 +63,7 @@ class StanModelSameErr:
     def __init__(self):
         self.pystancode =\
 """
-data {
+data {{
     int<lower=1> Nchar; // 64 for codons, 20 for amino acids, 4 for nucleotides
     int<lower=1, upper=Nchar> iwtchar; // index of wildtype character in 1, ... numbering
     int<lower=0> nrpre[Nchar]; // counts pre-selection
@@ -72,33 +72,33 @@ data {
     vector<lower={0:g}>[Nchar] pir_prior_params; // Dirichlet prior params
     vector<lower={0:g}>[Nchar] mur_prior_params; // Dirichlet prior params
     vector<lower={0:g}>[Nchar] epsilonr_prior_params; // Dirichlet prior params
-}
-transformed data {
+}}
+transformed data {{
     simplex[Nchar] deltar;
-    for (ichar in 1:Nchar) {
-        deltar[ichar] <- 0.0;
-    }
-    deltar[iwtchar] <- 1.0;
-}
-parameters {
+    for (ichar in 1:Nchar) {{
+        deltar[ichar] = 0.0;
+    }}
+    deltar[iwtchar] = 1.0;
+}}
+parameters {{
     simplex[Nchar] pir;
     simplex[Nchar] mur;
     simplex[Nchar] epsilonr;
-}
-transformed parameters {
+}}
+transformed parameters {{
     simplex[Nchar] fr_plus_err;
     simplex[Nchar] mur_plus_err;
-    fr_plus_err <- pir .* mur / dot_product(pir, mur) + epsilonr - deltar;
-    mur_plus_err <- mur + epsilonr - deltar;
-}
-model {
+    fr_plus_err = pir .* mur / dot_product(pir, mur) + epsilonr - deltar;
+    mur_plus_err = mur + epsilonr - deltar;
+}}
+model {{
     pir ~ dirichlet(pir_prior_params);
     mur ~ dirichlet(mur_prior_params);
     epsilonr ~ dirichlet(epsilonr_prior_params);
     nrerr ~ multinomial(epsilonr);
     nrpre ~ multinomial(mur_plus_err);
     nrpost ~ multinomial(fr_plus_err);
-}
+}}
 """.format(PRIOR_MIN_VALUE)
         self.model = pystan.StanModel(model_code=self.pystancode)
 
@@ -110,7 +110,7 @@ class StanModelDifferentErr:
     def __init__(self):
         self.pystancode =\
 """
-data {
+data {{
     int<lower=1> Nchar; // 64 for codons, 20 for amino acids, 4 for nucleotides
     int<lower=1, upper=Nchar> iwtchar; // index of wildtype character in 1, ... numbering
     int<lower=0> nrpre[Nchar]; // counts pre-selection
@@ -121,27 +121,27 @@ data {
     vector<lower={0:g}>[Nchar] mur_prior_params; // Dirichlet prior params
     vector<lower={0:g}>[Nchar] epsilonr_prior_params; // Dirichlet prior params
     vector<lower={0:g}>[Nchar] rhor_prior_params; // Dirichlet prior params
-}
-transformed data {
+}}
+transformed data {{
     simplex[Nchar] deltar;
-    for (ichar in 1:Nchar) {
-        deltar[ichar] <- 0.0;
-    }
-    deltar[iwtchar] <- 1.0;
-}
-parameters {
+    for (ichar in 1:Nchar) {{
+        deltar[ichar] = 0.0;
+    }}
+    deltar[iwtchar] = 1.0;
+}}
+parameters {{
     simplex[Nchar] pir;
     simplex[Nchar] mur;
     simplex[Nchar] epsilonr;
     simplex[Nchar] rhor;
-}
-transformed parameters {
+}}
+transformed parameters {{
     simplex[Nchar] fr_plus_err;
     simplex[Nchar] mur_plus_err;
-    fr_plus_err <- pir .* mur / dot_product(pir, mur) + rhor - deltar;
-    mur_plus_err <- mur + epsilonr - deltar;
-}
-model {
+    fr_plus_err = pir .* mur / dot_product(pir, mur) + rhor - deltar;
+    mur_plus_err = mur + epsilonr - deltar;
+}}
+model {{
     pir ~ dirichlet(pir_prior_params);
     mur ~ dirichlet(mur_prior_params);
     epsilonr ~ dirichlet(epsilonr_prior_params);
@@ -150,12 +150,12 @@ model {
     nrerrpost ~ multinomial(rhor);
     nrpre ~ multinomial(mur_plus_err);
     nrpost ~ multinomial(fr_plus_err);
-}
+}}
 """.format(PRIOR_MIN_VALUE)
         self.model = pystan.StanModel(model_code=self.pystancode)
 
 
-def _initialValuePref(error_model, nchains, iwtchar, nchars):
+def _initialValuePrefs(error_model, nchains, iwtchar, nchars):
     """Gets valid initial values for ``pystan`` preference inference.
 
     Values initialized by ``pystan`` frequently have invalid values.
@@ -163,7 +163,7 @@ def _initialValuePref(error_model, nchains, iwtchar, nchars):
     for initialization and return a list that can be passed to the 
     `StanModel` as the `init` argument.
     """
-    initnattempts = 10 # might fail for pathological random values
+    initattempts = 10 # might fail for pathological random values
     nrescales = 10 # rescale non-wildtype values down this many times
     rescalefactor = 5.0 # rescale non-wildtype values down by this much
     deltar = numpy.zeros(nchars)
