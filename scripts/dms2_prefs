@@ -87,15 +87,15 @@ def main():
                 ferr[ctype] = fname
             if len(set(map(os.path.realpath, ferr.values()))) == 1:
                 error_model = 'same'
-                logger.info("Reading error-control counts from {1}"
-                        .format(fpre))
+                logger.info("Reading error-control counts from {0}"
+                        .format(ferr['pre']))
                 counts['err'] = pandas.read_csv(ferr['pre'])
             else:
                 error_model = 'different'
                 for (ctype, f) in ferr.items():
                     logger.info("Reading {0}-selection error-control "
                             "counts from {0}".format(ctype, f))
-                    counts['err{0}'.format(ctype)] = pandas.read_csv(args[f])
+                    counts['err{0}'.format(ctype)] = pandas.read_csv(f)
         else:
             error_model = 'none'
         assert all(['site' in df.columns for df in counts.values()]),\

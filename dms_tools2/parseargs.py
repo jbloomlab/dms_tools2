@@ -18,6 +18,10 @@ def parentParser():
         `argparse.ArgumentParser` with the following arguments
         already added: 
 
+            - ``--outdir``
+
+            - ``--ncpus``
+
             - ``--use_existing``
 
             - ``-v / --version``
