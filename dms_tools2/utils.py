@@ -516,7 +516,7 @@ def incrementCounts(refseqstart, subamplicon, chartype, counts):
             counts[codon][startcodon + i] += 1
 
 
-def annotateCodonCounts(countsfile):
+def annotateCodonCounts(counts):
     """Gets annotated `pandas` DataFrame from ``*_codoncounts.csv`` files.
 
     Some of the programs (e.g., `dms2_bcsubamplicons`) create 
@@ -528,12 +528,13 @@ def annotateCodonCounts(countsfile):
     for each site.
 
     Args:
-        `countsfile` (str)
-            Name of existing codon counts file.
+        `counts` (str)
+            Name of existing codon counts CSV file, or `pandas.DataFrame`
+            holding counts.
 
     Returns:
         `df` (`pandas.DataFrame`)
-            The DataFrame with the information in `countsfile` plus
+            The DataFrame with the information in `counts` plus
             the following added columns for each site:
 
                 `ncounts` : number of counts at site
@@ -595,9 +596,14 @@ def annotateCodonCounts(countsfile):
     >>> all(df['mutfreq3nt'] == [2 / 110., 0])
     True
     """
-    df = pandas.read_csv(countsfile)
+    if isinstance(counts, str):
+        df = pandas.read_csv(counts)
+    elif isinstance(counts, pandas.DataFrame):
+        df = counts.copy()
+    else:
+        raise ValueError("invalid counts")
     assert set(dms_tools2.CODONS) <= set(df.columns), \
-            "{0} does not have counts for all codons".format(countsfile)
+            "Did not find counts for all codons".format(counts)
 
     df['ncounts'] = df[dms_tools2.CODONS].sum(axis=1)
 

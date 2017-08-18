@@ -4,10 +4,12 @@
 
 
 import os
+import re
 import sys
 import logging
 import natsort
 import pandas
+import dms_tools2.utils
 import dms_tools2.parseargs
 
 
@@ -19,8 +21,6 @@ def main():
     args = vars(parser.parse_args())
     prog = parser.prog
 
-    random.seed(1)
-
     # set up names of output files
     assert re.search('^[a-zA-Z0-9\-]+$', args['name']), \
             "--name should contain only letters, numbers, and dashes"
@@ -30,6 +30,7 @@ def main():
     else:
         args['outdir'] = ''
     filesuffixes = {
+            'log':'.log',
             }
     files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
             args['name'], s))) for (f, s) in filesuffixes.items()])
@@ -56,32 +57,82 @@ def main():
         if not args['indir']:
             args['indir'] = ''
         else:
-            assert os.path.isdir(args['indir']), "Cannot find --indir"
+            assert os.path.isdir(args['indir']), "No --indir {0}".format(
+                    args['indir'])
+        if args['chartype']:
+            countsuffix = '_codoncounts.csv'
+        else:
+            raise ValueError("Invalid chartype")
         counts = {}
         for ctype in ['pre', 'post']:
             fname = os.path.join(args['indir'], args[ctype])
+            if not os.path.isfile(fname):
+                if os.path.isfile(fname + countsuffix):
+                    fname = fname + countsuffix
+                else:
+                    raise ValueError("Missing file for --{0}".format(ctype))
             logger.info("Reading {0}-selection counts from {1}".format(
                     ctype, fname))
-            assert os.path.isfile(fname), "Can not find {0}".format(fname)
             counts[ctype] = pandas.read_csv(fname)
         if args['err']:
-            (fpre, fpost) = [os.path.join(args['indir'], f) for 
-                    f in args['err']]
-            assert all(map(os.path.isfile, [fpre, fpost])),\
-                    "Missing --err files {0}, {1}".format(fpre, fpost)
-            if os.path.realpath(fpre) == os.path.realpath(fpost):
+            ferr = {}
+            for (i, ctype) in enumerate(['pre', 'post']):
+                fname = os.path.join(args['indir'], args['err'][i])
+                if not os.path.isfile(fname):
+                    if os.path.isfile(fname + countsuffix):
+                        fname = fname + countsuffix
+                    else:
+                        raise ValueError("Missing file {0} for --err".format(
+                                i + 1))
+                ferr[ctype] = fname
+            if len(set(map(os.path.realpath, ferr.values()))) == 1:
+                error_model = 'same'
                 logger.info("Reading error-control counts from {1}"
                         .format(fpre))
-                counts['err'] = pandas.read_csv(fpre)
+                counts['err'] = pandas.read_csv(ferr['pre'])
             else:
-                for (ctype, f) in [('pre', fpre), ('post', fpost)]:
+                error_model = 'different'
+                for (ctype, f) in ferr.items():
                     logger.info("Reading {0}-selection error-control "
                             "counts from {0}".format(ctype, f))
                     counts['err{0}'.format(ctype)] = pandas.read_csv(args[f])
+        else:
+            error_model = 'none'
         assert all(['site' in df.columns for df in counts.values()]),\
                 "counts file do not all have column titled 'site'"
         sites = natsort.natsorted(list(counts.values())[0]['site'].values)
-        MAKE SURE ALL SITES ARE THE SAME
+        assert all([set(sites) == set(c['site'].values) for 
+                c in counts.values()])
+
+        # compute mutation rates for priors
+        if args['chartype'] == 'codon_to_aa':
+            for ctype in list(counts.keys()):
+                counts[ctype] = dms_tools2.utils.annotateCodonCounts(
+                        counts[ctype])
+            avgmu = counts['pre'][['mutfreq{0}nt'.format(nmuts + 1) 
+                    for nmuts in range(3)]].mean().values.sum()
+            if error_model == 'none':
+                logger.info("Average mutation rate:\n\t{0}".format(avgmu))
+            elif error_model == 'same':
+                avgepsilon = counts['err'][['mutfreq{0}nt'.format(nmuts + 1) 
+                        for nmuts in range(3)]].mean().values
+                avgmu -= avgepsilon.sum()
+                logger.info("Average mutation and error rates:\n\t{0}\n\t{1}"
+                        .format(avgmu, avgepsilon))
+            elif error_model == 'different':
+                avgepsilon = counts['errpre'][['mutfreq{0}nt'.format(
+                        nmuts + 1) for nmuts in range(3)]].mean().values
+                avgmu -= avgepsilon.sum()
+                avgrho = counts['errpost'][['mutfreq{0}nt'.format(
+                        nmuts + 1) for nmuts in range(3)]].mean().values
+                logger.info("Average mutation, pre-selection, and post-"
+                        "selection error rates:\n\t{0}\n\t{1}\n\t{2}"
+                        .format(avgmu, avgepsilon, avgrho))
+            else:
+                raise ValueError("invalid error_model")
+            assert 0 < avgmu < 1, "Invalid avg mut rate {0}".format(avgmu)
+        else:
+            raise ValueError("Invalid chartype")
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))

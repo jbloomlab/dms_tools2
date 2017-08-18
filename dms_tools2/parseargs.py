@@ -177,10 +177,11 @@ def prefsParser():
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--pre', required=True, 
-            help='Pre-selection counts.')
+            help='Pre-selection counts file or prefix used when creating '
+            'this file.')
 
     parser.add_argument('--post', required=True, 
-            help='Post-selection counts.')
+            help='Like ``--pre`` but for post-selection counts.')
 
     parser.add_argument('--name', required=True, 
             help='Name used for output files.')
@@ -190,9 +191,9 @@ def prefsParser():
             "estimate preferences.")
 
     parser.add_argument('--err', nargs=2, metavar=('ERRPRE', 'ERRPOST'),
-            help="Counts for control(s) to estimate errors over ``--pre`` "
-            "and ``--post``. Specify same file twice for same control "
-            "for both.")
+            help="Like ``--pre`` but for counts for error control(s) for "
+            "``--pre`` and ``--post``. Specify same file twice for same "
+            "control for both.")
 
     parser.add_argument('--indir', help="Input counts files in this "
             "directory.")
