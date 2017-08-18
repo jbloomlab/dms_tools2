@@ -93,6 +93,12 @@ Then install locally with::
     cd dms_tools2
     pip install -e . --user
 
+If you have already cloned the repository, you can update the source by::
+
+    cd dms_tools2
+    git pull
+    pip install -e . --user
+
 
 .. _license:
 
