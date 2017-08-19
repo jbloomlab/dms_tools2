@@ -60,8 +60,8 @@ def main():
     # log in try / except / finally loop
     try:
 
-        for f in files:
-            if os.path.isfile(f):
+        for (ftype, f) in files.items():
+            if os.path.isfile(f) and ftype != 'log':
                 logger.info("Removing existing file {0}".format(f))
                 os.remove(f)
 
