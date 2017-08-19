@@ -7,10 +7,13 @@ import os
 import re
 import sys
 import logging
+import multiprocessing
 import natsort
 import pandas
+from dms_tools2 import CODONS, AAS, AAS_WITHSTOP, CODON_TO_AA
 import dms_tools2.utils
 import dms_tools2.parseargs
+import dms_tools2.prefs
 
 
 
@@ -98,41 +101,135 @@ def main():
                     counts['err{0}'.format(ctype)] = pandas.read_csv(f)
         else:
             error_model = 'none'
-        assert all(['site' in df.columns for df in counts.values()]),\
-                "counts file do not all have column titled 'site'"
-        sites = natsort.natsorted(list(counts.values())[0]['site'].values)
-        assert all([set(sites) == set(c['site'].values) for 
-                c in counts.values()])
 
-        # compute mutation rates for priors
-        if args['chartype'] == 'codon_to_aa':
-            for ctype in list(counts.keys()):
-                counts[ctype] = dms_tools2.utils.annotateCodonCounts(
-                        counts[ctype])
-            avgmu = counts['pre'][['mutfreq{0}nt'.format(nmuts + 1) 
-                    for nmuts in range(3)]].mean().values.sum()
-            if error_model == 'none':
-                logger.info("Average mutation rate:\n\t{0}".format(avgmu))
-            elif error_model == 'same':
-                avgepsilon = counts['err'][['mutfreq{0}nt'.format(nmuts + 1) 
-                        for nmuts in range(3)]].mean().values
-                avgmu -= avgepsilon.sum()
-                logger.info("Average mutation and error rates:\n\t{0}\n\t{1}"
-                        .format(avgmu, avgepsilon))
-            elif error_model == 'different':
-                avgepsilon = counts['errpre'][['mutfreq{0}nt'.format(
-                        nmuts + 1) for nmuts in range(3)]].mean().values
-                avgmu -= avgepsilon.sum()
-                avgrho = counts['errpost'][['mutfreq{0}nt'.format(
-                        nmuts + 1) for nmuts in range(3)]].mean().values
-                logger.info("Average mutation, pre-selection, and post-"
-                        "selection error rates:\n\t{0}\n\t{1}\n\t{2}"
-                        .format(avgmu, avgepsilon, avgrho))
+        # get sites and wildtype identities, sorted by site
+        sites = wts = None
+        for c in counts.values():
+            (csites, cwts) = zip(*natsort.natsorted(zip(
+                    c['site'].values, c['wildtype'].values)))
+            if sites == wts == None:
+                sites = csites
+                wts = cwts
             else:
-                raise ValueError("invalid error_model")
-            assert 0 < avgmu < 1, "Invalid avg mut rate {0}".format(avgmu)
-        else:
-            raise ValueError("Invalid chartype")
+                assert sites == csites, "different sets of sites"
+                assert wts == cwts, "different wildtype identities"
+        assert len(sites) == len(set(sites)), "non-unique sites"
+        logger.info("Read counts for {0} sites.".format(len(sites)))
+        logger.info("Here are sites and wildtype identities:\n\t{0}\n".format(
+                '\n\t'.join(['{0}\t{1}'.format(r, wt) for (r, wt) in zip(
+                sites, wts)])))
+        if args['excludestop'] == 'yes' and args['chartype'] == 'codon_to_aa':
+            if CODON_TO_AA[wts[-1]] == '*':
+                sites = sites[ : -1]
+                wts = wts[ : -1]
+                logger.info("Excluding the last site as it a stop codon.\n")
+
+        if args['method'] == 'ratio':
+            raise ValueError("--method ratio not yet implemented")
+
+        elif args['method'] == 'bayesian':
+            logger.info("Setting up for Bayesian inference of the prefs")
+
+            # compute mutation rates for priors
+            if args['chartype'] == 'codon_to_aa':
+                for ctype in list(counts.keys()):
+                    counts[ctype] = dms_tools2.utils.annotateCodonCounts(
+                            counts[ctype])
+                avgmu = counts['pre'][['mutfreq{0}nt'.format(nmuts + 1) 
+                        for nmuts in range(3)]].mean().values.sum()
+                if error_model == 'none':
+                    logger.info("Average mutation rate:\n\t{0}".format(avgmu))
+                elif error_model == 'same':
+                    avgepsilon = counts['err'][['mutfreq{0}nt'.format(nmuts + 1) 
+                            for nmuts in range(3)]].mean().values
+                    avgmu -= avgepsilon.sum()
+                    logger.info("Average mutation and error rates:\n\t{0}\n\t{1}"
+                            .format(avgmu, avgepsilon))
+                elif error_model == 'different':
+                    avgepsilon = counts['errpre'][['mutfreq{0}nt'.format(
+                            nmuts + 1) for nmuts in range(3)]].mean().values
+                    avgmu -= avgepsilon.sum()
+                    avgrho = counts['errpost'][['mutfreq{0}nt'.format(
+                            nmuts + 1) for nmuts in range(3)]].mean().values
+                    logger.info("Average mutation, pre-selection, and post-"
+                            "selection error rates:\n\t{0}\n\t{1}\n\t{2}"
+                            .format(avgmu, avgepsilon, avgrho))
+                else:
+                    raise ValueError("invalid error_model")
+                assert 0 < avgmu < 1, "Invalid avg mut rate {0}".format(avgmu)
+            else:
+                raise ValueError("Invalid chartype")
+
+            logger.info("Compiling ``pystan`` model...")
+            pystan_error_model = ({
+                    'none':dms_tools2.prefs.StanModelNoneErr,
+                    'same':dms_tools2.prefs.StanModelSameErr,
+                    'different':dms_tools2.prefs.StanModelDifferentErr,
+                    }[error_model])()
+            logger.info("Completed compiling ``pystan`` model.\n")
+
+            # begin inferring prefs in a multiprocessing pool
+            if args['ncpus'] == -1:
+                ncpus = multiprocessing.cpu_count()
+            else:
+                ncpus = min(args['ncpus'], multiprocessing.cpu_count())
+            assert ncpus > 0
+            pool = multiprocessing.Pool(ncpus)
+
+            for (r, wt) in zip(sites, wts):
+
+                # build counts and priors to pass to `inferSitePrefs`
+                rcounts = {}
+                priors = {}
+                if args['chartype'] == 'codon_to_aa':
+                    wtaa = CODON_TO_AA[wt]
+                    if args['excludestop'] == 'yes':
+                        charlist = AAS
+                    elif args['excludestop'] == 'no':
+                        charlist = AAS_WITHSTOP
+                    else:
+                        raise ValueError("Invalid --excludestop")
+                    for (ctype, df) in counts.items():
+                        aacounts = dms_tools2.utils.codonToAACounts(
+                                df[df['site'] == r])
+                        rcounts[ctype] = dict(aacounts[charlist].ix[0])
+                    priors = {}
+                    for prior in ['mur_prior_params', 
+                                'epsilonr_prior_params',
+                                'rhor_prior_params']:
+                        priors[prior] = dict([(aa, 0.0) for aa in charlist])
+                        priors[prior][wtaa] = 1.0
+                    avgmu_percodon = avgmu / float(len(CODONS))
+                    nchars_with_m = dict([(nnt, 0) for nnt in range(4)])
+                    for x in CODONS:
+                        nnt = sum([xi == wti for (xi, wti) in zip(x, wt)])
+                        nchars_with_m[nnt] += 1
+                    for x in CODONS:
+                        if x == wt:
+                            continue
+                        aa = CODON_TO_AA[x]
+                        if aa == '*' and args['excludestop'] == 'yes':
+                            continue
+                        priors['mur_prior_params'][aa] += avgmu_percodon
+                        priors['mur_prior_params'][wtaa] -= avgmu_percodon
+                        nnt = sum([xi == wti for (xi, wti) in zip(x, wt)])
+                        if error_model in ['different', 'same']:
+                            y = avgepsilon[nnt - 1] / nchars_with_m[nnt]
+                            priors['epsilonr_prior_params'][aa] += y
+                            priors['epsilonr_prior_params'][wtaa] -= y
+                        if error_model == 'different':
+                            y = avgrho[nnt - 1] / nchars_with_m[nnt]
+                            priors['rhor_prior_params'][aa] += y
+                            priors['rhor_prior_params'][wtaa] -= y
+                else:
+                    raise ValueError("Invalid chartype")
+                assert all([c > 0 for c in args['conc']])
+                (cprefs, cmu, cerr) = args['conc']
+                for x in charlist:
+                    priors['mur_prior_params'][x] *= len(charlist) * cmu
+                    priors['epsilonr_prior_params'][x] *= len(charlist) * cerr
+                    priors['rhor_prior_params'][x] *= len(charlist) * cerr
+                priors['pir_prior_params'] = dict([(x, cprefs) for x in charlist])
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))
