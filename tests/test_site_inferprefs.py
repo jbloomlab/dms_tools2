@@ -92,9 +92,9 @@ class TestInferSitePreferences(unittest.TestCase):
             nrpost = numpy.random.multinomial(depth, mur * pir / 
                     numpy.dot(mur, pir))
             counts = {
-                    'nrpre':dict([(char, nrpre[i]) for (i, char) 
+                    'pre':dict([(char, nrpre[i]) for (i, char) 
                             in enumerate(self.CHARLIST)]),
-                    'nrpost':dict([(char, nrpost[i]) for (i, char) 
+                    'post':dict([(char, nrpost[i]) for (i, char) 
                             in enumerate(self.CHARLIST)]),
             }
             (converged, pi_means, pi_95credint, logstring) = \
@@ -111,11 +111,11 @@ class TestInferSitePreferences(unittest.TestCase):
                     numpy.dot(mur, pir) + epsilonr - deltar)
             nrerr = numpy.random.multinomial(depth, epsilonr)
             counts = {
-                    'nrpre':dict([(char, nrpre[i]) for (i, char) 
+                    'pre':dict([(char, nrpre[i]) for (i, char) 
                             in enumerate(self.CHARLIST)]),
-                    'nrpost':dict([(char, nrpost[i]) for (i, char) 
+                    'post':dict([(char, nrpost[i]) for (i, char) 
                             in enumerate(self.CHARLIST)]),
-                    'nrerr':dict([(char, nrerr[i]) for (i, char) 
+                    'err':dict([(char, nrerr[i]) for (i, char) 
                             in enumerate(self.CHARLIST)]),
                     }
             (converged, pi_means, pi_95credint, logstring) = \
@@ -133,13 +133,13 @@ class TestInferSitePreferences(unittest.TestCase):
             nrerrpre = numpy.random.multinomial(depth, epsilonr)
             nrerrpost = numpy.random.multinomial(depth, rhor)
             counts = {
-                    'nrpre':dict([(char, nrpre[i]) for (i, char) 
+                    'pre':dict([(char, nrpre[i]) for (i, char) 
                             in enumerate(self.CHARLIST)]),
-                    'nrpost':dict([(char, nrpost[i]) for (i, char) 
+                    'post':dict([(char, nrpost[i]) for (i, char) 
                             in enumerate(self.CHARLIST)]),
-                    'nrerrpre':dict([(char, nrerrpre[i]) for (i, char) 
+                    'errpre':dict([(char, nrerrpre[i]) for (i, char) 
                             in enumerate(self.CHARLIST)]),
-                    'nrerrpost':dict([(char, nrerrpost[i]) for (i, char) 
+                    'errpost':dict([(char, nrerrpost[i]) for (i, char) 
                             in enumerate(self.CHARLIST)]),
                     }
             (converged, pi_means, pi_95credint, logstring) = \

@@ -426,11 +426,11 @@ def inferSitePrefs(charlist, wtchar, error_model, counts,
             Deep sequencing counts. Each string key should specify
             a dict keyed by all characters in `charlist` with
             the values giving integer counts for that character. The keys:
-                - `nrpre`: :math:`\\boldsymbol{\mathbf{n_r^{\\rm{pre}}}}`
-                - `nrpost`: :math:`\\boldsymbol{\mathbf{n_r^{\\rm{post}}}}`
-                - *nrerr*: required if `error_model` is `same`, specifies
+                - `pre`: :math:`\\boldsymbol{\mathbf{n_r^{\\rm{pre}}}}`
+                - `post`: :math:`\\boldsymbol{\mathbf{n_r^{\\rm{post}}}}`
+                - *err*: required if `error_model` is `same`, specifies
                   :math:`\\boldsymbol{\mathbf{n_r^{\\rm{err,pre}}}} = \\boldsymbol{\mathbf{n_r^{\\rm{err,post}}}}`
-                - `nrerrpre` and `nrerrpost`: required if `error_model` is
+                - `errpre` and `errpost`: required if `error_model` is
                   `different`, specify 
                   :math:`\\boldsymbol{\mathbf{n_r^{\\rm{err,pre}}}}` and
                   :math:`\\boldsymbol{\mathbf{n_r^{\\rm{err,post}}}}`.
@@ -481,8 +481,8 @@ def inferSitePrefs(charlist, wtchar, error_model, counts,
     assert wtchar in charlist
     data = {'Nchar':len(charlist), 
             'iwtchar':charlist.index(wtchar) + 1,
-            'nrpre':[counts['nrpre'][c] for c in charlist],
-            'nrpost':[counts['nrpost'][c] for c in charlist],
+            'nrpre':[counts['pre'][c] for c in charlist],
+            'nrpost':[counts['post'][c] for c in charlist],
             'pir_prior_params':[max(PRIOR_MIN_VALUE, 
                     priors['pir_prior_params'][c]) for c in charlist],
             'mur_prior_params':[max(PRIOR_MIN_VALUE, 
@@ -499,7 +499,7 @@ def inferSitePrefs(charlist, wtchar, error_model, counts,
         else:
             sm = error_model.model
             error_model = 'same'
-        data['nrerr'] = [counts['nrerr'][c] for c in charlist]
+        data['nrerr'] = [counts['err'][c] for c in charlist]
         data['epsilonr_prior_params'] = [max(PRIOR_MIN_VALUE, 
                 priors['epsilonr_prior_params'][c]) for c in charlist]
     elif (error_model == 'different' or 
@@ -509,8 +509,8 @@ def inferSitePrefs(charlist, wtchar, error_model, counts,
         else:
             sm = error_model.model
             error_model = 'different'
-        data['nrerrpre'] = [counts['nrerrpre'][c] for c in charlist]
-        data['nrerrpost'] = [counts['nrerrpost'][c] for c in charlist]
+        data['nrerrpre'] = [counts['errpre'][c] for c in charlist]
+        data['nrerrpost'] = [counts['errpost'][c] for c in charlist]
         data['epsilonr_prior_params'] = [max(PRIOR_MIN_VALUE, 
                 priors['epsilonr_prior_params'][c]) for c in charlist]
         data['rhor_prior_params'] = [max(PRIOR_MIN_VALUE, 
