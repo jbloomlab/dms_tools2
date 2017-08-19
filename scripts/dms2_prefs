@@ -187,6 +187,7 @@ def main():
                      'same':10000,
                      'different':20000}[error_model]
 
+            logger.info("Beginning MCMC runs...")
             # run inference for each site
             for (r, wt) in zip(sites, wts):
 
