@@ -516,16 +516,61 @@ def incrementCounts(refseqstart, subamplicon, chartype, counts):
             counts[codon][startcodon + i] += 1
 
 
+def codonToAACounts(counts):
+    """Makes amino-acid counts `pandas.DataFrame` from codon counts.
+
+    Args:
+        `counts` (`pandas.DataFrame`)
+            Columns are the string `site` and all codons in
+            `dms_tools2.CODONS`. Additional columns are allowed
+            but ignored.
+
+    Returns:
+        `aacounts` (`pandas.DataFrame`)
+            Columns are the string `site` and all amino acids
+            in `dms_tools.AAS_WITHSTOP` with counts for each
+            amino acid made by summing counts for encoding codons.
+
+    >>> d = {'site':[1, 2], 'othercol':[0, 0], 'ATG':[105, 1],
+    ...         'GGG':[3, 117], 'GGA':[2, 20], 'TGA':[0, 1]}
+    >>> for codon in dms_tools2.CODONS:
+    ...     if codon not in d:
+    ...         d[codon] = [0, 0]
+    >>> counts = pandas.DataFrame(d)
+    >>> aacounts = codonToAACounts(counts)
+    >>> 'othercol' in aacounts.columns
+    False
+    >>> all(aacounts['site'] == [1, 2])
+    True
+    >>> all(aacounts['M'] == [105, 1])
+    True
+    >>> all(aacounts['G'] == [5, 137])
+    True
+    >>> all(aacounts['*'] == [0, 1])
+    True
+    >>> all(aacounts['V'] == [0, 0])
+    True
+    """
+    d = dict([(key, []) for key in ['site'] + dms_tools2.AAS_WITHSTOP])
+    for (i, row) in counts.iterrows():
+        d['site'].append(row['site'])
+        for aa in dms_tools2.AAS_WITHSTOP:
+            d[aa].append(0)
+        for c in dms_tools2.CODONS:
+            d[dms_tools2.CODON_TO_AA[c]][-1] += (row[c])
+    return pandas.DataFrame(d)
+
+
 def annotateCodonCounts(counts):
-    """Gets annotated `pandas` DataFrame from ``*_codoncounts.csv`` files.
+    """Gets annotated `pandas.DataFrame` from codon counts.
 
     Some of the programs (e.g., `dms2_bcsubamplicons`) create 
     ``*_codoncounts.csv`` files when run with ``--chartype codon``.
     These CSV files have columns indicating the `site` and `wildtype`
     codon, as well as a column for each codon giving the counts for that 
-    codon. This function reads that file to return a `pandas` DataFrame
-    where a variety of additional useful annotations have been added
-    for each site.
+    codon. This function reads that file (or a `pandas.DataFrame` read
+    from it) to return a `pandas.DataFrame` where a variety of additional
+    useful annotations have been added.
 
     Args:
         `counts` (str)
