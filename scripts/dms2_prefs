@@ -6,6 +6,7 @@
 import os
 import re
 import sys
+import time
 import logging
 import multiprocessing
 import natsort
@@ -34,6 +35,7 @@ def main():
         args['outdir'] = ''
     filesuffixes = {
             'log':'.log',
+            'prefs':'_prefs.csv',
             }
     files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
             args['name'], s))) for (f, s) in filesuffixes.items()])
@@ -51,8 +53,8 @@ def main():
     try:
 
         # remove expected output files if they already exist
-        for f in files:
-            if os.path.isfile(f):
+        for (ftype, f) in files.items():
+            if os.path.isfile(f) and ftype != 'log':
                 logger.info("Removing existing file {0}".format(f))
                 os.remove(f)
 
@@ -175,7 +177,17 @@ def main():
                 ncpus = min(args['ncpus'], multiprocessing.cpu_count())
             assert ncpus > 0
             pool = multiprocessing.Pool(ncpus)
+            results = {}
+            retry = {}
+            logged = {}
+            pi_means = {}
 
+            # number of MCMC iterations
+            niter = {'none':2500,
+                     'same':10000,
+                     'different':20000}[error_model]
+
+            # run inference for each site
             for (r, wt) in zip(sites, wts):
 
                 # build counts and priors to pass to `inferSitePrefs`
@@ -221,8 +233,11 @@ def main():
                             y = avgrho[nnt - 1] / nchars_with_m[nnt]
                             priors['rhor_prior_params'][aa] += y
                             priors['rhor_prior_params'][wtaa] -= y
+                    wt = wtaa # set wildtype to amino acid for below
                 else:
                     raise ValueError("Invalid chartype")
+
+                # scale priors by concentration parameters
                 assert all([c > 0 for c in args['conc']])
                 (cprefs, cmu, cerr) = args['conc']
                 for x in charlist:
@@ -230,6 +245,48 @@ def main():
                     priors['epsilonr_prior_params'][x] *= len(charlist) * cerr
                     priors['rhor_prior_params'][x] *= len(charlist) * cerr
                 priors['pir_prior_params'] = dict([(x, cprefs) for x in charlist])
+
+                # start MCMC for site
+                logged[r] = False
+                argslist = [charlist, wt, pystan_error_model, rcounts, priors,
+                        1, niter]
+                results[r] = pool.apply_async(dms_tools2.prefs.inferSitePrefs,
+                        tuple(argslist))
+                argslist[6] += 1 # different seed for second try
+                retry[r] = tuple(argslist)
+
+            while not(all([logged[r] for r in sites])):
+                time.sleep(1)
+                for r in sites:
+                    if results[r].ready() and not logged[r]:
+                        logger.info("Getting results for site {0}...".format(r))
+                        (converged, pi, pi95, logstring) = results[r].get()
+                        if not converged and r in retry:
+                            logger.warning("Problems for site {0}, re-trying. "
+                                    "Here is message from prior attempt:\n{1}\n"
+                                    .format(r, logstring))
+                            del retry[r]
+                        elif not converged:
+                            raise RuntimeError("Failed for site {0}:\n{1}"
+                                    .format(r, logstring))
+                        else:
+                            logged[r] = True
+                            logger.info("Finished for site {0}:\n{1}\n"
+                                    .format(r, logstring))
+                            pi_means[r] = pi
+                            assert abs(1 - sum(pi_means[r].values())) < 1e-4
+            pool.terminate()
+            logger.info("Finished inferring the preferences.\n")
+
+            # build up prefs and write to file
+            prefs_d = dict([(key, []) for key in ['site'] + charlist])
+            for r in sites:
+                prefs_d['site'].append(r)
+                for c in charlist:
+                    prefs_d[c].append(pi_means[r][c])
+            prefs = pandas.DataFrame(prefs_d)[['site'] + charlist]
+            logger.info("Writing preferences to {0}".format(files['prefs']))
+            prefs.to_csv(files['prefs'], index=False)
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))

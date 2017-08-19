@@ -16,6 +16,7 @@ import tempfile
 import time
 import math
 import pickle
+import random
 import numpy
 import numpy.random
 import pystan
@@ -362,7 +363,7 @@ def InferSitePreferencesFromEnrichmentRatios(characterlist, wtchar, error_model,
     
 
 def inferSitePrefs(charlist, wtchar, error_model, counts, 
-        priors, seed=1, niter=10000, increasetries=6, n_jobs=1, 
+        priors, seed=1, niter=10000, increasetries=5, n_jobs=1, 
         r_max=1.1, neff_min=100, nchains=4, increasefac=2):
     """Infers site-specific preferences by MCMC for a specific site.
 
@@ -474,6 +475,7 @@ def inferSitePrefs(charlist, wtchar, error_model, counts,
             - `logstring` is a string describing MCMC run and convergence.
     """
     logstring = ['\tBeginning MCMC at %s' % time.asctime()]
+    random.seed(seed)
     numpy.random.seed(seed)
     assert nchains >= 2, "nchains must be at least two"
     assert niter >= 100, "niter must be at least 100"
