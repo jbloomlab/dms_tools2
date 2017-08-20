@@ -4,7 +4,9 @@ plot
 ===================
 
 Plotting functions for ``dms_tools2``.
-Uses `plotnine <https://plotnine.readthedocs.io/en/stable>`_.
+
+Uses `plotnine <https://plotnine.readthedocs.io/en/stable>`_
+and `seaborn <https://seaborn.pydata.org/index.html>`_.
 """
 
 
@@ -13,11 +15,19 @@ import os
 import math
 import pandas
 import numpy
+import scipy.stats
 import matplotlib
 matplotlib.use('pdf')
+import matplotlib.pyplot as plt
+
 from plotnine import *
 # set ggplot theme
 theme_set(theme_bw(base_size=12)) 
+
+import seaborn
+seaborn.set_style('white')
+seaborn.set_context('talk')
+
 import dms_tools2.utils
 
 #: `color-blind safe palette <http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/>`_
@@ -82,7 +92,7 @@ def plotReadStats(names, readstatfiles, plotfile):
         `plotfile` (str)
             Name of PDF plot file to create.
     """
-    assert len(names) == len(readstatfiles)
+    assert len(names) == len(readstatfiles) == len(set(names))
     assert os.path.splitext(plotfile)[1].lower() == '.pdf'
     readstats = pandas.concat([pandas.read_csv(f).assign(name=name) for
                 (name, f) in zip(names, readstatfiles)], ignore_index=True)
@@ -100,6 +110,7 @@ def plotReadStats(names, readstatfiles, plotfile):
             + scale_fill_manual(COLOR_BLIND_PALETTE)
             )
     p.save(plotfile, height=2.7, width=(1.2 + 0.25 * len(names)))
+    plt.clf()
 
 
 def plotBCStats(names, bcstatsfiles, plotfile):
@@ -113,7 +124,7 @@ def plotBCStats(names, bcstatsfiles, plotfile):
         `plotfile` (str)
             Name of PDF plot file to create.
     """
-    assert len(names) == len(bcstatsfiles)
+    assert len(names) == len(bcstatsfiles) == len(set(names))
     assert os.path.splitext(plotfile)[1].lower() == '.pdf'
     bcstats = pandas.concat([pandas.read_csv(f).assign(name=name) for
                 (name, f) in zip(names, bcstatsfiles)], ignore_index=True)
@@ -129,6 +140,7 @@ def plotBCStats(names, bcstatsfiles, plotfile):
             + scale_fill_manual(COLOR_BLIND_PALETTE)
             )
     p.save(plotfile, height=2.7, width=(1.2 + 0.25 * len(names)))
+    plt.clf()
 
 
 def plotReadsPerBC(names, readsperbcfiles, plotfile, 
@@ -148,7 +160,7 @@ def plotReadsPerBC(names, readsperbcfiles, plotfile,
         `maxcol` (int)
             Number of columns in faceted plot.
     """
-    assert len(names) == len(readsperbcfiles)
+    assert len(names) == len(readsperbcfiles) == len(set(names))
     assert os.path.splitext(plotfile)[1].lower() == '.pdf'
 
     # read data frames, ensure 'number of reads' from 1 to >= maxreads
@@ -181,6 +193,7 @@ def plotReadsPerBC(names, readsperbcfiles, plotfile,
             + theme(figure_size=(1.5 * (0.8 + ncol), 1.2 * (0.4 + nrow)))
             )
     p.save(plotfile)
+    plt.clf()
 
 
 def plotDepth(names, countsfiles, plotfile, maxcol=4):
@@ -196,7 +209,7 @@ def plotDepth(names, countsfiles, plotfile, maxcol=4):
         `maxcol` (int)
             Number of columns in faceted plot.
     """
-    assert len(names) == len(countsfiles)
+    assert len(names) == len(countsfiles) == len(set(names))
     assert os.path.splitext(plotfile)[1].lower() == '.pdf'
 
     counts = pandas.concat([dms_tools2.utils.annotateCodonCounts(f).assign(
@@ -216,6 +229,7 @@ def plotDepth(names, countsfiles, plotfile, maxcol=4):
             + theme(figure_size=(2.25 * (0.6 + ncol), 1.3 * (0.3 + nrow)))
             )
     p.save(plotfile)
+    plt.clf()
 
 
 def plotMutFreq(names, countsfiles, plotfile, maxcol=4):
@@ -231,7 +245,7 @@ def plotMutFreq(names, countsfiles, plotfile, maxcol=4):
         `maxcol` (int)
             Number of columns in faceted plot.
     """
-    assert len(names) == len(countsfiles)
+    assert len(names) == len(countsfiles) == len(set(names))
     assert os.path.splitext(plotfile)[1].lower() == '.pdf'
 
     counts = pandas.concat([dms_tools2.utils.annotateCodonCounts(f).assign(
@@ -251,6 +265,7 @@ def plotMutFreq(names, countsfiles, plotfile, maxcol=4):
             + theme(figure_size=(2.25 * (0.6 + ncol), 1.3 * (0.3 + nrow)))
             )
     p.save(plotfile)
+    plt.clf()
 
 
 def plotCodonMutTypes(names, countsfiles, plotfile,
@@ -278,7 +293,7 @@ def plotCodonMutTypes(names, countsfiles, plotfile,
         `csvfile` (str or `None`)
             `None` or name of CSV file to which numerical data are written.
     """
-    assert len(names) == len(countsfiles)
+    assert len(names) == len(countsfiles) == len(set(names))
     assert os.path.splitext(plotfile)[1].lower() == '.pdf'
 
     counts = pandas.concat([dms_tools2.utils.annotateCodonCounts(f).assign(
@@ -326,6 +341,69 @@ def plotCodonMutTypes(names, countsfiles, plotfile,
         p += guides(fill=guide_legend(ncol=2))
 
     p.save(plotfile, height=2.7, width=(1.2 + 0.25 * len(names)))
+    plt.clf()
+
+
+def plotPrefsCorr(names, prefsfiles, plotfile, allow_diffsites=True):
+    """Plots correlations among preferences.
+
+    Args:
+        `names` (list or series)
+            Names of samples for which we plot statistics.
+        `prefsfiles` (list or series)
+            ``*_prefs.csv`` files of type created by ``dms2_prefs``.
+        `plotfile` (str)
+            Name of created PDF plot file.
+        `allow_diffsites` (bool)
+            Allow different prefs files to have different sites as
+            long as at least some are shared.
+    """
+    assert len(names) == len(prefsfiles) == len(set(names)) > 1
+    assert os.path.splitext(plotfile)[1].lower() == '.pdf'
+
+    # read prefs into dataframe, ensuring all have same characters
+    prefs = [pandas.read_csv(f).assign(name=name) for (name, f) 
+            in zip(names, prefsfiles)]
+    chars = set(prefs[0].columns)
+    for p in prefs:
+        unsharedchars = chars.symmetric_difference(set(p.columns))
+        if unsharedchars:
+            raise ValueError("prefsfiles do not have same characters: {0}"
+                    .format(unsharedchars))
+    chars = list(chars - {'site', 'name'})
+    prefs = pandas.concat(prefs, ignore_index=True)
+
+    # get measurements for each replicate in its own column
+    df = (prefs.melt(id_vars=['name', 'site'], var_name='char')
+               .pivot_table(index=['site', 'char'], columns='name')
+               )
+    df.columns = df.columns.get_level_values(1)
+
+    # using https://stackoverflow.com/a/30942817 for plot
+    def corrfunc(x, y, **kws):
+        r, _ = scipy.stats.pearsonr(x, y)
+        ax = plt.gca()
+        ax.annotate('R = {0:.2f}'.format(r), xy=(0.1, 0.9), 
+                xycoords=ax.transAxes, fontsize=14)
+    p = seaborn.PairGrid(df)
+    p.map_lower(plt.scatter, s=18, alpha=0.35, color='black', 
+            marker='o', edgecolor='none')
+    p.map_lower(corrfunc)
+    p.set(  xlim=(0, 1), 
+            ylim=(0, 1), 
+            xticks=[0, 0.5, 1],
+            yticks=[0, 0.5, 1],
+            xticklabels=['0', '0.5', '1'],
+            yticklabels=['0', '0.5', '1'],
+            )
+    # hide upper triangle plots as here: https://stackoverflow.com/a/34091733
+    for (i, j) in zip(*numpy.triu_indices_from(p.axes, 1)):
+        p.axes[i, j].set_visible(False)
+    for (i, j) in zip(*numpy.diag_indices_from(p.axes)):
+        p.axes[i, j].set_visible(False)
+
+    p.savefig(plotfile)
+    plt.clf()
 
 
 

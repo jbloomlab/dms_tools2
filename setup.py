@@ -59,6 +59,8 @@ setup(
         'plotnine>=0.2.1',
         'natsort>=5.0.3',
         'pystan>=2.16',
+        'scipy>=0.18.1',
+        'seaborn>=0.8',
         ],
     platforms = 'Linux and Mac OS X).',
     packages = ['dms_tools2'],
