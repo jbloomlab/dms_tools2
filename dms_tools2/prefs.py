@@ -228,7 +228,8 @@ def _initialValuePrefs(error_model, nchains, iwtchar, nchars):
     return init
 
 
-def inferPrefsByRatio(counts, error_model, pseudocount):
+def inferPrefsByRatio(charlist, sites, wts, pre, post, errpre,
+        errpost, pseudocount):
     """Site-specific preferences from enrichment ratios for a site.
 
     Calculates site-specific preference :math:`\pi_{r,a}` of each
@@ -311,9 +312,38 @@ def inferPrefsByRatio(counts, error_model, pseudocount):
     we simply set 
     :math:`f_{r,\\rm{wt}}^{errpre} = f_{r,\\rm{wt}}^{errpost} 
     = \delta_{a,\\rm{wt}\left(r\\right)}`.
+
+    Args:
+        `charlist` (list)
+            Valid characters (e.g., codons, amino acids, nts).
+        `sites` (list)
+            Sites to analyze.
+        `wts` (list)
+            `wts[r]` is the wildtype character at site `sites[r]`.
+        `pre` (pandas.DataFrame)
+            Gives pre-selection counts. Should have columns
+            with names of 'site' and all characters in `charlist`.
+            The rows give the counts of each character at that site.
+        `post` (pandas.DataFrame)
+            Like `pre` but for post-selection counts.
+        `errpre` (`None` or pandas.DataFrame)
+            Like `pre` but for pre-selection error-control counts,
+            or `None` if there is no such control.
+        `errpost` (`None` or pandas.DataFrame)
+            Like `pre` but for post-selection error-control counts,
+            or `None` if there is no such control.
+        `pseudocount` (float or int)
+            The pseudocount to add to each observation.
+
+    Returns:
+        A pandas.DataFrame holding the preferences. The columns of
+        this dataframe are 'site' and all characters in `charlist`.
+        For each site in `sites`, the rows give the preference
+        for that character.
     """
-    
-    assert pseudocounts > 0, "pseudocounts must be greater than zero, invalid value of %g" % pseudocounts
+    assert len(wts) == len(sites) > 0    
+    assert pseudocount > 0, "pseudocounts must be greater than zero"
+
     assert wtchar in characterlist, "wtchar %s not in characterlist %s" % (wtchar, str(characterlist))
     logstring = '\tComputed preferences directly from enrichment ratios.'
 
