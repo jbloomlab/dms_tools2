@@ -163,8 +163,8 @@ def batch_bcsubampParser():
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--batchfile', help="CSV file specifying each "
-            "``dms2_bcsubamp`` run. Must have these columns (can also have "
-            "others): `name`, `R1`", required=True)
+            "``dms2_bcsubamp`` run. Must have these columns: "
+            "`name`, `R1`", required=True)
 
     parser.add_argument('--summaryprefix', required=True,
             help="Prefix of output summary plots.")
@@ -172,32 +172,15 @@ def batch_bcsubampParser():
     return parser
 
 
-def prefsParser():
-    """Returns `argparse.ArgumentParser` for ``dms2_prefs``."""
+def prefsParentParser():
+    """Parent parser for ``dms2_prefs`` / ``dms2_batch_prefs``."""
     parser = argparse.ArgumentParser(
-            description=parserDescription(
-                'Estimate preferences from mutation counts.'),
             parents=[parentParser()],
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
-    parser.add_argument('--pre', required=True, 
-            help='Pre-selection counts file or prefix used when creating '
-            'this file.')
-
-    parser.add_argument('--post', required=True, 
-            help='Like ``--pre`` but for post-selection counts.')
-
-    parser.add_argument('--name', required=True, 
-            help='Name used for output files.')
 
     parser.add_argument('--method', required=True, 
             choices=['ratio', 'bayesian'], help="Method to "
             "estimate preferences.")
-
-    parser.add_argument('--err', nargs=2, metavar=('ERRPRE', 'ERRPOST'),
-            help="Like ``--pre`` but for counts for error control(s) for "
-            "``--pre`` and ``--post``. Specify same file twice for same "
-            "control for both.")
 
     parser.add_argument('--indir', help="Input counts files in this "
             "directory.")
@@ -218,6 +201,53 @@ def prefsParser():
 
     parser.add_argument('--pseudocount', default=1,
             help="Pseudocount used with ``--method ratio``.")
+
+    return parser
+
+
+def prefsParser():
+    """Returns `argparse.ArgumentParser` for ``dms2_prefs``."""
+    parser = argparse.ArgumentParser(
+            description=parserDescription(
+                'Estimate preferences from mutation counts.'),
+            parents=[prefsParentParser()],
+            conflict_handler='resolve',
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--pre', required=True, 
+            help='Pre-selection counts file or prefix used when creating '
+            'this file.')
+
+    parser.add_argument('--post', required=True, 
+            help='Like ``--pre`` but for post-selection counts.')
+
+    parser.add_argument('--name', required=True, 
+            help='Name used for output files.')
+
+    parser.add_argument('--err', nargs=2, metavar=('ERRPRE', 'ERRPOST'),
+            help="Like ``--pre`` but for counts for error control(s) for "
+            "``--pre`` and ``--post``. Specify same file twice for same "
+            "control for both.")
+
+    return parser
+
+
+def batch_prefsParser():
+    """Returns `argparse.ArgumentParser` for ``dms2_batch_prefs``."""
+    parser = argparse.ArgumentParser(
+            description=parserDescription(
+                'Perform many runs of ``dms2_prefs`` and summarize results.'),
+            parents=[prefsParentParser()],
+            conflict_handler='resolve',
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--batchfile', help="CSV file specifying each "
+            "``dms2_prefs`` run. Must have these columns: "
+            "`name`, `pre`, `post`. Can also have these columns: "
+            "`err` or `errpre` and `errpost`.", required=True)
+
+    parser.add_argument('--summaryprefix', required=True,
+            help="Prefix of output summary files and plots.")
 
     return parser
 
