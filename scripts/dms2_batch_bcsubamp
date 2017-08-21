@@ -68,14 +68,13 @@ def main():
         # read batchfile, strip any whitespace from strings
         logger.info("Parsing sample info from {0}".format(args['batchfile']))
         assert os.path.isfile(args['batchfile']), "no batchfile"
-        batchruns = pandas.read_csv(args['batchfile'])
+        batchruns = pandas.read_csv(args['batchfile'], na_filter=False)
         batchruns.columns = batchruns.columns.str.strip()
         colnames = set(['name', 'R1'])
         assert set(batchruns.columns) >= colnames, ("batchfile lacks "
                 "required column names of: {0}".format(', '.join(colnames)))
         for c in batchruns.columns:
-            batchruns[c] = (batchruns[c].map(str).map(str.strip).
-                    replace('nan', ''))
+            batchruns[c] = batchruns[c].map(str).map(str.strip)
         logger.info("Read the following sample information:\n{0}\n".format(
                 batchruns.to_csv(index=False)))
         assert len(batchruns['name']) == len(set(batchruns['name'].values)),\
