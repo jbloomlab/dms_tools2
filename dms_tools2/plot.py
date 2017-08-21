@@ -25,8 +25,16 @@ from plotnine import *
 theme_set(theme_bw(base_size=12)) 
 
 import seaborn
-seaborn.set_style('white')
-seaborn.set_context('talk')
+seaborn.set(context='talk',
+            style='white',
+            rc={
+                'xtick.labelsize':15,
+                'ytick.labelsize':15,
+                'axes.labelsize':19,
+                'font.family':'sans-serif',
+                'font.sans-serif':['DejaVu Sans'],
+                }
+           )
 
 import dms_tools2.utils
 
@@ -402,10 +410,11 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
     def corrfunc(x, y, **kws):
         r, _ = scipy.stats.pearsonr(x, y)
         ax = plt.gca()
-        ax.annotate('R = {0:.2f}'.format(r), xy=(0.1, 0.9), 
-                xycoords=ax.transAxes, fontsize=14)
+        ax.annotate('R = {0:.2f}'.format(r), xy=(0.05, 0.9), 
+                xycoords=ax.transAxes, fontsize=19, 
+                fontstyle='oblique')
     p = seaborn.PairGrid(df)
-    p.map_lower(plt.scatter, s=18, alpha=0.35, color='black', 
+    p.map_lower(plt.scatter, s=22, alpha=0.35, color='black', 
             marker='o', edgecolor='none')
     p.map_lower(corrfunc)
     p.set(  xlim=(0, 1), 
