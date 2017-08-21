@@ -19,6 +19,7 @@ import pickle
 import random
 import numpy
 import numpy.random
+import pandas
 import pystan
 
 #: minimum value for Dirichlet prior elements
@@ -282,12 +283,12 @@ def inferPrefsByRatio(charlist, sites, wts, pre, post, errpre,
 
     .. math::
 
-        f_{r,a}^{before} &= \max\left(\\frac{P}{N_{r,a}^{pre}},\;
-        f_{r,a}^{pre} + \delta_{a,\\rm{wt}\left(r\\right)}
+        f_{r,a}^{before} &= \max\left(\\frac{P}{N_{r,a}^{pre} + A \\times P},
+        \; f_{r,a}^{pre} + \delta_{a,\\rm{wt}\left(r\\right)}
         - f_{r,a}^{errpre}\\right)
 
-        f_{r,a}^{after} &= \max\left(\\frac{P}{N_{r,a}^{post}},\;
-        f_{r,a}^{post} + \delta_{a,\\rm{wt}\left(r\\right)}
+        f_{r,a}^{after} &= \max\left(\\frac{P}{N_{r,a}^{post} + A \\times P},
+        \; f_{r,a}^{post} + \delta_{a,\\rm{wt}\left(r\\right)}
         - f_{r,a}^{errpost}\\right)
 
     where :math:`\delta_{a,\\rm{wt}\left(r\\right)}` is the 
@@ -303,10 +304,10 @@ def inferPrefsByRatio(charlist, sites, wts, pre, post, errpre,
 
     .. math::
 
-        \phi_{r,a} = \\frac{\left(f_{r,a}^{before}\\right) / 
-        \left(f_{r,\\rm{wt}\left(r\\right)}^{before}\\right)}
-        {\left(f_{r,a}^{after}\\right) / 
+        \phi_{r,a} = \\frac{\left(f_{r,a}^{after}\\right) / 
         \left(f_{r,\\rm{wt}\left(r\\right)}^{after}\\right)}
+        {\left(f_{r,a}^{before}\\right) / 
+        \left(f_{r,\\rm{wt}\left(r\\right)}^{before}\\right)}
 
     In the case where we are **not** using any error-controls, then
     we simply set 
@@ -344,59 +345,59 @@ def inferPrefsByRatio(charlist, sites, wts, pre, post, errpre,
     assert len(wts) == len(sites) > 0    
     assert pseudocount > 0, "pseudocounts must be greater than zero"
 
-    assert wtchar in characterlist, "wtchar %s not in characterlist %s" % (wtchar, str(characterlist))
-    logstring = '\tComputed preferences directly from enrichment ratios.'
+    dfs = {'pre':pre.copy(),
+           'post':post.copy()
+           }
+    if errpre is not None:
+        dfs['errpre'] = errpre.copy()
+    if errpost is not None:
+        dfs['errpost'] = errpost.copy()
+    for (dfname, df) in dfs.items():
+        assert set(list(charlist) + ['site']) <= set(df.columns)
+        assert set(sites) <= set(df['site'])
+        df['site'] = pandas.Categorical(df['site'], sites)
+        df.sort_values('site')
+        df['Nr'] = df[charlist].sum(axis=1).astype('float')
+        for c in charlist:
+            df['f{0}'.format(c)] = (df[c] + pseudocount) / (
+                    df['Nr'] + len(charlist) * pseudocount) 
+            df['delta{0}'.format(c)] = list(map(
+                    lambda wt: 1 if wt == c else 0, wts))
+    # fill values for errpre / errpost if they were None
+    for stype in ['pre', 'post']:
+        err = 'err{0}'.format(stype)
+        if err not in dfs:
+            dfs[err] = pandas.DataFrame(dict([('site', sites)] +
+                    [('f{0}'.format(c), dfs[stype]['delta{0}'.format(c)])
+                    for c in charlist]))
 
-    Nrpost = 0.0
-    Nrpre = 0.0
-    Nrerrpost = 0.0
-    Nrerrpre = 0.0
-    for y in characterlist:
-        Nrpost += counts['nrpost'][y]
-        Nrpre += counts['nrpre'][y]     
-        if error_model == 'same':
-            Nrerrpost += counts['nrerr'][y]
-            Nrerrpre += counts['nrerr'][y]
-        elif error_model == 'different':
-            Nrerrpost += counts['nrerrpost'][y]
-            Nrerrpre += counts['nrerrpre'][y]
-        elif error_model != 'none':
-            raise ValueError("Invalid error_model of %s" % error_model)
-    
-    psi = {wtchar:1.0}
-    nrpostwt = counts['nrpost'][wtchar]
-    nrprewt = counts['nrpre'][wtchar]
-    for x in characterlist:
-        if x == wtchar:
-            continue
-        nrpost = counts['nrpost'][x]
-        nrpre = counts['nrpre'][x]
-        if error_model == 'none':
-            nrerrpre = nrerrpost = 0.0
-            nrerrprewt = nrerrpostwt = 0.0
-            Nrerrpre = Nrerrpost = 1.0 # Set equal to pseudocount of 1.0 to avoid dividing by zero; however, the psuedocount will make no difference in the end since all fractions with these variables will end up equalling zero anyways.
-            delta = 0.0
-        elif error_model == 'same':
-            nrerrpre = nrerrpost = counts['nrerr'][x]
-            nrerrprewt = nrerrpostwt = counts['nrerr'][wtchar]
-            assert Nrerrpost == Nrerrpre
-            delta = 1.0
-        elif error_model == 'different':
-            nrerrpre = counts['nrerrpre'][x]
-            nrerrpost = counts['nrerrpost'][x]
-            nrerrprewt = counts['nrerrpre'][wtchar]
-            nrerrpostwt = counts['nrerrpost'][wtchar]
-            delta = 1.0
-        else:
-            raise ValueError("Invalid error_model of %s" % error_model)
-        postratio = max(pseudocounts/Nrpost, (nrpost/Nrpost)-(nrerrpost/Nrerrpost))/((nrpostwt/Nrpost)+delta-(nrerrpostwt/Nrerrpost))
-        preratio = max(pseudocounts/Nrpre, (nrpre/Nrpre)-(nrerrpre/Nrerrpre))/((nrprewt/Nrpre)+delta-(nrerrprewt/Nrerrpre))
-        psi[x] = postratio / preratio
-    
-    assert abs(psi[wtchar] - 1) < 1.0e-5, "wtchar does not have enrichment ratio of one: %g" % (psi[wtchar])
-    denom = sum(psi.values())
-    pi = dict([(x, psi[x] / float(denom)) for x in characterlist])
-    return (True, pi, None, logstring)
+    # compute phi values
+    fr = {}
+    for (key, f, ferr) in [
+            ('before', dfs['pre'], dfs['errpre']),
+            ('after', dfs['post'], dfs['errpost']),
+            ]:
+        fr[key] = {'wt':numpy.zeros(len(sites))}
+        for c in charlist:
+            fr[key][c] = numpy.maximum(
+                    pseudocount / (f['Nr'].values 
+                        + len(charlist) * pseudocount),
+                    f['f{0}'.format(c)].values 
+                        + f['delta{0}'.format(c)].values 
+                        - ferr['f{0}'.format(c)].values
+                    )
+            fr[key]['wt'] += fr[key][c] * f['delta{0}'.format(c)].values
+    phi = pandas.DataFrame({'site':sites})
+    for c in charlist:
+        phi[c] = ((fr['after'][c] / fr['after']['wt']) /
+                  (fr['before'][c] / fr['before']['wt']))
+    phi['denom'] = phi[charlist].sum(axis=1)
+
+    # normalize phi values to get pi values
+    prefs = phi[charlist].div(phi['denom'], axis=0)
+    prefs.insert(0, 'site', sites)
+
+    return prefs
     
 
 def inferSitePrefs(charlist, wtchar, error_model, counts, 
