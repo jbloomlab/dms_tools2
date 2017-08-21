@@ -344,40 +344,59 @@ def plotCodonMutTypes(names, countsfiles, plotfile,
     plt.clf()
 
 
-def plotPrefsCorr(names, prefsfiles, plotfile, allow_diffsites=True):
-    """Plots correlations among preferences.
+def plotCorrMatrix(names, infiles, plotfile, datatype,
+        trim_unshared_sites=True):
+    """Plots correlations among replicates.
 
     Args:
         `names` (list or series)
             Names of samples for which we plot statistics.
-        `prefsfiles` (list or series)
-            ``*_prefs.csv`` files of type created by ``dms2_prefs``.
+        `infiles` (list or series)
+            CSV files containing data. Format depends on `datatype`.
         `plotfile` (str)
             Name of created PDF plot file.
-        `allow_diffsites` (bool)
-            Allow different prefs files to have different sites as
-            long as at least some are shared.
+        `datatype` (str)
+            Type of data for which we are plotting correlations:
+                - `prefs`: in format returned by ``dms2_prefs``
+        `trim_unshared_sites` (bool)
+            What if files in `infiles` don't all have same sites?
+            If `True`, trim unshared sites and just analyze ones
+            shared among all files. If `False`, raise an error
+            if unshared sites.
     """
-    assert len(names) == len(prefsfiles) == len(set(names)) > 1
+    assert len(names) == len(infiles) == len(set(names)) > 1
     assert os.path.splitext(plotfile)[1].lower() == '.pdf'
 
-    # read prefs into dataframe, ensuring all have same characters
-    prefs = [pandas.read_csv(f).assign(name=name) for (name, f) 
-            in zip(names, prefsfiles)]
-    chars = set(prefs[0].columns)
-    for p in prefs:
-        unsharedchars = chars.symmetric_difference(set(p.columns))
-        if unsharedchars:
-            raise ValueError("prefsfiles do not have same characters: {0}"
-                    .format(unsharedchars))
-    chars = list(chars - {'site', 'name'})
-    prefs = pandas.concat(prefs, ignore_index=True)
 
-    # get measurements for each replicate in its own column
-    df = (prefs.melt(id_vars=['name', 'site'], var_name='char')
-               .pivot_table(index=['site', 'char'], columns='name')
-               )
-    df.columns = df.columns.get_level_values(1)
+    if datatype == 'prefs':
+        # read prefs into dataframe, ensuring all have same characters
+        prefs = [pandas.read_csv(f).assign(name=name) for (name, f) 
+                in zip(names, infiles)]
+        chars = set(prefs[0].columns)
+        sites = set(prefs[0]['site'].values)
+        for p in prefs:
+            unsharedchars = chars.symmetric_difference(set(p.columns))
+            if unsharedchars:
+                raise ValueError("infiles don't have same characters: {0}"
+                        .format(unsharedchars))
+            unsharedsites = sites.symmetric_difference(set(p['site']))
+            if trim_unshared_sites:
+                sites -= unsharedsites
+            elif unsharedsites:
+                raise ValueError("infiles don't have same sites: {0}".
+                        format(unsharedsites))
+        assert {'site', 'name'} < chars
+        chars = list(chars - {'site', 'name'})
+        # get measurements for each replicate in its own column
+        df = (pandas.concat(prefs, ignore_index=True)
+                    .query('site in @sites') # only keep shared sites
+                    .melt(id_vars=['name', 'site'], var_name='char')
+                    .pivot_table(index=['site', 'char'], columns='name')
+                    )
+        df.columns = df.columns.get_level_values(1)
+
+    else:
+        raise ValueError("Invalid datatype {0}".format(datatype))
 
     # using https://stackoverflow.com/a/30942817 for plot
     def corrfunc(x, y, **kws):
