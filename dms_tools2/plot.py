@@ -90,7 +90,7 @@ def latexSciNot(xlist):
 
 
 def plotReadStats(names, readstatfiles, plotfile):
-    """Plots `dms2_bcsubamp` read statistics for a set of samples.
+    """Plots ``dms2_bcsubamp`` read statistics for a set of samples.
     
     Args:
         `names` (list or series)
@@ -122,7 +122,7 @@ def plotReadStats(names, readstatfiles, plotfile):
 
 
 def plotBCStats(names, bcstatsfiles, plotfile):
-    """Plots `dms2_bcsubamp` barcode statistics for a set of samples.
+    """Plots ``dms2_bcsubamp`` barcode statistics for set of samples.
 
     Args:
         `names` (list or series)
@@ -153,7 +153,7 @@ def plotBCStats(names, bcstatsfiles, plotfile):
 
 def plotReadsPerBC(names, readsperbcfiles, plotfile, 
         maxreads=10, maxcol=6):
-    """Plots `dms2_bcsubamp` reads-per-barcode stats for set of samples.
+    """Plots ``dms2_bcsubamp`` reads-per-barcode stats for set of samples.
 
     Args:
         `names` (list or series)
