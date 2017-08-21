@@ -32,7 +32,7 @@ def main():
         if not os.path.isdir(args['outdir']):
             os.mkdir(args['outdir'])
     else:
-        args['outdir'] = ''
+        args['outdir'] = '.'
     filesuffixes = {
             'log':'.log',
             'readstats':'_readstats.pdf',
