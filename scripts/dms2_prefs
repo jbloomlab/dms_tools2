@@ -240,12 +240,12 @@ def main():
 
                 # scale priors by concentration parameters
                 assert all([c > 0 for c in args['conc']])
-                (cprefs, cmu, cerr) = args['conc']
+                (cpi, cmu, cerr) = args['conc']
                 for x in charlist:
                     priors['mur_prior_params'][x] *= len(charlist) * cmu
                     priors['epsilonr_prior_params'][x] *= len(charlist) * cerr
                     priors['rhor_prior_params'][x] *= len(charlist) * cerr
-                priors['pir_prior_params'] = dict([(x, cprefs) for x in charlist])
+                priors['pir_prior_params'] = dict([(x, cpi) for x in charlist])
 
                 # start MCMC for site
                 logged[r] = False

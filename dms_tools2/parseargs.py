@@ -194,7 +194,7 @@ def prefsParentParser():
             help="Exclude stop codons as a possible amino acid?")
 
     parser.add_argument('--conc', nargs=3, default=[1, 1, 1],
-            metavar=('Cprefs', 'Cmut', 'Cerr'),
+            type=float, metavar=('Cprefs', 'Cmut', 'Cerr'),
             help="Concentration parameters for priors for "
             "``--method bayesian``. Priors are over preferences, "
             "mutagenesis rate, and error rate(s).")
