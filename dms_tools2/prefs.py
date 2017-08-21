@@ -228,82 +228,89 @@ def _initialValuePrefs(error_model, nchains, iwtchar, nchars):
     return init
 
 
-def InferSitePreferencesFromEnrichmentRatios(characterlist, wtchar, error_model, counts, pseudocounts=1):
-    r"""Infers site-specific preferences from enrichment ratios.
+def inferPrefsByRatio(counts, error_model, pseudocount):
+    """Site-specific preferences from enrichment ratios for a site.
 
-    This function mirrors the operations performed by *InferSitePreferences*, expect the preferences
-    are calculated directly from enrichment ratios. 
+    Calculates site-specific preference :math:`\pi_{r,a}` of each
+    site :math:`r` for each character :math:`a` using re-normalized
+    enrichment ratios. This function accomplishes the same goal as
+    `inferSitePrefs`, but is much simpler and faster, although less
+    statistically rigorous in principle.
 
-    *characterlist*, *wtchar*, *error_model*, and *counts* have the same meaning as for *InferSitePreferences*.
-
-    *pseudocounts* is a number > 0. If the counts for a character are less than *pseudocounts*, either due to low counts or error correction, then the counts for that character are changed to *pseudocounts* to avoid estimating ratios of zero, less than zero, or infinity.
-
-    Briefly, we set the enrichment ratio of the wildtype character :math:`\rm{wt}` at this site equal to one
-    
-    .. math::
-       
-        \phi_{wt} = 1
-    
-    Then, for each non-wildtype character :math:`x`, we calculate the enrichment relative to :math:`\rm{wt}` as
-
-    .. math::
-       
-        \phi_{x} = 
-        \frac{
-          \left(\frac{
-            \max\left(\frac{\mathcal{P}}{N_r^{\rm{post}}}, \frac{n_{r,x}^{\rm{post}}}{N_r^{\rm{post}}} - \frac{n_{r,x}^{\rm{errpost}}}{N_r^{\rm{errpost}}}\right)
-          }{
-            \frac{n_{r,\rm{wt}}^{\rm{post}}}{N_r^{\rm{post}}} + \delta - \frac{n_{r,\rm{wt}}^{\rm{errpost}}}{N_r^{\rm{errpost}}}
-          }\right)
-        }
-        {
-          \left(\frac{
-            \max\left(\frac{\mathcal{P}}{N_r^{\rm{pre}}}, \frac{n_{r,x}^{\rm{pre}}}{N_r^{\rm{pre}}} - \frac{n_{r,x}^{\rm{errpre}}}{N_r^{\rm{errpre}}}\right)
-          }{
-            \frac{n_{r,\rm{wt}}^{\rm{pre}}}{N_r^{\rm{pre}}} + \delta - \frac{n_{r,\rm{wt}}^{\rm{errpre}}}{N_r^{\rm{errpre}}}
-          }\right)
-        }
-
-    where :math:`\mathcal{P}` is the value of *pseudocounts*. When *error_model* is *none*, then all terms involving the error corrections (with superscript *err*) are ignored and :math:`\delta` is set to zero; otherwise :math:`\delta` is one.
-
-    Next, for each character :math:`x`, including :math:`\rm{wt}`, we calculate the preference for :math:`x` as
+    Specifically, this function calculates the preferences as
 
     .. math::
 
-        \pi_x = \frac{\phi_x}{\sum_y \phi_y}.
+        \pi_{r,a} = \\frac{\phi_{r,a}}{\sum_{a'} \phi_{r,a'}}
 
-    The return value is: *(converged, pi_means, pi_95credint, logstring)*, where the tuple
-    entries have the same meaning as for *InferSitePreferences* except that *pi_95credint* is
-    *None* since no credible intervals can be estimated from direct enrichment ratio calculation
-    as it is not a statistical model, and *converged* is *True* since this calculation
-    always converges.
-
-    For testing the code using doctest:
+    where :math:`\phi_{r,a}` is the enrichment ratio of character
+    :math:`a` relative to wildtype after selection. 
     
-    >>> # Hypothetical data for a site
-    >>> characterlist = ['A', 'T', 'G', 'C']
-    >>> wtchar = 'A'
-    >>> counts = {}
-    >>> counts['nrpost'] = {'A':310923, 'T':13, 'C':0, 'G':37}
-    >>> counts['nrerrpost'] = {'A':310818, 'T':0, 'C':0, 'G':40}
-    >>> counts['nrerr'] = {'A':310818, 'T':0, 'C':0, 'G':40} # Same as 'nrerrpost'
-    >>> counts['nrpre'] = {'A':390818, 'T':50, 'C':0, 'G':80}
-    >>> counts['nrerrpre'] = {'A':390292, 'T':0, 'C':5, 'G':9}
+    The actual definition of these enrichment ratios is somewhat
+    complex due to the need to correct for errors and add a
+    pseudocount. We have 4 sets of counts:
 
-    >>> # Using error_model = 'none'
-    >>> (converged, pi, pi95, logstring) = InferSitePreferencesFromEnrichmentRatios(characterlist, wtchar, 'none', counts, pseudocounts=1)
-    >>> [round(pi[x], 9) for x in characterlist]
-    [0.315944301, 0.10325369, 0.18367243, 0.397129578]
+        - `pre`: pre-selection counts
 
-    >>> # Using error_model = 'same'
-    >>> (converged, pi, pi95, logstring) = InferSitePreferencesFromEnrichmentRatios(characterlist, wtchar, 'same', counts, pseudocounts=1)
-    >>> [round(pi[x], 9) for x in characterlist]
-    [0.380792732, 0.124446795, 0.016118953, 0.47864152]
+        - `post`: post-selection counts
 
-    >>> # Using error_model = 'different'
-    >>> (converged, pi, pi95, logstring) = InferSitePreferencesFromEnrichmentRatios(characterlist, wtchar, 'different', counts, pseudocounts=1)
-    >>> [round(pi[x], 9) for x in characterlist]
-    [0.384418849, 0.125620184, 0.006806413, 0.483154554]
+        - `errpre`: error-control for pre-selection counts
+
+        - `errpost`: error-control for post-selection counts
+
+    For each set of counts :math:`s`, let :math:`N_r^s` (e.g., 
+    :math:`N_r^{pre}`) denote the total counts for this sample at
+    site :math:`r`, and let :math:`n_{r,a}^{s}` (e.g., 
+    :math:`n_{r,a}^{pre}`) denote the counts at that site for
+    character :math:`a`.
+
+    Because some of the counts are low, we add a pseudocount 
+    :math:`P` to each observation. With this pseudocount, the 
+    estimated frequency of character :math:`a` at site :math:`r`
+    in sample :math:`s` is 
+    
+    .. math::
+    
+        f_{r,a}^s = \\frac{n_{r,a}^s + P}{N_{r,a}^s + A \\times P}
+
+    where :math:`A` is the number of characters in the alphabet (e.g.,
+    20 for amino acids without stop codons).
+
+    The **error-corrected** estimates of the frequency of character
+    :math:`a` before and after selection are then
+
+    .. math::
+
+        f_{r,a}^{before} &= \max\left(\\frac{P}{N_{r,a}^{pre}},\;
+        f_{r,a}^{pre} + \delta_{a,\\rm{wt}\left(r\\right)}
+        - f_{r,a}^{errpre}\\right)
+
+        f_{r,a}^{after} &= \max\left(\\frac{P}{N_{r,a}^{post}},\;
+        f_{r,a}^{post} + \delta_{a,\\rm{wt}\left(r\\right)}
+        - f_{r,a}^{errpost}\\right)
+
+    where :math:`\delta_{a,\\rm{wt}\left(r\\right)}` is the 
+    Kronecker-delta, equal to 1 if :math:`a` is the same as the
+    wildtype character :math:`\\rm{wt}\left(r\\right)` at site
+    :math:`r`, and 0 otherwise. We use the :math:`\max` operator
+    to ensure that even if the error-control frequency exceeds
+    the actual estimate, our estimated frequency never drops
+    below the pseudocount over the depth of the uncorrected sample.
+
+    Given these definitions, we then simply calculate the enrichment 
+    ratios as 
+
+    .. math::
+
+        \phi_{r,a} = \\frac{\left(f_{r,a}^{before}\\right) / 
+        \left(f_{r,\\rm{wt}\left(r\\right)}^{before}\\right)}
+        {\left(f_{r,a}^{after}\\right) / 
+        \left(f_{r,\\rm{wt}\left(r\\right)}^{after}\\right)}
+
+    In the case where we are **not** using any error-controls, then
+    we simply set 
+    :math:`f_{r,\\rm{wt}}^{errpre} = f_{r,\\rm{wt}}^{errpost} 
+    = \delta_{a,\\rm{wt}\left(r\\right)}`.
     """
     
     assert pseudocounts > 0, "pseudocounts must be greater than zero, invalid value of %g" % pseudocounts
