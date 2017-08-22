@@ -180,7 +180,8 @@ def prefsParentParser():
 
     parser.add_argument('--method', required=True, 
             choices=['ratio', 'bayesian'], help="Method to "
-            "estimate preferences.")
+            "estimate preferences: normalized enrichment ratios "
+            "or Bayesian inference.")
 
     parser.add_argument('--indir', help="Input counts files in this "
             "directory.")
