@@ -82,8 +82,7 @@ def main():
         ncpus_per_run = max(1, ncpus // len(batchruns.index))
 
         # run dms2_prefs for each sample in batchfile
-        logger.info("Running dms2_prefs on all samples using "
-                "{0} CPUs...".format(ncpus))
+        logger.info("Running dms2_prefs on all samples...")
         argslist = []
         if 'err' in batchruns.columns:
             error_model = 'same'
