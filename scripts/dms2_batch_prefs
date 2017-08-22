@@ -89,8 +89,8 @@ def main():
         elif {'errpre', 'errpost'} <= set(batchruns.columns):
             error_model = 'different'
         else:
-            assert 'errpre' not in batchrun.columns, "errpre but not errpost"
-            assert 'errpost' not in batchrun.columns, "errpost but not errpre"
+            assert 'errpre' not in batchruns.columns, "errpre but not errpost"
+            assert 'errpost' not in batchruns.columns, "errpost but not errpre"
             error_model = 'none'
         for (i, row) in batchruns.iterrows():
             # define newargs to pass to dms2_prefs

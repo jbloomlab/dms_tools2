@@ -11,8 +11,6 @@ to perform MCMC for Bayesian inferences.
 """
 
 
-import sys
-import tempfile
 import time
 import math
 import pickle
@@ -231,7 +229,7 @@ def _initialValuePrefs(error_model, nchains, iwtchar, nchars):
 
 def inferPrefsByRatio(charlist, sites, wts, pre, post, errpre,
         errpost, pseudocount):
-    """Site-specific preferences from enrichment ratios for a site.
+    """Site-specific preferences from normalized enrichment ratios.
 
     Calculates site-specific preference :math:`\pi_{r,a}` of each
     site :math:`r` for each character :math:`a` using re-normalized
@@ -342,8 +340,9 @@ def inferPrefsByRatio(charlist, sites, wts, pre, post, errpre,
         For each site in `sites`, the rows give the preference
         for that character.
     """
-    assert len(wts) == len(sites) > 0    
-    assert pseudocount > 0, "pseudocounts must be greater than zero"
+    assert len(wts) == len(sites) > 0
+    assert all([wt in charlist for wt in wts]), "invalid char in wts"
+    assert pseudocount > 0, "pseudocount must be greater than zero"
 
     dfs = {'pre':pre.copy(),
            'post':post.copy()
@@ -352,17 +351,20 @@ def inferPrefsByRatio(charlist, sites, wts, pre, post, errpre,
         dfs['errpre'] = errpre.copy()
     if errpost is not None:
         dfs['errpost'] = errpost.copy()
-    for (dfname, df) in dfs.items():
+    for dfname in dfs.keys():
+        df = dfs[dfname]
         assert set(list(charlist) + ['site']) <= set(df.columns)
         assert set(sites) <= set(df['site'])
+        df = df.query('site in @sites')
+        assert len(df.index) == len(wts) == len(sites)
         df['site'] = pandas.Categorical(df['site'], sites)
         df.sort_values('site')
         df['Nr'] = df[charlist].sum(axis=1).astype('float')
         for c in charlist:
             df['f{0}'.format(c)] = (df[c] + pseudocount) / (
                     df['Nr'] + len(charlist) * pseudocount) 
-            df['delta{0}'.format(c)] = list(map(
-                    lambda wt: 1 if wt == c else 0, wts))
+            df['delta{0}'.format(c)] = [int(wt == c) for wt in wts]
+        dfs[dfname] = df
     # fill values for errpre / errpost if they were None
     for stype in ['pre', 'post']:
         err = 'err{0}'.format(stype)

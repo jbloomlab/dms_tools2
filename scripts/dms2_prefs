@@ -125,9 +125,43 @@ def main():
                 sites = sites[ : -1]
                 wts = wts[ : -1]
                 logger.info("Excluding the last site as it a stop codon.\n")
+            assert '*' not in wts, "wildtype of '*' for `--excludestop yes`"
+
+        # get list of characters
+        if args['chartype'] == 'codon_to_aa':
+            if args['excludestop'] == 'yes':
+                charlist = AAS
+            elif args['excludestop'] == 'no':
+                charlist = AAS_WITHSTOP
+            else:
+                raise ValueError("Invalid --excludestop")
+        else:
+            raise ValueError("Invalid chartype")
 
         if args['method'] == 'ratio':
-            raise ValueError("--method ratio not yet implemented")
+            logger.info("Computing preferences as normalized enrichment "
+                    "ratios...")
+            if args['chartype'] == 'codon_to_aa':
+                pre = dms_tools2.utils.codonToAACounts(counts['pre'])
+                post = dms_tools2.utils.codonToAACounts(counts['post'])
+                if error_model == 'same':
+                    errpre = errpost = dms_tools2.utils.codonToAACounts(
+                            counts['err'])
+                elif error_model == 'different':
+                    errpre = dms_tools2.utils.codonToAACounts(
+                            counts['errpre'])
+                    errpost = dms_tools2.utils.codonToAACounts(
+                            counts['errpost'])
+                else:
+                    assert error_model == 'none'
+                    errpre = errpost = None
+                wts = [CODON_TO_AA[wt] for wt in wts]
+            else:
+                raise ValueError("invalid chartype")
+            prefs = dms_tools2.prefs.inferPrefsByRatio(charlist, sites,
+                    wts, pre, post, errpre, errpost, int(args['pseudocount']))
+            logger.info("Writing preferences to {0}".format(files['prefs']))
+            prefs.to_csv(files['prefs'], index=False)
 
         elif args['method'] == 'bayesian':
             logger.info("Setting up for Bayesian inference of the prefs")
@@ -145,7 +179,7 @@ def main():
                     avgepsilon = counts['err'][['mutfreq{0}nt'.format(nmuts + 1) 
                             for nmuts in range(3)]].mean().values
                     avgmu -= avgepsilon.sum()
-                    logger.info("Average mutation and error rates:\n\t{0}\n\t{1}"
+                    logger.info("Avg mutation and error rates:\n\t{0}\n\t{1}"
                             .format(avgmu, avgepsilon))
                 elif error_model == 'different':
                     avgepsilon = counts['errpre'][['mutfreq{0}nt'.format(
@@ -196,12 +230,6 @@ def main():
                 priors = {}
                 if args['chartype'] == 'codon_to_aa':
                     wtaa = CODON_TO_AA[wt]
-                    if args['excludestop'] == 'yes':
-                        charlist = AAS
-                    elif args['excludestop'] == 'no':
-                        charlist = AAS_WITHSTOP
-                    else:
-                        raise ValueError("Invalid --excludestop")
                     for (ctype, df) in counts.items():
                         aacounts = dms_tools2.utils.codonToAACounts(
                                 df[df['site'] == r])
