@@ -415,7 +415,7 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
                 fontstyle='oblique')
     p = seaborn.PairGrid(df)
     p.map_lower(plt.scatter, s=22, alpha=0.35, color='black', 
-            marker='o', edgecolor='none')
+            marker='o', edgecolor='none', rasterized=True)
     p.map_lower(corrfunc)
     p.set(  xlim=(0, 1), 
             ylim=(0, 1), 
