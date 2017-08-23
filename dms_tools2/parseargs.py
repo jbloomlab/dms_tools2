@@ -178,7 +178,7 @@ def prefsParentParser():
             parents=[parentParser()],
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('--method', required=True, 
+    parser.add_argument('--method', default='bayesian', 
             choices=['ratio', 'bayesian'], help="Method to "
             "estimate preferences: normalized enrichment ratios "
             "or Bayesian inference.")
