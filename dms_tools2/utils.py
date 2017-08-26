@@ -14,6 +14,7 @@ import platform
 import importlib
 import logging
 import tempfile
+import numpy
 import pandas
 import HTSeq
 import dms_tools2
@@ -703,6 +704,68 @@ def annotateCodonCounts(counts):
             / df['ncounts'].astype('float')).fillna(0)
 
     return df
+
+
+def adjustErrorCounts(errcounts, counts, charlist, maxexcess):
+    """Adjust error counts to not greatly exceed counts of interest.
+
+    This function is useful when estimating preferences. Under the
+    model, the error-control should not have a higher rate of error
+    than the actual sample. However, this could happen if the experimental
+    data don't fully meet the assumptions. So this function scales
+    down the error counts in that case.
+
+    Args:
+        `errcounts` (pandas.DataFrame)
+            Holds counts for error control.
+        `counts` (pandas.DataFrame)
+            Holds counts for which we are correcting errors.
+        `charlist` (list)
+            Characters for which we have counts.
+        `maxexcess` (int)
+            Only let error-control counts exceed actual by this much.
+
+    Returns:
+        A copy of `errcounts` except for any non-wildtype character,
+        the maximum frequency of that character is adjusted to be
+        at most the number predicted by the frequency in `counts`
+        plus `maxexcess`.
+
+    >>> counts = pandas.DataFrame({'site':[1], 'wildtype':['A'], 
+    ...         'A':500, 'C':10, 'G':40, 'T':20})
+    >>> errcounts = pandas.DataFrame({'site':[1], 'wildtype':['A'],
+    ...         'A':250, 'C':1, 'G':30, 'T':10})
+    >>> charlist = ['A', 'C', 'G', 'T']
+    >>> errcounts = errcounts[['site', 'wildtype'] + charlist]
+    >>> adj_errcounts = adjustErrorCounts(errcounts, counts, charlist, 1)
+    >>> set(adj_errcounts.columns) == set(errcounts.columns)
+    True
+    >>> all(adj_errcounts['site'] == errcounts['site'])
+    True
+    >>> all(adj_errcounts['wildtype'] == errcounts['wildtype'])
+    True
+    >>> (adj_errcounts[adj_errcounts['site'] == 1][charlist].values[0]
+    ...         == numpy.array([250, 1, 21, 10])).all()
+    True
+    """
+    cols = counts.columns
+    counts = counts.sort_values('site')
+    errcounts = errcounts.sort_values('site')
+    assert all(counts['site'] == errcounts['site'])
+    assert all(counts['wildtype'] == errcounts['wildtype'])
+    counts['total'] = counts[charlist].sum(axis=1).astype('float')
+    errcounts['total'] = errcounts[charlist].sum(axis=1)
+    maxallowed = (counts[charlist].div(counts['total'], axis=0).multiply(
+            errcounts['total'], axis=0) + maxexcess).round().astype('int')
+    adj_errcounts = errcounts[charlist].where(errcounts[charlist] < maxallowed, 
+            maxallowed[charlist])
+    for c in charlist:
+        adj_errcounts[c] = adj_errcounts[c].where(counts['wildtype'] != c,
+                errcounts[c])
+    for col in cols:
+        if col not in charlist:
+            adj_errcounts[col] = counts[col]
+    return adj_errcounts[cols]
 
 
 if __name__ == '__main__':

@@ -230,10 +230,29 @@ def main():
                 priors = {}
                 if args['chartype'] == 'codon_to_aa':
                     wtaa = CODON_TO_AA[wt]
+                    aacounts = {}
                     for (ctype, df) in counts.items():
-                        aacounts = dms_tools2.utils.codonToAACounts(
+                        aacounts[ctype] = dms_tools2.utils.codonToAACounts(
                                 df[df['site'] == r])
-                        rcounts[ctype] = dict(aacounts[charlist].ix[0])
+                        aacounts[ctype]['wildtype'] = [wtaa]
+                    if error_model == 'same':
+                        aacounts['err'] = dms_tools2.utils.adjustErrorCounts(
+                                aacounts['err'], aacounts['pre'], charlist, 
+                                maxexcess=5) 
+                        aacounts['err'] = dms_tools2.utils.adjustErrorCounts(
+                                aacounts['err'], aacounts['pre'], charlist, 
+                                maxexcess=5) 
+                    elif error_model == 'different':
+                        aacounts['errpre'] = dms_tools2.utils.adjustErrorCounts(
+                                aacounts['errpre'], aacounts['pre'], charlist, 
+                                maxexcess=5) 
+                        aacounts['errpost'] = dms_tools2.utils.adjustErrorCounts(
+                                aacounts['errpost'], aacounts['pre'], charlist,
+                                maxexcess=5)
+                    else:
+                        assert error_model == 'none'
+                    rcounts = dict([(ctype, dict(aa[charlist].ix[0]))
+                            for (ctype, aa) in aacounts.items()])
                     priors = {}
                     for prior in ['mur_prior_params', 
                                 'epsilonr_prior_params',
