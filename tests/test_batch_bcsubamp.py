@@ -14,7 +14,7 @@ import pandas
 
 
 
-class test_bcsubamp(unittest.TestCase):
+class test_batch_bcsubamp(unittest.TestCase):
     """Runs ``dms2_batch_bcsubamp`` on test data."""
 
     def setUp(self):
