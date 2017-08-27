@@ -28,7 +28,13 @@ class StanModelNoneErr(object):
     """``pystan`` model when `error_model` is `none`.
     
     For use by inferSitePrefs`."""
-    def __init__(self):
+    def __init__(self, verbose=False):
+        """Compile ``pystan`` model.
+
+        Args:
+            `verbose` (bool)
+                Set to `True` if you want verbose compilation.
+        """
         self.pystancode =\
 """
 data {{
@@ -53,14 +59,21 @@ model {{
     nrpost ~ multinomial(fr);
 }}
 """.format(PRIOR_MIN_VALUE)
-        self.model = pystan.StanModel(model_code=self.pystancode)
+        self.model = pystan.StanModel(model_code=self.pystancode, 
+                verbose=verbose)
 
 
 class StanModelSameErr:
     """``pystan`` model when `error_model` is `same`.
     
     For use by inferSitePrefs`."""
-    def __init__(self):
+    def __init__(self, verbose=False):
+        """Compile ``pystan`` model.
+
+        Args:
+            `verbose` (bool)
+                Set to `True` if you want verbose compilation.
+        """
         self.pystancode =\
 """
 data {{
@@ -100,14 +113,21 @@ model {{
     nrpost ~ multinomial(fr_plus_err);
 }}
 """.format(PRIOR_MIN_VALUE)
-        self.model = pystan.StanModel(model_code=self.pystancode)
+        self.model = pystan.StanModel(model_code=self.pystancode,
+                verbose=verbose)
 
 
 class StanModelDifferentErr:
     """``pystan`` model when `error_model` is `different`.
     
     For use by inferSitePrefs`."""
-    def __init__(self):
+    def __init__(self, verbose=False):
+        """Compile ``pystan`` model.
+
+        Args:
+            `verbose` (bool)
+                Set to `True` if you want verbose compilation.
+        """
         self.pystancode =\
 """
 data {{
@@ -152,7 +172,8 @@ model {{
     nrpost ~ multinomial(fr_plus_err);
 }}
 """.format(PRIOR_MIN_VALUE)
-        self.model = pystan.StanModel(model_code=self.pystancode)
+        self.model = pystan.StanModel(model_code=self.pystancode,
+                verbose=verbose)
 
 
 def _initialValuePrefs(error_model, nchains, iwtchar, nchars):
