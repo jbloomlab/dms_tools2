@@ -55,7 +55,6 @@ class test_batch_prefs(unittest.TestCase):
                         for r in replicates],
                 'post':['mutvirus-{0}_codoncounts.csv'.format(r)
                         for r in replicates],
-                'err':['wtDNA_codoncounts.csv' for r in replicates]
                 })
         df.to_csv(batchfile, index=False)
 

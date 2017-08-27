@@ -6,20 +6,36 @@ import dms_tools2.prefs
 
 
 class test_pyStanModels(unittest.TestCase):
-    """Tests compilation of ``pystan`` models."""
+    """Compiles ``pystan`` models without error control."""
+
+    MODEL = dms_tools2.prefs.StanModelNoneErr
 
     def test_pystan_compilation(self):
         """Tests compilation of models."""
-
-        m = dms_tools2.prefs.StanModelNoneErr(verbose=True)
-        self.assertTrue(m is not None)
-    
-        m = dms_tools2.prefs.StanModelSameErr(verbose=True)
+        m = self.MODEL(verbose=True)
         self.assertTrue(m is not None)
 
-        m = dms_tools2.prefs.StanModelDifferentErr(verbose=True)
+
+class test_pyStanModels_Same(test_pyStanModels):
+    """Compiles ``pystan`` models 'same' error control."""
+
+    MODEL = dms_tools2.prefs.StanModelSameErr
+
+    def test_pystan_compilation(self):
+        """Tests compilation of models."""
+        m = self.MODEL(verbose=True)
         self.assertTrue(m is not None)
 
+
+class test_pyStanModels_Different(test_pyStanModels):
+    """Compiles ``pystan`` models 'different' error control."""
+
+    MODEL = dms_tools2.prefs.StanModelDifferentErr
+
+    def test_pystan_compilation(self):
+        """Tests compilation of models."""
+        m = self.MODEL(verbose=True)
+        self.assertTrue(m is not None)
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
