@@ -131,7 +131,7 @@ def main():
                     with open(flog) as flog_f:
                         lines = flog_f.readlines()
                     raise RuntimeError("Failed to create {0}.\nHere is end of "
-                            "{1}:\n{2}".format(f, flog, '\n'.join(lines[-15 : ])))
+                            "{1}:\n{2}".format(f, flog, '\n'.join(lines[-25 : ])))
 
         logger.info("Plotting correlations to {0}".format(files['corr']))
         dms_tools2.plot.plotCorrMatrix(batchruns['name'], 
