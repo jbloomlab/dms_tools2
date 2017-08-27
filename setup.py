@@ -58,7 +58,6 @@ setup(
         'matplotlib>=2.0.2',
         'plotnine>=0.2.1',
         'natsort>=5.0.3',
-        'cython>=0.25.2',
         'pystan>=2.16',
         'scipy>=0.18.1',
         'seaborn>=0.8',
