@@ -66,7 +66,7 @@ class test_batch_prefs(unittest.TestCase):
                 '--outdir', self.testdir,
                 '--indir', self.indir,
                 '--method', self.METHOD,
-                '--ncpus', 1,
+                '--ncpus', '1',
                ]
         sys.stderr.write('\nRunning the following command:\n{0}\n'.format(
                 ' '.join(cmds)))
