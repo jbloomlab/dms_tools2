@@ -84,7 +84,10 @@ class test_batch_prefs(unittest.TestCase):
             expected_df = pandas.read_csv(expected, index_col='site')
             for c in actual_df.columns:
                 self.assertTrue(numpy.allclose(actual_df[c].values,
-                        expected_df[c].values))
+                        expected_df[c].values, atol=0.02),
+                        '{0}, {1}, {2}'.format(self.METHOD, c,
+                        numpy.abs(actual_df[c].values - 
+                        expected_df[c].values).max()))
 
 
 class test_batch_prefs_ratio(test_batch_prefs):

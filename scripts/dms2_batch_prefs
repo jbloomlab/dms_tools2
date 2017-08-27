@@ -124,9 +124,14 @@ def main():
                 ]:
             batchruns[filename] = (args['outdir'] + '/' + batchruns['name'] +
                     filesuffix)
-            assert all(map(os.path.isfile, batchruns[filename].values)),\
-                    "Did not create all of these files:\n{0}".format(
-                    '\n'.join(batchruns[filename].values))
+            for f in batchruns[filename]:
+                if not os.path.isfile(f):
+                    flog = f.replace(filesuffix, '.log')
+                    assert os.path.isfile(flog), "Didn't create {0}".format(flog)
+                    with open(flog) as flog_f:
+                        lines = flog_f.readlines()
+                    raise RuntimeError("Failed to create {0}.\nHere is end of "
+                            "{1}:\n{2}".format(f, flog, '\n'.join(lines[-15 : ])))
 
         logger.info("Plotting correlations to {0}".format(files['corr']))
         dms_tools2.plot.plotCorrMatrix(batchruns['name'], 
