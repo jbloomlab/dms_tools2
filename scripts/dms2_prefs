@@ -26,8 +26,6 @@ def main():
     prog = parser.prog
 
     # set up names of output files
-    assert re.search('^[a-zA-Z0-9\-]+$', args['name']), \
-            "--name should contain only letters, numbers, and dashes"
     if args['outdir']:
         if not os.path.isdir(args['outdir']):
             os.mkdir(args['outdir'])
@@ -51,6 +49,9 @@ def main():
 
     # log in try / except / finally loop
     try:
+
+        assert re.search('^[a-zA-Z0-9\-]+$', args['name']), \
+                "--name should contain only letters, numbers, and dashes"
 
         # remove expected output files if they already exist
         for (ftype, f) in files.items():
