@@ -1,0 +1,512 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Amino-acid preferences &#8212; dms_tools2 2.0a0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0a0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Executable programs" href="programs.html" />
+    <link rel="prev" title="Barcoded-subamplicon sequencing" href="bcsubamp.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="amino-acid-preferences">
+<span id="prefs"></span><h1>Amino-acid preferences<a class="headerlink" href="#amino-acid-preferences" title="Permalink to this headline">¶</a></h1>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><a class="reference internal" href="#overview" id="id3">Overview</a></li>
+<li><a class="reference internal" href="#what-are-amino-acid-preferences" id="id4">What are amino-acid preferences?</a></li>
+<li><a class="reference internal" href="#should-you-use-the-bayesian-or-ratio-method" id="id5">Should you use the <cite>bayesian</cite> or <cite>ratio</cite> method?</a></li>
+<li><a class="reference internal" href="#programs-to-analyze-the-data-and-examples" id="id6">Programs to analyze the data and examples</a></li>
+<li><a class="reference internal" href="#algorithm-to-infer-preferences-when-using-method-bayesian" id="id7">Algorithm to infer preferences when using <code class="docutils literal"><span class="pre">--method</span> <span class="pre">bayesian</span></code></a></li>
+<li><a class="reference internal" href="#formula-to-calculate-preferences-with-method-ratio" id="id8">Formula to calculate preferences with <code class="docutils literal"><span class="pre">--method</span> <span class="pre">ratio</span></code></a></li>
+</ul>
+</div>
+<div class="section" id="overview">
+<h2><a class="toc-backref" href="#id3">Overview</a><a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>A common goal of a deep mutational scanning experiment is to estimate the effect of every amino-acid mutation on a protein’s function.
+For instance, you might want to assess how each mutation to a viral protein affects the virus’s ability to replicate in cell-culture.</p>
+<p>One way to quantify the effects of mutations is in terms of the <em>preference</em> of each site in the protein for each possible amino acid (<a class="reference internal" href="#prefssnippetfig"><span class="std std-numref">Fig. 3</span></a>).
+Essentially, highly preferred amino acids are enriched (or stay at the same frequency) after functional selection, whereas less preferred amino acid are depleted during functional selection.</p>
+<div class="figure align-center" id="id1" style="width: 65%">
+<span id="prefssnippetfig"></span><img alt="Logo plot visualization of amino-acid preferences." src="_images/PrefsSnippet.jpg" />
+<p class="caption"><span class="caption-number">Fig. 3 </span><span class="caption-text">Visualization of amino-acid preferences as created using <span class="xref std std-ref">dms2_logoplot</span>.
+The height of each letter is proportional to the preference for that amino acid at that site.
+For instance, site 84 prefers the negatively charged amino acids aspartic acid (D) and glutamic acid (E), whereas site 86 prefers the hydrophobic amino acids leucine (L) and isoleucine (I).</span></p>
+</div>
+<p>A nice aspect of quantifying the effects of mutations in terms of <em>amino-acid preferences</em> is that the deep mutational scanning data can then be directly used to model evolution in nature (see <a class="reference external" href="http://mbe.oxfordjournals.org/content/31/8/1956">Bloom (2014)</a> and <a class="reference external" href="https://biologydirect.biomedcentral.com/track/pdf/10.1186/s13062-016-0172-z?site=biologydirect.biomedcentral.com">Bloom (2017)</a>) using phylogenetics software like <a class="reference external" href="http://jbloomlab.github.io/phydms">phydms</a>.
+You can also estimate a <em>stringency parameter</em> that re-scales the preferences to better match the stringency of selection in nature (see <a class="reference external" href="https://peerj.com/articles/3657.pdf">Hilton et al (2017)</a> and the <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2016/analysis_notebook.ipynb">Doud2016 example</a>).</p>
+<p>The <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> software contains programs to estimate the amino-acid preferences from the counts of mutations generated from the deep sequencing data.
+Typically you would want to estimate these preferences using <a class="reference internal" href="dms2_batch_prefs.html#dms2-batch-prefs"><span class="std std-ref">dms2_batch_prefs</span></a>, which in turn calls <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a>.
+You then might visualize the preferences with <span class="xref std std-ref">dms2_logoplot</span> and / or compare them to natural evolution using <a class="reference external" href="http://jbloomlab.github.io/phydms">phydms</a>.</p>
+<p>The <a class="reference internal" href="examples.html#examples"><span class="std std-ref">Examples</span></a> include some analyses of this type of deep-sequencing data; for instance see the <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2016/analysis_notebook.ipynb">Doud2016 example</a>.</p>
+</div>
+<div class="section" id="what-are-amino-acid-preferences">
+<h2><a class="toc-backref" href="#id4">What are amino-acid preferences?</a><a class="headerlink" href="#what-are-amino-acid-preferences" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="#prefsworkflowfig"><span class="std std-numref">Fig. 4</span></a> shows a schematic of how the amino-acid preferences are related to the counts of different mutations in deep mutational scanning.
+Specifically, we can imagine calculating the <a class="reference external" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3232369/">enrichment ratio</a> of each mutation relative to wildtype both pre-selection and post-selection.
+Let <span class="math">\(E_{r,a}\)</span> be the enrichment ratio for amino acid <span class="math">\(a\)</span> at site <span class="math">\(r\)</span>.
+Then conceptually, the preference <span class="math">\(\pi_{r,a}\)</span> for amino acid <span class="math">\(a\)</span> at site <span class="math">\(r\)</span> is simply obtained by normalizing all the enrichment ratios at that site: <span class="math">\(\pi_{r,a} = \frac{E_{r,a}}{\sum_{a'} E_{r,a'}}\)</span>.
+This is shown in <a class="reference internal" href="#prefsworkflowfig"><span class="std std-numref">Fig. 4</span></a>.</p>
+<div class="figure align-center" id="id2" style="width: 60%">
+<span id="prefsworkflowfig"></span><img alt="Schematic of amino-acid preferences." src="_images/PrefsWorkflow.jpg" />
+<p class="caption"><span class="caption-number">Fig. 4 </span><span class="caption-text">Schematic of amino-acid preferences.
+The experiment measures the frequency of each amino-acid before and after selection.
+Imagine computing the enrichment of the mutation post-selection versus pre-selection.
+These enrichment ratios can be displayed in a heat map.
+However, <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a> does not make these heat maps: instead it <strong>normalizes</strong> the enrichment of all amino acids at each site to calculate the preferences.
+These can be displayed in a logo plot.
+Note that the exact equation in this figure is used by <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a> only if you use <code class="docutils literal"><span class="pre">--method</span> <span class="pre">ratio</span></code> and do <strong>not</strong> include any error-control counts.
+If you use <code class="docutils literal"><span class="pre">--method</span> <span class="pre">bayesian</span></code>, a more sophisticated approach takes into account the statistical nature of the measurements.
+If you use <code class="docutils literal"><span class="pre">--err</span></code> and then controls that estimate error rates are also taken into account.</span></p>
+</div>
+<p>However, it can be desirable to use a more statistically founded approach to estimate the same quantities, as described in <a class="reference external" href="http://www.biomedcentral.com/content/pdf/s12859-015-0590-4.pdf">Bloom (2015)</a>.
+This more statistical treatment can be performed using the <code class="docutils literal"><span class="pre">--method</span> <span class="pre">bayesian</span></code> option to <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a>.
+You can also include controls that estimate the rate of errors in the samples.
+You can specify controls that estimate the rates of errors using the <code class="docutils literal"><span class="pre">--err</span></code> option to <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a>.
+Typically these controls would come from deep-sequencing a wildtype library, where all apparent mutations are assumed to arise from deep sequencing errors rather than being true mutations.
+These more sophisticated approaches estimate a quantity that asymptotically approaches the preferences estimated by the simple ratio approach if there are very large counts and no sequencing errors.</p>
+</div>
+<div class="section" id="should-you-use-the-bayesian-or-ratio-method">
+<h2><a class="toc-backref" href="#id5">Should you use the <cite>bayesian</cite> or <cite>ratio</cite> method?</a><a class="headerlink" href="#should-you-use-the-bayesian-or-ratio-method" title="Permalink to this headline">¶</a></h2>
+<p>Two different approaches for estimating the preferences are implemented in <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a> via the <code class="docutils literal"><span class="pre">--method</span></code> option: <code class="docutils literal"><span class="pre">bayesian</span></code> and <code class="docutils literal"><span class="pre">ratio</span></code>.</p>
+<p>Generally, <code class="docutils literal"><span class="pre">--method</span> <span class="pre">bayesian</span></code> should be more accurate.
+It also tends to handle the error controls (the <code class="docutils literal"><span class="pre">--err</span></code> option) better, particularly if the pre- and post-selection error controls are different.
+So if you are using error-controls (particularly different pre- and post-selection ones), you should probably use this method.
+The downside of <code class="docutils literal"><span class="pre">--method</span> <span class="pre">bayesian</span></code> is that it is fairly slow, and can lead to substantial run times of 5+ hours.</p>
+<p>Using <code class="docutils literal"><span class="pre">--method</span> <span class="pre">ratio</span></code> is very fast.
+If you do not have error controls, it will probably give fairly similar results to <code class="docutils literal"><span class="pre">--method</span> <span class="pre">bayesian</span></code>.
+Its performance might decay if there are error controls, especially if the pre- and post-selection ones are different.</p>
+<p>You can always run both methods and then compare the results (for instance, by using <cite>dms_tools2.plot.plotCorrMatrix</cite> as described in the <a class="reference internal" href="api.html#api"><span class="std std-ref">Python API</span></a>.</p>
+</div>
+<div class="section" id="programs-to-analyze-the-data-and-examples">
+<h2><a class="toc-backref" href="#id6">Programs to analyze the data and examples</a><a class="headerlink" href="#programs-to-analyze-the-data-and-examples" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> software contains programs to analyze the data generated by barcoded-subamplicon sequencing:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a> estimates amino-acid preferences from counts files.</li>
+<li><a class="reference internal" href="dms2_batch_prefs.html#dms2-batch-prefs"><span class="std std-ref">dms2_batch_prefs</span></a> runs <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a> on a set of samples and computes the correlations among samples. If you have multiple replicates, it is easier to use <a class="reference internal" href="dms2_batch_prefs.html#dms2-batch-prefs"><span class="std std-ref">dms2_batch_prefs</span></a> rather than runnning <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a> directly.</li>
+<li><span class="xref std std-ref">dms2_logoplot</span> can be used to create logo plots that visualize amino-acid preferences (potentially after re-scaling by a stringency parameter fit by <a class="reference external" href="http://jbloomlab.github.io/phydms">phydms</a>).</li>
+</ul>
+</div></blockquote>
+<p>Note also that <a class="reference external" href="http://jbloomlab.github.io/phydms">phydms</a> can be used to perform phylogenetic analyses with the amino-acid preferences estimated using <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a> / <a class="reference internal" href="dms2_batch_prefs.html#dms2-batch-prefs"><span class="std std-ref">dms2_batch_prefs</span></a>.</p>
+<p>Here are some example analyses:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2016/analysis_notebook.ipynb">Doud2016 example</a></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="algorithm-to-infer-preferences-when-using-method-bayesian">
+<h2><a class="toc-backref" href="#id7">Algorithm to infer preferences when using <code class="docutils literal"><span class="pre">--method</span> <span class="pre">bayesian</span></code></a><a class="headerlink" href="#algorithm-to-infer-preferences-when-using-method-bayesian" title="Permalink to this headline">¶</a></h2>
+<p>Here is a description of the algorithm that <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a> uses to infer the site-specific preferences when you use <code class="docutils literal"><span class="pre">--method</span> <span class="pre">bayesian</span></code>.
+This algorithm is detailed in <a class="reference external" href="http://www.biomedcentral.com/content/pdf/s12859-015-0590-4.pdf">Bloom (2015)</a>.</p>
+<div class="section" id="definition-of-the-site-specific-preferences">
+<h3>Definition of the site-specific preferences.<a class="headerlink" href="#definition-of-the-site-specific-preferences" title="Permalink to this headline">¶</a></h3>
+<p>We assume each site <span class="math">\(r\)</span> in our gene has a preference
+<span class="math">\(\pi_{r,x} \ge 0\)</span> for each character <span class="math">\(x\)</span>, where the
+characters can be nucleotides, codons, or amino acids. The preferences
+are defined as follows: if <span class="math">\(\mu_{r,x}\)</span> is the frequency of
+<span class="math">\(x\)</span> at <span class="math">\(r\)</span> in the mutant library pre-selection and
+<span class="math">\(f_{r,x}\)</span> is the frequency of <span class="math">\(x\)</span> in the library
+post-selection, then</p>
+<div class="math" id="equation-pirx">
+<span class="eqno">(1)<a class="headerlink" href="#equation-pirx" title="Permalink to this equation">¶</a></span>\[f_{r,x} = \frac{\mu_{r,x} \times \pi_{r,x}}{\sum_y \mu_{r,y} \times \pi_{r,y}}.\]</div>
+<p>This equation implies that <span class="math">\(1 = \sum_x \pi_{r,x}\)</span>.</p>
+</div>
+<div class="section" id="the-experimental-data-from-deep-sequencing">
+<h3>The experimental data from deep sequencing.<a class="headerlink" href="#the-experimental-data-from-deep-sequencing" title="Permalink to this headline">¶</a></h3>
+<p>We create mutant libraries such that each site <span class="math">\(r\)</span> is potentially
+mutated from the wildtype identity &nbsp;to any of the other possible
+characters. We use deep sequencing to count the appearances of each
+character <span class="math">\(x\)</span> at each site <span class="math">\(r\)</span> in this mutant library; since
+this sequencing is performed prior to selection for gene function, we
+refer to it as <em>pre</em>-selection. Let <span class="math">\(N_r^{\textrm{pre}}\)</span>&nbsp;be the total number of sequencing
+reads covering <span class="math">\(r\)</span>, and let <span class="math">\(n_{r,x}^{\textrm{pre}}\)</span> &nbsp;be the number that report <span class="math">\(x\)</span>
+(note that
+<span class="math">\(\mbox{$N_r^{\textrm{pre}}$}= \sum_x \mbox{$n_{r,x}^{\textrm{pre}}$}\)</span>).</p>
+<p>We impose an experimental selection on the mutant library with some
+biologically relevant pressure that favors some mutations and disfavor
+others. We then use deep sequencing to count the characters in this
+selected library; since this sequencing is performed after selection, we
+refer to it as <em>post</em>-selection. Let <span class="math">\(N_r^{\textrm{post}}\)</span>&nbsp;be the total number of sequencing
+reads covering <span class="math">\(r\)</span>, and let <span class="math">\(n_{r,x}^{\textrm{post}}\)</span>&nbsp;be the number that report <span class="math">\(x\)</span>
+(note that
+<span class="math">\(\mbox{$N_r^{\textrm{post}}$}= \sum_x \mbox{$n_{r,x}^{\textrm{post}}$}\)</span>).</p>
+<p>We allow for the possibility that the deep sequencing is not completely
+accurate; for instance, perhaps some of the reads that report a mutant
+character reflect a sequencing error rather than a true mutation. The
+rates of such errors can be quantified by control sequencing of the
+unmutated gene, so that any counts at <span class="math">\(r\)</span> of
+<span class="math">\(x \ne \mbox{$\operatorname{wt}\left(r\right)$}\)</span> reflect sequencing errors. It
+is possible that the error rates for sequencing the pre-selection and
+post-selection libraries are different, as for instance would arise in
+sequencing an RNA virus for which the post-selection libraries must be
+reverse-transcribed to DNA prior to sequencing. Let <span class="math">\(N_r^{\textrm{err,pre}}\)</span>&nbsp;be the total number
+of sequencing reads covering <span class="math">\(r\)</span> in the pre-selection error
+control, and let <span class="math">\(n_{r,x}^{\textrm{err,pre}}\)</span>&nbsp;be the number that report <span class="math">\(x\)</span> (note that
+<span class="math">\(\mbox{$N_r^{\textrm{err,pre}}$}= \sum_x \mbox{$n_{r,x}^{\textrm{err,pre}}$}\)</span>).
+Make similar definitions of <span class="math">\(N_r^{\textrm{err,post}}\)</span>&nbsp;and <span class="math">\(n_{r,x}^{\textrm{err,post}}\)</span>&nbsp;for the post-selection error control.</p>
+<p>For notational compactness, we define vectors that contain the counts of
+all characters at each site <span class="math">\(r\)</span> for each sample:
+<span class="math">\(\mbox{$\mathbf{n_r^{\textbf{pre}}}$}= \left(\cdots, \mbox{$n_{r,x}^{\textrm{pre}}$}, \cdots\right)\)</span>,
+<span class="math">\(\mbox{$\mathbf{n_r^{\textbf{post}}}$}= \left(\cdots, \mbox{$n_{r,x}^{\textrm{post}}$}, \cdots\right)\)</span>,
+<span class="math">\(\mbox{$\mathbf{n_r^{\textbf{err,pre}}}$}= \left(\cdots, \mbox{$n_{r,x}^{\textrm{err,pre}}$}, \cdots\right)\)</span>,
+and
+<span class="math">\(\mbox{$\mathbf{n_r^{\textbf{err,post}}}$}= \left(\cdots, \mbox{$n_{r,x}^{\textrm{err,post}}$}, \cdots\right)\)</span>.</p>
+</div>
+<div class="section" id="assumption-that-mutations-and-errors-are-rare">
+<h3>Assumption that mutations and errors are rare.<a class="headerlink" href="#assumption-that-mutations-and-errors-are-rare" title="Permalink to this headline">¶</a></h3>
+<p>The samples described above allow for the possibility of errors
+as well as the actual mutations.
+We assume that the the mutagenesis and error rates rate at each site are
+sufficiently low that most characters are wildtype, so for instance
+<span class="math">\(\mbox{$N_r^{\textrm{pre}}$}\sim \mbox{$n_{r,\operatorname{wt}\left(r\right)}^{\textrm{pre}}$}\gg \mbox{$n_{r,x}^{\textrm{pre}}$}\)</span>
+for all <span class="math">\(x \ne \mbox{$\operatorname{wt}\left(r\right)$}\)</span>, and
+<span class="math">\(\mbox{$N_r^{\textrm{err,pre}}$}\sim \mbox{$n_{r,\operatorname{wt}\left(r\right)}^{\textrm{err,pre}}$}\gg \mbox{$n_{r,x}^{\textrm{err,pre}}$}\)</span>
+for all <span class="math">\(x \ne \mbox{$\operatorname{wt}\left(r\right)$}\)</span>. This allows us to
+ignore as negligibly rare the possibility that the same site experiences
+both a mutation and an error in a single molecule, which simplifies the
+analysis below.</p>
+</div>
+<div class="section" id="actual-frequencies-and-likelihoods-of-observing-experimental-data">
+<h3>Actual frequencies and likelihoods of observing experimental data.<a class="headerlink" href="#actual-frequencies-and-likelihoods-of-observing-experimental-data" title="Permalink to this headline">¶</a></h3>
+<p>We have defined <span class="math">\(\mu_{r,x}\)</span> and <span class="math">\(f_{r,x}\)</span> as the frequencies
+of <span class="math">\(x\)</span> at site <span class="math">\(r\)</span> in the pre-selection and post-selection
+libraries, respectively. Also define <span class="math">\(\epsilon_{r,x}\)</span> to be the
+frequency at which <span class="math">\(r\)</span> is identified as <span class="math">\(x\)</span> in sequencing
+the error control for the pre-selection library, and let
+<span class="math">\(\rho_{r,x}\)</span> be the frequency at which <span class="math">\(r\)</span> is identified as
+<span class="math">\(x\)</span> in sequencing the error control for the post-selection
+library. For notational compactness, we define vectors of these
+frequencies for all characters at each site <span class="math">\(r\)</span>:
+<span class="math">\(\mbox{$\boldsymbol{\mathbf{\mu_r}}$}= \left(\cdots, \mu_{r,x}, \cdots\right)\)</span>,
+<span class="math">\(\mbox{$\boldsymbol{\mathbf{f_r}}$}= \left(\cdots, f_{r,x}, \cdots\right)\)</span>,
+<span class="math">\(\mbox{$\boldsymbol{\mathbf{\epsilon_r}}$}= \left(\cdots, \epsilon_{r,x}, \cdots\right)\)</span>,
+and
+<span class="math">\(\mbox{$\boldsymbol{\mathbf{\rho_r}}$}= \left(\cdots, \rho_{r,x}, \cdots\right)\)</span>.
+We also define
+<span class="math">\(\mbox{$\boldsymbol{\mathbf{\pi_r}}$}= \left(\cdots, \pi_{r,x}, \cdots\right)\)</span>.
+Note that Equation <a class="reference internal" href="#equation-pirx">(1)</a> implies that</p>
+<div class="math" id="equation-pir">
+<span class="eqno">(2)<a class="headerlink" href="#equation-pir" title="Permalink to this equation">¶</a></span>\[\mbox{$\boldsymbol{\mathbf{f_r}}$}= \frac{\mbox{$\boldsymbol{\mathbf{\mu_r}}$}\circ \mbox{$\boldsymbol{\mathbf{\pi_r}}$}}{\mbox{$\boldsymbol{\mathbf{\mu_r}}$}\cdot \mbox{$\boldsymbol{\mathbf{\pi_r}}$}}\]</div>
+<p>where <span class="math">\(\circ\)</span> is the <a class="reference external" href="http://en.wikipedia.org/wiki/Hadamard_product_(matrices)">Hadamard product</a>.</p>
+<p>Unless we exhaustively sequence every molecule in each library, the
+observed counts will not precisely reflect their actual frequencies in
+the libraries, since the deep sequencing only observes a sample of the
+molecules. If the deep sequencing represents a random sampling of a
+small fraction of a large library of molecules, then the likelihood of
+observing some specific set of counts will be multinomially distributed
+around the actual frequencies. So</p>
+<div class="math" id="equation-pr_nrpre">
+<span class="eqno">(3)<a class="headerlink" href="#equation-pr_nrpre" title="Permalink to this equation">¶</a></span>\[\Pr\left(\mbox{$\mathbf{n_r^{\textbf{pre}}}$}\mid \mbox{$N_r^{\textrm{pre}}$}, \mbox{$\boldsymbol{\mathbf{\mu_r}}$}, \mbox{$\boldsymbol{\mathbf{\epsilon_r}}$}\right) = \operatorname{Multinomial}\left(\mbox{$\mathbf{n_r^{\textbf{pre}}}$}; \mbox{$N_r^{\textrm{pre}}$}, \mbox{$\boldsymbol{\mathbf{\mu_r}}$}+ \mbox{$\boldsymbol{\mathbf{\epsilon_r}}$}- \mbox{$\boldsymbol{\mathbf{\delta_r}}$}\right)\]</div>
+<p>where <span class="math">\(\operatorname{Multinomial}\)</span> denotes the <a class="reference external" href="http://en.wikipedia.org/wiki/Multinomial_distribution">Multinomial</a> distribution,
+<span class="math">\(\mbox{$\boldsymbol{\mathbf{\delta_r}}$}= \left(\cdots, \delta_{x, \operatorname{wt}\left(r\right)}, \cdots\right)\)</span>
+is a vector for which the element corresponding to <span class="math">\(\operatorname{wt}\left(r\right)\)</span>&nbsp;is one and all other
+elements are zero (<span class="math">\(\delta_{xy}\)</span> is the <a class="reference external" href="http://en.wikipedia.org/wiki/Kronecker_delta">Kronecker delta</a>), and we
+have assumed that the probability that a site experiences both a
+mutation and an error is negligibly small. Similarly,</p>
+<div class="math" id="equation-pr_nrerrpre">
+<span class="eqno">(4)<a class="headerlink" href="#equation-pr_nrerrpre" title="Permalink to this equation">¶</a></span>\[\Pr\left(\mbox{$\mathbf{n_r^{\textbf{err,pre}}}$}\mid \mbox{$N_r^{\textrm{err,pre}}$}, \mbox{$\boldsymbol{\mathbf{\epsilon_r}}$}\right) = \operatorname{Multinomial}\left(\mbox{$\mathbf{n_r^{\textbf{err,pre}}}$}; \mbox{$N_r^{\textrm{err,pre}}$}, \mbox{$\boldsymbol{\mathbf{\epsilon_r}}$}\right)\]</div>
+<div class="math" id="equation-pr_nrerrpost">
+<span class="eqno">(5)<a class="headerlink" href="#equation-pr_nrerrpost" title="Permalink to this equation">¶</a></span>\[\Pr\left(\mbox{$\mathbf{n_r^{\textbf{err,post}}}$}\mid \mbox{$N_r^{\textrm{err,post}}$}, \mbox{$\boldsymbol{\mathbf{\rho_r}}$}\right) = \operatorname{Multinomial}\left(\mbox{$\mathbf{n_r^{\textbf{err,post}}}$}; \mbox{$N_r^{\textrm{err,post}}$}, \mbox{$\boldsymbol{\mathbf{\rho_r}}$}\right)\]</div>
+<div class="math" id="equation-pr_nrpost">
+<span class="eqno">(6)<a class="headerlink" href="#equation-pr_nrpost" title="Permalink to this equation">¶</a></span>\[\begin{split}\begin{eqnarray}
+\Pr\left(\mbox{$\mathbf{n_r^{\textbf{post}}}$}\mid \mbox{$N_r^{\textrm{post}}$}, \mbox{$\boldsymbol{\mathbf{\mu_r}}$}, \mbox{$\boldsymbol{\mathbf{\pi_r}}$}, \mbox{$\boldsymbol{\mathbf{\rho_r}}$}\right) &amp;=&amp; \operatorname{Multinomial}\left(\mbox{$\mathbf{n_r^{\textbf{post}}}$}; \mbox{$N_r^{\textrm{post}}$}, \mbox{$\boldsymbol{\mathbf{f_r}}$}+ \mbox{$\boldsymbol{\mathbf{\rho_r}}$}- \mbox{$\boldsymbol{\mathbf{\delta_r}}$}\right) \\
+&amp;=&amp; \operatorname{Multinomial}\left(\mbox{$\mathbf{n_r^{\textbf{post}}}$}; \mbox{$N_r^{\textrm{post}}$}, \frac{\mbox{$\boldsymbol{\mathbf{\mu_r}}$}\circ \mbox{$\boldsymbol{\mathbf{\pi_r}}$}}{\mbox{$\boldsymbol{\mathbf{\mu_r}}$}\cdot \mbox{$\boldsymbol{\mathbf{\pi_r}}$}} + \mbox{$\boldsymbol{\mathbf{\rho_r}}$}- \mbox{$\boldsymbol{\mathbf{\delta_r}}$}\right).
+\end{eqnarray}\end{split}\]</div>
+</div>
+<div class="section" id="priors-over-the-unknown-parameters">
+<h3>Priors over the unknown parameters.<a class="headerlink" href="#priors-over-the-unknown-parameters" title="Permalink to this headline">¶</a></h3>
+<p>We specify <a class="reference external" href="http://en.wikipedia.org/wiki/Dirichlet_distribution">Dirichlet</a> priors over the four parameter vectors for each
+site <span class="math">\(r\)</span>:</p>
+<div class="math" id="equation-pr_pir">
+<span class="eqno">(7)<a class="headerlink" href="#equation-pr_pir" title="Permalink to this equation">¶</a></span>\[\Pr\left(\boldsymbol{\mathbf{\pi_r}}\right) = \operatorname{Dirichlet}\left(\boldsymbol{\mathbf{\pi_r}}; \alpha_{\pi} \times \mathbf{1}\right)\]</div>
+<div class="math" id="equation-pr_mur">
+<span class="eqno">(8)<a class="headerlink" href="#equation-pr_mur" title="Permalink to this equation">¶</a></span>\[\Pr\left(\boldsymbol{\mathbf{\mu_r}}\right) = \operatorname{Dirichlet}\left(\boldsymbol{\mathbf{\mu_r}}; \alpha_{\mu} \times \mathcal{N}_x \times \boldsymbol{\mathbf{a_{r,\mu}}}\right)\]</div>
+<div class="math" id="equation-pr_epsilonr">
+<span class="eqno">(9)<a class="headerlink" href="#equation-pr_epsilonr" title="Permalink to this equation">¶</a></span>\[\Pr\left(\boldsymbol{\mathbf{\epsilon_r}}\right) = \operatorname{Dirichlet}\left(\boldsymbol{\mathbf{\epsilon_r}}; \alpha_{\epsilon} \times \mathcal{N}_x \times \boldsymbol{\mathbf{a_{r,\epsilon}}}\right)\]</div>
+<div class="math" id="equation-pr_rhor">
+<span class="eqno">(10)<a class="headerlink" href="#equation-pr_rhor" title="Permalink to this equation">¶</a></span>\[\Pr\left(\boldsymbol{\mathbf{\rho_r}}\right) = \operatorname{Dirichlet}\left(\boldsymbol{\mathbf{\rho_r}}; \alpha_{\rho} \times \mathcal{N}_x \times \boldsymbol{\mathbf{a_{r,\rho}}}\right)\]</div>
+<p>where <span class="math">\(\mathbf{1}\)</span> is a vector of ones, <span class="math">\(\mathcal{N}_x\)</span> is
+the number of characters (i.e. 64 for codons, 20 for amino acids, 4 for
+nucleotides), the <span class="math">\(\alpha\)</span> parameters (i.e. <span class="math">\(\alpha_{\pi}\)</span>,
+<span class="math">\(\alpha_{\mu}\)</span>, <span class="math">\(\alpha_{\epsilon}\)</span>, and
+<span class="math">\(\alpha_{\rho}\)</span>) are scalar concentration parameters with values
+<span class="math">\(&gt; 0\)</span> specified by the user, and the <span class="math">\(\mathbf{a_r}\)</span> vectors
+have entries <span class="math">\(&gt; 0\)</span> that sum to one.</p>
+<p>We specify the prior vectors <span class="math">\(\mathbf{a_{r,\mu}}\)</span>, <span class="math">\(\mathbf{a_{r,\epsilon}}\)</span>, and <span class="math">\(\mathbf{a_{r,\rho}}\)</span>&nbsp;in terms of the average per-site mutation or error rates over the entire library.</p>
+<p>Our prior assumption is that the rate of sequencing errors depends on the number of nucleotides being changed – for nucleotide characters all mutations have only one nucleotide changed, but for codon characters there can be one, two, or three nucleotides changed.
+Specifically, the average per-site error rate for mutations with <span class="math">\(m\)</span> nucleotide changes <span class="math">\(\overline{\epsilon_m}\)</span> and <span class="math">\(\overline{\rho_m}\)</span> in the pre-selection and post-selection controls, respectively, are defined as</p>
+<div class="math" id="equation-avgepsilonm">
+<span class="eqno">(11)<a class="headerlink" href="#equation-avgepsilonm" title="Permalink to this equation">¶</a></span>\[\overline{\epsilon_m} = \frac{1}{L}\sum\limits_r \frac{1}{\mbox{$N_r^{\textrm{err,pre}}$}}\sum\limits_{x} \mbox{$n_{r,x}^{\textrm{err,pre}}$}\times \delta_{m,D_{x,\operatorname{wt}\left(r\right)}}\]</div>
+<div class="math" id="equation-avgrhom">
+<span class="eqno">(12)<a class="headerlink" href="#equation-avgrhom" title="Permalink to this equation">¶</a></span>\[\overline{\rho_m} = \frac{1}{L}\sum\limits_r \frac{1}{\mbox{$N_r^{\textrm{err,post}}$}}\sum\limits_{x} \mbox{$n_{r,x}^{\textrm{err,post}}$}\times \delta_{m,D_{x,\operatorname{wt}\left(r\right)}}\]</div>
+<p>where <span class="math">\(L\)</span> is the number of sites with deep mutational scanning data, <span class="math">\(r\)</span> ranges over all of these sites, <span class="math">\(x\)</span> ranges over all characters (nucleotides or codons), and <span class="math">\(D_{x,\operatorname{wt}\left(r\right)}\)</span> is the number of nucleotide differences between <span class="math">\(x\)</span> and the wildtype character <span class="math">\(\operatorname{wt}\left(r\right)\)</span>. Note that <span class="math">\(1 = \sum\limits_m \overline{\epsilon_m} = \sum\limits_m \overline{\rho_m}\)</span>.</p>
+<p>Given these definitions, we define the prior vectors for the error rates as</p>
+<div class="math" id="equation-arepsilon">
+<span class="eqno">(13)<a class="headerlink" href="#equation-arepsilon" title="Permalink to this equation">¶</a></span>\[\mbox{$\boldsymbol{\mathbf{a_{r,\epsilon}}}$} = \left(\cdots, \sum\limits_m \frac{\overline{\epsilon}_{m}}{\mathcal{C}_m} \times \delta_{m,D_{x,\operatorname{wt}\left(r\right)}},\cdots\right),\]</div>
+<div class="math" id="equation-arrho">
+<span class="eqno">(14)<a class="headerlink" href="#equation-arrho" title="Permalink to this equation">¶</a></span>\[\mbox{$\boldsymbol{\mathbf{a_{r,\rho}}}$} = \left(\cdots, \sum\limits_m \frac{\overline{\rho}_{m}}{\mathcal{C}_m} \times \delta_{m,D_{x,\operatorname{wt}\left(r\right)}}, \cdots\right)\]</div>
+<p>where <span class="math">\(\mathcal{C}_m\)</span> is the number of mutant characters with <span class="math">\(m\)</span> changes relative to the wildtype (so for nucleotides <span class="math">\(\mathcal{C}_0 = 1\)</span> and <span class="math">\(\mathcal{C}_1 = 3\)</span>, while for codons <span class="math">\(\mathcal{C}_0 = 1\)</span>, <span class="math">\(\mathcal{C}_1 = 9\)</span>, <span class="math">\(\mathcal{C}_2 = \mathcal{C}_3 = 27\)</span>) and <span class="math">\(\delta_{xy}\)</span> is again the <a class="reference external" href="http://en.wikipedia.org/wiki/Kronecker_delta">Kronecker delta</a>.</p>
+<p>Our prior assumption is that the mutagenesis is done so that all mutant characters are introduced at equal frequency – note that this assumption is only true for codon characters if the mutagenesis is done at the codon level. In estimating the mutagenesis rate, we need to account for the facts that the observed counts of non-wildtype characters in the pre-selection mutant library will be inflated by the error rate represented by <span class="math">\(\overline{\epsilon_m}\)</span>. We therefore estimate the per-site mutagenesis rate as</p>
+<div class="math" id="equation-avgmu">
+<span class="eqno">(15)<a class="headerlink" href="#equation-avgmu" title="Permalink to this equation">¶</a></span>\[\overline{\mu} = \left(\frac{1}{L}\sum\limits_r \frac{1}{\mbox{$N_r^{\textrm{pre}}$}}\sum\limits_{x\ne \operatorname{wt}\left(r\right)} \mbox{$n_{r,x}^{\textrm{pre}}$}\right) - \sum\limits_{m \ge 1} \overline{\epsilon_m}.\]</div>
+<p>Note that a value of <span class="math">\(\overline{\mu} \le 0\)</span> would suggest that mutations are no more prevalent (or actually less prevalent) in the pre-selection mutant library then the pre-selection error control. Such a situation would violate the assumptions of the experiment, and so the algorithm will halt if this is the case. The prior vector for the mutagenesis rate is then</p>
+<div class="math" id="equation-armu">
+<span class="eqno">(16)<a class="headerlink" href="#equation-armu" title="Permalink to this equation">¶</a></span>\[\mbox{$\boldsymbol{\mathbf{a_{r,\mu}}}$} = \left(\cdots, \frac{\overline{\mu}}{\mathcal{N}_x - 1} + \delta_{x,\operatorname{wt}\left(r\right)} \times \left[1 - \overline{\mu}\right] ,\cdots\right).\]</div>
+<p>Currently, <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a> is designed to work only for the case where the
+deep sequencing counts are for codon
+characters <span class="math">\(x\)</span>, but that we want to determine the preferences
+<span class="math">\(\pi_{r,a}\)</span> for amino-acid characters <span class="math">\(a\)</span>.
+(This is what the <code class="docutils literal"><span class="pre">--chartype</span> <span class="pre">codon_to_aa</span></code> option means in <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a>).
+This situation occurs
+if the mutant library is generated by
+introducing all possible codon mutations at each site and we are
+assuming that all selection acts at the protein level (so all codons
+for the same amino-acid should have the same preference). In this
+case, we define the vector-valued function <span class="math">\(\mathbf{A}\)</span> to map
+from codons to amino acids, so that</p>
+<div class="math" id="equation-A">
+<span class="eqno">(17)<a class="headerlink" href="#equation-A" title="Permalink to this equation">¶</a></span>\[\mathbf{A}\left(\mathbf{w}\right) = \left(\cdots, \sum\limits_x \delta_{a,\mathcal{A}\left(x\right)} \times w_x, \cdots\right)\]</div>
+<p>where <span class="math">\(\mathbf{w}\)</span> is a 64-element vector giving the values for
+each codon <span class="math">\(x\)</span>, <span class="math">\(\mathbf{A}\left(\mathbf{w}\right)\)</span> is a
+20-element vector giving the values for each amino acid <span class="math">\(a\)</span> (or
+a 21-element vector if stop codons are considered a possible
+amino-acid identity), and <span class="math">\(\mathcal{A}\left(x\right)\)</span> is the
+amino acid encoded by codon <span class="math">\(x\)</span>. The parameter vectors <span class="math">\(\boldsymbol{\mathbf{\pi_r}}\)</span>, <span class="math">\(\boldsymbol{\mathbf{\mu_r}}\)</span>, <span class="math">\(\boldsymbol{\mathbf{\epsilon_r}}\)</span>,
+and <span class="math">\(\boldsymbol{\mathbf{\rho_r}}\)</span> are then all of length 20 (or 21) for the amino acid vectors.
+The first of these vectors is still a symmetric <a class="reference external" href="http://en.wikipedia.org/wiki/Dirichlet_distribution">Dirichlet</a>, and the
+priors for the remaining three are
+<span class="math">\(\mathbf{A}\left(\mbox{$\boldsymbol{\mathbf{a_{r,\mu}}}$}\right)\)</span>,
+<span class="math">\(\mathbf{A}\left(\mbox{$\boldsymbol{\mathbf{a_{r,\epsilon}}}$}\right)\)</span>,
+and
+<span class="math">\(\mathbf{A}\left(\mbox{$\boldsymbol{\mathbf{a_{r,\rho}}}$}\right)\)</span>
+for the <span class="math">\(\boldsymbol{\mathbf{a_{r,\mu}}}\)</span>, <span class="math">\(\boldsymbol{\mathbf{a_{r,\epsilon}}}\)</span>, and <span class="math">\(\boldsymbol{\mathbf{a_{r,\rho}}}\)</span>&nbsp;vectors defined for codons immediately above. The
+likelihoods are computed by similarly transforming the count vectors
+in Equations <a class="reference internal" href="#equation-pr_nrpre">(3)</a>, <a class="reference internal" href="#equation-pr_nrpost">(6)</a>,
+<a class="reference internal" href="#equation-pr_nrerrpre">(4)</a>, and <a class="reference internal" href="#equation-pr_nrerrpost">(5)</a> to
+<span class="math">\(\mathbf{A}\left(\mbox{$\mathbf{n_r^{\textbf{pre}}}$}\right)\)</span>,
+<span class="math">\(\mathbf{A}\left(\mbox{$\mathbf{n_r^{\textbf{post}}}$}\right)\)</span>,
+<span class="math">\(\mathbf{A}\left(\mbox{$\mathbf{n_r^{\textbf{err,pre}}}$}\right)\)</span>,
+and
+<span class="math">\(\mathbf{A}\left(\mbox{$\mathbf{n_r^{\textbf{err,post}}}$}\right)\)</span>.</p>
+</div>
+<div class="section" id="inferring-the-preferences-by-mcmc">
+<span id="mcmc-inference"></span><h3>Inferring the preferences by MCMC.<a class="headerlink" href="#inferring-the-preferences-by-mcmc" title="Permalink to this headline">¶</a></h3>
+<p>Given the sequencing data and the parameters that specify the priors,
+the posterior probability of any given set of the parameters <span class="math">\(\boldsymbol{\mathbf{\pi_r}}\)</span>, <span class="math">\(\boldsymbol{\mathbf{\mu_r}}\)</span>, <span class="math">\(\boldsymbol{\mathbf{\epsilon_r}}\)</span>,
+and <span class="math">\(\boldsymbol{\mathbf{\rho_r}}\)</span>
+is given by the product of Equations <a class="reference internal" href="#equation-pr_nrpre">(3)</a>,
+<a class="reference internal" href="#equation-pr_nrpost">(6)</a>, <a class="reference internal" href="#equation-pr_nrerrpre">(4)</a>,
+<a class="reference internal" href="#equation-pr_nrerrpost">(5)</a>, <a class="reference internal" href="#equation-pr_pir">(7)</a>, <a class="reference internal" href="#equation-pr_mur">(8)</a>,
+<a class="reference internal" href="#equation-pr_epsilonr">(9)</a>, and <a class="reference internal" href="#equation-pr_rhor">(10)</a>. We use <a class="reference external" href="http://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo">MCMC</a>
+implemented by <a class="reference external" href="http://pystan.readthedocs.org/en/latest/">PyStan</a>
+to sample from this posterior distribution. We
+monitor for convergence of the sampling of the site-specific preferences
+&nbsp;by running four chains, and ensuring that the mean over all <span class="math">\(\pi_{r,x}\)</span>
+values of the potential scale
+reduction statistic <span class="math">\(\hat{R}\)</span> of <a class="reference external" href="http://www.jstor.org/stable/2246093">GelmanRubin1992</a> is <span class="math">\(\le 1.1\)</span> and that the
+mean effective sample size is <span class="math">\(\ge 100\)</span>, or that <span class="math">\(\hat{R} \le 1.15\)</span> and the effective sample size is <span class="math">\(\ge 300\)</span>. We repeatedly increase the number of steps
+until convergence occurs. The inferred preferences are
+summarized by the posterior mean and median-centered 95% credible
+interval for each <span class="math">\(\pi_{r,x}\)</span>.</p>
+</div>
+</div>
+<div class="section" id="formula-to-calculate-preferences-with-method-ratio">
+<h2><a class="toc-backref" href="#id8">Formula to calculate preferences with <code class="docutils literal"><span class="pre">--method</span> <span class="pre">ratio</span></code></a><a class="headerlink" href="#formula-to-calculate-preferences-with-method-ratio" title="Permalink to this headline">¶</a></h2>
+<p>When using <code class="docutils literal"><span class="pre">--method</span> <span class="pre">ratio</span></code> in <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a>, we calculate the preferences as</p>
+<div class="math">
+\[\pi_{r,a} = \frac{\phi_{r,a}}{\sum_{a'} \phi_{r,a'}}\]</div>
+<p>where <span class="math">\(\phi_{r,a}\)</span> is the enrichment ratio of character
+<span class="math">\(a\)</span> relative to wildtype after selection.</p>
+<p>The actual definition of these enrichment ratios is somewhat
+complex due to the need to correct for errors and add a
+pseudocount. We have 4 sets of counts:</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>pre</cite>: pre-selection counts</li>
+<li><cite>post</cite>: post-selection counts</li>
+<li><cite>errpre</cite>: error-control for pre-selection counts</li>
+<li><cite>errpost</cite>: error-control for post-selection counts</li>
+</ul>
+</div></blockquote>
+<p>For each set of counts <span class="math">\(s\)</span>, let <span class="math">\(N_r^s\)</span> (e.g.,
+<span class="math">\(N_r^{pre}\)</span>) denote the total counts for this sample at
+site <span class="math">\(r\)</span>, and let <span class="math">\(n_{r,a}^{s}\)</span> (e.g.,
+<span class="math">\(n_{r,a}^{pre}\)</span>) denote the counts at that site for
+character <span class="math">\(a\)</span>.</p>
+<p>Because some of the counts are low, we add a pseudocount
+<span class="math">\(P\)</span> to each observation. With this pseudocount, the
+estimated frequency of character <span class="math">\(a\)</span> at site <span class="math">\(r\)</span>
+in sample <span class="math">\(s\)</span> is</p>
+<div class="math">
+\[f_{r,a}^s = \frac{n_{r,a}^s + P}{N_{r,a}^s + A \times P}\]</div>
+<p>where <span class="math">\(A\)</span> is the number of characters in the alphabet (e.g.,
+20 for amino acids without stop codons).</p>
+<p>The <strong>error-corrected</strong> estimates of the frequency of character
+<span class="math">\(a\)</span> before and after selection are then</p>
+<div class="math">
+\[ \begin{align}\begin{aligned}f_{r,a}^{before} &amp;= \max\left(\frac{P}{N_{r,a}^{pre} + A \times P},
+\; f_{r,a}^{pre} + \delta_{a,\rm{wt}\left(r\right)}
+- f_{r,a}^{errpre}\right)\\f_{r,a}^{after} &amp;= \max\left(\frac{P}{N_{r,a}^{post} + A \times P},
+\; f_{r,a}^{post} + \delta_{a,\rm{wt}\left(r\right)}
+- f_{r,a}^{errpost}\right)\end{aligned}\end{align} \]</div>
+<p>where <span class="math">\(\delta_{a,\rm{wt}\left(r\right)}\)</span> is the
+Kronecker-delta, equal to 1 if <span class="math">\(a\)</span> is the same as the
+wildtype character <span class="math">\(\rm{wt}\left(r\right)\)</span> at site
+<span class="math">\(r\)</span>, and 0 otherwise. We use the <span class="math">\(\max\)</span> operator
+to ensure that even if the error-control frequency exceeds
+the actual estimate, our estimated frequency never drops
+below the pseudocount over the depth of the uncorrected sample.</p>
+<p>Given these definitions, we then simply calculate the enrichment
+ratios as</p>
+<div class="math">
+\[\phi_{r,a} = \frac{\left(f_{r,a}^{after}\right) /
+\left(f_{r,\rm{wt}\left(r\right)}^{after}\right)}
+{\left(f_{r,a}^{before}\right) /
+\left(f_{r,\rm{wt}\left(r\right)}^{before}\right)}\]</div>
+<p>In the case where we are <strong>not</strong> using any error-controls, then
+we simply set
+<span class="math">\(f_{r,\rm{wt}}^{errpre} = f_{r,\rm{wt}}^{errpost}
+= \delta_{a,\rm{wt}\left(r\right)}\)</span>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Amino-acid preferences</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-are-amino-acid-preferences">What are amino-acid preferences?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#should-you-use-the-bayesian-or-ratio-method">Should you use the <cite>bayesian</cite> or <cite>ratio</cite> method?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#programs-to-analyze-the-data-and-examples">Programs to analyze the data and examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#algorithm-to-infer-preferences-when-using-method-bayesian">Algorithm to infer preferences when using <code class="docutils literal"><span class="pre">--method</span> <span class="pre">bayesian</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#formula-to-calculate-preferences-with-method-ratio">Formula to calculate preferences with <code class="docutils literal"><span class="pre">--method</span> <span class="pre">ratio</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="programs.html">Executable programs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="bcsubamp.html" title="previous chapter">Barcoded-subamplicon sequencing</a></li>
+      <li>Next: <a href="programs.html" title="next chapter">Executable programs</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/prefs.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

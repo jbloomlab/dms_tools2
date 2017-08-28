@@ -80,6 +80,12 @@ Multiple images are displayed side-by-side.</dd>
 </dd></dl>
 
 <dl class="function">
+<dt id="dms_tools2.parseargs.batch_prefsParser">
+<code class="descclassname">dms_tools2.parseargs.</code><code class="descname">batch_prefsParser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.parseargs.batch_prefsParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <cite>argparse.ArgumentParser</cite> for <code class="docutils literal"><span class="pre">dms2_batch_prefs</span></code>.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="dms_tools2.parseargs.bcsubampParentParser">
 <code class="descclassname">dms_tools2.parseargs.</code><code class="descname">bcsubampParentParser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.parseargs.bcsubampParentParser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parent parser for <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code> / <code class="docutils literal"><span class="pre">dms2_batch_bcsubamp</span></code>.</p>
@@ -101,6 +107,8 @@ Multiple images are displayed side-by-side.</dd>
 already added:</p>
 <blockquote class="last">
 <div><ul class="simple">
+<li><code class="docutils literal"><span class="pre">--outdir</span></code></li>
+<li><code class="docutils literal"><span class="pre">--ncpus</span></code></li>
 <li><code class="docutils literal"><span class="pre">--use_existing</span></code></li>
 <li><code class="docutils literal"><span class="pre">-v</span> <span class="pre">/</span> <span class="pre">--version</span></code></li>
 </ul>
@@ -126,21 +134,36 @@ on the <cite>dms_tools2</cite> package / version.</dd>
 </dl>
 </dd></dl>
 
+<dl class="function">
+<dt id="dms_tools2.parseargs.prefsParentParser">
+<code class="descclassname">dms_tools2.parseargs.</code><code class="descname">prefsParentParser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.parseargs.prefsParentParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parent parser for <code class="docutils literal"><span class="pre">dms2_prefs</span></code> / <code class="docutils literal"><span class="pre">dms2_batch_prefs</span></code>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.parseargs.prefsParser">
+<code class="descclassname">dms_tools2.parseargs.</code><code class="descname">prefsParser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.parseargs.prefsParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <cite>argparse.ArgumentParser</cite> for <code class="docutils literal"><span class="pre">dms2_prefs</span></code>.</p>
+</dd></dl>
+
 </div>
 <span class="target" id="module-dms_tools2.plot"></span><div class="section" id="plot">
 <h3>plot<a class="headerlink" href="#plot" title="Permalink to this headline">¶</a></h3>
 <p>Plotting functions for <code class="docutils literal"><span class="pre">dms_tools2</span></code>.</p>
-<p>The plotting is done with <code class="docutils literal"><span class="pre">plotnine</span></code>.</p>
-<p>The default <code class="docutils literal"><span class="pre">plotnine</span></code> color palette is <strong>not</strong> color-blind safe.
-Therefore, this module defines the constant <cite>COLOR_BLIND_PALETTE</cite>
-which gives the color-blind safe scale described here:
-<a class="reference external" href="http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/">http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/</a></p>
-<p>You can use this scale by adding the following to your plots:
+<p>Uses <a class="reference external" href="https://plotnine.readthedocs.io/en/stable">plotnine</a>
+and <a class="reference external" href="https://seaborn.pydata.org/index.html">seaborn</a>.</p>
+<dl class="data">
+<dt id="dms_tools2.plot.COLOR_BLIND_PALETTE">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">COLOR_BLIND_PALETTE</code><em class="property"> = ['#000000', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7']</em><a class="headerlink" href="#dms_tools2.plot.COLOR_BLIND_PALETTE" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/">color-blind safe palette</a>
+use by adding to your plots the following
 <cite>scale_fill_manual(COLOR_BLIND_PALETTE)</cite> or
 <cite>scale_color_manual(COLOR_BLIND_PALETTE)</cite>.</p>
+</dd></dl>
+
 <dl class="function">
 <dt id="dms_tools2.plot.latexSciNot">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">latexSciNot</code><span class="sig-paren">(</span><em>xlist</em>, <em>exp_cutoff=3</em>, <em>ddigits=1</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.plot.latexSciNot" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">latexSciNot</code><span class="sig-paren">(</span><em>xlist</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.plot.latexSciNot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts list of numbers to LaTex scientific notation.</p>
 <p>Useful for nice axis-tick formatting.</p>
 <dl class="docutils">
@@ -148,26 +171,21 @@ which gives the color-blind safe scale described here:
 <dd><dl class="first last docutils">
 <dt><cite>xlist</cite> (list)</dt>
 <dd>Numbers to format.</dd>
-<dt><cite>exp_cutoff</cite> (int)</dt>
-<dd>Convert to scientific notation if <cite>abs(math.log10(x))</cite> &gt;= this.</dd>
-<dt><cite>ddigits</cite> (int)</dt>
-<dd>Show at most this many digits after the decimal place, shows
-less if not needed to precisely express all numbers.</dd>
 </dl>
 </dd>
 <dt>Returns:</dt>
 <dd>List of latex scientific notation formatted strings.</dd>
 </dl>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">latexSciNot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3120</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">,</span> <span class="mf">0.000927</span><span class="p">])</span>
-<span class="go">[&#39;$0$&#39;, &#39;$3.0$&#39;, &#39;$3.1 \\times 10^{3}$&#39;, &#39;$0.1$&#39;, &#39;$9.3 \\times 10^{-4}$&#39;]</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">latexSciNot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3120</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0000927</span><span class="p">])</span>
+<span class="go">[&#39;$0$&#39;, &#39;$3$&#39;, &#39;$3.1 \\times 10^{3}$&#39;, &#39;$-9.3 \\times 10^{-5}$&#39;]</span>
 </pre></div>
 </div>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">latexSciNot</span><span class="p">([</span><span class="mf">0.001</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mf">1e6</span><span class="p">])</span>
-<span class="go">[&#39;$10^{-3}$&#39;, &#39;$1$&#39;, &#39;$10^{3}$&#39;, &#39;$10^{6}$&#39;]</span>
+<span class="go">[&#39;$0.001$&#39;, &#39;$1$&#39;, &#39;$10^{3}$&#39;, &#39;$10^{6}$&#39;]</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">latexSciNot</span><span class="p">([</span><span class="o">-</span><span class="mf">0.002</span><span class="p">,</span> <span class="mf">0.003</span><span class="p">])</span>
-<span class="go">[&#39;$-2 \\times 10^{-3}$&#39;, &#39;$3 \\times 10^{-3}$&#39;]</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">latexSciNot</span><span class="p">([</span><span class="o">-</span><span class="mf">0.002</span><span class="p">,</span> <span class="mf">0.003</span><span class="p">,</span> <span class="mf">0.000011</span><span class="p">])</span>
+<span class="go">[&#39;$-0.002$&#39;, &#39;$0.003$&#39;, &#39;$1.1 \\times 10^{-5}$&#39;]</span>
 </pre></div>
 </div>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">latexSciNot</span><span class="p">([</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">])</span>
@@ -183,7 +201,7 @@ less if not needed to precisely express all numbers.</dd>
 <dl class="function">
 <dt id="dms_tools2.plot.plotBCStats">
 <code class="descclassname">dms_tools2.plot.</code><code class="descname">plotBCStats</code><span class="sig-paren">(</span><em>names</em>, <em>bcstatsfiles</em>, <em>plotfile</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.plot.plotBCStats" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plots <cite>dms2_bcsubamp</cite> barcode statistics for a set of samples.</p>
+<dd><p>Plots <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code> barcode statistics for set of samples.</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
@@ -222,6 +240,38 @@ less if not needed to precisely express all numbers.</dd>
 </dd>
 <dt><cite>csvfile</cite> (str or <cite>None</cite>)</dt>
 <dd><cite>None</cite> or name of CSV file to which numerical data are written.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.plot.plotCorrMatrix">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotCorrMatrix</code><span class="sig-paren">(</span><em>names</em>, <em>infiles</em>, <em>plotfile</em>, <em>datatype</em>, <em>trim_unshared_sites=True</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.plot.plotCorrMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots correlations among replicates.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>names</cite> (list or series)</dt>
+<dd>Names of samples for which we plot statistics.</dd>
+<dt><cite>infiles</cite> (list or series)</dt>
+<dd>CSV files containing data. Format depends on <cite>datatype</cite>.</dd>
+<dt><cite>plotfile</cite> (str)</dt>
+<dd>Name of created PDF plot file.</dd>
+<dt><cite>datatype</cite> (str)</dt>
+<dd><dl class="first last docutils">
+<dt>Type of data for which we are plotting correlations:</dt>
+<dd><ul class="first last simple">
+<li><cite>prefs</cite>: in format returned by <code class="docutils literal"><span class="pre">dms2_prefs</span></code></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt><cite>trim_unshared_sites</cite> (bool)</dt>
+<dd>What if files in <cite>infiles</cite> don’t all have same sites?
+If <cite>True</cite>, trim unshared sites and just analyze ones
+shared among all files. If <cite>False</cite>, raise an error
+if unshared sites.</dd>
 </dl>
 </dd>
 </dl>
@@ -270,7 +320,7 @@ less if not needed to precisely express all numbers.</dd>
 <dl class="function">
 <dt id="dms_tools2.plot.plotReadStats">
 <code class="descclassname">dms_tools2.plot.</code><code class="descname">plotReadStats</code><span class="sig-paren">(</span><em>names</em>, <em>readstatfiles</em>, <em>plotfile</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.plot.plotReadStats" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plots <cite>dms2_bcsubamp</cite> read statistics for a set of samples.</p>
+<dd><p>Plots <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code> read statistics for a set of samples.</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
@@ -288,7 +338,7 @@ less if not needed to precisely express all numbers.</dd>
 <dl class="function">
 <dt id="dms_tools2.plot.plotReadsPerBC">
 <code class="descclassname">dms_tools2.plot.</code><code class="descname">plotReadsPerBC</code><span class="sig-paren">(</span><em>names</em>, <em>readsperbcfiles</em>, <em>plotfile</em>, <em>maxreads=10</em>, <em>maxcol=6</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.plot.plotReadsPerBC" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plots <cite>dms2_bcsubamp</cite> reads-per-barcode stats for set of samples.</p>
+<dd><p>Plots <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code> reads-per-barcode stats for set of samples.</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
@@ -309,9 +359,315 @@ of &gt;= this.</dd>
 </dd></dl>
 
 </div>
+<span class="target" id="module-dms_tools2.prefs"></span><div class="section" id="prefs">
+<h3>prefs<a class="headerlink" href="#prefs" title="Permalink to this headline">¶</a></h3>
+<p>Performs operations related to estimating site-specific amino-acid
+preferences.</p>
+<p>Uses <a class="reference external" href="https://pystan.readthedocs.io/en/latest">pystan</a>
+to perform MCMC for Bayesian inferences.</p>
+<dl class="data">
+<dt id="dms_tools2.prefs.PRIOR_MIN_VALUE">
+<code class="descclassname">dms_tools2.prefs.</code><code class="descname">PRIOR_MIN_VALUE</code><em class="property"> = 1e-07</em><a class="headerlink" href="#dms_tools2.prefs.PRIOR_MIN_VALUE" title="Permalink to this definition">¶</a></dt>
+<dd><p>minimum value for Dirichlet prior elements</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="dms_tools2.prefs.StanModelDifferentErr">
+<em class="property">class </em><code class="descclassname">dms_tools2.prefs.</code><code class="descname">StanModelDifferentErr</code><span class="sig-paren">(</span><em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.prefs.StanModelDifferentErr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p><code class="docutils literal"><span class="pre">pystan</span></code> model when <cite>error_model</cite> is <cite>different</cite>.</p>
+<p>For use by inferSitePrefs`.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="dms_tools2.prefs.StanModelNoneErr">
+<em class="property">class </em><code class="descclassname">dms_tools2.prefs.</code><code class="descname">StanModelNoneErr</code><span class="sig-paren">(</span><em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.prefs.StanModelNoneErr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p><code class="docutils literal"><span class="pre">pystan</span></code> model when <cite>error_model</cite> is <cite>none</cite>.</p>
+<p>For use by inferSitePrefs`.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="dms_tools2.prefs.StanModelSameErr">
+<em class="property">class </em><code class="descclassname">dms_tools2.prefs.</code><code class="descname">StanModelSameErr</code><span class="sig-paren">(</span><em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.prefs.StanModelSameErr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p><code class="docutils literal"><span class="pre">pystan</span></code> model when <cite>error_model</cite> is <cite>same</cite>.</p>
+<p>For use by inferSitePrefs`.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.prefs.inferPrefsByRatio">
+<code class="descclassname">dms_tools2.prefs.</code><code class="descname">inferPrefsByRatio</code><span class="sig-paren">(</span><em>charlist</em>, <em>sites</em>, <em>wts</em>, <em>pre</em>, <em>post</em>, <em>errpre</em>, <em>errpost</em>, <em>pseudocount</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.prefs.inferPrefsByRatio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Site-specific preferences from normalized enrichment ratios.</p>
+<p>Calculates site-specific preference <span class="math">\(\pi_{r,a}\)</span> of each
+site <span class="math">\(r\)</span> for each character <span class="math">\(a\)</span> using re-normalized
+enrichment ratios. This function accomplishes the same goal as
+<cite>inferSitePrefs</cite>, but is much simpler and faster, although less
+statistically rigorous in principle.</p>
+<p>Specifically, this function calculates the preferences as</p>
+<div class="math">
+\[\pi_{r,a} = \frac{\phi_{r,a}}{\sum_{a'} \phi_{r,a'}}\]</div>
+<p>where <span class="math">\(\phi_{r,a}\)</span> is the enrichment ratio of character
+<span class="math">\(a\)</span> relative to wildtype after selection.</p>
+<p>The actual definition of these enrichment ratios is somewhat
+complex due to the need to correct for errors and add a
+pseudocount. We have 4 sets of counts:</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>pre</cite>: pre-selection counts</li>
+<li><cite>post</cite>: post-selection counts</li>
+<li><cite>errpre</cite>: error-control for pre-selection counts</li>
+<li><cite>errpost</cite>: error-control for post-selection counts</li>
+</ul>
+</div></blockquote>
+<p>For each set of counts <span class="math">\(s\)</span>, let <span class="math">\(N_r^s\)</span> (e.g., 
+<span class="math">\(N_r^{pre}\)</span>) denote the total counts for this sample at
+site <span class="math">\(r\)</span>, and let <span class="math">\(n_{r,a}^{s}\)</span> (e.g., 
+<span class="math">\(n_{r,a}^{pre}\)</span>) denote the counts at that site for
+character <span class="math">\(a\)</span>.</p>
+<p>Because some of the counts are low, we add a pseudocount 
+<span class="math">\(P\)</span> to each observation. With this pseudocount, the 
+estimated frequency of character <span class="math">\(a\)</span> at site <span class="math">\(r\)</span>
+in sample <span class="math">\(s\)</span> is</p>
+<div class="math">
+\[f_{r,a}^s = \frac{n_{r,a}^s + P}{N_{r,a}^s + A \times P}\]</div>
+<p>where <span class="math">\(A\)</span> is the number of characters in the alphabet (e.g.,
+20 for amino acids without stop codons).</p>
+<p>The <strong>error-corrected</strong> estimates of the frequency of character
+<span class="math">\(a\)</span> before and after selection are then</p>
+<div class="math">
+\[ \begin{align}\begin{aligned}f_{r,a}^{before} &amp;= \max\left(\frac{P}{N_{r,a}^{pre} + A \times P},
+\; f_{r,a}^{pre} + \delta_{a,\rm{wt}\left(r\right)}
+- f_{r,a}^{errpre}\right)\\f_{r,a}^{after} &amp;= \max\left(\frac{P}{N_{r,a}^{post} + A \times P},
+\; f_{r,a}^{post} + \delta_{a,\rm{wt}\left(r\right)}
+- f_{r,a}^{errpost}\right)\end{aligned}\end{align} \]</div>
+<p>where <span class="math">\(\delta_{a,\rm{wt}\left(r\right)}\)</span> is the 
+Kronecker-delta, equal to 1 if <span class="math">\(a\)</span> is the same as the
+wildtype character <span class="math">\(\rm{wt}\left(r\right)\)</span> at site
+<span class="math">\(r\)</span>, and 0 otherwise. We use the <span class="math">\(\max\)</span> operator
+to ensure that even if the error-control frequency exceeds
+the actual estimate, our estimated frequency never drops
+below the pseudocount over the depth of the uncorrected sample.</p>
+<p>Given these definitions, we then simply calculate the enrichment 
+ratios as</p>
+<div class="math">
+\[\phi_{r,a} = \frac{\left(f_{r,a}^{after}\right) / 
+\left(f_{r,\rm{wt}\left(r\right)}^{after}\right)}
+{\left(f_{r,a}^{before}\right) / 
+\left(f_{r,\rm{wt}\left(r\right)}^{before}\right)}\]</div>
+<p>In the case where we are <strong>not</strong> using any error-controls, then
+we simply set 
+<span class="math">\(f_{r,\rm{wt}}^{errpre} = f_{r,\rm{wt}}^{errpost} 
+= \delta_{a,\rm{wt}\left(r\right)}\)</span>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>charlist</cite> (list)</dt>
+<dd>Valid characters (e.g., codons, amino acids, nts).</dd>
+<dt><cite>sites</cite> (list)</dt>
+<dd>Sites to analyze.</dd>
+<dt><cite>wts</cite> (list)</dt>
+<dd><cite>wts[r]</cite> is the wildtype character at site <cite>sites[r]</cite>.</dd>
+<dt><cite>pre</cite> (pandas.DataFrame)</dt>
+<dd>Gives pre-selection counts. Should have columns
+with names of ‘site’ and all characters in <cite>charlist</cite>.
+The rows give the counts of each character at that site.</dd>
+<dt><cite>post</cite> (pandas.DataFrame)</dt>
+<dd>Like <cite>pre</cite> but for post-selection counts.</dd>
+<dt><cite>errpre</cite> (<cite>None</cite> or pandas.DataFrame)</dt>
+<dd>Like <cite>pre</cite> but for pre-selection error-control counts,
+or <cite>None</cite> if there is no such control.</dd>
+<dt><cite>errpost</cite> (<cite>None</cite> or pandas.DataFrame)</dt>
+<dd>Like <cite>pre</cite> but for post-selection error-control counts,
+or <cite>None</cite> if there is no such control.</dd>
+<dt><cite>pseudocount</cite> (float or int)</dt>
+<dd>The pseudocount to add to each observation.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A pandas.DataFrame holding the preferences. The columns of
+this dataframe are ‘site’ and all characters in <cite>charlist</cite>.
+For each site in <cite>sites</cite>, the rows give the preference
+for that character.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.prefs.inferSitePrefs">
+<code class="descclassname">dms_tools2.prefs.</code><code class="descname">inferSitePrefs</code><span class="sig-paren">(</span><em>charlist</em>, <em>wtchar</em>, <em>error_model</em>, <em>counts</em>, <em>priors</em>, <em>seed=1</em>, <em>niter=10000</em>, <em>increasetries=5</em>, <em>n_jobs=1</em>, <em>r_max=1.1</em>, <em>neff_min=100</em>, <em>nchains=4</em>, <em>increasefac=2</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.prefs.inferSitePrefs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Infers site-specific preferences by MCMC for a specific site.</p>
+<p>Infer the site-specific preferences <span class="math">\(\pi_{r,a}\)</span> for some site
+<span class="math">\(r\)</span> for each character <span class="math">\(a\)</span> by integrating over the 
+posterior defined by the product of the following priors and 
+likelihoods, where <span class="math">\(\boldsymbol{\mathbf{\pi_r}}\)</span> indicates
+the vector of <span class="math">\(\pi_{r,a}\)</span> values for all characters:</p>
+<div class="math">
+\[ \begin{align}\begin{aligned}\Pr\left(\boldsymbol{\mathbf{\pi_r}}\right) 
+&amp;= \mathrm{Dirichlet}\left(\boldsymbol{\mathbf{a_{\pi,r}}}\right)\\\Pr\left(\boldsymbol{\mathbf{\mu_r}}\right) 
+&amp;= \mathrm{Dirichlet}\left(\boldsymbol{\mathbf{a_{\mu,r}}}\right)\\\Pr\left(\boldsymbol{\mathbf{\epsilon_r}}\right) 
+&amp;= \mathrm{Dirichlet}\left(\boldsymbol{\mathbf{a_{\epsilon,r}}}\right)\\\Pr\left(\boldsymbol{\mathbf{\rho_r}}\right) 
+&amp;= \mathrm{Dirichlet}\left(\boldsymbol{\mathbf{a_{\rho,r}}}\right)\\\Pr\left(\boldsymbol{\mathbf{n_r^{\rm{pre}}}} \mid \boldsymbol{\mathbf{\mu_r}}, \boldsymbol{\mathbf{\epsilon_r}}\right) 
+&amp;= \mathrm{Multinomial}\left(\boldsymbol{\mathbf{n_r^{\rm{pre}}}}; \boldsymbol{\mathbf{\mu_r}} + \boldsymbol{\mathbf{\epsilon_r}} - \boldsymbol{\mathbf{\delta_r}}\right)\\\Pr\left(\boldsymbol{\mathbf{n_r^{\rm{post}}}} \mid \boldsymbol{\mathbf{\mu_r}}, \boldsymbol{\mathbf{\epsilon_r}}\right) 
+&amp;= \mathrm{Multinomial}\left(\boldsymbol{\mathbf{n_r^{\rm{post}}}}; \frac{\boldsymbol{\mathbf{\mu_r}} \circ \boldsymbol{\mathbf{\pi_r}}}{\boldsymbol{\mathbf{\mu_r}} \cdot \boldsymbol{\mathbf{\pi_r}}} + \boldsymbol{\mathbf{\rho_r}} - \boldsymbol{\mathbf{\delta_r}}\right)\\\Pr\left(\boldsymbol{\mathbf{n_r^{\rm{err,pre}}}} \mid \boldsymbol{\mathbf{\epsilon_r}}\right) 
+&amp;= \mathrm{Multinomial}\left(\boldsymbol{\mathbf{n_r^{\rm{err,pre}}}}; \boldsymbol{\mathbf{\epsilon_r}}\right)\\\Pr\left(\boldsymbol{\mathbf{n_r^{\rm{err,post}}}} \mid \boldsymbol{\mathbf{\rho_r}}\right) 
+&amp;= \mathrm{Multinomial}\left(\boldsymbol{\mathbf{n_r^{\rm{err,post}}}}; \boldsymbol{\mathbf{\rho_r}}\right)\end{aligned}\end{align} \]</div>
+<p>where <span class="math">\(\boldsymbol{\mathbf{\delta_r}}\)</span> is a vector that is 
+zero except for a one at the element corresponding to the wildtype.</p>
+<p>The MCMC tries to guarantee convergence via the parameters specified
+by <cite>r_max</cite>, <cite>neff_min</cite>, <cite>nchains</cite>, <cite>niter</cite>, <cite>increasefac</cite>, 
+and <cite>increasetries</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>charlist</cite> (list)</dt>
+<dd>List of valid characters (e.g., codons, amino acids, nts).</dd>
+<dt><cite>wtchar</cite> (str)</dt>
+<dd>Wildtype character at the site.</dd>
+<dt><cite>error_model</cite> (str or object)</dt>
+<dd><p class="first">Specifies how errors are estimated. Passing error model
+objects is faster if calling this function repeatedly
+as they will not need to be compiled. Can be:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>The str <cite>none</cite> or instance of <cite>StanModelNoneErr</cite>:
+no errors (<span class="math">\(\boldsymbol{\mathbf{\epsilon_r}} = \boldsymbol{\mathbf{\rho_r}} = \mathbf{0}\)</span>)</li>
+<li>The str <cite>same</cite> or instance of <cite>StanModelSameErr</cite>: 
+same error rates  pre and post-selection 
+(<span class="math">\(\boldsymbol{\mathbf{\epsilon_r}} = \boldsymbol{\mathbf{\rho_r}}\)</span>).</li>
+<li>The str <cite>different</cite> or instance of <cite>StanModelDifferentErr</cite>: 
+different error rates pre- and post-selection
+(<span class="math">\(\boldsymbol{\mathbf{\epsilon_r}} \ne \boldsymbol{\mathbf{\rho_r}}\)</span>).</li>
+</ul>
+</div></blockquote>
+</dd>
+<dt><cite>counts</cite> (dict)</dt>
+<dd><p class="first">Deep sequencing counts. Each string key should specify
+a dict keyed by all characters in <cite>charlist</cite> with
+the values giving integer counts for that character. The keys:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li><cite>pre</cite>: <span class="math">\(\boldsymbol{\mathbf{n_r^{\rm{pre}}}}\)</span></li>
+<li><cite>post</cite>: <span class="math">\(\boldsymbol{\mathbf{n_r^{\rm{post}}}}\)</span></li>
+<li><em>err</em>: required if <cite>error_model</cite> is <cite>same</cite>, specifies
+<span class="math">\(\boldsymbol{\mathbf{n_r^{\rm{err,pre}}}} = \boldsymbol{\mathbf{n_r^{\rm{err,post}}}}\)</span></li>
+<li><cite>errpre</cite> and <cite>errpost</cite>: required if <cite>error_model</cite> is
+<cite>different</cite>, specify 
+<span class="math">\(\boldsymbol{\mathbf{n_r^{\rm{err,pre}}}}\)</span> and
+<span class="math">\(\boldsymbol{\mathbf{n_r^{\rm{err,post}}}}\)</span>.</li>
+</ul>
+</div></blockquote>
+</dd>
+<dt><cite>priors</cite> (dict)</dt>
+<dd><p class="first">Specifies parameter vectors for Dirichlet priors. Each string
+key should specify a dict keyed by all characters and values
+giving the prior for that character. Values less than 
+<cite>PRIOR_MIN_VALUE</cite> are set to <cite>PRIOR_MIN_VALUE</cite>. Keys are</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li><cite>pir_prior_params</cite>: <span class="math">\(\boldsymbol{\mathbf{a_{\pi,r}}}\)</span></li>
+<li><cite>mur_prior_params</cite>: <span class="math">\(\boldsymbol{\mathbf{a_{\mu,r}}}\)</span></li>
+<li><cite>epsilonr_prior_params</cite>: only required if <cite>error_model</cite> is 
+<cite>same</cite> or <cite>different</cite>, specifies 
+<span class="math">\(\boldsymbol{\mathbf{a_{\epsilon,r}}}\)</span></li>
+<li><cite>rhor_prior_params</cite> : only required if <cite>error_model</cite> is 
+<cite>different</cite>, specifies
+<span class="math">\(\boldsymbol{\mathbf{a_{\rho,r}}}\)</span></li>
+</ul>
+</div></blockquote>
+</dd>
+<dt><cite>seed</cite> (int)</dt>
+<dd>Random number seed for MCMC.</dd>
+<dt><cite>n_jobs</cite> (int)</dt>
+<dd>Number of CPUs to use, -1 means all available.</dd>
+<dt><cite>niter</cite>, <cite>increasetries</cite>, <cite>r_max</cite>, <cite>neff_min</cite>, <cite>nchains</cite>, <cite>increasefac</cite></dt>
+<dd>Specify MCMC convergence. They all have reasonable defaults.
+The MCMC is considered to have converged if the mean Gelman-Rubin R
+statistic (<a class="reference external" href="http://www.jstor.org/stable/2246093">http://www.jstor.org/stable/2246093</a>) over all 
+<span class="math">\(\pi_{r,x}\)</span> values &lt;= <cite>r_max</cite> and the mean effective sample
+size is &gt;= <cite>neff_min</cite>. The MCMC first runs with <cite>nchains</cite> chains
+and <cite>niter</cite> iterations. If it fails to converge, it increases
+the iterations by a factor of <cite>increasefac</cite> and tries again,
+and repeats until it converges or has tried <cite>increasetries</cite>
+times to increase the number of iterations. If the effective
+sample size exceeds 3 times <cite>neff_min</cite> then we allow
+R to be <cite>1 + 1.5 (r_max - 1)</cite>.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt>The tuple <cite>(converged, pi_means, pi_95credint, logstring)</cite> where:</dt>
+<dd><ul class="first last simple">
+<li><cite>converged</cite> is <cite>True</cite> if the MCMC converged, <cite>False</cite> otherwise.</li>
+<li><dl class="first docutils">
+<dt><cite>pi_means</cite> is dict keyed by characters in <cite>charlist</cite></dt>
+<dd>with the value giving the <span class="math">\(\pi_{r,a}\)</span>.</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>pi_95credint</cite> is dict keyed by characters, values are 2-tuples</dt>
+<dd>giving median-centered credible interval for <span class="math">\(\pi_{r,a}\)</span>.</dd>
+</dl>
+</li>
+<li><cite>logstring</cite> is a string describing MCMC run and convergence.</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
 <span class="target" id="module-dms_tools2.utils"></span><div class="section" id="utils">
 <h3>utils<a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h3>
 <p>Miscellaneous utilities for <code class="docutils literal"><span class="pre">dms_tools2</span></code>.</p>
+<dl class="function">
+<dt id="dms_tools2.utils.adjustErrorCounts">
+<code class="descclassname">dms_tools2.utils.</code><code class="descname">adjustErrorCounts</code><span class="sig-paren">(</span><em>errcounts</em>, <em>counts</em>, <em>charlist</em>, <em>maxexcess</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.utils.adjustErrorCounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adjust error counts to not greatly exceed counts of interest.</p>
+<p>This function is useful when estimating preferences. Under the
+model, the error-control should not have a higher rate of error
+than the actual sample. However, this could happen if the experimental
+data don’t fully meet the assumptions. So this function scales
+down the error counts in that case.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>errcounts</cite> (pandas.DataFrame)</dt>
+<dd>Holds counts for error control.</dd>
+<dt><cite>counts</cite> (pandas.DataFrame)</dt>
+<dd>Holds counts for which we are correcting errors.</dd>
+<dt><cite>charlist</cite> (list)</dt>
+<dd>Characters for which we have counts.</dd>
+<dt><cite>maxexcess</cite> (int)</dt>
+<dd>Only let error-control counts exceed actual by this much.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A copy of <cite>errcounts</cite> except for any non-wildtype character,
+the maximum frequency of that character is adjusted to be
+at most the number predicted by the frequency in <cite>counts</cite>
+plus <cite>maxexcess</cite>.</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">counts</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">:[</span><span class="s1">&#39;A&#39;</span><span class="p">],</span> 
+<span class="gp">... </span>        <span class="s1">&#39;A&#39;</span><span class="p">:</span><span class="mi">500</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span><span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span><span class="mi">40</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">:</span><span class="mi">20</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">errcounts</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">:[</span><span class="s1">&#39;A&#39;</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;A&#39;</span><span class="p">:</span><span class="mi">250</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span><span class="mi">30</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">:</span><span class="mi">10</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">charlist</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">errcounts</span> <span class="o">=</span> <span class="n">errcounts</span><span class="p">[[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">charlist</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">adj_errcounts</span> <span class="o">=</span> <span class="n">adjustErrorCounts</span><span class="p">(</span><span class="n">errcounts</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">charlist</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">set</span><span class="p">(</span><span class="n">adj_errcounts</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">errcounts</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">adj_errcounts</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">errcounts</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">adj_errcounts</span><span class="p">[</span><span class="s1">&#39;wildtype&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">errcounts</span><span class="p">[</span><span class="s1">&#39;wildtype&#39;</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">adj_errcounts</span><span class="p">[</span><span class="n">adj_errcounts</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">][</span><span class="n">charlist</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">... </span>        <span class="o">==</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">250</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">10</span><span class="p">]))</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
 <dl class="function">
 <dt id="dms_tools2.utils.alignSubamplicon">
 <code class="descclassname">dms_tools2.utils.</code><code class="descname">alignSubamplicon</code><span class="sig-paren">(</span><em>refseq</em>, <em>r1</em>, <em>r2</em>, <em>refseqstart</em>, <em>refseqend</em>, <em>maxmuts</em>, <em>maxN</em>, <em>chartype</em>, <em>use_cutils=True</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.utils.alignSubamplicon" title="Permalink to this definition">¶</a></dt>
@@ -399,26 +755,27 @@ Currently, the only allowable value is ‘codon’.</dd>
 
 <dl class="function">
 <dt id="dms_tools2.utils.annotateCodonCounts">
-<code class="descclassname">dms_tools2.utils.</code><code class="descname">annotateCodonCounts</code><span class="sig-paren">(</span><em>countsfile</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.utils.annotateCodonCounts" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets annotated <cite>pandas</cite> DataFrame from <code class="docutils literal"><span class="pre">*_codoncounts.csv</span></code> files.</p>
+<code class="descclassname">dms_tools2.utils.</code><code class="descname">annotateCodonCounts</code><span class="sig-paren">(</span><em>counts</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.utils.annotateCodonCounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets annotated <cite>pandas.DataFrame</cite> from codon counts.</p>
 <p>Some of the programs (e.g., <cite>dms2_bcsubamplicons</cite>) create 
 <code class="docutils literal"><span class="pre">*_codoncounts.csv</span></code> files when run with <code class="docutils literal"><span class="pre">--chartype</span> <span class="pre">codon</span></code>.
 These CSV files have columns indicating the <cite>site</cite> and <cite>wildtype</cite>
 codon, as well as a column for each codon giving the counts for that 
-codon. This function reads that file to return a <cite>pandas</cite> DataFrame
-where a variety of additional useful annotations have been added
-for each site.</p>
+codon. This function reads that file (or a <cite>pandas.DataFrame</cite> read
+from it) to return a <cite>pandas.DataFrame</cite> where a variety of additional
+useful annotations have been added.</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
-<dt><cite>countsfile</cite> (str)</dt>
-<dd>Name of existing codon counts file.</dd>
+<dt><cite>counts</cite> (str)</dt>
+<dd>Name of existing codon counts CSV file, or <cite>pandas.DataFrame</cite>
+holding counts.</dd>
 </dl>
 </dd>
 <dt>Returns:</dt>
 <dd><dl class="first last docutils">
 <dt><cite>df</cite> (<cite>pandas.DataFrame</cite>)</dt>
-<dd><p class="first">The DataFrame with the information in <cite>countsfile</cite> plus
+<dd><p class="first">The DataFrame with the information in <cite>counts</cite> plus
 the following added columns for each site:</p>
 <blockquote class="last">
 <div><p><cite>ncounts</cite> : number of counts at site</p>
@@ -431,6 +788,8 @@ the following added columns for each site:</p>
 <p><cite>n3nt</cite> : number of 3-nucleotide codon mutations</p>
 <p><cite>AtoC</cite>, <cite>AtoG</cite>, etc : number of each nucleotide mutation
 type among codon mutations with <strong>one</strong> nucleotide change.</p>
+<p><cite>mutfreq1nt</cite>, <cite>mutfreq2nt</cite>, <cite>mutfreq3nt</cite> : frequency
+of 1-, 2-, and 3-nucleotide codon mutations at site.</p>
 </div></blockquote>
 </dd>
 </dl>
@@ -467,6 +826,10 @@ type among codon mutations with <strong>one</strong> nucleotide change.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;GtoA&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">])</span>
 <span class="go">True</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;AtoC&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;mutfreq1nt&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span> <span class="o">/</span> <span class="mf">139.</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;mutfreq3nt&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">2</span> <span class="o">/</span> <span class="mf">110.</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -507,6 +870,51 @@ sites are returned as <code class="docutils literal"><span class="pre">N`</span>
 <span class="go">True</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">reads</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;CTGCATAT&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">buildReadConsensus</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;NTGCATAT&#39;</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.utils.codonToAACounts">
+<code class="descclassname">dms_tools2.utils.</code><code class="descname">codonToAACounts</code><span class="sig-paren">(</span><em>counts</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.utils.codonToAACounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes amino-acid counts <cite>pandas.DataFrame</cite> from codon counts.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>counts</cite> (<cite>pandas.DataFrame</cite>)</dt>
+<dd>Columns are the string <cite>site</cite> and all codons in
+<cite>dms_tools2.CODONS</cite>. Additional columns are allowed
+but ignored.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>aacounts</cite> (<cite>pandas.DataFrame</cite>)</dt>
+<dd>Columns are the string <cite>site</cite> and all amino acids
+in <cite>dms_tools.AAS_WITHSTOP</cite> with counts for each
+amino acid made by summing counts for encoding codons.</dd>
+</dl>
+</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;othercol&#39;</span><span class="p">:[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;ATG&#39;</span><span class="p">:[</span><span class="mi">105</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;GGG&#39;</span><span class="p">:[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">117</span><span class="p">],</span> <span class="s1">&#39;GGA&#39;</span><span class="p">:[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="s1">&#39;TGA&#39;</span><span class="p">:[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">codon</span> <span class="ow">in</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">CODONS</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">if</span> <span class="n">codon</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="n">d</span><span class="p">[</span><span class="n">codon</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">counts</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">aacounts</span> <span class="o">=</span> <span class="n">codonToAACounts</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;othercol&#39;</span> <span class="ow">in</span> <span class="n">aacounts</span><span class="o">.</span><span class="n">columns</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">aacounts</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">aacounts</span><span class="p">[</span><span class="s1">&#39;M&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">105</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">aacounts</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">137</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">aacounts</span><span class="p">[</span><span class="s1">&#39;*&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">aacounts</span><span class="p">[</span><span class="s1">&#39;V&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -727,17 +1135,48 @@ in Sanger ASCII encoding.</dd>
 <h3>dms_tools2<a class="headerlink" href="#dms-tools2" title="Permalink to this headline">¶</a></h3>
 <p>Python package for analyzing deep mutational scanning (DMS) data.</p>
 <p>See <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">http://jbloomlab.github.io/dms_tools2</a> for documentation.</p>
-<div class="section" id="package-level-constants">
-<h4>Package-level constants<a class="headerlink" href="#package-level-constants" title="Permalink to this headline">¶</a></h4>
-<p>The following constants are defined for the package:</p>
-<p><cite>AAS</cite> : alphabetized list of all 20 amino acids</p>
-<p><cite>AAS_WITHSTOP</cite> : like <cite>AAS</cite> but includes stop codon (<cite>*</cite>) at end</p>
-<p><cite>NTS</cite> : alphabetized list of all nucleotides</p>
-<p><cite>CODONS</cite> : alphabetized list of all codons</p>
-<p><cite>CODON_TO_AA</cite> : dict translating codons to amino acids</p>
-<p><cite>AA_TO_CODONS</cite> : dict back-translating amino acid to list of codons.</p>
-<p><cite>NTCOMPLEMENT</cite> : dict mapping each nucleotide to its complement.</p>
-</div>
+<dl class="data">
+<dt id="dms_tools2.AAS">
+<code class="descclassname">dms_tools2.</code><code class="descname">AAS</code><em class="property"> = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']</em><a class="headerlink" href="#dms_tools2.AAS" title="Permalink to this definition">¶</a></dt>
+<dd><p>alphabetized list of all 20 amino acids</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="dms_tools2.AAS_WITHSTOP">
+<code class="descclassname">dms_tools2.</code><code class="descname">AAS_WITHSTOP</code><em class="property"> = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y', '*']</em><a class="headerlink" href="#dms_tools2.AAS_WITHSTOP" title="Permalink to this definition">¶</a></dt>
+<dd><p>like <cite>AAS</cite> but includes stop codon (<code class="docutils literal"><span class="pre">*</span></code>) at end</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="dms_tools2.AA_TO_CODONS">
+<code class="descclassname">dms_tools2.</code><code class="descname">AA_TO_CODONS</code><em class="property"> = {'G': ['GGA', 'GGC', 'GGG', 'GGT'], 'L': ['CTA', 'CTC', 'CTG', 'CTT', 'TTA', 'TTG'], 'C': ['TGC', 'TGT'], 'S': ['AGC', 'AGT', 'TCA', 'TCC', 'TCG', 'TCT'], 'M': ['ATG'], 'I': ['ATA', 'ATC', 'ATT'], 'F': ['TTC', 'TTT'], 'V': ['GTA', 'GTC', 'GTG', 'GTT'], 'K': ['AAA', 'AAG'], 'D': ['GAC', 'GAT'], 'N': ['AAC', 'AAT'], 'H': ['CAC', 'CAT'], '*': ['TAA', 'TAG', 'TGA'], 'W': ['TGG'], 'P': ['CCA', 'CCC', 'CCG', 'CCT'], 'E': ['GAA', 'GAG'], 'A': ['GCA', 'GCC', 'GCG', 'GCT'], 'Y': ['TAC', 'TAT'], 'R': ['AGA', 'AGG', 'CGA', 'CGC', 'CGG', 'CGT'], 'Q': ['CAA', 'CAG'], 'T': ['ACA', 'ACC', 'ACG', 'ACT']}</em><a class="headerlink" href="#dms_tools2.AA_TO_CODONS" title="Permalink to this definition">¶</a></dt>
+<dd><p>dict back-translating amino acid to list of codons.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="dms_tools2.CODONS">
+<code class="descclassname">dms_tools2.</code><code class="descname">CODONS</code><em class="property"> = ['AAA', 'AAC', 'AAG', 'AAT', 'ACA', 'ACC', 'ACG', 'ACT', 'AGA', 'AGC', 'AGG', 'AGT', 'ATA', 'ATC', 'ATG', 'ATT', 'CAA', 'CAC', 'CAG', 'CAT', 'CCA', 'CCC', 'CCG', 'CCT', 'CGA', 'CGC', 'CGG', 'CGT', 'CTA', 'CTC', 'CTG', 'CTT', 'GAA', 'GAC', 'GAG', 'GAT', 'GCA', 'GCC', 'GCG', 'GCT', 'GGA', 'GGC', 'GGG', 'GGT', 'GTA', 'GTC', 'GTG', 'GTT', 'TAA', 'TAC', 'TAG', 'TAT', 'TCA', 'TCC', 'TCG', 'TCT', 'TGA', 'TGC', 'TGG', 'TGT', 'TTA', 'TTC', 'TTG', 'TTT']</em><a class="headerlink" href="#dms_tools2.CODONS" title="Permalink to this definition">¶</a></dt>
+<dd><p>alphabetized list of all codons</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="dms_tools2.CODON_TO_AA">
+<code class="descclassname">dms_tools2.</code><code class="descname">CODON_TO_AA</code><em class="property"> = {'GTT': 'V', 'TTA': 'L', 'TAT': 'Y', 'TGT': 'C', 'CAG': 'Q', 'GGG': 'G', 'ATT': 'I', 'ATG': 'M', 'CGA': 'R', 'CGT': 'R', 'TAA': '*', 'AAA': 'K', 'TTG': 'L', 'TGG': 'W', 'ACA': 'T', 'TCT': 'S', 'AGG': 'R', 'ACC': 'T', 'CTC': 'L', 'GAC': 'D', 'TAG': '*', 'TGC': 'C', 'ATA': 'I', 'CGG': 'R', 'TCA': 'S', 'GTG': 'V', 'TTC': 'F', 'CTT': 'L', 'GCC': 'A', 'TCC': 'S', 'TAC': 'Y', 'GTC': 'V', 'TTT': 'F', 'GGT': 'G', 'CCG': 'P', 'CCA': 'P', 'GAA': 'E', 'CAA': 'Q', 'GAG': 'E', 'GCA': 'A', 'ACG': 'T', 'TCG': 'S', 'AAG': 'K', 'ACT': 'T', 'AGC': 'S', 'AAC': 'N', 'CAT': 'H', 'ATC': 'I', 'CAC': 'H', 'AGA': 'R', 'AAT': 'N', 'AGT': 'S', 'TGA': '*', 'CTA': 'L', 'CGC': 'R', 'CTG': 'L', 'GTA': 'V', 'CCT': 'P', 'GGC': 'G', 'GCG': 'A', 'GAT': 'D', 'CCC': 'P', 'GGA': 'G', 'GCT': 'A'}</em><a class="headerlink" href="#dms_tools2.CODON_TO_AA" title="Permalink to this definition">¶</a></dt>
+<dd><p>dict translating codons to amino acids</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="dms_tools2.NTCOMPLEMENT">
+<code class="descclassname">dms_tools2.</code><code class="descname">NTCOMPLEMENT</code><em class="property"> = {'A': 'T', 'G': 'C', 'C': 'G', 'T': 'A', 'N': 'N'}</em><a class="headerlink" href="#dms_tools2.NTCOMPLEMENT" title="Permalink to this definition">¶</a></dt>
+<dd><p>dict mapping each nucleotide to its complement.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="dms_tools2.NTS">
+<code class="descclassname">dms_tools2.</code><code class="descname">NTS</code><em class="property"> = ['A', 'C', 'G', 'T']</em><a class="headerlink" href="#dms_tools2.NTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>alphabetized list of all nucleotides</p>
+</dd></dl>
+
 </div>
 </div>
 </div>

@@ -11,7 +11,7 @@ It is tailored to analyze libraries created using `comprehensive codon mutagenes
 
     * Process deep-sequencing data generated :ref:`bcsubamp`.
 
-    * Estimate the amino-acid preferences of a protein.
+    * Estimate the :ref:`prefs` of a protein.
 
     * Estimate differential selection when imposing a pressure such as antibody selection.
 
@@ -32,6 +32,7 @@ Contents
    installation
    examples
    bcsubamp
+   prefs
    programs
    api
    citations
