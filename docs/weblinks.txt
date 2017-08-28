@@ -44,3 +44,7 @@
 .. _`Dingens et al (2017)`: http://dx.doi.org/10.1016/j.chom.2017.05.003
 .. _`Haddox et al (2016)`: http://dx.doi.org/10.1371/journal.ppat.1006114
 .. _`Doud et al (2017)`: http://journals.plos.org/plospathogens/article?id=10.1371/journal.ppat.1006271
+.. _`Bloom (2015)`: http://www.biomedcentral.com/content/pdf/s12859-015-0590-4.pdf
+.. _`Bloom (2014)`: http://mbe.oxfordjournals.org/content/31/8/1956
+.. _`Bloom (2017)`: https://biologydirect.biomedcentral.com/track/pdf/10.1186/s13062-016-0172-z?site=biologydirect.biomedcentral.com
+.. _`Hilton et al (2017)`: https://peerj.com/articles/3657.pdf
