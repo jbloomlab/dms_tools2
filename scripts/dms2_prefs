@@ -236,22 +236,6 @@ def main():
                         aacounts[ctype] = dms_tools2.utils.codonToAACounts(
                                 df[df['site'] == r])
                         aacounts[ctype]['wildtype'] = [wtaa]
-                    if error_model == 'same':
-                        aacounts['err'] = dms_tools2.utils.adjustErrorCounts(
-                                aacounts['err'], aacounts['pre'], charlist, 
-                                maxexcess=5) 
-                        aacounts['err'] = dms_tools2.utils.adjustErrorCounts(
-                                aacounts['err'], aacounts['pre'], charlist, 
-                                maxexcess=5) 
-                    elif error_model == 'different':
-                        aacounts['errpre'] = dms_tools2.utils.adjustErrorCounts(
-                                aacounts['errpre'], aacounts['pre'], charlist, 
-                                maxexcess=5) 
-                        aacounts['errpost'] = dms_tools2.utils.adjustErrorCounts(
-                                aacounts['errpost'], aacounts['pre'], charlist,
-                                maxexcess=5)
-                    else:
-                        assert error_model == 'none'
                     rcounts = dict([(ctype, dict(aa[charlist].ix[0]))
                             for (ctype, aa) in aacounts.items()])
                     priors = {}
