@@ -78,6 +78,9 @@ It also tends to handle the error controls (the ``--err`` option) better, partic
 So if you are using error-controls (particularly different pre- and post-selection ones), you should probably use this method.
 The downside of ``--method bayesian`` is that it is fairly slow, and can lead to substantial run times of 5+ hours.
 
+Note also that the priors used by ``--method bayesian`` assume that your mutagenesis method attempted to introduce all types of codon mutations at equal frequencies (e.g., ``NNN`` libraries). 
+If you favored some codons during library construction (e.g., ``NNK`` libraries), then the current priors will not be correct.
+
 Using ``--method ratio`` is very fast.
 If you do not have error controls, it will probably give fairly similar results to ``--method bayesian``. 
 Its performance might decay if there are error controls, especially if the pre- and post-selection ones are different.
