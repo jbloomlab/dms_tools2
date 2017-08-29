@@ -91,7 +91,7 @@ def main():
                 "--name should contain only letters, numbers, and dashes"
 
         for (ftype, f) in files.items():
-            if os.path.isfile(f) and ftype != '.log':
+            if os.path.isfile(f) and ftype != 'log':
                 logger.info("Removing existing file {0}".format(f))
                 os.remove(f)
 
