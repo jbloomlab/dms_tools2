@@ -36,7 +36,7 @@ class test_batch_prefs(unittest.TestCase):
         # define output files
         self.outfiles = [os.path.join(self.testdir, 
                 self.summaryprefix + suffix) for suffix in
-                ['.log', '_prefscorr.pdf']]
+                ['.log', '_prefscorr.pdf', '_avgprefs.csv']]
 
         for f in self.outfiles:
             if os.path.isfile(f):
@@ -74,17 +74,17 @@ class test_batch_prefs(unittest.TestCase):
         for f in self.outfiles:
             self.assertTrue(os.path.isfile(f), "Failed to create {0}".format(f))
 
-        for r in replicates:
-            actual = os.path.join(self.testdir, 
-                    '{0}-replicate-{1}_prefs.csv'.format(self.METHOD, r))
+        for fbase in ['{0}-replicate-1_prefs.csv'.format(self.METHOD),
+                      '{0}-replicate-2_prefs.csv'.format(self.METHOD),
+                      '{0}_avgprefs.csv'.format(self.summaryprefix)]:
+            actual = os.path.join(self.testdir, fbase)
             self.assertTrue(os.path.isfile(actual), "No {0}".format(actual))
-            expected = os.path.join(self.indir,
-                    '{0}-replicate-{1}_prefs.csv'.format(self.METHOD, r))
+            expected = os.path.join(self.indir, fbase)
             actual_df = pandas.read_csv(actual, index_col='site')
             expected_df = pandas.read_csv(expected, index_col='site')
             for c in actual_df.columns:
                 self.assertTrue(numpy.allclose(actual_df[c].values,
-                        expected_df[c].values, atol=0.02),
+                        expected_df[c].values, atol=0.01),
                         '{0}, {1}, {2}'.format(self.METHOD, c,
                         numpy.abs(actual_df[c].values - 
                         expected_df[c].values).max()))
