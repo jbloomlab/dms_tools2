@@ -36,6 +36,7 @@ def main():
     filesuffixes = {
             'log':'.log',
             'corr':'_prefscorr.pdf',
+            'avgprefs':'_avgprefs.csv',
             }
     files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
             args['summaryprefix'], s))) for (f, s) in filesuffixes.items()])
@@ -133,9 +134,14 @@ def main():
                     raise RuntimeError("Failed to create {0}.\nHere is end of "
                             "{1}:\n{2}".format(f, flog, '\n'.join(lines[-25 : ])))
 
-        logger.info("Plotting correlations to {0}".format(files['corr']))
+        logger.info("Plotting correlations to {0}\n".format(files['corr']))
         dms_tools2.plot.plotCorrMatrix(batchruns['name'], 
                 batchruns['prefs'], files['corr'], datatype='prefs')
+
+        logger.info("Writing average preferences to {0}\n".format(
+                files['avgprefs']))
+        avgprefs = dms_tools2.utils.avgPrefs(batchruns['prefs'])
+        avgprefs.to_csv(files['avgprefs'], index=False)
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))

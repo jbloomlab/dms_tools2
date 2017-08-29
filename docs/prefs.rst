@@ -85,7 +85,7 @@ Using ``--method ratio`` is very fast.
 If you do not have error controls, it will probably give fairly similar results to ``--method bayesian``. 
 Its performance might decay if there are error controls, especially if the pre- and post-selection ones are different.
 
-You can always run both methods and then compare the results (for instance, by using `dms_tools2.plot.plotCorrMatrix` as described in the :ref:`api`.
+You can always run both methods and then compare the results (for instance, by using `dms_tools2.plot.plotCorrMatrix` function described in the :ref:`api`).
 
 
 Programs to analyze the data and examples

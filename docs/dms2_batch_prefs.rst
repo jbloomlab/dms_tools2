@@ -49,6 +49,13 @@ Results for each sample
 ++++++++++++++++++++++++++
 The program ``dms2_prefs`` is run on each sample specified by ``--batchfile``, so you will create all of the ``dms2_prefs`` :ref:`prefs_outputfiles`.
 
+Average preferences
++++++++++++++++++++++
+A file is created that holds the preferences averaged across all samples in ``--batchfile``.
+This file has the prefix specified by ``--summaryprefix``. 
+For instance, if you run ``dms2_batch_prefs`` with the arguments ``--outdir results --summaryprefix summary`` then the plot will be ``./results/summary_avgprefs.csv``.
+It has the same format as the preferences files created by ``dms2_prefs`` (see :ref:`prefs_outfiles`).
+
 Correlation plot
 +++++++++++++++++++++++++++++++++
 A plot is created that summarizes the correlation between the preferences for each sample in ``--batchfile``.
