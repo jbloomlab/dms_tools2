@@ -768,6 +768,55 @@ def adjustErrorCounts(errcounts, counts, charlist, maxexcess):
     return adj_errcounts[cols]
 
 
+def avgPrefs(prefsfiles):
+    """Gets average of site-specific preferences.
+
+    Args:
+        `prefsfiles` (list)
+            List of CSV files containing preferences, must all be
+            for same sites and characters.
+
+    Returns:
+        A `pandas.DataFrame` containing the average of the
+        preferences in `prefsfiles`. In this returned
+        data frame, `site` is the index
+
+    >>> tf1 = tempfile.NamedTemporaryFile
+    >>> tf2 = tempfile.NamedTemporaryFile
+    >>> with tf1(mode='w') as file1, tf2(mode='w') as file2:
+    ...     x = file1.write('site,A,C,G,T\\n'
+    ...                 '1,0.2,0.2,0.5,0.1\\n'
+    ...                 '2,0.3,0.3,0.3,0.1')
+    ...     file1.flush()
+    ...     x = file2.write('site,A,C,G,T\\n'
+    ...                 '1,0.4,0.1,0.1,0.4\\n'
+    ...                 '2,0.3,0.4,0.1,0.2')
+    ...     file2.flush()
+    ...     avg = avgPrefs([file1.name, file2.name])
+    >>> (avg['site'] == [1, 2]).all()
+    True
+    >>> numpy.allclose(avg['A'], [0.3, 0.3])
+    True
+    >>> numpy.allclose(avg['C'], [0.15, 0.35])
+    True
+    >>> numpy.allclose(avg['G'], [0.3, 0.2])
+    True
+    >>> numpy.allclose(avg['T'], [0.25, 0.15])
+    True
+    """
+    assert len(prefsfiles) >= 1
+    prefs = [pandas.read_csv(f, index_col='site').sort_index()
+            for f in prefsfiles]
+
+    # make sure all have the same columns in the same order
+    cols = prefs[0].columns
+    for i in range(len(prefs)):
+        assert set(cols) == set(prefs[i].columns)
+        prefs[i] = prefs[i][cols] 
+
+    return pandas.concat(prefs).groupby('site').mean().reset_index()
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
