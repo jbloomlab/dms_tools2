@@ -523,8 +523,8 @@ def codonToAACounts(counts):
 
     Args:
         `counts` (`pandas.DataFrame`)
-            Columns are the string `site` and all codons in
-            `dms_tools2.CODONS`. Additional columns are allowed
+            Columns are the string `site` `wildtype` and all codons
+            in `dms_tools2.CODONS`. Additional columns are allowed
             but ignored.
 
     Returns:
@@ -534,7 +534,8 @@ def codonToAACounts(counts):
             amino acid made by summing counts for encoding codons.
 
     >>> d = {'site':[1, 2], 'othercol':[0, 0], 'ATG':[105, 1],
-    ...         'GGG':[3, 117], 'GGA':[2, 20], 'TGA':[0, 1]}
+    ...         'GGG':[3, 117], 'GGA':[2, 20], 'TGA':[0, 1],
+    ...         'wildtype':['ATG', 'GGG']}
     >>> for codon in dms_tools2.CODONS:
     ...     if codon not in d:
     ...         d[codon] = [0, 0]
@@ -543,6 +544,8 @@ def codonToAACounts(counts):
     >>> 'othercol' in aacounts.columns
     False
     >>> all(aacounts['site'] == [1, 2])
+    True
+    >>> all(aacounts['wildtype'] == ['M', 'G'])
     True
     >>> all(aacounts['M'] == [105, 1])
     True
@@ -553,9 +556,11 @@ def codonToAACounts(counts):
     >>> all(aacounts['V'] == [0, 0])
     True
     """
-    d = dict([(key, []) for key in ['site'] + dms_tools2.AAS_WITHSTOP])
+    d = dict([(key, []) for key in ['site', 'wildtype'] + 
+            dms_tools2.AAS_WITHSTOP])
     for (i, row) in counts.iterrows():
         d['site'].append(row['site'])
+        d['wildtype'].append(dms_tools2.CODON_TO_AA[row['wildtype']])
         for aa in dms_tools2.AAS_WITHSTOP:
             d[aa].append(0)
         for c in dms_tools2.CODONS:
