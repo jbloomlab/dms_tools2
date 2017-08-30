@@ -44,6 +44,7 @@ def main():
             'codonmuttypes_csv':'_codonmuttypes.csv',
             'codonntchanges':'_codonntchanges.pdf',
             'singlentchanges':'_singlentchanges.pdf',
+            'cumulmutcounts':'_cumulmutcounts.pdf',
             }
     files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
             args['summaryprefix'], s))) for (f, s) in filesuffixes.items()])
@@ -161,12 +162,16 @@ def main():
                 batchruns['counts'], files['codonntchanges'],
                 classification='n_ntchanges')
 
-
         logger.info("Plotting frequencies of nucleotide changes in 1-"
                 "nucleotide mutations to {0}".format(files['singlentchanges']))
         dms_tools2.plot.plotCodonMutTypes(batchruns['name'],
                 batchruns['counts'], files['singlentchanges'],
                 classification='singlentchanges')
+
+        logger.info("Plotting fraction of mutations seen less than some "
+                "number of times to {0}".format(files['cumulmutcounts']))
+        dms_tools2.plot.plotCumulMutCounts(batchruns['name'],
+                batchruns['counts'], files['cumulmutcounts'], 'codon')
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))

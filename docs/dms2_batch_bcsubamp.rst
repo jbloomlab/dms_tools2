@@ -75,6 +75,8 @@ They will have the suffixes listed below:
 
     * ``_singlentchanges.pdf``: plot frequencies of different types of nucleotide mutations among codons with just one nucleotide change.
 
+    * ``_cumulmutcounts.pdf``: plot fraction of mutations that occur :math:`\leq` a given number of times.
+
 Examples and more detailed explanations of these plots can be found in the `Doud2016 example`_.
 
 Memory usage

@@ -276,6 +276,78 @@ def plotMutFreq(names, countsfiles, plotfile, maxcol=4):
     plt.clf()
 
 
+def plotCumulMutCounts(names, countsfiles, plotfile, chartype,
+        nmax=15, maxcol=6):
+    """Plot fraction of mutations seen <= some number of times.
+
+    For each set of counts in `countsfiles`, plot the fraction
+    of mutations seen greater than or equal to some number of
+    times. This is essentially a cumulative fraction plot.
+
+    Args:
+        `names` (list or series)
+            Names of samples for which we plot statistics.
+        `countsfiles` (list or series)
+            ``*_codoncounts.csv`` files of type created by ``dms2_bcsubamp``.
+        `plotfile` (str)
+            Name of created PDF plot file.
+        `chartype` (str)
+            The type of character in `countsfiles`.
+
+                - `codon` 
+
+        `nmax` (int)
+            Plot out to this number of mutation occurrences.
+        `maxcol` (int)
+            Number of columns in faceted plot.
+    """
+    assert len(names) == len(countsfiles) == len(set(names))
+    assert os.path.splitext(plotfile)[1].lower() == '.pdf'
+
+    counts = pandas.concat([pandas.read_csv(f).assign(name=name) for
+            (name, f) in zip(names, countsfiles)], ignore_index=True)
+
+    if chartype != 'codon':
+        raise ValueError("invalid chartype of {0}".format(chartype))
+
+    codoncounts = pandas.concat([pandas.read_csv(f).assign(name=name)
+            for (name, f) in zip(names, countsfiles)],
+            ignore_index=True).assign(character='codons')
+    assert set(dms_tools2.CODONS) <= set(codoncounts.columns)
+    codonmelt = codoncounts.melt(id_vars=['name', 'wildtype', 'character'], 
+            value_vars=dms_tools2.CODONS, value_name='counts',
+            var_name='codon')
+    codonmelt = codonmelt[codonmelt['codon'] != codonmelt['wildtype']]
+
+    aacounts = pandas.concat([dms_tools2.utils.codonToAACounts(
+            pandas.read_csv(f)).assign(name=name)
+            for (name, f) in zip(names, countsfiles)],
+            ignore_index=True).assign(character='amino acids')
+    assert set(dms_tools2.AAS_WITHSTOP) <= set(aacounts.columns)
+    aamelt = aacounts.melt(id_vars=['name', 'character', 'wildtype'], 
+            value_vars=dms_tools2.AAS_WITHSTOP, value_name='counts',
+            var_name='aa')
+    aamelt = aamelt[aamelt['aa'] != aamelt['wildtype']]
+
+    df = pandas.concat([codonmelt, aamelt], ignore_index=True)
+
+    maxcol = 4
+    ncol = min(maxcol, len(names))
+    nrow = math.ceil(len(names) / float(ncol))
+    p = (ggplot(df, aes('counts', color='character', linestyle='character'))
+            + stat_ecdf(geom='step', size=1)
+            + scale_x_continuous(limits=(0, nmax))
+            + facet_wrap('~name', ncol=ncol) 
+            + theme(figure_size=(2.25 * (0.6 + ncol), 1.3 * (0.5 + nrow)),
+                    legend_position='top', legend_direction='horizontal')
+            + labs(color="") 
+            + guides(color=guide_legend(title_position='left'))
+            + ylab('fraction $\leq$ this many counts')
+            )
+    p.save(plotfile)
+    plt.clf()
+
+
 def plotCodonMutTypes(names, countsfiles, plotfile,
         classification='aachange', csvfile=None):
     """Plot average frequency codon mutation types.
