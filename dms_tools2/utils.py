@@ -822,6 +822,58 @@ def avgPrefs(prefsfiles):
     return pandas.concat(prefs).groupby('site').mean().reset_index()
 
 
+def rescalePrefs(prefs, stringency):
+    """Re-scale amino acid preferences by stringency parameter.
+
+    If the initial preference of site :math:`r` for amino-acid 
+    :math:`a` is :math:`\pi_{r,a}`, then the re-scaled preference is
+
+    .. math::
+    
+        \\frac{\left(\pi_{r,a}\\right)^{\\beta}}{\sum_{a'} \left(\pi_{r,a'}\\right)}
+
+    where :math:`\\beta` is the stringency parameter.
+
+    Args:
+        `prefs` (pandas.DataFrame)
+            Columns are 'site' and then every character (e.g.,
+            amino acid).
+        `stringency` (float >= 0)
+            The stringency parameter.
+
+    Returns:
+        A data frame in the same format as `prefs` but with the
+        re-scaled preferences.
+
+    >>> prefs = pandas.DataFrame(dict(
+    ...         [('site', [1, 2]), ('A', [0.24, 0.03]), ('C', [0.04, 0.43])]
+    ...         + [(aa, [0.04, 0.03]) for aa in dms_tools2.AAS if
+    ...         aa not in ['A', 'C']]))
+    >>> numpy.allclose(1, prefs.drop('site', axis=1).sum(axis=1))
+    True
+    >>> rescaled = rescalePrefs(prefs, 1.0)
+    >>> all([numpy.allclose(prefs[c], rescaled[c]) for c in prefs.columns])
+    True
+    >>> rescaled2 = rescalePrefs(prefs, 2.0)
+    >>> all(rescaled2['site'] == prefs['site'])
+    True
+    >>> numpy.allclose(rescaled2['A'], [0.6545, 0.0045], atol=1e-3)
+    True
+    >>> numpy.allclose(rescaled2['C'], [0.0182, 0.9153], atol=1e-3)
+    True
+    """
+    assert set(prefs.drop('site', axis=1).select_dtypes(
+            include=[numpy.number]).columns) == set(
+            prefs.drop('site', axis=1).columns), ('Non-numeric '
+            'columns other than "site"')
+
+    chars = prefs.drop('site', axis=1).columns
+    rescaled = prefs[chars].pow(stringency)
+    rescaled = rescaled.divide(rescaled.sum(axis=1), axis='index')
+    rescaled['site'] = prefs['site']
+    return rescaled[prefs.columns]
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
