@@ -1,0 +1,221 @@
+#!python
+
+"""Makes sequence logo plots.
+
+Written by Jesse Bloom."""
+
+
+import sys
+import os
+import time
+import pandas
+import dms_tools2.parseargs
+
+
+
+def main():
+    """Main body of script."""
+
+    # Parse command line arguments
+    parser = dms_tools2.parseargs.logoplotParser()
+    args = vars(parser.parse_args())
+    prog = parser.prog
+
+    # what type of data are we plotting?
+    datatype = [args[x] for x in ['prefs', 'diffprefs'] if
+            args[x]]
+    assert len(datatype) == 1
+    datatype = datatype[0]
+
+    # define output file names
+    if args['outdir']:
+        if not os.path.isdir(args['outdir']):
+            os.mkdir(args['outdir'])
+    else:
+        args['outdir'] = ''
+    filesuffixes = {
+            'log':'.log',
+            'logo':'_{0}.pdf'.format(datatype),
+
+            }
+    files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
+            args['name'], s))) for (f, s) in filesuffixes.items()])
+
+    # do we need to proceed?
+    if args['use_existing'] == 'yes' and all(map(
+            os.path.isfile, files.values())):
+        print("Output files already exist and '--use_existing' is 'yes', "
+                "so exiting with no furhter action.")
+        sys.exit(0)
+
+    logger = dms_tools2.utils.initLogger(files['log'], prog, args)
+
+    # log in try / except / finally loop
+    try:
+        # remove expected output files if they already exist
+        for (ftype, f) in files.items():
+            if os.path.isfile(f) and ftype != 'log':
+                logger.info("Removing existing file {0}".format(f))
+            os.remove(f)
+
+        # some checking on arguments
+        assert re.search('^[a-zA-Z0-9\-]+$', args['name']), \
+                "--name should contain only letters, numbers, and dashes"
+        assert args['nperline'] >= 1
+        assert args['numberevery'] >= 1
+        assert args['stringency'] >= 0
+
+        # read data
+        logger.info("Reading {0} from file {1}".format(datatype, 
+                args[datatype]))
+        assert os.path.isfile(args[datatype]), "Can't find {0}".format(
+                args[datatype])
+        data = pandas.read_csv(args[datatype])
+        assert 'site' in data.columns, "no 'site' column"
+        sites = data['site'].values
+        if args['sortsites'] == 'yes':
+            sites = natsort.natsorted(sites)
+        elif args['sortsites'] != 'no':
+            raise ValueError("invalid --sortsites")
+
+        if datatype == 'prefs':
+            # logo plot of preferences
+
+            assert (set(['site'] + dms_tools2.AAS) <= set(data.columns) 
+                    <= set(['site'] + dms_tools2.AAS_WITHSTOP)), (
+                    "invalid columns in prefs file")
+            assert numpy.allclose(data.drop('site', axis=1).sum(axis=1),
+                    1, atol=1e-3), "prefs do not sum to 1 for each site"
+
+            if args['excludestop'] == 'yes':
+                data = data[['site'] + dms_tools2.AAS]
+                assert False, 'not implemented'
+            elif args['excludestop'] != 'no':
+                raise ValueError("invalid excludestop")
+
+            if args['stringency'] != 1:
+                logger.info("Re-scaling preferences by stringency "
+                    "parameter {0}".format(args['stringency']))
+            # rescale even if stringency = 1 to re-norm after excludestop
+            data = dms_tools2.utils.rescalePrefs(data, args['stringency'])
+
+        elif datatype == 'diffsel':
+            # logo plot of differential selection
+            raise RuntimeError('not yet implemented')
+
+        else:
+            raise ValueError("Invalid datatype {0}".format(datatype))
+
+    except:
+        logger.exception('Terminating {0} with ERROR.'.format(prog))
+        for (fname, fpath) in files.items():
+            if fname != 'log' and os.path.isfile(fpath):
+                logger.exception("Deleting file {0}".format(fpath))
+                os.remove(fpath)
+
+    else:
+        logger.info('Successful completion of {0}'.format(prog))
+
+    finally:
+        logging.shutdown()
+
+    # read data
+    try:
+        # try to read differential selection
+        datatype = 'diffsel'
+        expectedcolumns = set(['site', 'wt', 'mut', 'diffsel'])
+        diffsel = pandas.read_csv(args['infile'])
+        diffsel.fillna(0.0, inplace=True) # set diffsel to zero for any missing (NaN) values
+        if args['restrictdiffsel'] == 'positive':
+            diffsel['diffsel'][diffsel['diffsel'] < 0] = 0
+        elif args['restrictdiffsel'] == 'negative':
+            diffsel['diffsel'][diffsel['diffsel'] > 0] = 0
+        assert set(diffsel.columns.values) == expectedcolumns
+        sites = list(set(diffsel['site'].tolist()))
+        data = {}
+        for r in sites:
+            data[str(r)] = diffsel.loc[diffsel['site'] == r].set_index('mut')['diffsel'].to_dict()
+            if args['excludestop'] and '*' in data[str(r)]:
+                del data[str(r)]['*']
+        sites = [str(r) for r in sites]
+    finally:
+        pass
+
+    # now get y limits if using differential selection
+    ylimits = None
+    if datatype == 'diffsel':
+        alldiffsel = [diffsel]
+        if args['diffselheight']:
+            for fname in args['diffselheight']:
+                df = pandas.read_csv(fname)
+                df.fillna(0.0, inplace=True) # set diffsel to zero for any missing (NaN) values
+                if args['restrictdiffsel'] == 'positive':
+                    df['diffsel'][df['diffsel'] < 0] = 0
+                elif args['restrictdiffsel'] == 'negative':
+                    df['diffsel'][df['diffsel'] > 0] = 0
+                alldiffsel.append(df)
+        maxdiffsel = mindiffsel = 0
+        for idataframe in alldiffsel:
+            for r in set(idataframe['site'].tolist()):
+                maxdiffsel = max(maxdiffsel, sum(map(lambda x: max(0, x), idataframe.loc[idataframe['site'] == r]['diffsel'])))
+                mindiffsel = min(mindiffsel, sum(map(lambda x: min(0, x), idataframe.loc[idataframe['site'] == r]['diffsel'])))
+        yspread = maxdiffsel - mindiffsel
+        maxdiffsel += 0.02 * yspread
+        mindiffsel -= 0.02 * yspread
+        ylimits = (mindiffsel, maxdiffsel)
+    elif args['diffselheight']:
+        raise ValueError("Can't use --diffselheight if not using differential selectin")
+
+    # read overlays if they exist
+    if args['overlay1']:
+        [overlayfile1, overlayshortname1, overlaylongname1] = args['overlay1']
+        overlaydata1 = ReadOverlay(overlayfile1)
+        extrasites = set(overlaydata1.keys()) - set(sites)
+        if extrasites:
+            raise ValueError("Set of sites specified for overlay1 includes sites not in infile:\n%s" % str(extrasites))
+        overlay = [(overlaydata1, overlayshortname1, overlaylongname1)]
+        if args['overlay2']:
+            [overlayfile2, overlayshortname2, overlaylongname2] = args['overlay2']
+            assert overlayshortname1 != overlayshortname2, "overlay1 and overlay2 have the same SHORTNAME. This is not allowed."
+            overlaydata2 = ReadOverlay(overlayfile2)
+            extrasites = set(overlaydata2.keys()) - set(sites)
+            if extrasites:
+                raise ValueError("Set of sites specified for overlay2 includes sites not in infile:\n%s" % str(extrasites))
+            overlay.append((overlaydata2, overlayshortname2, overlaylongname2))
+            if args['overlay3']:
+                [overlayfile3, overlayshortname3, overlaylongname3] = args['overlay3']
+                assert overlayshortname2 != overlayshortname3, "overlay2 and overlay3 have the same SHORTNAME. This is not allowed."
+                overlaydata3 = ReadOverlay(overlayfile3)
+                extrasites = set(overlaydata3.keys()) - set(sites)
+                if extrasites:
+                    raise ValueError("Set of sites specified for overlay3 includes sites not in infile:\n%s" % str(extrasites))
+                overlay.append((overlaydata3, overlayshortname3, overlaylongname3))
+        elif args['overlay3']:
+            raise ValueError("You cannot specify --overlay3 unless you also specify --overlay2")
+    elif args['overlay2']:
+        raise ValueError("You cannot specify --overlay2 unless you also specify --overlay1")
+    else:
+        overlay = None
+
+    # use taller default letter stacks for differential selection
+    relativestackheight = {
+            'prefs':args['letterheight'],
+            'diffprefs':args['letterheight'],
+            'diffsel':2 * args['letterheight'],
+            }
+    
+    # make logo plot
+    dms_tools.weblogo.LogoPlot(sites, datatype, data, args['logoplot'], 
+            args['nperline'], numberevery=args['numberevery'], 
+            allowunsorted=True, ydatamax=args['diffprefheight'], 
+            overlay=overlay, ylimits=ylimits, 
+            relativestackheight=relativestackheight[datatype], 
+            custom_cmap=args['colormap'], map_metric=args['mapmetric'],
+            noseparator=args['nosepline'], overlay_cmap=args['overlay_cmap'])
+    assert os.path.isfile(args['logoplot']), "Failed to create %s" % args['logoplot']
+
+
+
+
+if __name__ == '__main__':
+    main() # run the script

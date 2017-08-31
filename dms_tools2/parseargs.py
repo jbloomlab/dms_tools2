@@ -253,6 +253,44 @@ def batch_prefsParser():
     return parser
 
 
+def logoplotParser():
+    """Returns `argparse.ArgumentParser` for ``dms2_logoplot``."""
+    parser = argparse.ArgumentParser(
+            description=parserDescription(
+                'Create logo plot visualization.'),
+            parents=[parentParser()],
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('--prefs', help='CSV file of amino-acid preferences.')
+    group.add_argument('--diffsel', help='CSV file of amino-acid '
+            'differential selection.')
+
+    parser.add_argument('--name', required=True, 
+            help='Name used for output files.')
+
+    parser.add_argument('--nperline', help='Number of sites per line.',
+            type=int, default=70)
+
+    parser.add_argument('--numberevery', type=int, default=10,
+            help='Number sites at this interval.')
+
+    parser.add_argument('--excludestop', choices=['yes', 'no'],
+            default='no', help='Exclude stop codons a possible amino '
+            'acid?')
+
+    parser.add_argument('--stringency', type=float, default=1,
+            help='Stringency parameter to re-scale prefs.')
+
+    parser.add_argument('--sortsites', choices=['yes', 'no'],
+            default='yes', help='Sort sites from first to last '
+            'before plotting.')
+
+
+    return parser
+
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()

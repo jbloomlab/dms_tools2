@@ -70,6 +70,7 @@ setup(
             'scripts/dms2_batch_bcsubamp',
             'scripts/dms2_prefs',
             'scripts/dms2_batch_prefs',
+            'scripts/dms2_logoplot',
             ],
     package_data = {'dms_tools2':['_weblogo_template.eps']}, 
     ext_modules = [
