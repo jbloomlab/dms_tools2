@@ -61,6 +61,7 @@ setup(
         'pystan>=2.16',
         'scipy>=0.18.1',
         'seaborn>=0.8',
+        'phydms>=2.0.5',
         ],
     platforms = 'Linux and Mac OS X).',
     packages = ['dms_tools2'],
@@ -72,7 +73,6 @@ setup(
             'scripts/dms2_batch_prefs',
             'scripts/dms2_logoplot',
             ],
-    package_data = {'dms_tools2':['_weblogo_template.eps']}, 
     ext_modules = [
             Extension('dms_tools2._cutils', ['dms_tools2/_cutils.c'])
             ],

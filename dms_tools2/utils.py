@@ -33,7 +33,7 @@ def sessionInfo():
             ]
     for modname in ['Bio', 'HTSeq', 'pandas', 'numpy', 'IPython',
             'matplotlib', 'plotnine', 'natsort', 'pystan', 'scipy',
-            'seaborn']:
+            'seaborn', 'phydmslib']:
         try:
             v = importlib.import_module(modname).__version__
             s.append('\t{0} version: {1}'.format(modname, v))
