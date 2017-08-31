@@ -7,10 +7,15 @@ Written by Jesse Bloom."""
 
 import sys
 import os
+import re
 import time
+import logging
+import natsort
+import numpy
 import pandas
+import phydmslib.weblogo
 import dms_tools2.parseargs
-
+import dms_tools2.utils
 
 
 def main():
@@ -22,8 +27,7 @@ def main():
     prog = parser.prog
 
     # what type of data are we plotting?
-    datatype = [args[x] for x in ['prefs', 'diffprefs'] if
-            args[x]]
+    datatype = [x for x in ['prefs', 'diffsel'] if args[x]]
     assert len(datatype) == 1
     datatype = datatype[0]
 
@@ -56,7 +60,7 @@ def main():
         for (ftype, f) in files.items():
             if os.path.isfile(f) and ftype != 'log':
                 logger.info("Removing existing file {0}".format(f))
-            os.remove(f)
+                os.remove(f)
 
         # some checking on arguments
         assert re.search('^[a-zA-Z0-9\-]+$', args['name']), \
@@ -66,21 +70,21 @@ def main():
         assert args['stringency'] >= 0
 
         # read data
-        logger.info("Reading {0} from file {1}".format(datatype, 
+        logger.info("Reading {0} from file {1}...".format(datatype, 
                 args[datatype]))
         assert os.path.isfile(args[datatype]), "Can't find {0}".format(
                 args[datatype])
         data = pandas.read_csv(args[datatype])
         assert 'site' in data.columns, "no 'site' column"
+        data['site'] = data['site'].astype(str)
         sites = data['site'].values
+        logger.info("Read data for {0} sites.\n".format(len(sites)))
         if args['sortsites'] == 'yes':
             sites = natsort.natsorted(sites)
         elif args['sortsites'] != 'no':
             raise ValueError("invalid --sortsites")
 
         if datatype == 'prefs':
-            # logo plot of preferences
-
             assert (set(['site'] + dms_tools2.AAS) <= set(data.columns) 
                     <= set(['site'] + dms_tools2.AAS_WITHSTOP)), (
                     "invalid columns in prefs file")
@@ -99,12 +103,38 @@ def main():
             # rescale even if stringency = 1 to re-norm after excludestop
             data = dms_tools2.utils.rescalePrefs(data, args['stringency'])
 
+            # convert to dict needed for logo plot
+            data = data.set_index('site').to_dict('index')
+
         elif datatype == 'diffsel':
             # logo plot of differential selection
             raise RuntimeError('not yet implemented')
 
         else:
             raise ValueError("Invalid datatype {0}".format(datatype))
+
+        # make logo plot
+        logger.info("Making logo plot {0}...".format(files['logo']))
+        phydmslib.weblogo.LogoPlot(
+                    sites=sites, 
+                    datatype=datatype, 
+                    data=data, 
+                    plotfile=files['logo'],
+                    nperline=args['nperline'],
+                    numberevery=args['numberevery'],
+                    allowunsorted=True,
+                    #ydatamax=?, 
+                    #overlay=?,
+                    #fix_limits=?,
+                    #fixlongname=?,
+                    #overlay_cmap=?,
+                    #ylimits=?,
+                    #relativestackheight=?,
+                    #custom_cmap=?,
+                    #map_metric=?,
+                    #noseparator=?,
+                    )
+        logger.info("Successfully created logo plot.\n")
 
     except:
         logger.exception('Terminating {0} with ERROR.'.format(prog))
@@ -120,6 +150,7 @@ def main():
         logging.shutdown()
 
     # read data
+    sys.exit(0)
     try:
         # try to read differential selection
         datatype = 'diffsel'
@@ -200,7 +231,6 @@ def main():
     # use taller default letter stacks for differential selection
     relativestackheight = {
             'prefs':args['letterheight'],
-            'diffprefs':args['letterheight'],
             'diffsel':2 * args['letterheight'],
             }
     
@@ -213,7 +243,6 @@ def main():
             custom_cmap=args['colormap'], map_metric=args['mapmetric'],
             noseparator=args['nosepline'], overlay_cmap=args['overlay_cmap'])
     assert os.path.isfile(args['logoplot']), "Failed to create %s" % args['logoplot']
-
 
 
 
