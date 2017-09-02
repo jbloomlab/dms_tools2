@@ -108,7 +108,7 @@ def main():
                 elif val:
                     newargs.append('--{0}'.format(arg))
                     if isinstance(val, list):
-                        newargs += map(str, val)
+                        newargs += list(map(str, val))
                     else:
                         newargs.append(str(val))
             argslist.append(newargs)
