@@ -106,8 +106,15 @@ def main():
             # convert to dict needed for logo plot
             data = data.set_index('site').to_dict('index')
 
+            sepline = False 
+            ylimits = None
+
         elif datatype == 'diffsel':
             # logo plot of differential selection
+            args['letterheight'] *= 2 # taller letter stacks for diffsel
+            sepline = {'yes':True, 'no':False}[args['sepline']]
+
+            ylimits = 'needs to be set'
             raise RuntimeError('not yet implemented')
 
         else:
@@ -123,16 +130,16 @@ def main():
                     nperline=args['nperline'],
                     numberevery=args['numberevery'],
                     allowunsorted=True,
-                    #ydatamax=?, 
+                    ydatamax=1.01, # no meaning for prefs or diffsel
                     #overlay=?,
-                    #fix_limits=?,
+                    fix_limits=None,
                     #fixlongname=?,
-                    #overlay_cmap=?,
-                    #ylimits=?,
-                    #relativestackheight=?,
-                    #custom_cmap=?,
-                    #map_metric=?,
-                    #noseparator=?,
+                    overlay_cmap=args['overlaycolormap'],
+                    ylimits=ylimits,
+                    relativestackheight=args['letterheight'],
+                    custom_cmap=args['colormap'],
+                    map_metric=args['mapmetric'],
+                    noseparator=sepline,
                     )
         logger.info("Successfully created logo plot.\n")
 
@@ -228,12 +235,6 @@ def main():
     else:
         overlay = None
 
-    # use taller default letter stacks for differential selection
-    relativestackheight = {
-            'prefs':args['letterheight'],
-            'diffsel':2 * args['letterheight'],
-            }
-    
     # make logo plot
     dms_tools.weblogo.LogoPlot(sites, datatype, data, args['logoplot'], 
             args['nperline'], numberevery=args['numberevery'], 

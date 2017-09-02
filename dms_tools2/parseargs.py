@@ -286,6 +286,24 @@ def logoplotParser():
             default='yes', help='Sort sites from first to last '
             'before plotting.')
 
+    parser.add_argument('--mapmetric', default='functionalgroup', choices=[
+            'kd', 'mw', 'charge', 'functionalgroup'], help='Color amino acids '
+            'by Kyte-Doolittle hydrophobicity, molecular weight, charge, '
+            'or functional group.')
+
+    parser.add_argument('--colormap', default='jet', help="`matplotlib "
+            "color map <http://matplotlib.org/users/colormaps.html>`_ for"
+            " amino acids when `--mapmetric` is 'kd' or 'mw'.")
+
+    parser.add_argument('--overlaycolormap', default='jet', help="`matplotlib "
+            "color map <http://matplotlib.org/users/colormaps.html>`_ for"
+            " overlay bars (also consider 'YlOrRd').")
+
+    parser.add_argument('--letterheight', type=int, default=1,
+            help="Relative height of letter stacks in logo plot.")
+
+    parser.add_argument('--sepline', default='yes', choices=['yes', 'no'],
+            help="Separate positive and negative diffsel with black line?")
 
     return parser
 
