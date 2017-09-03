@@ -123,8 +123,12 @@ def main():
         # read any overlays
         overlay = []
         for i in range(3): # loop over possibly overlays
-            overlayarg = 'overlay{0}'.format(i)
+            overlayarg = 'overlay{0}'.format(i + 1)
+            if not args[overlayarg]:
+                continue
             (overlayfile, shortname, longname) = args[overlayarg]
+            logger.info("Reading overlay for {0} from {1}...".format(
+                    shortname, overlayfile))
             assert len(shortname) < 6, "{0} SHORTNAME too long".format(
                     overlayarg)
             overlaydf = pandas.read_csv(overlayfile)
@@ -140,6 +144,8 @@ def main():
             overlay.append((
                     dict(zip(overlaydf['site'], overlaydf[shortname])),
                     shortname, longname))
+            logger.info("Read overlay for {0} sites.\n".format(
+                    len(overlaydf['site'])))
         shortnames = [tup[1] for tup in overlay]
         assert len(set(shortnames)) == len(shortnames), ("Duplicate "
                 "SHORTNAME in overlay arguments")
@@ -156,7 +162,7 @@ def main():
                     allowunsorted=True,
                     ydatamax=1.01, # no meaning for prefs or diffsel
                     overlay=overlay,
-                    fix_limits=None,
+                    fix_limits={},
                     fixlongname=False,
                     overlay_cmap=args['overlaycolormap'],
                     ylimits=ylimits,
