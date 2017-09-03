@@ -120,6 +120,30 @@ def main():
         else:
             raise ValueError("Invalid datatype {0}".format(datatype))
 
+        # read any overlays
+        overlay = []
+        for i in range(3): # loop over possibly overlays
+            overlayarg = 'overlay{0}'.format(i)
+            (overlayfile, shortname, longname) = args[overlayarg]
+            assert len(shortname) < 6, "{0} SHORTNAME too long".format(
+                    overlayarg)
+            overlaydf = pandas.read_csv(overlayfile)
+            assert {'site', shortname} <= set(overlaydf.columns), \
+                    "No 'site' and {0} columns in {1} FILE".format(
+                    shortname, overlayarg)
+            overlaydf['site'] = overlaydf['site'].astype('str')
+            assert len(overlaydf['site']) == len(set(overlaydf['site'])),\
+                    "Duplicate sites in {0} FILE".format(overlayarg)
+            extrasites = set(overlaydf['site']) - set(sites)
+            assert not extrasites, "Extra sites in {0}:\n{1}".format(
+                    overlayarg, extrasites)
+            overlay.append((
+                    dict(zip(overlaydf['site'], overlaydf[shortname])),
+                    shortname, longname))
+        shortnames = [tup[1] for tup in overlay]
+        assert len(set(shortnames)) == len(shortnames), ("Duplicate "
+                "SHORTNAME in overlay arguments")
+
         # make logo plot
         logger.info("Making logo plot {0}...".format(files['logo']))
         phydmslib.weblogo.LogoPlot(
@@ -131,9 +155,9 @@ def main():
                     numberevery=args['numberevery'],
                     allowunsorted=True,
                     ydatamax=1.01, # no meaning for prefs or diffsel
-                    #overlay=?,
+                    overlay=overlay,
                     fix_limits=None,
-                    #fixlongname=?,
+                    fixlongname=False,
                     overlay_cmap=args['overlaycolormap'],
                     ylimits=ylimits,
                     relativestackheight=args['letterheight'],
@@ -155,95 +179,6 @@ def main():
 
     finally:
         logging.shutdown()
-
-    # read data
-    sys.exit(0)
-    try:
-        # try to read differential selection
-        datatype = 'diffsel'
-        expectedcolumns = set(['site', 'wt', 'mut', 'diffsel'])
-        diffsel = pandas.read_csv(args['infile'])
-        diffsel.fillna(0.0, inplace=True) # set diffsel to zero for any missing (NaN) values
-        if args['restrictdiffsel'] == 'positive':
-            diffsel['diffsel'][diffsel['diffsel'] < 0] = 0
-        elif args['restrictdiffsel'] == 'negative':
-            diffsel['diffsel'][diffsel['diffsel'] > 0] = 0
-        assert set(diffsel.columns.values) == expectedcolumns
-        sites = list(set(diffsel['site'].tolist()))
-        data = {}
-        for r in sites:
-            data[str(r)] = diffsel.loc[diffsel['site'] == r].set_index('mut')['diffsel'].to_dict()
-            if args['excludestop'] and '*' in data[str(r)]:
-                del data[str(r)]['*']
-        sites = [str(r) for r in sites]
-    finally:
-        pass
-
-    # now get y limits if using differential selection
-    ylimits = None
-    if datatype == 'diffsel':
-        alldiffsel = [diffsel]
-        if args['diffselheight']:
-            for fname in args['diffselheight']:
-                df = pandas.read_csv(fname)
-                df.fillna(0.0, inplace=True) # set diffsel to zero for any missing (NaN) values
-                if args['restrictdiffsel'] == 'positive':
-                    df['diffsel'][df['diffsel'] < 0] = 0
-                elif args['restrictdiffsel'] == 'negative':
-                    df['diffsel'][df['diffsel'] > 0] = 0
-                alldiffsel.append(df)
-        maxdiffsel = mindiffsel = 0
-        for idataframe in alldiffsel:
-            for r in set(idataframe['site'].tolist()):
-                maxdiffsel = max(maxdiffsel, sum(map(lambda x: max(0, x), idataframe.loc[idataframe['site'] == r]['diffsel'])))
-                mindiffsel = min(mindiffsel, sum(map(lambda x: min(0, x), idataframe.loc[idataframe['site'] == r]['diffsel'])))
-        yspread = maxdiffsel - mindiffsel
-        maxdiffsel += 0.02 * yspread
-        mindiffsel -= 0.02 * yspread
-        ylimits = (mindiffsel, maxdiffsel)
-    elif args['diffselheight']:
-        raise ValueError("Can't use --diffselheight if not using differential selectin")
-
-    # read overlays if they exist
-    if args['overlay1']:
-        [overlayfile1, overlayshortname1, overlaylongname1] = args['overlay1']
-        overlaydata1 = ReadOverlay(overlayfile1)
-        extrasites = set(overlaydata1.keys()) - set(sites)
-        if extrasites:
-            raise ValueError("Set of sites specified for overlay1 includes sites not in infile:\n%s" % str(extrasites))
-        overlay = [(overlaydata1, overlayshortname1, overlaylongname1)]
-        if args['overlay2']:
-            [overlayfile2, overlayshortname2, overlaylongname2] = args['overlay2']
-            assert overlayshortname1 != overlayshortname2, "overlay1 and overlay2 have the same SHORTNAME. This is not allowed."
-            overlaydata2 = ReadOverlay(overlayfile2)
-            extrasites = set(overlaydata2.keys()) - set(sites)
-            if extrasites:
-                raise ValueError("Set of sites specified for overlay2 includes sites not in infile:\n%s" % str(extrasites))
-            overlay.append((overlaydata2, overlayshortname2, overlaylongname2))
-            if args['overlay3']:
-                [overlayfile3, overlayshortname3, overlaylongname3] = args['overlay3']
-                assert overlayshortname2 != overlayshortname3, "overlay2 and overlay3 have the same SHORTNAME. This is not allowed."
-                overlaydata3 = ReadOverlay(overlayfile3)
-                extrasites = set(overlaydata3.keys()) - set(sites)
-                if extrasites:
-                    raise ValueError("Set of sites specified for overlay3 includes sites not in infile:\n%s" % str(extrasites))
-                overlay.append((overlaydata3, overlayshortname3, overlaylongname3))
-        elif args['overlay3']:
-            raise ValueError("You cannot specify --overlay3 unless you also specify --overlay2")
-    elif args['overlay2']:
-        raise ValueError("You cannot specify --overlay2 unless you also specify --overlay1")
-    else:
-        overlay = None
-
-    # make logo plot
-    dms_tools.weblogo.LogoPlot(sites, datatype, data, args['logoplot'], 
-            args['nperline'], numberevery=args['numberevery'], 
-            allowunsorted=True, ydatamax=args['diffprefheight'], 
-            overlay=overlay, ylimits=ylimits, 
-            relativestackheight=relativestackheight[datatype], 
-            custom_cmap=args['colormap'], map_metric=args['mapmetric'],
-            noseparator=args['nosepline'], overlay_cmap=args['overlay_cmap'])
-    assert os.path.isfile(args['logoplot']), "Failed to create %s" % args['logoplot']
 
 
 

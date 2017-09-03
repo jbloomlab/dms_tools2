@@ -276,7 +276,7 @@ def logoplotParser():
             help='Number sites at this interval.')
 
     parser.add_argument('--excludestop', choices=['yes', 'no'],
-            default='no', help='Exclude stop codons a possible amino '
+            default='no', help='Exclude stop codons as possible amino '
             'acid?')
 
     parser.add_argument('--stringency', type=float, default=1,
@@ -295,9 +295,25 @@ def logoplotParser():
             "color map <http://matplotlib.org/users/colormaps.html>`_ for"
             " amino acids when `--mapmetric` is 'kd' or 'mw'.")
 
+    parser.add_argument('--overlay1', nargs=3,
+            metavar=('FILE', 'SHORTNAME', 'LONGNAME'),
+            help="Color bar above logo plot to denote per-residue "
+            "property. FILE is CSV format with column names `site` "
+            "and SHORTNAME. SHORTNAME is <= 5 character property name. "
+            "LONGNAME is longer name for legend. Sites not in FILE "
+            "are colored white.")
+
+    parser.add_argument('--overlay2', default=None, nargs=3,
+            metavar=('FILE', 'SHORTNAME', 'LONGNAME'),
+            help='Second overlay color bar.')
+
+    parser.add_argument('--overlay3', default=None, nargs=3,
+            metavar=('FILE', 'SHORTNAME', 'LONGNAME'),
+            help='Third overlay color bar.')
+
     parser.add_argument('--overlaycolormap', default='jet', help="`matplotlib "
             "color map <http://matplotlib.org/users/colormaps.html>`_ for"
-            " overlay bars (also consider 'YlOrRd').")
+            " overlay bars (e.g., 'jet' or 'YlOrRd').")
 
     parser.add_argument('--letterheight', type=int, default=1,
             help="Relative height of letter stacks in logo plot.")
