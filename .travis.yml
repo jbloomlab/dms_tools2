@@ -6,7 +6,10 @@ python:
 cache: pip
 
 before_install:
-  - sudo apt-get -qq install ghostscript # needed by weblogo
+  - sudo apt-get -qq install ghostscript
+  - sudo apt-get -qq install dvipng
+  - sudo apt-get -qq install texlive-latex-extras
+  - sudo apt-get -qq install texlive-fonts-recommended
 
 install:
   - pip install -r test_requirements.txt
