@@ -1,12 +1,20 @@
 language: python
+
 python:
   - "3.4"
+
 cache: pip
+
+before_install:
+  - sudo apt-get -qq install ghostscript # needed by weblogo
+
 install:
   - pip install -r test_requirements.txt
   - pip install -e .
+
 script: 
   - pytest
+
 branches:
   only:
     - master
