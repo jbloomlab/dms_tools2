@@ -9,7 +9,8 @@ Examples
 
 Example analyses
 ------------------
-Each analysis is in a `Jupyter notebook`_:
+Each analysis is in a `Jupyter notebook`_ in its own subdirectory `on GitHub <https://github.com/jbloomlab/dms_tools2/tree/master/examples>`_.
+Specifically:
 
 Deep mutational scanning of influenza hemagglutinin by Doud and Bloom (2016)
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -18,7 +19,7 @@ You can see a `Jupyter notebook`_ that analyzes their data by clicking here: `Do
 
 Mutational antigenic profiling of influenza hemagglutinin by Doud et al (2017)
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-`Doud et al (2017)`_ performed mutational antigenic profiling of influenza hemagglutinin against a set of strain-sepcific antibodies, using :ref:`bcsubamp` to obtain high sequencing accuracy.
+`Doud et al (2017)`_ performed mutational antigenic profiling of influenza hemagglutinin against a set of strain-specific antibodies, using :ref:`bcsubamp` to obtain high sequencing accuracy.
 You can see a `Jupyter notebook`_ that analyzes their data by clicking here: `Doud2017 example`_.
 
 Downloading and running the example notebooks

@@ -15,3 +15,5 @@ The requisite input data are in the ``./data/`` subdirectory:
     * `./data/1RVX_trimer_sequentialnumbering.pdb <./data/1RVX_trimer_sequentialnumbering.pdb>`_ is the H1 HA trimer in `PDB 1RVX <http://www.rcsb.org/pdb/explore.do?structureId=1rvx>`_, re-numbered with `PDB Goodies <http://dicsoft2.physics.iisc.ernet.in/pdbgoodies/inputpage.html>`_ to a sequential numbering scheme starting with 1 at the N-terminal Met.
 
     * `./data/1RVX_trimer_sequentialnumbering.dssp <./data/1RVX_trimer_sequentialnumbering.dssp>`_ is the downloaded result of running the `DSSP webserver <http://swift.cmbi.ru.nl/gv/dssp/>`_ on `./data/1RVX_trimer_sequentialnumbering.pdb <./data/1RVX_trimer_sequentialnumbering.pdb>`_, and so holds absolute solvent accessibility and secondary structure information.
+
+    * `./data/HA_alignment.fasta/ <./data/HA_alignment.fasta>`_ is an alignment of H1 HA sequences. It is **not** the same alignment used by `Doud and Bloom (2016) <http://www.mdpi.com/1999-4915/8/6/155>`_; it is substantially smaller for one thing.
