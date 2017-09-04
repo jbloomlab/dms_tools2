@@ -61,7 +61,7 @@ For instance, you might want to assess how each mutation to a viral protein affe
 Essentially, highly preferred amino acids are enriched (or stay at the same frequency) after functional selection, whereas less preferred amino acid are depleted during functional selection.</p>
 <div class="figure align-center" id="id1" style="width: 65%">
 <span id="prefssnippetfig"></span><img alt="Logo plot visualization of amino-acid preferences." src="_images/PrefsSnippet.jpg" />
-<p class="caption"><span class="caption-number">Fig. 3 </span><span class="caption-text">Visualization of amino-acid preferences as created using <span class="xref std std-ref">dms2_logoplot</span>.
+<p class="caption"><span class="caption-number">Fig. 3 </span><span class="caption-text">Visualization of amino-acid preferences as created using <a class="reference internal" href="dms2_logoplot.html#dms2-logoplot"><span class="std std-ref">dms2_logoplot</span></a>.
 The height of each letter is proportional to the preference for that amino acid at that site.
 For instance, site 84 prefers the negatively charged amino acids aspartic acid (D) and glutamic acid (E), whereas site 86 prefers the hydrophobic amino acids leucine (L) and isoleucine (I).</span></p>
 </div>
@@ -69,7 +69,7 @@ For instance, site 84 prefers the negatively charged amino acids aspartic acid (
 You can also estimate a <em>stringency parameter</em> that re-scales the preferences to better match the stringency of selection in nature (see <a class="reference external" href="https://peerj.com/articles/3657.pdf">Hilton et al (2017)</a> and the <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2016/analysis_notebook.ipynb">Doud2016 example</a>).</p>
 <p>The <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> software contains programs to estimate the amino-acid preferences from the counts of mutations generated from the deep sequencing data.
 Typically you would want to estimate these preferences using <a class="reference internal" href="dms2_batch_prefs.html#dms2-batch-prefs"><span class="std std-ref">dms2_batch_prefs</span></a>, which in turn calls <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a>.
-You then might visualize the preferences with <span class="xref std std-ref">dms2_logoplot</span> and / or compare them to natural evolution using <a class="reference external" href="http://jbloomlab.github.io/phydms">phydms</a>.</p>
+You then might visualize the preferences with <a class="reference internal" href="dms2_logoplot.html#dms2-logoplot"><span class="std std-ref">dms2_logoplot</span></a> and / or compare them to natural evolution using <a class="reference external" href="http://jbloomlab.github.io/phydms">phydms</a>.</p>
 <p>The <a class="reference internal" href="examples.html#examples"><span class="std std-ref">Examples</span></a> include some analyses of this type of deep-sequencing data; for instance see the <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2016/analysis_notebook.ipynb">Doud2016 example</a>.</p>
 </div>
 <div class="section" id="what-are-amino-acid-preferences">
@@ -105,10 +105,12 @@ These more sophisticated approaches estimate a quantity that asymptotically appr
 It also tends to handle the error controls (the <code class="docutils literal"><span class="pre">--err</span></code> option) better, particularly if the pre- and post-selection error controls are different.
 So if you are using error-controls (particularly different pre- and post-selection ones), you should probably use this method.
 The downside of <code class="docutils literal"><span class="pre">--method</span> <span class="pre">bayesian</span></code> is that it is fairly slow, and can lead to substantial run times of 5+ hours.</p>
+<p>Note also that the priors used by <code class="docutils literal"><span class="pre">--method</span> <span class="pre">bayesian</span></code> assume that your mutagenesis method attempted to introduce all types of codon mutations at equal frequencies (e.g., <code class="docutils literal"><span class="pre">NNN</span></code> libraries).
+If you favored some codons during library construction (e.g., <code class="docutils literal"><span class="pre">NNK</span></code> libraries), then the current priors will not be correct.</p>
 <p>Using <code class="docutils literal"><span class="pre">--method</span> <span class="pre">ratio</span></code> is very fast.
 If you do not have error controls, it will probably give fairly similar results to <code class="docutils literal"><span class="pre">--method</span> <span class="pre">bayesian</span></code>.
 Its performance might decay if there are error controls, especially if the pre- and post-selection ones are different.</p>
-<p>You can always run both methods and then compare the results (for instance, by using <cite>dms_tools2.plot.plotCorrMatrix</cite> as described in the <a class="reference internal" href="api.html#api"><span class="std std-ref">Python API</span></a>.</p>
+<p>You can always run both methods and then compare the results (for instance, by using <cite>dms_tools2.plot.plotCorrMatrix</cite> function described in the <a class="reference internal" href="api.html#api"><span class="std std-ref">Python API</span></a>).</p>
 </div>
 <div class="section" id="programs-to-analyze-the-data-and-examples">
 <h2><a class="toc-backref" href="#id6">Programs to analyze the data and examples</a><a class="headerlink" href="#programs-to-analyze-the-data-and-examples" title="Permalink to this headline">¶</a></h2>
@@ -117,7 +119,7 @@ Its performance might decay if there are error controls, especially if the pre- 
 <div><ul class="simple">
 <li><a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a> estimates amino-acid preferences from counts files.</li>
 <li><a class="reference internal" href="dms2_batch_prefs.html#dms2-batch-prefs"><span class="std std-ref">dms2_batch_prefs</span></a> runs <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a> on a set of samples and computes the correlations among samples. If you have multiple replicates, it is easier to use <a class="reference internal" href="dms2_batch_prefs.html#dms2-batch-prefs"><span class="std std-ref">dms2_batch_prefs</span></a> rather than runnning <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a> directly.</li>
-<li><span class="xref std std-ref">dms2_logoplot</span> can be used to create logo plots that visualize amino-acid preferences (potentially after re-scaling by a stringency parameter fit by <a class="reference external" href="http://jbloomlab.github.io/phydms">phydms</a>).</li>
+<li><a class="reference internal" href="dms2_logoplot.html#dms2-logoplot"><span class="std std-ref">dms2_logoplot</span></a> can be used to create logo plots that visualize amino-acid preferences (potentially after re-scaling by a stringency parameter fit by <a class="reference external" href="http://jbloomlab.github.io/phydms">phydms</a>).</li>
 </ul>
 </div></blockquote>
 <p>Note also that <a class="reference external" href="http://jbloomlab.github.io/phydms">phydms</a> can be used to perform phylogenetic analyses with the amino-acid preferences estimated using <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a> / <a class="reference internal" href="dms2_batch_prefs.html#dms2-batch-prefs"><span class="std std-ref">dms2_batch_prefs</span></a>.</p>

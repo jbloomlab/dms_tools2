@@ -43,9 +43,91 @@
             
   <div class="section" id="dms-tools2-package">
 <h1>dms_tools2 package<a class="headerlink" href="#dms-tools2-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-dms_tools2.ipython_utils">
-<span id="submodules"></span><h2>Submodules<a class="headerlink" href="#module-dms_tools2.ipython_utils" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="ipython-utils">
+<div class="section" id="module-dms_tools2.dssp">
+<span id="submodules"></span><h2>Submodules<a class="headerlink" href="#module-dms_tools2.dssp" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="dssp">
+<h3>dssp<a class="headerlink" href="#dssp" title="Permalink to this headline">¶</a></h3>
+<p>Process output from <a class="reference external" href="http://swift.cmbi.ru.nl/gv/dssp/">dssp</a>.</p>
+<p><a class="reference external" href="http://swift.cmbi.ru.nl/gv/dssp/">dssp</a> can be used to calculate
+secondary structure and solvent accessibility information from a 
+PDB structure. This module can process that output.</p>
+<dl class="data">
+<dt id="dms_tools2.dssp.MAX_ASA_TIEN">
+<code class="descclassname">dms_tools2.dssp.</code><code class="descname">MAX_ASA_TIEN</code><em class="property"> = {'T': 172.0, 'L': 201.0, 'F': 240.0, 'V': 174.0, 'D': 193.0, 'H': 224.0, 'W': 285.0, 'R': 274.0, 'G': 104.0, 'A': 129.0, 'E': 223.0, 'I': 197.0, 'P': 159.0, 'S': 155.0, 'N': 195.0, 'C': 167.0, 'M': 224.0, 'K': 236.0, 'Q': 225.0, 'Y': 263.0}</em><a class="headerlink" href="#dms_tools2.dssp.MAX_ASA_TIEN" title="Permalink to this definition">¶</a></dt>
+<dd><p>max accessible surface area (square angstroms) for amino acids, from
+<a class="reference external" href="https://doi.org/10.1371/journal.pone.0080635">Tien et al (2013)</a>.
+<cite>MAX_ASA_TIEN[a]</cite> is the max surface area for amino acid <cite>a</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.dssp.processDSSP">
+<code class="descclassname">dms_tools2.dssp.</code><code class="descname">processDSSP</code><span class="sig-paren">(</span><em>dsspfile</em>, <em>chain=None</em>, <em>max_asa={'T': 172.0</em>, <em>'L': 201.0</em>, <em>'F': 240.0</em>, <em>'V': 174.0</em>, <em>'D': 193.0</em>, <em>'H': 224.0</em>, <em>'W': 285.0</em>, <em>'R': 274.0</em>, <em>'G': 104.0</em>, <em>'A': 129.0</em>, <em>'E': 223.0</em>, <em>'I': 197.0</em>, <em>'P': 159.0</em>, <em>'S': 155.0</em>, <em>'N': 195.0</em>, <em>'C': 167.0</em>, <em>'M': 224.0</em>, <em>'K': 236.0</em>, <em>'Q': 225.0</em>, <em>'Y': 263.0}</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.dssp.processDSSP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get secondary structure and solvent accessibility from <code class="docutils literal"><span class="pre">dssp</span></code>.</p>
+<p><a class="reference external" href="http://swift.cmbi.ru.nl/gv/dssp/">dssp</a> is a program
+that calculates secondary structure and absolute solvent
+accessibility from a PDB file.</p>
+<p>This function processes the text output provided by the
+<a class="reference external" href="http://swift.cmbi.ru.nl/gv/dssp/">dssp webserver</a>, at
+least given the format of that output as of Sept-4-2017.</p>
+<p>It returns a <cite>pandas.DataFrame</cite> that gives the secondary
+structure and solvent accessibility for each residue in the
+<code class="docutils literal"><span class="pre">dssp</span></code> output.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>dsspfile</cite> (str)</dt>
+<dd>Name of text file containing <code class="docutils literal"><span class="pre">dssp</span></code> output.</dd>
+<dt><cite>chain</cite> (str or <cite>None</cite>)</dt>
+<dd>If the PDB file analyzed by <code class="docutils literal"><span class="pre">dssp</span></code> to create <cite>dsspfile</cite>
+has more than one chain, specify the letter code for one
+of those chains with this argument.</dd>
+<dt><cite>max_asa</cite> (dict)</dt>
+<dd>Max surface area for each amino acid in square angstroms.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><p class="first">A <cite>pandas.DataFrame</cite> with the following columns:</p>
+<blockquote class="last">
+<div><ul>
+<li><p class="first"><cite>site</cite>: residue number for all sites in <cite>dsspfile</cite>.</p>
+</li>
+<li><p class="first"><cite>amino_acid</cite>: amino acid identity of site in <cite>dsspfile</cite>.</p>
+</li>
+<li><p class="first"><cite>ASA</cite>: absolute solvent accessibility of the residue.</p>
+</li>
+<li><p class="first"><cite>RSA</cite>: relative solvent accessibility of the residue.</p>
+</li>
+<li><p class="first"><cite>SS</cite>: <code class="docutils literal"><span class="pre">dssp</span></code> secondary structure code, one of:</p>
+<blockquote>
+<div><ul class="simple">
+<li><em>G</em>: 3-10 helix</li>
+<li><em>H</em>: alpha helix</li>
+<li><em>I</em>: pi helix</li>
+<li><em>B</em>: beta bridge</li>
+<li><em>E</em>: beta bulge</li>
+<li><em>T</em>: turn</li>
+<li><em>S</em>: high curvature</li>
+<li><em>-</em>: loop</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><cite>SS_class</cite>: broader secondary structure class:</p>
+<blockquote>
+<div><ul class="simple">
+<li><em>helix</em>: <cite>SS</cite> value of <em>G</em>, <em>H</em>, or <em>I</em></li>
+<li><em>strand</em>: <cite>SS</cite> value of <em>B</em> or <em>E</em></li>
+<li><em>loop</em>: any of the other <cite>SS</cite> values.</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<span class="target" id="module-dms_tools2.ipython_utils"></span><div class="section" id="ipython-utils">
 <h3>ipython_utils<a class="headerlink" href="#ipython-utils" title="Permalink to this headline">¶</a></h3>
 <p>Utilities for using <code class="docutils literal"><span class="pre">dms_tools2</span></code> in an <cite>IPython</cite> (<cite>Jupyter</cite>) notebook.</p>
 <dl class="function">
@@ -95,6 +177,12 @@ Multiple images are displayed side-by-side.</dd>
 <dt id="dms_tools2.parseargs.bcsubampParser">
 <code class="descclassname">dms_tools2.parseargs.</code><code class="descname">bcsubampParser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.parseargs.bcsubampParser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <cite>argparse.ArgumentParser</cite> for <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.parseargs.logoplotParser">
+<code class="descclassname">dms_tools2.parseargs.</code><code class="descname">logoplotParser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.parseargs.logoplotParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <cite>argparse.ArgumentParser</cite> for <code class="docutils literal"><span class="pre">dms2_logoplot</span></code>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -272,6 +360,39 @@ use by adding to your plots the following
 If <cite>True</cite>, trim unshared sites and just analyze ones
 shared among all files. If <cite>False</cite>, raise an error
 if unshared sites.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.plot.plotCumulMutCounts">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotCumulMutCounts</code><span class="sig-paren">(</span><em>names</em>, <em>countsfiles</em>, <em>plotfile</em>, <em>chartype</em>, <em>nmax=15</em>, <em>maxcol=6</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.plot.plotCumulMutCounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot fraction of mutations seen &lt;= some number of times.</p>
+<p>For each set of counts in <cite>countsfiles</cite>, plot the fraction
+of mutations seen greater than or equal to some number of
+times. This is essentially a cumulative fraction plot.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>names</cite> (list or series)</dt>
+<dd>Names of samples for which we plot statistics.</dd>
+<dt><cite>countsfiles</cite> (list or series)</dt>
+<dd><code class="docutils literal"><span class="pre">*_codoncounts.csv</span></code> files of type created by <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code>.</dd>
+<dt><cite>plotfile</cite> (str)</dt>
+<dd>Name of created PDF plot file.</dd>
+<dt><cite>chartype</cite> (str)</dt>
+<dd><p class="first">The type of character in <cite>countsfiles</cite>.</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li><cite>codon</cite></li>
+</ul>
+</div></blockquote>
+</dd>
+<dt><cite>nmax</cite> (int)</dt>
+<dd>Plot out to this number of mutation occurrences.</dd>
+<dt><cite>maxcol</cite> (int)</dt>
+<dd>Number of columns in faceted plot.</dd>
 </dl>
 </dd>
 </dl>
@@ -836,6 +957,49 @@ of 1-, 2-, and 3-nucleotide codon mutations at site.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="dms_tools2.utils.avgPrefs">
+<code class="descclassname">dms_tools2.utils.</code><code class="descname">avgPrefs</code><span class="sig-paren">(</span><em>prefsfiles</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.utils.avgPrefs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets average of site-specific preferences.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>prefsfiles</cite> (list)</dt>
+<dd>List of CSV files containing preferences, must all be
+for same sites and characters.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A <cite>pandas.DataFrame</cite> containing the average of the
+preferences in <cite>prefsfiles</cite>. In this returned
+data frame, <cite>site</cite> is the index</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tf1</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tf2</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tf1</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file1</span><span class="p">,</span> <span class="n">tf2</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file2</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">x</span> <span class="o">=</span> <span class="n">file1</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;site,A,C,G,T</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                <span class="s1">&#39;1,0.2,0.2,0.5,0.1</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                <span class="s1">&#39;2,0.3,0.3,0.3,0.1&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">file1</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">x</span> <span class="o">=</span> <span class="n">file2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;site,A,C,G,T</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                <span class="s1">&#39;1,0.4,0.1,0.1,0.4</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                <span class="s1">&#39;2,0.3,0.4,0.1,0.2&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">file2</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">avg</span> <span class="o">=</span> <span class="n">avgPrefs</span><span class="p">([</span><span class="n">file1</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">file2</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">avg</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">avg</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">avg</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">avg</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">avg</span><span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">])</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
 <dt id="dms_tools2.utils.buildReadConsensus">
 <code class="descclassname">dms_tools2.utils.</code><code class="descname">buildReadConsensus</code><span class="sig-paren">(</span><em>reads</em>, <em>minreads</em>, <em>minconcur</em>, <em>use_cutils=True</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.utils.buildReadConsensus" title="Permalink to this definition">¶</a></dt>
 <dd><p>Builds consensus sequence of some reads.</p>
@@ -883,8 +1047,8 @@ sites are returned as <code class="docutils literal"><span class="pre">N`</span>
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
 <dt><cite>counts</cite> (<cite>pandas.DataFrame</cite>)</dt>
-<dd>Columns are the string <cite>site</cite> and all codons in
-<cite>dms_tools2.CODONS</cite>. Additional columns are allowed
+<dd>Columns are the string <cite>site</cite> <cite>wildtype</cite> and all codons
+in <cite>dms_tools2.CODONS</cite>. Additional columns are allowed
 but ignored.</dd>
 </dl>
 </dd>
@@ -898,7 +1062,8 @@ amino acid made by summing counts for encoding codons.</dd>
 </dd>
 </dl>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;othercol&#39;</span><span class="p">:[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;ATG&#39;</span><span class="p">:[</span><span class="mi">105</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
-<span class="gp">... </span>        <span class="s1">&#39;GGG&#39;</span><span class="p">:[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">117</span><span class="p">],</span> <span class="s1">&#39;GGA&#39;</span><span class="p">:[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="s1">&#39;TGA&#39;</span><span class="p">:[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]}</span>
+<span class="gp">... </span>        <span class="s1">&#39;GGG&#39;</span><span class="p">:[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">117</span><span class="p">],</span> <span class="s1">&#39;GGA&#39;</span><span class="p">:[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="s1">&#39;TGA&#39;</span><span class="p">:[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;wildtype&#39;</span><span class="p">:[</span><span class="s1">&#39;ATG&#39;</span><span class="p">,</span> <span class="s1">&#39;GGG&#39;</span><span class="p">]}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">codon</span> <span class="ow">in</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">CODONS</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="k">if</span> <span class="n">codon</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
 <span class="gp">... </span>        <span class="n">d</span><span class="p">[</span><span class="n">codon</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
@@ -907,6 +1072,8 @@ amino acid made by summing counts for encoding codons.</dd>
 <span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;othercol&#39;</span> <span class="ow">in</span> <span class="n">aacounts</span><span class="o">.</span><span class="n">columns</span>
 <span class="go">False</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">aacounts</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">aacounts</span><span class="p">[</span><span class="s1">&#39;wildtype&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">])</span>
 <span class="go">True</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">aacounts</span><span class="p">[</span><span class="s1">&#39;M&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">105</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
 <span class="go">True</span>
@@ -1099,6 +1266,49 @@ in Sanger ASCII encoding.</dd>
 </dd></dl>
 
 <dl class="function">
+<dt id="dms_tools2.utils.rescalePrefs">
+<code class="descclassname">dms_tools2.utils.</code><code class="descname">rescalePrefs</code><span class="sig-paren">(</span><em>prefs</em>, <em>stringency</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.utils.rescalePrefs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Re-scale amino acid preferences by stringency parameter.</p>
+<p>If the initial preference of site <span class="math">\(r\)</span> for amino-acid 
+<span class="math">\(a\)</span> is <span class="math">\(\pi_{r,a}\)</span>, then the re-scaled preference is</p>
+<div class="math">
+\[\frac{\left(\pi_{r,a}\right)^{\beta}}{\sum_{a'} \left(\pi_{r,a'}\right)}\]</div>
+<p>where <span class="math">\(\beta\)</span> is the stringency parameter.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>prefs</cite> (pandas.DataFrame)</dt>
+<dd>Columns are ‘site’ and then every character (e.g.,
+amino acid).</dd>
+<dt><cite>stringency</cite> (float &gt;= 0)</dt>
+<dd>The stringency parameter.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A data frame in the same format as <cite>prefs</cite> but with the
+re-scaled preferences.</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">prefs</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="p">[(</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]),</span> <span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.24</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">]),</span> <span class="p">(</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.43</span><span class="p">])]</span>
+<span class="gp">... </span>        <span class="o">+</span> <span class="p">[(</span><span class="n">aa</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">])</span> <span class="k">for</span> <span class="n">aa</span> <span class="ow">in</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">AAS</span> <span class="k">if</span>
+<span class="gp">... </span>        <span class="n">aa</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">]]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">prefs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rescaled</span> <span class="o">=</span> <span class="n">rescalePrefs</span><span class="p">(</span><span class="n">prefs</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">([</span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">prefs</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="n">rescaled</span><span class="p">[</span><span class="n">c</span><span class="p">])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">prefs</span><span class="o">.</span><span class="n">columns</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rescaled2</span> <span class="o">=</span> <span class="n">rescalePrefs</span><span class="p">(</span><span class="n">prefs</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">rescaled2</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">prefs</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">rescaled2</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.6545</span><span class="p">,</span> <span class="mf">0.0045</span><span class="p">],</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">rescaled2</span><span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0182</span><span class="p">,</span> <span class="mf">0.9153</span><span class="p">],</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
 <dt id="dms_tools2.utils.reverseComplement">
 <code class="descclassname">dms_tools2.utils.</code><code class="descname">reverseComplement</code><span class="sig-paren">(</span><em>s</em>, <em>use_cutils=True</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.utils.reverseComplement" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets reverse complement of DNA sequence <cite>s</cite>.</p>
@@ -1149,7 +1359,7 @@ in Sanger ASCII encoding.</dd>
 
 <dl class="data">
 <dt id="dms_tools2.AA_TO_CODONS">
-<code class="descclassname">dms_tools2.</code><code class="descname">AA_TO_CODONS</code><em class="property"> = {'G': ['GGA', 'GGC', 'GGG', 'GGT'], 'L': ['CTA', 'CTC', 'CTG', 'CTT', 'TTA', 'TTG'], 'C': ['TGC', 'TGT'], 'S': ['AGC', 'AGT', 'TCA', 'TCC', 'TCG', 'TCT'], 'M': ['ATG'], 'I': ['ATA', 'ATC', 'ATT'], 'F': ['TTC', 'TTT'], 'V': ['GTA', 'GTC', 'GTG', 'GTT'], 'K': ['AAA', 'AAG'], 'D': ['GAC', 'GAT'], 'N': ['AAC', 'AAT'], 'H': ['CAC', 'CAT'], '*': ['TAA', 'TAG', 'TGA'], 'W': ['TGG'], 'P': ['CCA', 'CCC', 'CCG', 'CCT'], 'E': ['GAA', 'GAG'], 'A': ['GCA', 'GCC', 'GCG', 'GCT'], 'Y': ['TAC', 'TAT'], 'R': ['AGA', 'AGG', 'CGA', 'CGC', 'CGG', 'CGT'], 'Q': ['CAA', 'CAG'], 'T': ['ACA', 'ACC', 'ACG', 'ACT']}</em><a class="headerlink" href="#dms_tools2.AA_TO_CODONS" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.</code><code class="descname">AA_TO_CODONS</code><em class="property"> = {'Q': ['CAA', 'CAG'], 'F': ['TTC', 'TTT'], 'V': ['GTA', 'GTC', 'GTG', 'GTT'], 'T': ['ACA', 'ACC', 'ACG', 'ACT'], 'D': ['GAC', 'GAT'], 'K': ['AAA', 'AAG'], 'W': ['TGG'], 'R': ['AGA', 'AGG', 'CGA', 'CGC', 'CGG', 'CGT'], 'I': ['ATA', 'ATC', 'ATT'], 'A': ['GCA', 'GCC', 'GCG', 'GCT'], '*': ['TAA', 'TAG', 'TGA'], 'E': ['GAA', 'GAG'], 'G': ['GGA', 'GGC', 'GGG', 'GGT'], 'P': ['CCA', 'CCC', 'CCG', 'CCT'], 'S': ['AGC', 'AGT', 'TCA', 'TCC', 'TCG', 'TCT'], 'N': ['AAC', 'AAT'], 'C': ['TGC', 'TGT'], 'M': ['ATG'], 'H': ['CAC', 'CAT'], 'L': ['CTA', 'CTC', 'CTG', 'CTT', 'TTA', 'TTG'], 'Y': ['TAC', 'TAT']}</em><a class="headerlink" href="#dms_tools2.AA_TO_CODONS" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict back-translating amino acid to list of codons.</p>
 </dd></dl>
 
@@ -1161,13 +1371,13 @@ in Sanger ASCII encoding.</dd>
 
 <dl class="data">
 <dt id="dms_tools2.CODON_TO_AA">
-<code class="descclassname">dms_tools2.</code><code class="descname">CODON_TO_AA</code><em class="property"> = {'GTT': 'V', 'TTA': 'L', 'TAT': 'Y', 'TGT': 'C', 'CAG': 'Q', 'GGG': 'G', 'ATT': 'I', 'ATG': 'M', 'CGA': 'R', 'CGT': 'R', 'TAA': '*', 'AAA': 'K', 'TTG': 'L', 'TGG': 'W', 'ACA': 'T', 'TCT': 'S', 'AGG': 'R', 'ACC': 'T', 'CTC': 'L', 'GAC': 'D', 'TAG': '*', 'TGC': 'C', 'ATA': 'I', 'CGG': 'R', 'TCA': 'S', 'GTG': 'V', 'TTC': 'F', 'CTT': 'L', 'GCC': 'A', 'TCC': 'S', 'TAC': 'Y', 'GTC': 'V', 'TTT': 'F', 'GGT': 'G', 'CCG': 'P', 'CCA': 'P', 'GAA': 'E', 'CAA': 'Q', 'GAG': 'E', 'GCA': 'A', 'ACG': 'T', 'TCG': 'S', 'AAG': 'K', 'ACT': 'T', 'AGC': 'S', 'AAC': 'N', 'CAT': 'H', 'ATC': 'I', 'CAC': 'H', 'AGA': 'R', 'AAT': 'N', 'AGT': 'S', 'TGA': '*', 'CTA': 'L', 'CGC': 'R', 'CTG': 'L', 'GTA': 'V', 'CCT': 'P', 'GGC': 'G', 'GCG': 'A', 'GAT': 'D', 'CCC': 'P', 'GGA': 'G', 'GCT': 'A'}</em><a class="headerlink" href="#dms_tools2.CODON_TO_AA" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.</code><code class="descname">CODON_TO_AA</code><em class="property"> = {'GAT': 'D', 'CCC': 'P', 'CGT': 'R', 'GAC': 'D', 'TCA': 'S', 'TGA': '*', 'TGC': 'C', 'CTA': 'L', 'TCG': 'S', 'TTT': 'F', 'AAA': 'K', 'GCG': 'A', 'AAC': 'N', 'GAG': 'E', 'GCA': 'A', 'TGT': 'C', 'ACA': 'T', 'TGG': 'W', 'GGT': 'G', 'GTT': 'V', 'GCC': 'A', 'TCT': 'S', 'TCC': 'S', 'GGC': 'G', 'CTC': 'L', 'ATT': 'I', 'AGG': 'R', 'CAG': 'Q', 'TAG': '*', 'CAT': 'H', 'TTC': 'F', 'CTG': 'L', 'GTA': 'V', 'GAA': 'E', 'TAA': '*', 'GGG': 'G', 'GCT': 'A', 'TAT': 'Y', 'AGA': 'R', 'CGC': 'R', 'GTG': 'V', 'CTT': 'L', 'ATC': 'I', 'CAC': 'H', 'TTA': 'L', 'CGA': 'R', 'AAT': 'N', 'ACC': 'T', 'AAG': 'K', 'CGG': 'R', 'GTC': 'V', 'CCA': 'P', 'CCG': 'P', 'AGT': 'S', 'ATA': 'I', 'AGC': 'S', 'TTG': 'L', 'ACT': 'T', 'TAC': 'Y', 'ATG': 'M', 'ACG': 'T', 'CAA': 'Q', 'CCT': 'P', 'GGA': 'G'}</em><a class="headerlink" href="#dms_tools2.CODON_TO_AA" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict translating codons to amino acids</p>
 </dd></dl>
 
 <dl class="data">
 <dt id="dms_tools2.NTCOMPLEMENT">
-<code class="descclassname">dms_tools2.</code><code class="descname">NTCOMPLEMENT</code><em class="property"> = {'A': 'T', 'G': 'C', 'C': 'G', 'T': 'A', 'N': 'N'}</em><a class="headerlink" href="#dms_tools2.NTCOMPLEMENT" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.</code><code class="descname">NTCOMPLEMENT</code><em class="property"> = {'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C', 'N': 'N'}</em><a class="headerlink" href="#dms_tools2.NTCOMPLEMENT" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict mapping each nucleotide to its complement.</p>
 </dd></dl>
 
@@ -1229,6 +1439,7 @@ in Sanger ASCII encoding.</dd>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prefs.html">Amino-acid preferences</a></li>
 <li class="toctree-l1"><a class="reference internal" href="programs.html">Executable programs</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="api.html">Python API</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">dms_tools2 package</a></li>

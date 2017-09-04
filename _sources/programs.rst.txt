@@ -14,6 +14,7 @@ Once you install the `dms_tools2`_ package, all of these programs should be avai
    dms2_batch_bcsubamp
    dms2_prefs
    dms2_batch_prefs
+   dms2_logoplot
 
 
 .. include:: weblinks.txt
