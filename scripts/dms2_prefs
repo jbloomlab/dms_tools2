@@ -1,6 +1,6 @@
 #!python
 
-"""Aligns and counts mutations in barcoded subamplicons."""
+"""Computes amino-acid preferences."""
 
 
 import os
