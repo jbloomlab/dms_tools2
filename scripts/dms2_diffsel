@@ -1,0 +1,219 @@
+#!python
+
+"""Computes differential selection.
+
+Written by Jesse Bloom."""
+
+
+import sys
+import os
+import math
+import logging
+import natsort
+import pandas
+import dms_tools2.utils
+import dms_tools2.parseargs
+
+
+def main():
+    """Main body of script."""
+
+    # Parse command line arguments
+    parser = dms_tools2.parseargs.diffselParser()
+    args = vars(parser.parse_args())
+    prog = parser.prog
+
+    # set up names of output files
+    if args['outdir']:
+        if not os.path.isdir(args['outdir']):
+            os.mkdir(args['outdir'])
+    else:
+        args['outdir'] = ''
+    filesuffixes = {
+            'log':'.log',
+            'mutdiffsel':'_mutdiffsel.csv',
+            'sitediffsel':'_sitediffsel.csv',            
+            }
+    files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
+            args['name'], s))) for (f, s) in filesuffixes.items()])
+
+    # do we need to proceed?
+    if args['use_existing'] == 'yes' and all(map(
+                os.path.isfile, files.values())):
+        print("Output files already exist and '--use_existing' is 'yes', "
+              "so exiting with no further action.")
+        sys.exit(0)
+
+    logger = dms_tools2.utils.initLogger(files['log'], prog, args)
+
+    # log in try / except / finally statement
+    try:
+
+        assert re.search('^[a-zA-Z0-9\-]+$', args['name']), \
+                "--name should contain only letters, numbers, and dashes"
+
+        # remove expected output files if they already exist
+        for (ftype, f) in files.items():
+            if os.path.isfile(f) and ftype != 'log':
+                logger.info("Removing existing file {0}".format(f))
+                os.remove(f)
+
+    except:
+        logger.exception('Terminating {0} with ERROR'.format(prog))
+        for (fname, fpath) in files.items():
+            if fname != 'log' and os.path.isfile(fpath):
+                logger.exception("Deleting file {0}".format(fpath))
+                os.remove(fpath)
+
+    else:
+        logger.info('Successful completion of {0}'.format(prog))
+
+    finally:
+        logging.shutdown()
+
+    sys.exit(0)
+    # set up for correct character type
+    translate_to_aa = False # do we translate character to amino acid
+    if args['chartype'].lower() == 'codon_to_aa':
+        chartype = 'codon'
+        translate_to_aa = True
+        countcharacters = dms_tools.codons
+        if args['includestop']:
+            characters = dms_tools.aminoacids_withstop
+        else:
+            characters = dms_tools.aminoacids_nostop
+    elif args['chartype'].lower() == 'codon':
+        chartype = 'codon'
+        countcharacters = characters = dms_tools.codons
+    elif args['chartype'].upper() == 'DNA':
+        chartype = 'DNA'
+        countcharacters = characters = dms_tools.nts
+    elif args['chartype'].lower() == 'aa':
+        if args['includestop']:
+            chartype = 'aminoacids_withstop'
+            characters = countcharacters = dms_tools.aminoacids_withstop
+        else:
+            chartype = 'aminoacids_nostop'
+            characters = countcharacters = dms_tools.aminoacids_nostop
+    else:
+        raise ValueError("Invalid chartype of %s" % args['chartype'])
+
+    # read counts
+    if args['errorcontrolcounts']:
+        (sites, wts, counts) = dms_tools.file_io.ReadMultipleDMSCountsFiles([args['mockcounts'], args['selectedcounts'], args['errorcontrolcounts']], chartype)
+    else:
+        (sites, wts, counts) = dms_tools.file_io.ReadMultipleDMSCountsFiles([args['mockcounts'], args['selectedcounts']], chartype)
+    print("\nRead counts data for {0} sites.".format(len(sites)))
+
+    # compute differential selection
+    pseudocount = args['pseudocount']
+    datacolumns = ['site', 'wt', 'mut', 'diffsel']
+    data = dict([(column, []) for column in datacolumns])
+    for r in sites:
+        wt = wts[r]
+        assert wt in countcharacters, "Invalid wildtype of {0} for site {1}".format(wt, r)
+        mock = counts[args['mockcounts']][r]
+        assert wt in mock, "mockcounts missing counts for {0} at {1}".format(wt, r)
+        selected = counts[args['selectedcounts']][r]
+        assert wt in selected, "selectedcounts missing counts for {0} at {1}".format(wt, r)
+        if args['errorcontrolcounts']:
+            errctrl = counts[args['errorcontrolcounts']][r]
+            n_err_sum = float(sum([errctrl[x] for x in countcharacters]))
+            assert n_err_sum, "No counts for error control at site {0}".format(r)
+            n_mock_sum = float(sum([mock[x] for x in countcharacters]))
+            assert n_mock_sum, "No counts for mock at site {0}".format(r)
+            n_selected_sum = float(sum([selected[x] for x in countcharacters]))
+            assert n_selected_sum, "No counts for selected at site {0}".format(r)
+            for x in countcharacters:
+                epsilon = errctrl[x] / n_err_sum
+                if x == wt:
+                    assert epsilon > 0, "No counts of wildtype in error control at site {0}".format(r)
+                    mock[x] /= epsilon
+                    selected[x] /= epsilon
+                else:
+                    mock[x] = max(0, n_mock_sum * (mock[x] / n_mock_sum - epsilon))
+                    selected[x] = max(0, n_selected_sum * (selected[x] / n_selected_sum - epsilon))
+        if translate_to_aa:
+            mock = dms_tools.utils.SumCodonToAA(mock, args['includestop'])
+            selected = dms_tools.utils.SumCodonToAA(selected, args['includestop'])
+            wt = dms_tools.codon_to_aa[wt]
+        if wt == '*' and not args['includestop']:
+            continue
+        nwtmock = float(mock[wt])
+        nwtselected = float(selected[wt])
+
+        if not args['no_scale_pseudocounts']:
+            ntotalmock = float(sum([mock[c] for c in characters]))
+            ntotalselected = float(sum([selected[c] for c in characters]))
+            if ntotalmock > ntotalselected:
+                pseudocount_selected = pseudocount
+                pseudocount_mock = ntotalmock / ntotalselected * pseudocount
+            else:
+                pseudocount_mock = pseudocount
+                pseudocount_selected = ntotalselected / ntotalmock * pseudocount
+            assert pseudocount_mock >= pseudocount and pseudocount_selected >= pseudocount
+        else:
+            pseudocount_selected = pseudocount_mock = pseudocount
+
+        for x in characters:
+            assert x in mock, "mockcounts missing counts for {0} at {1}".format(x, r)
+            assert x in selected, "selectedcounts missing counts for {0} at {1}".format(x, r)
+            nxmock = float(mock[x])
+            nxselected = float(selected[x])
+            try:
+                if (x == wt) or ((nxselected < args['mincounts']) and (nxmock < args['mincounts'])):
+                    rxdiffsel = float('NaN')
+                else:
+                    rxdiffsel = ((nxselected + pseudocount_selected) / (nwtselected + pseudocount_selected)) / ((nxmock + pseudocount_mock) / (nwtmock + pseudocount_mock))
+                    if rxdiffsel == 0:
+                        raise ZeroDivisionError("Need to increase pseudocount to avoid log of zero")
+                    rxdiffsel = math.log(rxdiffsel, 2)
+            except ZeroDivisionError:
+                raise RuntimeError("The differential selection computation involved dividing by zero. Please increase value of --pseudocount from current value of {0}".format(pseudocount))
+            data['site'].append(r)
+            data['wt'].append(wt)
+            data['mut'].append(x)
+            data['diffsel'].append(rxdiffsel)
+    diffsel = pandas.DataFrame(data, columns=datacolumns)
+
+    # print some summary statistics
+    nprint = 10 # print the top of this many for each statistic
+
+    for (seltype, ascending) in [('lowest', True), ('highest', False)]:
+        print("\nMutations with the {0} differential selection:".format(seltype))
+        diffsel.sort_values('diffsel', ascending=ascending, inplace=True)
+        print(diffsel.head(nprint).to_string(index=False, float_format='{:.2f}'.format))
+
+    totseldict = {'site':sites}
+    columns = ['site']
+    for (description, func) in [
+            ('abs_diffsel', lambda x : 0 if math.isnan(x) else abs(x)),
+            ('positive_diffsel', lambda x : 0 if math.isnan(x) else max(0, x)), 
+            ('negative_diffsel', lambda x : 0 if math.isnan(x) else min(0, x))
+            ]:
+        totseldict[description] = []
+        for r in sites:
+            rdata = diffsel.loc[diffsel['site'] == r]['diffsel']
+            if all(map(math.isnan, rdata)):
+                totseldict[description].append(float('NaN'))
+            else:
+                totseldict[description].append(sum(map(func, rdata)))
+        columns.append(description)
+    totsel = pandas.DataFrame(totseldict, columns=columns)
+    print("\nSites with greatest total absolute differential selection:")
+    totsel.sort_values('abs_diffsel', ascending=False, inplace=True)
+    print(totsel.head(nprint).to_string(index=False, float_format='{:.2f}'.format))
+
+    # write output files
+    for (description, dataframe) in [
+            ('mutation', diffsel),
+            ('site', totsel)
+            ]:
+        outfile = args['outprefix'] + outsuffix[description]
+        print("\nWriting {0} differential selection to {1}".format(description, outfile))
+        dataframe.to_csv(outfile, index=False, na_rep='NaN')
+
+
+
+if __name__ == '__main__':
+    main() # run the script

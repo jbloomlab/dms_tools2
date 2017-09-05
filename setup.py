@@ -71,6 +71,7 @@ setup(
             'scripts/dms2_batch_bcsubamp',
             'scripts/dms2_prefs',
             'scripts/dms2_batch_prefs',
+            'scripts/dms2_diffsel',
             'scripts/dms2_logoplot',
             ],
     ext_modules = [
