@@ -13,7 +13,7 @@ It is tailored to analyze libraries created using `comprehensive codon mutagenes
 
     * Estimate the :ref:`prefs` of a protein.
 
-    * Estimate differential selection when imposing a pressure such as antibody selection.
+    * Estimate :ref:`diffsel` when imposing a pressure such as antibody selection.
 
 The `dms_tools2 source code`_ is freely available under a `GPLv3`_ license.
 `dms_tools2`_ is a re-write of the earlier `dms_tools <http://github.com/jbloomlab/dms_tools>`_ package.
@@ -33,6 +33,7 @@ Contents
    examples
    bcsubamp
    prefs
+   diffsel
    programs
    api
    citations
