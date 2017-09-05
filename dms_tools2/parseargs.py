@@ -270,13 +270,13 @@ def diffselParentParser():
     parser.add_argument('--excludestop', default='yes', choices=['yes', 'no'],
             help="Exclude stop codons as a possible amino acid?")
 
-    parser.add_argument('--pseudocount', default=5,
+    parser.add_argument('--pseudocount', default=5, type=float,
             help="Pseudocount added to each count for sample with smaller "
             "depth; pseudocount for other sample scaled by relative depth.")
 
-    parser.add_argument('--mincounts', default=0, help="Only report diffsel "
-            "of mutations for which either selected or mock-selected sample "
-            "has >= this many counts.")
+    parser.add_argument('--mincount', default=0, type=float,
+            help="Report as `NaN` the diffsel of mutations for which both "
+            "selected and mock-selected samples have < this many counts.")
 
     return parser
 

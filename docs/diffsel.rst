@@ -86,6 +86,8 @@ The reason for scaling the pseudocount by library depth is that the *mock* and *
 If the same pseudocount is added to both, then estimates of :math:`E_{r,x}` will be systematically different than one even if the relative counts for the wildtype and mutant amino acid are the same in both two conditions. 
 Scaling the pseudocounts by the ratio of depths fixes this problem. 
 
+If you are using ``--chartype`` of ``codon_to_aa``, the counts for amino acids are aggregated **before** doing the calculations above.
+
 Note that by definition, :math:`E_{r,\operatorname{wt}\left(r\right)}` is always one.
 
 We quantify the *differential selection* :math:`s_{r,x}` for :math:`x` at :math:`r` in the selected versus control condition as:
