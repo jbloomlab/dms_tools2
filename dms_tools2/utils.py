@@ -874,6 +874,32 @@ def rescalePrefs(prefs, stringency):
     return rescaled[prefs.columns]
 
 
+def convertCountsFormat(oldfile, newfile, charlist):
+    """Convert counts file from ``dms_tools`` to ``dms_tools2`` format.
+
+    Args:
+        `oldfile` (str)
+            Name of counts file in the old ``dms_tools`` format:
+            http://jbloomlab.github.io/dms_tools/fileformats.html
+        `newfile` (str)
+            Name of created counts file in the ``dms_tools2`` format:
+            https://jbloomlab.github.io/dms_tools2/dms2_bcsubamp.html
+        `charlist` (list)
+            List of characters that we expect in the counts files.
+            For instance, could be `dms_tools2.CODONS`.
+    """
+    with open(oldfile) as f:
+        header = f.readline()
+    assert header[0] == '#'
+    cols = header[1 : ].split()
+    assert cols[0] == 'POSITION' and cols[1] == 'WT'
+    cols = ['site', 'wildtype'] + cols[2 : ]
+    assert set(charlist) == set(cols[2 : ])
+    old = pandas.read_csv(oldfile, delim_whitespace=True, 
+            names=cols, comment='#')
+    old.to_csv(newfile, index=False)
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
