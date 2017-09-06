@@ -72,23 +72,25 @@ def computeMutDiffSel(sel, mock, countcharacters, pseudocount,
             m = m_name[['site', 'wildtype', 'mutation']].copy()
         assert all([all(m[c] == m_name[c]) for c in 
                 ['site', 'wildtype', 'mutation']])
-        m['n{0}'.format(name)] = m_name['n']
-        m['N{0}'.format(name)] = m_name['N']
+        m['n{0}'.format(name)] = m_name['n'].astype('float')
+        m['N{0}'.format(name)] = m_name['N'].astype('float')
 
     # error correction 
     if err is not None:
         m['epsilon'] = m['nerr'] / m['Nerr']
-        assert all(m[m['mutation'] == m['wildtype']] > 0), \
-                "err counts of 0 for wildtype"
+        wtmask = m['mutation'] == m['wildtype']
+        assert all(m[wtmask] > 0), "err counts of 0 for wildtype"
         for name in ['sel', 'mock']:
             ncol = 'n{0}'.format(name)
             Ncol = 'N{0}'.format(name)
-            m[ncol] = numpy.maximum(
-                    (m[Ncol] * (m[ncol] / m[Ncol] - m['epsilon'])).where(
-                            m['mutation'] == m['wildtype'],
-                            m[ncol] / m['epsilon'])
-                    )
+            # follow here to set wildtype values without zero division
+            wtval = pandas.Series(0, wtmask.index)
+            wtval.loc[wtmask] = m.loc[wtmask, ncol] / m.loc[wtmask, 'epsilon']
+            m[ncol] = numpy.maximum(0, 
+                    (m[Ncol] * (m[ncol] / m[Ncol] - m['epsilon']))
+                    ).where(~wtmask, wtval)
             m[Ncol] = m.groupby('site').transform('sum')[ncol]
+        m = m.reset_index()
    
     # convert codon to amino acid counts
     if translate_to_aa:

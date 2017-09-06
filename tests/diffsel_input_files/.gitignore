@@ -1,0 +1,3 @@
+*mutdiffsel.txt
+*sitediffsel.txt
+!expected_output/*.txt
