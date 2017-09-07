@@ -124,6 +124,68 @@ def computeMutDiffSel(sel, mock, countcharacters, pseudocount,
     return m[['site', 'wildtype', 'mutation', 'mutdiffsel']]
 
 
+def mutToSiteDiffSel(mutdiffsel):
+    """Computes sitediffsel from mutdiffsel.
+
+    Args:
+        `mutdiffsel` (pandas.DataFrame)
+            Dataframe with mutdiffsel as returned by `computeMutDiffSel`
+
+    Returns:
+        The dataframe `sitediffsel`, which has the following columns:
+            - `site`
+            - `abs_diffsel`: sum of absolute values of mutdiffsel at site
+            - `positive_diffsel`: sum of positive mutdiffsel at site
+            - `negative_diffsel`: sum of negative mutdiffsel at site
+            - `max_diffsel`: maximum mutdiffsel at site
+            - `min_diffsel`: minimum mutdiffsel at site
+
+    >>> mutdiffsel = (pandas.DataFrame({
+    ...         'site':[1, 2],
+    ...         'wildtype':['A', 'C'],
+    ...         'A':[numpy.nan, 4.1],
+    ...         'C':[-0.2, numpy.nan],
+    ...         'G':[3.2, 0.1],
+    ...         'T':[-0.2, 0.0],
+    ...         })
+    ...         .melt(id_vars=['site', 'wildtype'],
+    ...               var_name='mutation', value_name='mutdiffsel')
+    ...         .reset_index(drop=True)
+    ...         )
+    >>> sitediffsel = mutToSiteDiffSel(mutdiffsel)
+    >>> all(sitediffsel.columns == ['site', 'abs_diffsel', 
+    ...         'positive_diffsel', 'negative_diffsel', 
+    ...         'max_diffsel', 'min_diffsel'])
+    True
+    >>> all(sitediffsel['site'] == [1, 2])
+    True
+    >>> numpy.allclose(sitediffsel['abs_diffsel'], [3.6, 4.2])
+    True
+    >>> numpy.allclose(sitediffsel['positive_diffsel'], [3.2, 4.2])
+    True
+    >>> numpy.allclose(sitediffsel['negative_diffsel'], [-0.4, 0.0])
+    True
+    >>> numpy.allclose(sitediffsel['max_diffsel'], [3.2, 4.1])
+    True
+    >>> numpy.allclose(sitediffsel['min_diffsel'], [-0.2, 0.0])
+    True
+    """
+    sitediffsel = (mutdiffsel
+                   .pivot(index='site', columns='mutation', values='mutdiffsel')
+                   .fillna(0)
+                   .assign(abs_diffsel=lambda x: x.abs().sum(axis=1),
+                           positive_diffsel=lambda x: x[x >= 0].sum(axis=1),
+                           negative_diffsel=lambda x: x[x <= 0].sum(axis=1),
+                           max_diffsel=lambda x: x.max(axis=1),
+                           min_diffsel=lambda x: x.min(axis=1),
+                          )
+                   .reset_index()
+                   [['site', 'abs_diffsel', 'positive_diffsel', 
+                    'negative_diffsel', 'max_diffsel', 'min_diffsel']]
+                   )
+    return sitediffsel
+
+
 
 if __name__ == '__main__':
     import doctest

@@ -35,7 +35,7 @@ def main():
     filesuffixes = {
             'log':'.log',
             'mutdiffsel':'_mutdiffsel.csv',
-#            'sitediffsel':'_sitediffsel.csv',            
+            'sitediffsel':'_sitediffsel.csv',            
             }
     files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
             args['name'], s))) for (f, s) in filesuffixes.items()])
@@ -95,14 +95,14 @@ def main():
         logger.info("Writing to {0}".format(files['mutdiffsel']))
         mutdiffsel.to_csv(files['mutdiffsel'], index=False, na_rep='NaN')
 
-#        logger.info("Computing sitediffsel...")
-#        sitediffsel = (dms_tools2.diffsel.mutToSiteDiffSel(mutdiffsel)
-#                       .sort_values('abs_sitediffsel', ascending=False))
-#        logger.info("Sites with largest absolute sitediffsel:\n{0}\n"
-#                .format(sitediffsel.head(10).to_string(index=False,
-#                float_format='{:.2f}'.format)))
-#        logger.info("Writing to {0}".format(files['sitediffsel']))
-#        sitediffsel.to_csv(files['sitediffsel'], index=False, na_rep='NaN')
+        logger.info("Computing sitediffsel...")
+        sitediffsel = (dms_tools2.diffsel.mutToSiteDiffSel(mutdiffsel)
+                       .sort_values('abs_sitediffsel', ascending=False))
+        logger.info("Sites with largest absolute sitediffsel:\n{0}\n"
+                .format(sitediffsel.head(10).to_string(index=False,
+                float_format='{:.2f}'.format)))
+        logger.info("Writing to {0}".format(files['sitediffsel']))
+        sitediffsel.to_csv(files['sitediffsel'], index=False, na_rep='NaN')
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))
