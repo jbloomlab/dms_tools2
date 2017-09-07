@@ -43,9 +43,105 @@
             
   <div class="section" id="dms-tools2-package">
 <h1>dms_tools2 package<a class="headerlink" href="#dms-tools2-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-dms_tools2.dssp">
-<span id="submodules"></span><h2>Submodules<a class="headerlink" href="#module-dms_tools2.dssp" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="dssp">
+<div class="section" id="module-dms_tools2.diffsel">
+<span id="submodules"></span><h2>Submodules<a class="headerlink" href="#module-dms_tools2.diffsel" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="diffsel">
+<h3>diffsel<a class="headerlink" href="#diffsel" title="Permalink to this headline">¶</a></h3>
+<p>Performs operations related to estimating differential selection.</p>
+<dl class="function">
+<dt id="dms_tools2.diffsel.computeMutDiffSel">
+<code class="descclassname">dms_tools2.diffsel.</code><code class="descname">computeMutDiffSel</code><span class="sig-paren">(</span><em>sel</em>, <em>mock</em>, <em>countcharacters</em>, <em>pseudocount</em>, <em>translate_to_aa</em>, <em>err=None</em>, <em>mincount=0</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.diffsel.computeMutDiffSel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute mutation differential selection.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>sel</cite> (pandas.DataFrame)</dt>
+<dd>Counts for selected sample. Columns should be
+<cite>site</cite>, <cite>wildtype</cite>, and every character in
+<cite>countcharacters</cite>.</dd>
+<dt><cite>mock</cite> (pandas.DataFrame)</dt>
+<dd>Like <cite>sel</cite> but counts for mock-selected sample.</dd>
+<dt><cite>countcharacters</cite> (list)</dt>
+<dd>List of all characters (e.g., codons).</dd>
+<dt><cite>pseudocount</cite> (int or float &gt; 0)</dt>
+<dd>Pseudocount to add to counts.</dd>
+<dt><cite>translate_to_aa</cite> (bool)</dt>
+<dd>Should be <cite>True</cite> if counts are for codons and we are
+estimating diffsel for amino acids, <cite>False</cite> otherwise.</dd>
+<dt><cite>err</cite> (pandas.DataFrame or <cite>None</cite>)</dt>
+<dd>Optional error-control counts, in same format as <cite>sel</cite>.</dd>
+<dt><cite>mincount</cite> (int &gt;= 0)</dt>
+<dd>Report as <cite>NaN</cite> the mutdiffsel for any mutation in which
+neither <cite>sel</cite> nor <cite>mock</cite> has at least this many counts.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A <cite>pandas.DataFrame</cite> with the mutation differential selection.
+Columns are <cite>site</cite>, <cite>wildtype</cite>, <cite>mutation</cite>, <cite>mutdiffsel</cite>.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.diffsel.mutToSiteDiffSel">
+<code class="descclassname">dms_tools2.diffsel.</code><code class="descname">mutToSiteDiffSel</code><span class="sig-paren">(</span><em>mutdiffsel</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.diffsel.mutToSiteDiffSel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes sitediffsel from mutdiffsel.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>mutdiffsel</cite> (pandas.DataFrame)</dt>
+<dd>Dataframe with mutdiffsel as returned by <cite>computeMutDiffSel</cite></dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt>The dataframe <cite>sitediffsel</cite>, which has the following columns:</dt>
+<dd><ul class="first last simple">
+<li><cite>site</cite></li>
+<li><cite>abs_diffsel</cite>: sum of absolute values of mutdiffsel at site</li>
+<li><cite>positive_diffsel</cite>: sum of positive mutdiffsel at site</li>
+<li><cite>negative_diffsel</cite>: sum of negative mutdiffsel at site</li>
+<li><cite>max_diffsel</cite>: maximum mutdiffsel at site</li>
+<li><cite>min_diffsel</cite>: minimum mutdiffsel at site</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mutdiffsel</span> <span class="o">=</span> <span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+<span class="gp">... </span>        <span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;wildtype&#39;</span><span class="p">:[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;A&#39;</span><span class="p">:[</span><span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mf">4.1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;C&#39;</span><span class="p">:[</span><span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;G&#39;</span><span class="p">:[</span><span class="mf">3.2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;T&#39;</span><span class="p">:[</span><span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="p">})</span>
+<span class="gp">... </span>        <span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">],</span>
+<span class="gp">... </span>              <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;mutation&#39;</span><span class="p">,</span> <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;mutdiffsel&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sitediffsel</span> <span class="o">=</span> <span class="n">mutToSiteDiffSel</span><span class="p">(</span><span class="n">mutdiffsel</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">sitediffsel</span><span class="o">.</span><span class="n">columns</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;abs_diffsel&#39;</span><span class="p">,</span> 
+<span class="gp">... </span>        <span class="s1">&#39;positive_diffsel&#39;</span><span class="p">,</span> <span class="s1">&#39;negative_diffsel&#39;</span><span class="p">,</span> 
+<span class="gp">... </span>        <span class="s1">&#39;max_diffsel&#39;</span><span class="p">,</span> <span class="s1">&#39;min_diffsel&#39;</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">sitediffsel</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">sitediffsel</span><span class="p">[</span><span class="s1">&#39;abs_diffsel&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.6</span><span class="p">,</span> <span class="mf">4.2</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">sitediffsel</span><span class="p">[</span><span class="s1">&#39;positive_diffsel&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.2</span><span class="p">,</span> <span class="mf">4.2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">sitediffsel</span><span class="p">[</span><span class="s1">&#39;negative_diffsel&#39;</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">sitediffsel</span><span class="p">[</span><span class="s1">&#39;max_diffsel&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.2</span><span class="p">,</span> <span class="mf">4.1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">sitediffsel</span><span class="p">[</span><span class="s1">&#39;min_diffsel&#39;</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<span class="target" id="module-dms_tools2.dssp"></span><div class="section" id="dssp">
 <h3>dssp<a class="headerlink" href="#dssp" title="Permalink to this headline">¶</a></h3>
 <p>Process output from <a class="reference external" href="http://swift.cmbi.ru.nl/gv/dssp/">dssp</a>.</p>
 <p><a class="reference external" href="http://swift.cmbi.ru.nl/gv/dssp/">dssp</a> can be used to calculate
@@ -53,7 +149,7 @@ secondary structure and solvent accessibility information from a
 PDB structure. This module can process that output.</p>
 <dl class="data">
 <dt id="dms_tools2.dssp.MAX_ASA_TIEN">
-<code class="descclassname">dms_tools2.dssp.</code><code class="descname">MAX_ASA_TIEN</code><em class="property"> = {'T': 172.0, 'L': 201.0, 'F': 240.0, 'V': 174.0, 'D': 193.0, 'H': 224.0, 'W': 285.0, 'R': 274.0, 'G': 104.0, 'A': 129.0, 'E': 223.0, 'I': 197.0, 'P': 159.0, 'S': 155.0, 'N': 195.0, 'C': 167.0, 'M': 224.0, 'K': 236.0, 'Q': 225.0, 'Y': 263.0}</em><a class="headerlink" href="#dms_tools2.dssp.MAX_ASA_TIEN" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.dssp.</code><code class="descname">MAX_ASA_TIEN</code><em class="property"> = {'D': 193.0, 'K': 236.0, 'M': 224.0, 'G': 104.0, 'L': 201.0, 'S': 155.0, 'E': 223.0, 'P': 159.0, 'I': 197.0, 'C': 167.0, 'F': 240.0, 'W': 285.0, 'Y': 263.0, 'V': 174.0, 'N': 195.0, 'T': 172.0, 'A': 129.0, 'H': 224.0, 'Q': 225.0, 'R': 274.0}</em><a class="headerlink" href="#dms_tools2.dssp.MAX_ASA_TIEN" title="Permalink to this definition">¶</a></dt>
 <dd><p>max accessible surface area (square angstroms) for amino acids, from
 <a class="reference external" href="https://doi.org/10.1371/journal.pone.0080635">Tien et al (2013)</a>.
 <cite>MAX_ASA_TIEN[a]</cite> is the max surface area for amino acid <cite>a</cite>.</p>
@@ -61,7 +157,7 @@ PDB structure. This module can process that output.</p>
 
 <dl class="function">
 <dt id="dms_tools2.dssp.processDSSP">
-<code class="descclassname">dms_tools2.dssp.</code><code class="descname">processDSSP</code><span class="sig-paren">(</span><em>dsspfile</em>, <em>chain=None</em>, <em>max_asa={'T': 172.0</em>, <em>'L': 201.0</em>, <em>'F': 240.0</em>, <em>'V': 174.0</em>, <em>'D': 193.0</em>, <em>'H': 224.0</em>, <em>'W': 285.0</em>, <em>'R': 274.0</em>, <em>'G': 104.0</em>, <em>'A': 129.0</em>, <em>'E': 223.0</em>, <em>'I': 197.0</em>, <em>'P': 159.0</em>, <em>'S': 155.0</em>, <em>'N': 195.0</em>, <em>'C': 167.0</em>, <em>'M': 224.0</em>, <em>'K': 236.0</em>, <em>'Q': 225.0</em>, <em>'Y': 263.0}</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.dssp.processDSSP" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.dssp.</code><code class="descname">processDSSP</code><span class="sig-paren">(</span><em>dsspfile</em>, <em>chain=None</em>, <em>max_asa={'D': 193.0</em>, <em>'K': 236.0</em>, <em>'M': 224.0</em>, <em>'G': 104.0</em>, <em>'L': 201.0</em>, <em>'S': 155.0</em>, <em>'E': 223.0</em>, <em>'P': 159.0</em>, <em>'I': 197.0</em>, <em>'C': 167.0</em>, <em>'F': 240.0</em>, <em>'W': 285.0</em>, <em>'Y': 263.0</em>, <em>'V': 174.0</em>, <em>'N': 195.0</em>, <em>'T': 172.0</em>, <em>'A': 129.0</em>, <em>'H': 224.0</em>, <em>'Q': 225.0</em>, <em>'R': 274.0}</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.dssp.processDSSP" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get secondary structure and solvent accessibility from <code class="docutils literal"><span class="pre">dssp</span></code>.</p>
 <p><a class="reference external" href="http://swift.cmbi.ru.nl/gv/dssp/">dssp</a> is a program
 that calculates secondary structure and absolute solvent
@@ -177,6 +273,18 @@ Multiple images are displayed side-by-side.</dd>
 <dt id="dms_tools2.parseargs.bcsubampParser">
 <code class="descclassname">dms_tools2.parseargs.</code><code class="descname">bcsubampParser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.parseargs.bcsubampParser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <cite>argparse.ArgumentParser</cite> for <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.parseargs.diffselParentParser">
+<code class="descclassname">dms_tools2.parseargs.</code><code class="descname">diffselParentParser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.parseargs.diffselParentParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parent parser for <code class="docutils literal"><span class="pre">dms2_diffsel</span></code> / <code class="docutils literal"><span class="pre">dms2_batch_diffsel</span></code>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.parseargs.diffselParser">
+<code class="descclassname">dms_tools2.parseargs.</code><code class="descname">diffselParser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.parseargs.diffselParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <cite>argparse.ArgumentParser</cite> for <code class="docutils literal"><span class="pre">dms2_diffsel</span></code>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1088,6 +1196,27 @@ amino acid made by summing counts for encoding codons.</dd>
 </dd></dl>
 
 <dl class="function">
+<dt id="dms_tools2.utils.convertCountsFormat">
+<code class="descclassname">dms_tools2.utils.</code><code class="descname">convertCountsFormat</code><span class="sig-paren">(</span><em>oldfile</em>, <em>newfile</em>, <em>charlist</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.utils.convertCountsFormat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert counts file from <code class="docutils literal"><span class="pre">dms_tools</span></code> to <code class="docutils literal"><span class="pre">dms_tools2</span></code> format.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>oldfile</cite> (str)</dt>
+<dd>Name of counts file in the old <code class="docutils literal"><span class="pre">dms_tools</span></code> format:
+<a class="reference external" href="http://jbloomlab.github.io/dms_tools/fileformats.html">http://jbloomlab.github.io/dms_tools/fileformats.html</a></dd>
+<dt><cite>newfile</cite> (str)</dt>
+<dd>Name of created counts file in the <code class="docutils literal"><span class="pre">dms_tools2</span></code> format:
+<a class="reference external" href="https://jbloomlab.github.io/dms_tools2/dms2_bcsubamp.html">https://jbloomlab.github.io/dms_tools2/dms2_bcsubamp.html</a></dd>
+<dt><cite>charlist</cite> (list)</dt>
+<dd>List of characters that we expect in the counts files.
+For instance, could be <cite>dms_tools2.CODONS</cite>.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="dms_tools2.utils.incrementCounts">
 <code class="descclassname">dms_tools2.utils.</code><code class="descname">incrementCounts</code><span class="sig-paren">(</span><em>refseqstart</em>, <em>subamplicon</em>, <em>chartype</em>, <em>counts</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.utils.incrementCounts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Increment counts dict based on an aligned subamplicon.</p>
@@ -1359,7 +1488,7 @@ re-scaled preferences.</dd>
 
 <dl class="data">
 <dt id="dms_tools2.AA_TO_CODONS">
-<code class="descclassname">dms_tools2.</code><code class="descname">AA_TO_CODONS</code><em class="property"> = {'Q': ['CAA', 'CAG'], 'F': ['TTC', 'TTT'], 'V': ['GTA', 'GTC', 'GTG', 'GTT'], 'T': ['ACA', 'ACC', 'ACG', 'ACT'], 'D': ['GAC', 'GAT'], 'K': ['AAA', 'AAG'], 'W': ['TGG'], 'R': ['AGA', 'AGG', 'CGA', 'CGC', 'CGG', 'CGT'], 'I': ['ATA', 'ATC', 'ATT'], 'A': ['GCA', 'GCC', 'GCG', 'GCT'], '*': ['TAA', 'TAG', 'TGA'], 'E': ['GAA', 'GAG'], 'G': ['GGA', 'GGC', 'GGG', 'GGT'], 'P': ['CCA', 'CCC', 'CCG', 'CCT'], 'S': ['AGC', 'AGT', 'TCA', 'TCC', 'TCG', 'TCT'], 'N': ['AAC', 'AAT'], 'C': ['TGC', 'TGT'], 'M': ['ATG'], 'H': ['CAC', 'CAT'], 'L': ['CTA', 'CTC', 'CTG', 'CTT', 'TTA', 'TTG'], 'Y': ['TAC', 'TAT']}</em><a class="headerlink" href="#dms_tools2.AA_TO_CODONS" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.</code><code class="descname">AA_TO_CODONS</code><em class="property"> = {'D': ['GAC', 'GAT'], 'K': ['AAA', 'AAG'], 'M': ['ATG'], 'G': ['GGA', 'GGC', 'GGG', 'GGT'], 'L': ['CTA', 'CTC', 'CTG', 'CTT', 'TTA', 'TTG'], 'S': ['AGC', 'AGT', 'TCA', 'TCC', 'TCG', 'TCT'], 'E': ['GAA', 'GAG'], 'P': ['CCA', 'CCC', 'CCG', 'CCT'], '*': ['TAA', 'TAG', 'TGA'], 'C': ['TGC', 'TGT'], 'F': ['TTC', 'TTT'], 'W': ['TGG'], 'Y': ['TAC', 'TAT'], 'V': ['GTA', 'GTC', 'GTG', 'GTT'], 'R': ['AGA', 'AGG', 'CGA', 'CGC', 'CGG', 'CGT'], 'N': ['AAC', 'AAT'], 'T': ['ACA', 'ACC', 'ACG', 'ACT'], 'A': ['GCA', 'GCC', 'GCG', 'GCT'], 'H': ['CAC', 'CAT'], 'Q': ['CAA', 'CAG'], 'I': ['ATA', 'ATC', 'ATT']}</em><a class="headerlink" href="#dms_tools2.AA_TO_CODONS" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict back-translating amino acid to list of codons.</p>
 </dd></dl>
 
@@ -1371,13 +1500,13 @@ re-scaled preferences.</dd>
 
 <dl class="data">
 <dt id="dms_tools2.CODON_TO_AA">
-<code class="descclassname">dms_tools2.</code><code class="descname">CODON_TO_AA</code><em class="property"> = {'GAT': 'D', 'CCC': 'P', 'CGT': 'R', 'GAC': 'D', 'TCA': 'S', 'TGA': '*', 'TGC': 'C', 'CTA': 'L', 'TCG': 'S', 'TTT': 'F', 'AAA': 'K', 'GCG': 'A', 'AAC': 'N', 'GAG': 'E', 'GCA': 'A', 'TGT': 'C', 'ACA': 'T', 'TGG': 'W', 'GGT': 'G', 'GTT': 'V', 'GCC': 'A', 'TCT': 'S', 'TCC': 'S', 'GGC': 'G', 'CTC': 'L', 'ATT': 'I', 'AGG': 'R', 'CAG': 'Q', 'TAG': '*', 'CAT': 'H', 'TTC': 'F', 'CTG': 'L', 'GTA': 'V', 'GAA': 'E', 'TAA': '*', 'GGG': 'G', 'GCT': 'A', 'TAT': 'Y', 'AGA': 'R', 'CGC': 'R', 'GTG': 'V', 'CTT': 'L', 'ATC': 'I', 'CAC': 'H', 'TTA': 'L', 'CGA': 'R', 'AAT': 'N', 'ACC': 'T', 'AAG': 'K', 'CGG': 'R', 'GTC': 'V', 'CCA': 'P', 'CCG': 'P', 'AGT': 'S', 'ATA': 'I', 'AGC': 'S', 'TTG': 'L', 'ACT': 'T', 'TAC': 'Y', 'ATG': 'M', 'ACG': 'T', 'CAA': 'Q', 'CCT': 'P', 'GGA': 'G'}</em><a class="headerlink" href="#dms_tools2.CODON_TO_AA" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.</code><code class="descname">CODON_TO_AA</code><em class="property"> = {'CGA': 'R', 'GCA': 'A', 'TAG': '*', 'AGC': 'S', 'GCC': 'A', 'CGC': 'R', 'TCT': 'S', 'GCG': 'A', 'TGA': '*', 'ATG': 'M', 'CTC': 'L', 'TCG': 'S', 'CTA': 'L', 'TGC': 'C', 'GGG': 'G', 'GTT': 'V', 'ATA': 'I', 'ATC': 'I', 'TAC': 'Y', 'CCA': 'P', 'CTT': 'L', 'TAT': 'Y', 'TTT': 'F', 'CCG': 'P', 'GCT': 'A', 'CTG': 'L', 'AAC': 'N', 'GTA': 'V', 'TAA': '*', 'AGG': 'R', 'GGA': 'G', 'TGG': 'W', 'AGT': 'S', 'TCC': 'S', 'ACG': 'T', 'TTA': 'L', 'CCC': 'P', 'AAA': 'K', 'ACA': 'T', 'GAC': 'D', 'TTC': 'F', 'CAT': 'H', 'GGC': 'G', 'GAT': 'D', 'ATT': 'I', 'ACT': 'T', 'GTC': 'V', 'AAG': 'K', 'TGT': 'C', 'ACC': 'T', 'GTG': 'V', 'GAG': 'E', 'CCT': 'P', 'AAT': 'N', 'CAG': 'Q', 'CGT': 'R', 'GAA': 'E', 'AGA': 'R', 'GGT': 'G', 'CAC': 'H', 'CAA': 'Q', 'CGG': 'R', 'TTG': 'L', 'TCA': 'S'}</em><a class="headerlink" href="#dms_tools2.CODON_TO_AA" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict translating codons to amino acids</p>
 </dd></dl>
 
 <dl class="data">
 <dt id="dms_tools2.NTCOMPLEMENT">
-<code class="descclassname">dms_tools2.</code><code class="descname">NTCOMPLEMENT</code><em class="property"> = {'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C', 'N': 'N'}</em><a class="headerlink" href="#dms_tools2.NTCOMPLEMENT" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.</code><code class="descname">NTCOMPLEMENT</code><em class="property"> = {'C': 'G', 'A': 'T', 'T': 'A', 'G': 'C', 'N': 'N'}</em><a class="headerlink" href="#dms_tools2.NTCOMPLEMENT" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict mapping each nucleotide to its complement.</p>
 </dd></dl>
 
@@ -1440,6 +1569,7 @@ re-scaled preferences.</dd>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="diffsel.html">Differential selection</a></li>
 <li class="toctree-l1"><a class="reference internal" href="programs.html">Executable programs</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="api.html">Python API</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">dms_tools2 package</a></li>
