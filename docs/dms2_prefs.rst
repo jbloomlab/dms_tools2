@@ -28,7 +28,8 @@ Command-line usage
 
    \-\-name
     The `Output files`_ will have a prefix equal to the name specified here.
-    This name should only contain letters, numbers, and dashes.
+    This name should only contain letters, numbers, spaces, dashes, and forward slashes.
+    Underscores are **not** allowed as they are a LaTex special character.
 
    \-\-indir
     This option can be useful if the counts files are found in a common directory. 

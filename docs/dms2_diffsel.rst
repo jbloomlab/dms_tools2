@@ -14,7 +14,7 @@ The ``dms2_diffsel`` program processes files giving the number of observed count
 If you have multiple related replicates or samples (or even if you hvae just one), you should probably use the :ref:`dms2_batch_diffsel` program rather than running ``dms2_diffsel`` directly.
 This is because :ref:`dms2_batch_diffsel` runs ``dms2_diffsel``, but then also makes some nice summary plots.
 
-.. _prefs_commandlineusage:
+.. _diffsel_commandlineusage:
 
 Command-line usage
 ----------------------------------------
@@ -29,7 +29,8 @@ Command-line usage
 
    \-\-name
     The `Output files`_ will have a prefix equal to the name specified here.
-    This name should only contain letters, numbers, and dashes.
+    This name should only contain letters, numbers, spaces, dashes, and forward slashes.
+    Underscores are **not** allowed as they are a LaTex special character.
 
    \-\-indir
     This option can be useful if the counts files are found in a common directory. 

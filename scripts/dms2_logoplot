@@ -63,8 +63,7 @@ def main():
                 os.remove(f)
 
         # some checking on arguments
-        assert re.search('^[a-zA-Z0-9\-]+$', args['name']), \
-                "--name should contain only letters, numbers, and dashes"
+        assert dms_tools2.parseargs.checkName(args['name'])
         assert args['nperline'] >= 1
         assert args['numberevery'] >= 1
         assert args['stringency'] >= 0

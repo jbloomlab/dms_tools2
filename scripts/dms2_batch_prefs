@@ -26,8 +26,8 @@ def main():
     prog = parser.prog
 
     # set up names of output files
-    assert re.search('^[a-zA-Z0-9\-]+$', args['summaryprefix']), \
-            "--summaryprefix should contain only letters, numbers, and dashes"
+    assert re.search('^[a-zA-Z0-9\-_]+$', args['summaryprefix']), \
+            "--summaryprefix can have only letters, numbers, -, and _"
     if args['outdir']:
         if not os.path.isdir(args['outdir']):
             os.mkdir(args['outdir'])
@@ -70,6 +70,8 @@ def main():
             batchruns[c] = batchruns[c].map(str).map(str.strip)
         logger.info("Read the following sample information:\n{0}\n".format(
                 batchruns.to_csv(index=False)))
+        assert all([dms_tools2.parseargs.checkName(name) for 
+                name in batchruns['name']])
         assert len(batchruns['name']) == len(set(batchruns['name'].values)),\
                 "Duplicated name"
 

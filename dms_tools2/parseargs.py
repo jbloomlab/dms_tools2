@@ -7,9 +7,48 @@ Argument parsing for the executable scripts in ``dms_tools2``.
 """
 
 
+import re
 import argparse
 import dms_tools2
 
+
+def checkName(name):
+    """Check if `name` is an allowable name.
+
+    Allowed names can contain most characters but **not**
+    LaTex special characters.
+
+    Args:
+        `name` (str)
+            Name to check
+
+    Returns:
+        Returns `True` if `name` is an allowable name.
+        Otherwise raises a `ValueError` explaining why the
+        `name` is invalid.
+
+    >>> checkName('sample-1')
+    True
+
+    >>> checkName('sample 1')
+    True
+
+    >>> checkName('sample 1 (5 mg/ml)')
+    True
+
+    >>> checkName('sample_1')
+    Traceback (most recent call last):
+        ...
+    ValueError: name sample_1 contains following illegal characters: _
+    """
+    if not name or name.isspace():
+        raise ValueError("name is all whitespace")
+    illegal_chars = [c for c in name if 
+            re.search('^[a-zA-Z0-9\- /\(\)]$', c) is None]
+    if illegal_chars:
+        raise ValueError("name {0} contains following illegal characters: "
+                "{1}".format(name, ', '.join(illegal_chars)))
+    return True
 
 def parentParser():
     """Returns parent parser with some common options added.
@@ -264,8 +303,8 @@ def diffselParentParser():
 
     parser.add_argument('--chartype', default='codon_to_aa',
             choices=['codon_to_aa'], help="Characters for which "
-            "preferences are estimated. `codon_to_aa` = amino acids "
-            "from codon counts.")
+            "differential selection is estimated. `codon_to_aa` = amino "
+            "acids from codon counts.")
 
     parser.add_argument('--excludestop', default='yes', choices=['yes', 'no'],
             help="Exclude stop codons as a possible amino acid?")
@@ -301,6 +340,27 @@ def diffselParser():
 
     parser.add_argument('--err', help="Like ``--sel`` but for "
             "error-control to correct mutation counts.")
+
+    return parser
+
+
+def batch_diffselParser():
+    """Returns `argparse.ArgumentParser` for ``dms2_batch_diffsel``."""
+    parser = argparse.ArgumentParser(
+            description=parserDescription(
+                'Perform many runs of ``dms2_diffsel`` and summarize results.'),
+            parents=[diffselParentParser()],
+            conflict_handler='resolve',
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--batchfile', required=True, help='CSV file '
+            'specifying each ``dms2_diffsel`` run. Must have these '
+            'columns: `name`, `sel`, `mock`. Can also have these: '
+            '`err`, `group`. If `group` is used, samples are grouped '
+            'in summary plots.')
+
+    parser.add_argument('--summaryprefix', required=True,
+            help='Prefix of output summary files and plots.')
 
     return parser
 

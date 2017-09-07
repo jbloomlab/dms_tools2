@@ -28,6 +28,9 @@ Command-line usage
    :func: logoplotParser
    :prog: dms2_logoplot
 
+   \-\-name
+    This name should only contain letters, numbers, spaces, dashes, and forward slashes.
+    Underscores are **not** allowed as they are a LaTex special character.
 
 Output files
 --------------
