@@ -41,7 +41,7 @@ class TestDiffSel(unittest.TestCase):
             for mincounts in self.mincounts:
                 fprefix = os.path.join(self.expecteddir, 
                         '{0}-mincounts{1}'.format(c, mincounts))
-                for fsuffix in ['_mutdiffsel.csv', 'sitediffsel.txt']:
+                for fsuffix in ['_mutdiffsel.csv', '_sitediffsel.csv']:
                     fname = fprefix + fsuffix
                     self.assertTrue(os.path.isfile(fname), fname)
 
@@ -66,7 +66,7 @@ class TestDiffSel(unittest.TestCase):
                 subprocess.check_call(cmds)
                 for (suffix, columntotest) in [
                         ('_mutdiffsel.csv', 'mutdiffsel'),
-#                        ('sitediffsel.txt', 'abs_diffsel')
+                        ('_sitediffsel.csv', 'abs_diffsel')
                         ]:
                     f = os.path.join(self.testdir, name + suffix)
                     self.assertTrue(os.path.isfile(f))
@@ -81,7 +81,9 @@ class TestDiffSel(unittest.TestCase):
                     self.assertTrue(numpy.allclose(
                             numpy.nan_to_num(actual_col), 
                             numpy.nan_to_num(expected_col)),
-                            "mismatch: {0} and {1}".format(f, expected_f))
+                            "mismatch: {0} and {1}\nmax diff: {2}"
+                            .format(f, expected_f, 
+                            (actual_col - expected_col).max()))
 
 
     def test_ErrorCorrection_NoErrors(self):
@@ -105,7 +107,7 @@ class TestDiffSel(unittest.TestCase):
                 subprocess.check_call(cmds)
                 for (suffix, columntotest) in [
                         ('_mutdiffsel.csv', 'mutdiffsel'),
-#                        ('sitediffsel.txt', 'abs_diffsel')
+                        ('_sitediffsel.csv', 'abs_diffsel')
                         ]:
                     f = os.path.join(self.testdir, name + suffix)
                     self.assertTrue(os.path.isfile(f))
@@ -120,8 +122,10 @@ class TestDiffSel(unittest.TestCase):
                             f, expected_f, len(actual_col), len(expected_col)))
                     self.assertTrue(numpy.allclose(
                             numpy.nan_to_num(actual_col), 
-                            numpy.nan_to_num(expected_col)),
-                            "mismatch: {0} and {1}".format(f, expected_f))
+                            numpy.nan_to_num(expected_col)), 
+                            "mismatch: {0} and {1}\nmax diff: {2}"
+                            .format(f, expected_f, 
+                            (actual_col - expected_col).max()))
 
 
     def test_ErrorCorrection_WithErrors(self):
@@ -145,7 +149,7 @@ class TestDiffSel(unittest.TestCase):
                 subprocess.check_call(cmds)
                 for (suffix, columntotest) in [
                         ('_mutdiffsel.csv', 'mutdiffsel'),
-#                        ('sitediffsel.txt', 'abs_diffsel')
+                        ('_sitediffsel.csv', 'abs_diffsel'),
                         ]:
                     f = os.path.join(self.testdir, name + suffix)
                     self.assertTrue(os.path.isfile(f))
@@ -161,7 +165,9 @@ class TestDiffSel(unittest.TestCase):
                     self.assertTrue(numpy.allclose(
                             numpy.nan_to_num(actual_col), 
                             numpy.nan_to_num(expected_col)),
-                            "mismatch: {0} and {1}".format(f, expected_f))
+                            "mismatch: {0} and {1}\nmax diff: {2}"
+                            .format(f, expected_f, 
+                            (actual_col - expected_col).max()))
 
 
 

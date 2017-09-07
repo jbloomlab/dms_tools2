@@ -97,7 +97,7 @@ def main():
 
         logger.info("Computing sitediffsel...")
         sitediffsel = (dms_tools2.diffsel.mutToSiteDiffSel(mutdiffsel)
-                       .sort_values('abs_sitediffsel', ascending=False))
+                       .sort_values('abs_diffsel', ascending=False))
         logger.info("Sites with largest absolute sitediffsel:\n{0}\n"
                 .format(sitediffsel.head(10).to_string(index=False,
                 float_format='{:.2f}'.format)))
