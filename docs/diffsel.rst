@@ -30,6 +30,7 @@ Essentially, most mutations are **not** selected differently in the selected (e.
    At other sites (such as 151), there is no differential selection for any mutation.
    The scale bar indicates a differential selection of 8, which corresponds to a :math:`2^8 = 256`-fold enrichment of the mutation.
    Figure from `Doud et al (2017)`_.
+   Note that this figure only shows **positive** differential selection (mutations that are favored in the selected versus mock condition).
 
 
 The `dms_tools2`_ software contains programs to estimate the differential selection from the counts of mutations generated from the deep sequencing data.
@@ -85,25 +86,71 @@ where :math:`P > 0` is a pseudocount that is added to each observed count (speci
 The reason for scaling the pseudocount by library depth is that the *mock* and *selected* libraries may often be sequenced at different depths. 
 If the same pseudocount is added to both, then estimates of :math:`E_{r,x}` will be systematically different than one even if the relative counts for the wildtype and mutant amino acid are the same in both two conditions. 
 Scaling the pseudocounts by the ratio of depths fixes this problem. 
-
+Larger values of the pseudocount :math:`P` will avoid spuriously estimating differential selection when there is just statistical noise due to low counts, but this comes at the cost of reducing sensitivity.
 If you are using ``--chartype`` of ``codon_to_aa``, the counts for amino acids are aggregated **before** doing the calculations above.
 
 Note that by definition, :math:`E_{r,\operatorname{wt}\left(r\right)}` is always one.
 
-We quantify the *differential selection* :math:`s_{r,x}` for :math:`x` at :math:`r` in the selected versus control condition as:
+We quantify the *differential selection* :math:`s_{r,x}` for the mutation to :math:`x` at site :math:`r` in the selected versus control condition as:
 
 .. math::
-   :label: s_rx
+   :label: mutdiffsel
 
    s_{r,x} = \log_2 E_{r,x}
 
-It is these :math:`s_{r,x}` values that are reported by :ref:`dms2_diffsel` / :ref:`dms2_batch_diffsel` and plotted in the logo plots above.
-
+These :math:`s_{r,x}` are reported as the *mutation differential selection* values by :ref:`dms2_diffsel` / :ref:`dms2_batch_diffsel`, and can be plotted in the logo plots above using :ref:`dms2_logoplot`.
 When :math:`s_{r,x} > 0`, then :math:`x` is more favored in the selection versus mock condition.
 When :math:`s_{r,x} < 0`, then :math:`x` is less favored in the selection versus mock condition.
 By definition, :math:`s_{r,\operatorname{wt}\left(r\right)}` is always zero.
 
-Larger values of the pseudocount :math:`P` will avoid spuriously estimating differential selection when in fact you just have statistical noise due to small counts at a site, but this comes at the cost of reducing actual sensitivity.
+There is a mutation differential selection value for each mutation at a site -- for instance, there will be 19 such values for amino acid characters (the wildtype value is always one by definition).
+For visualization and analysis, it is sometimes useful to summarize the mutation differential selection values at a site with a single number.
+This can be done in several ways:
+
+1. We define *absolute site differential selection* in terms of the *mutation differential selection* values at that site as
+
+   .. math::
+      :label: abs_diffsel
+
+      \mbox{abs_diffsel} = \sum_x \left|s_{r,x}\right|.
+
+   The absolute site differential selection is equivalent to the total height of the letter stack in both the positive and negative directions in logoplots such as :numref:`diffselsnippetfig`.
+
+2. We define *positive site differential selection* in terms of the *mutation differential selection* values at that site as
+
+   .. math::
+      :label: positive_diffsel
+
+      \mbox{positive_diffsel} = \sum_x \max\left(0, s_{r,x}\right).
+
+   The positive site differential selection is equivalent to the total height of the letter stack in just the positive direction in logoplots such as :numref:`diffselsnippetfig`.
+
+3. We define *negative site differential selection* in terms of the *mutation differential selection* values at that site as
+
+   .. math::
+      :label: negative_diffsel
+
+      \mbox{negative_diffsel} = \sum_x \min\left(0, s_{r,x}\right).
+
+   The negative site differential selection is equivalent to the total height of the letter stack in just the negative direction in logoplots such as :numref:`diffselsnippetfig`.
+
+4. We define *maximum site differential selection* in terms of the *mutation differential selection* values at that site as
+
+   .. math::
+      :label: max_diffsel
+
+      \mbox{max_diffsel} = \sum_x \max\left(0, \max_x\left(s_{r,x}\right)\right).
+
+   The maximum site differential selection is equivalent to the tallest letter in the positive direction in logoplots such as :numref:`diffselsnippetfig`, or zero if no letters are in the positive direction.
+
+5. We define *minimum site differential selection* in terms of the *mutation differential selection* values at that site as
+
+   .. math::
+      :label: min_diffsel
+
+      \mbox{min_diffsel} = \sum_x \min\left(0, \min_x\left(s_{r,x}\right)\right).
+
+   The maximum site differential selection is equivalent to the tallest letter in the negative direction in logoplots such as :numref:`diffselsnippetfig`, or zero if no letters are in the negative direction.
 
 Error correction
 ++++++++++++++++++++++++
