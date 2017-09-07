@@ -141,12 +141,12 @@ def mutToSiteDiffSel(mutdiffsel):
             - `min_diffsel`: minimum mutdiffsel at site
 
     >>> mutdiffsel = (pandas.DataFrame({
-    ...         'site':[1, 2],
-    ...         'wildtype':['A', 'C'],
-    ...         'A':[numpy.nan, 4.1],
-    ...         'C':[-0.2, numpy.nan],
-    ...         'G':[3.2, 0.1],
-    ...         'T':[-0.2, 0.0],
+    ...         'site':[1, 2, 3, 4],
+    ...         'wildtype':['A', 'C', 'C', 'A'],
+    ...         'A':[numpy.nan, 4.1, -0.1, numpy.nan],
+    ...         'C':[-0.2, numpy.nan, numpy.nan, 0.3],
+    ...         'G':[3.2, 0.1, -0.2, 0.1],
+    ...         'T':[-0.2, 0.0, -0.1, 0.4],
     ...         })
     ...         .melt(id_vars=['site', 'wildtype'],
     ...               var_name='mutation', value_name='mutdiffsel')
@@ -157,17 +157,17 @@ def mutToSiteDiffSel(mutdiffsel):
     ...         'positive_diffsel', 'negative_diffsel', 
     ...         'max_diffsel', 'min_diffsel'])
     True
-    >>> all(sitediffsel['site'] == [1, 2])
+    >>> all(sitediffsel['site'] == [1, 2, 3, 4])
     True
-    >>> numpy.allclose(sitediffsel['abs_diffsel'], [3.6, 4.2])
+    >>> numpy.allclose(sitediffsel['abs_diffsel'], [3.6, 4.2, 0.4, 0.8])
     True
-    >>> numpy.allclose(sitediffsel['positive_diffsel'], [3.2, 4.2])
+    >>> numpy.allclose(sitediffsel['positive_diffsel'], [3.2, 4.2, 0, 0.8])
     True
-    >>> numpy.allclose(sitediffsel['negative_diffsel'], [-0.4, 0.0])
+    >>> numpy.allclose(sitediffsel['negative_diffsel'], [-0.4, 0, -0.4, 0])
     True
-    >>> numpy.allclose(sitediffsel['max_diffsel'], [3.2, 4.1])
+    >>> numpy.allclose(sitediffsel['max_diffsel'], [3.2, 4.1, 0, 0.4])
     True
-    >>> numpy.allclose(sitediffsel['min_diffsel'], [-0.2, 0.0])
+    >>> numpy.allclose(sitediffsel['min_diffsel'], [-0.2, 0, -0.2, 0])
     True
     """
     sitediffsel = (mutdiffsel
