@@ -58,7 +58,8 @@ def main():
 
         # read batchfile, strip any whitespace from strings
         logger.info("Parsing info from {0}".format(args['batchfile']))
-        assert os.path.isfile(args['batchfile']), "no batchfile"
+        assert os.path.isfile(args['batchfile']), \
+                "no batchfile {0}".format(batchfile)
         batchruns = pandas.read_csv(args['batchfile'], na_filter=False)
         batchruns.columns = batchruns.columns.str.strip()
         colnames = set(['name', 'sel', 'mock'])
@@ -70,11 +71,14 @@ def main():
                 batchruns.to_csv(index=False)))
         assert all([dms_tools2.parseargs.checkName(name, 'name') for name
                 in batchruns['name']])
-        assert len(batchruns['name']) == len(set(batchruns['name'].values)),\
-                "Duplicated name"
         if 'group' in batchruns.columns:
             assert all([dms_tools2.parseargs.checkName(group, 'group') for
                     group in batchruns['group']])
+            batchruns['outname'] = batchruns['group'] + '-' + batchruns['name']
+        else:
+            batchruns['outname'] = batchruns['name']
+        assert (len(set(batchruns['outname'].values)) ==
+                len(batchruns['outname'])), "Duplicated name"
 
         # determine how many cpus to use
         if args['ncpus'] == -1:
@@ -89,8 +93,8 @@ def main():
         logger.info("Running dms2_diffsel on all samples...")
         argslist = []
         for (i, row) in batchruns.iterrows():
-            # define newargs to pass to dms2_prefs
-            newargs = ['dms2_prefs', '--name', row['name'], 
+            # define newargs to pass to dms2_diffsel
+            newargs = ['dms2_diffsel', '--name', row['outname'], 
                     '--sel', row['sel'], '--mock', row['mock'],
                     '--ncpus', str(ncpus_per_run)]
             if 'err' in batchruns.columns:
@@ -117,7 +121,7 @@ def main():
                 ('mutdiffsel', '_mutdiffsel.csv'),
                 ('sitediffsel', '_sitediffsel.csv'),
                 ]:
-            batchruns[filename] = (args['outdir'] + '/' + batchruns['name'] +
+            batchruns[filename] = (args['outdir'] + '/' + batchruns['outname'] +
                     filesuffix)
             for f in batchruns[filename]:
                 if not os.path.isfile(f):
