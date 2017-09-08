@@ -64,10 +64,16 @@ def main():
         if args['chartype'] == 'codon_to_aa':
             countcharacters = dms_tools2.CODONS
             translate_to_aa = True
+            countsuffix = '_codoncounts.csv'
         else:
             raise ValueError("Bad chartype {0}".format(args['chartype']))
 
         counts = {}
+        if not args['indir']:
+            args['indir'] = ''
+        else:
+            assert os.path.isdir(args['indir']), "No --indir {0}".format(
+                    args['indir'])
         for (arg, desc) in [
                 ('sel', 'selected sample'),
                 ('mock', 'mock-selected sample'),
@@ -77,7 +83,13 @@ def main():
                 counts[arg] = None
                 continue
             logger.info("Reading {0} counts from {1}".format(desc, args[arg]))
-            counts[arg] = pandas.read_csv(args[arg])
+            fname = os.path.join(args['indir'], args[arg])
+            if not os.path.isfile(fname):
+                if os.path.isfile(fname + countsuffix):
+                    fname = fname + countsuffix
+                else:
+                    raise ValueError("Missing file for --{0}".format(desc))
+            counts[arg] = pandas.read_csv(fname)
 
         logger.info("Computing mutdiffsel...")
         mutdiffsel = dms_tools2.diffsel.computeMutDiffSel(
