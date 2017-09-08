@@ -48,8 +48,6 @@ def main():
 
     logger = dms_tools2.utils.initLogger(files['log'], prog, args)
 
-    sys.exit()
-
     # log in try / except / finally loop
     try:
 
@@ -63,7 +61,7 @@ def main():
         assert os.path.isfile(args['batchfile']), "no batchfile"
         batchruns = pandas.read_csv(args['batchfile'], na_filter=False)
         batchruns.columns = batchruns.columns.str.strip()
-        colnames = set(['name', 'pre', 'post'])
+        colnames = set(['name', 'sel', 'mock'])
         assert set(batchruns.columns) >= colnames, ("batchfile lacks "
                 "required column names: {0}".format(colnames))
         for c in batchruns.columns:
@@ -74,6 +72,9 @@ def main():
                 in batchruns['name']])
         assert len(batchruns['name']) == len(set(batchruns['name'].values)),\
                 "Duplicated name"
+        if 'group' in batchruns.columns:
+            assert all([dms_tools2.parseargs.checkName(group) for group
+                    in batchruns['group']])
 
         # determine how many cpus to use
         if args['ncpus'] == -1:
@@ -84,26 +85,16 @@ def main():
             raise ValueError("--ncpus must be -1 or > 0")
         ncpus_per_run = max(1, ncpus // len(batchruns.index))
 
-        # run dms2_prefs for each sample in batchfile
-        logger.info("Running dms2_prefs on all samples...")
+        # run dms2_diffsel for each sample in batchfile
+        logger.info("Running dms2_diffsel on all samples...")
         argslist = []
-        if 'err' in batchruns.columns:
-            error_model = 'same'
-        elif {'errpre', 'errpost'} <= set(batchruns.columns):
-            error_model = 'different'
-        else:
-            assert 'errpre' not in batchruns.columns, "errpre but not errpost"
-            assert 'errpost' not in batchruns.columns, "errpost but not errpre"
-            error_model = 'none'
         for (i, row) in batchruns.iterrows():
             # define newargs to pass to dms2_prefs
             newargs = ['dms2_prefs', '--name', row['name'], 
-                    '--pre', row['pre'], '--post', row['post'],
+                    '--sel', row['sel'], '--mock', row['mock'],
                     '--ncpus', str(ncpus_per_run)]
-            if error_model == 'same':
-                newargs += ['--err', row['err'], row['err']]
-            elif error_model == 'different':
-                newargs += ['--err', row['errpre'], row['errpost']]
+            if 'err' in batchruns.columns:
+                newargs += ['--err', row['err']]
             for (arg, val) in args.items():
                 if arg in ['batchfile', 'ncpus', 'summaryprefix']:
                     continue
@@ -119,11 +110,12 @@ def main():
                 stderr=subprocess.STDOUT), argslist)
         pool.close()
         pool.join()
-        logger.info("Completed runs of dms2_prefs.\n")
+        logger.info("Completed runs of dms2_diffsel.\n")
 
-        # define dms2_prefs output files and make sure they exist 
+        # define dms2_diffsel output files and make sure they exist 
         for (filename, filesuffix) in [
-                ('prefs', '_prefs.csv')
+                ('mutdiffsel', '_mutdiffsel.csv'),
+                ('sitediffsel', '_sitediffsel.csv'),
                 ]:
             batchruns[filename] = (args['outdir'] + '/' + batchruns['name'] +
                     filesuffix)
@@ -136,14 +128,14 @@ def main():
                     raise RuntimeError("Failed to create {0}.\nHere is end of "
                             "{1}:\n{2}".format(f, flog, '\n'.join(lines[-25 : ])))
 
-        logger.info("Plotting correlations to {0}\n".format(files['corr']))
-        dms_tools2.plot.plotCorrMatrix(batchruns['name'], 
-                batchruns['prefs'], files['corr'], datatype='prefs')
+#        logger.info("Plotting correlations to {0}\n".format(files['corr']))
+#        dms_tools2.plot.plotCorrMatrix(batchruns['name'], 
+#                batchruns['prefs'], files['corr'], datatype='prefs')
 
-        logger.info("Writing average preferences to {0}\n".format(
-                files['avgprefs']))
-        avgprefs = dms_tools2.utils.avgPrefs(batchruns['prefs'])
-        avgprefs.to_csv(files['avgprefs'], index=False)
+#        logger.info("Writing average preferences to {0}\n".format(
+#                files['avgprefs']))
+#        avgprefs = dms_tools2.utils.avgPrefs(batchruns['prefs'])
+#        avgprefs.to_csv(files['avgprefs'], index=False)
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))
