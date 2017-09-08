@@ -12,7 +12,7 @@ import argparse
 import dms_tools2
 
 
-def checkName(name):
+def checkName(name, nametype):
     """Check if `name` is an allowable name.
 
     Allowed names can contain most characters but **not**
@@ -21,33 +21,41 @@ def checkName(name):
     Args:
         `name` (str)
             Name to check
+        `nametype` (str)
+            If we print an exception what do we call the parameter
+            that failed? For instance, `name` or `group`.
 
     Returns:
         Returns `True` if `name` is an allowable name.
         Otherwise raises a `ValueError` explaining why the
         `name` is invalid.
 
-    >>> checkName('sample-1')
+    >>> checkName('sample-1', 'name')
     True
 
-    >>> checkName('sample 1')
+    >>> checkName('sample 1', 'name')
     True
 
-    >>> checkName('sample 1 (5 mg/ml)')
+    >>> checkName('PGT151 - 5 nM', 'name')
     True
 
-    >>> checkName('sample_1')
+    >>> checkName('sample_1', 'name')
     Traceback (most recent call last):
         ...
     ValueError: name sample_1 contains following illegal characters: _
+
+    >>> checkName('sample_1', 'group')
+    Traceback (most recent call last):
+        ...
+    ValueError: group sample_1 contains following illegal characters: _
     """
     if not name or name.isspace():
         raise ValueError("name is all whitespace")
     illegal_chars = [c for c in name if 
-            re.search('^[a-zA-Z0-9\- /\(\)]$', c) is None]
+            re.search('^[a-zA-Z0-9\- ]$', c) is None]
     if illegal_chars:
-        raise ValueError("name {0} contains following illegal characters: "
-                "{1}".format(name, ', '.join(illegal_chars)))
+        raise ValueError("{0} {1} contains following illegal characters: "
+                "{2}".format(nametype, name, ', '.join(illegal_chars)))
     return True
 
 def parentParser():

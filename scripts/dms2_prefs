@@ -50,7 +50,7 @@ def main():
     # log in try / except / finally loop
     try:
 
-        assert dms_tools2.parseargs.checkName(args['name'])
+        assert dms_tools2.parseargs.checkName(args['name'], 'name')
 
         # remove expected output files if they already exist
         for (ftype, f) in files.items():

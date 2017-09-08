@@ -59,7 +59,7 @@ Command-line usage
 
    \-\-name
     The `Output files`_ will have a prefix equal to the name specified here.
-    This name should only contain letters, numbers, spaces, dashes, and forward slashes.
+    This name should only contain letters, numbers, dashes, and spaces.
     Underscores are **not** allowed as they are a LaTex special character.
 
    \-\-alignspecs

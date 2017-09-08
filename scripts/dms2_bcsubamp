@@ -87,7 +87,7 @@ def main():
     # log in try / except / finally loop
     try:
 
-        assert dms_tools2.parseargs.checkName(args['name'])
+        assert dms_tools2.parseargs.checkName(args['name'], 'name')
 
         for (ftype, f) in files.items():
             if os.path.isfile(f) and ftype != 'log':

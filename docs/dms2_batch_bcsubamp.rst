@@ -34,7 +34,9 @@ Command-line usage
 
    \-\-summaryprefix
     As detailed in `Output files` below, ``dms2_batch_bcsubamp`` creates a variety of plots summarizing the output.
-    This files are in the directory specified by ``--outdir``, and have the prefix specified here.
+    These files are in the directory specified by ``--outdir``, and have the prefix specified here.
+    This prefix should only contain letters, numbers, dashes, and spaces.
+    Underscores are **not** allowed as they are a LaTex special character.
 
    \-\-ncpus
     Multiple runs of ``dms2_bcsubamp`` can be performed in parallel on the different samples specified by ``--batchfile``. 

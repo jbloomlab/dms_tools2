@@ -63,7 +63,7 @@ def main():
                 os.remove(f)
 
         # some checking on arguments
-        assert dms_tools2.parseargs.checkName(args['name'])
+        assert dms_tools2.parseargs.checkName(args['name'], 'name')
         assert args['nperline'] >= 1
         assert args['numberevery'] >= 1
         assert args['stringency'] >= 0

@@ -29,7 +29,7 @@ Command-line usage
    :prog: dms2_logoplot
 
    \-\-name
-    This name should only contain letters, numbers, spaces, dashes, and forward slashes.
+    This name should only contain letters, numbers, dashes, and spaces.
     Underscores are **not** allowed as they are a LaTex special character.
 
 Output files

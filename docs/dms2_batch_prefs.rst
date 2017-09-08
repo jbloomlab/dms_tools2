@@ -39,7 +39,9 @@ Command-line usage
 
    \-\-summaryprefix
     As detailed in `Output files` below, ``dms2_batch_prefs`` creates a variety of plots summarizing the output.
-    This files are in the directory specified by ``--outdir``, and have the prefix specified here.
+    These files are in the directory specified by ``--outdir``, and have the prefix specified here.
+    This name should only contain letters, numbers, dashes, and spaces.
+    Underscores are **not** allowed as they are a LaTex special character.
 
 Output files
 --------------

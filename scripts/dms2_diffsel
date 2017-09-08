@@ -52,7 +52,7 @@ def main():
     # log in try / except / finally statement
     try:
 
-        assert dms_tools2.parseargs.checkName(args['name'])
+        assert dms_tools2.parseargs.checkName(args['name'], 'name')
         assert args['pseudocount'] > 0
 
         # remove expected output files if they already exist
