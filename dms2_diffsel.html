@@ -65,7 +65,7 @@
 This is because <span class="xref std std-ref">dms2_batch_diffsel</span> runs <code class="docutils literal"><span class="pre">dms2_diffsel</span></code>, but then also makes some nice summary plots.</p>
 </div>
 <div class="section" id="command-line-usage">
-<span id="prefs-commandlineusage"></span><h2><a class="toc-backref" href="#id4">Command-line usage</a><a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
+<span id="diffsel-commandlineusage"></span><h2><a class="toc-backref" href="#id4">Command-line usage</a><a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
 <p>Estimate differential selection from mutation counts. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.0a0) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">dms2_diffsel</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">outdir</span> <span class="n">OUTDIR</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">ncpus</span> <span class="n">NCPUS</span><span class="p">]</span>
                     <span class="p">[</span><span class="o">--</span><span class="n">use_existing</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">indir</span> <span class="n">INDIR</span><span class="p">]</span>
@@ -106,7 +106,7 @@ Instead of repeatedly listing that directory name, you can just provide it here.
 <tr><td class="option-group">
 <kbd>--chartype</kbd></td>
 <td><p class="first">Possible choices: codon_to_aa</p>
-<p>Characters for which preferences are estimated. <cite>codon_to_aa</cite> = amino acids from codon counts.</p>
+<p>Characters for which differential selection is estimated. <cite>codon_to_aa</cite> = amino acids from codon counts.</p>
 <p class="last">Default: “codon_to_aa”</p>
 </td></tr>
 <tr><td class="option-group">
@@ -129,7 +129,8 @@ Instead of repeatedly listing that directory name, you can just provide it here.
 <kbd>--name</kbd></td>
 <td><p class="first">Name used for output files.</p>
 <p class="last">The Output files will have a prefix equal to the name specified here.
-This name should only contain letters, numbers, and dashes.</p>
+This name should only contain letters, numbers, dashes, and spaces.
+Underscores are not allowed as they are a LaTex special character.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd>--sel</kbd></td>

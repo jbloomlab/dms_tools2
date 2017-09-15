@@ -149,7 +149,7 @@ secondary structure and solvent accessibility information from a
 PDB structure. This module can process that output.</p>
 <dl class="data">
 <dt id="dms_tools2.dssp.MAX_ASA_TIEN">
-<code class="descclassname">dms_tools2.dssp.</code><code class="descname">MAX_ASA_TIEN</code><em class="property"> = {'D': 193.0, 'K': 236.0, 'M': 224.0, 'G': 104.0, 'L': 201.0, 'S': 155.0, 'E': 223.0, 'P': 159.0, 'I': 197.0, 'C': 167.0, 'F': 240.0, 'W': 285.0, 'Y': 263.0, 'V': 174.0, 'N': 195.0, 'T': 172.0, 'A': 129.0, 'H': 224.0, 'Q': 225.0, 'R': 274.0}</em><a class="headerlink" href="#dms_tools2.dssp.MAX_ASA_TIEN" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.dssp.</code><code class="descname">MAX_ASA_TIEN</code><em class="property"> = {'A': 129.0, 'C': 167.0, 'Q': 225.0, 'F': 240.0, 'N': 195.0, 'L': 201.0, 'H': 224.0, 'K': 236.0, 'Y': 263.0, 'P': 159.0, 'W': 285.0, 'I': 197.0, 'R': 274.0, 'M': 224.0, 'G': 104.0, 'E': 223.0, 'D': 193.0, 'V': 174.0, 'T': 172.0, 'S': 155.0}</em><a class="headerlink" href="#dms_tools2.dssp.MAX_ASA_TIEN" title="Permalink to this definition">¶</a></dt>
 <dd><p>max accessible surface area (square angstroms) for amino acids, from
 <a class="reference external" href="https://doi.org/10.1371/journal.pone.0080635">Tien et al (2013)</a>.
 <cite>MAX_ASA_TIEN[a]</cite> is the max surface area for amino acid <cite>a</cite>.</p>
@@ -157,7 +157,7 @@ PDB structure. This module can process that output.</p>
 
 <dl class="function">
 <dt id="dms_tools2.dssp.processDSSP">
-<code class="descclassname">dms_tools2.dssp.</code><code class="descname">processDSSP</code><span class="sig-paren">(</span><em>dsspfile</em>, <em>chain=None</em>, <em>max_asa={'D': 193.0</em>, <em>'K': 236.0</em>, <em>'M': 224.0</em>, <em>'G': 104.0</em>, <em>'L': 201.0</em>, <em>'S': 155.0</em>, <em>'E': 223.0</em>, <em>'P': 159.0</em>, <em>'I': 197.0</em>, <em>'C': 167.0</em>, <em>'F': 240.0</em>, <em>'W': 285.0</em>, <em>'Y': 263.0</em>, <em>'V': 174.0</em>, <em>'N': 195.0</em>, <em>'T': 172.0</em>, <em>'A': 129.0</em>, <em>'H': 224.0</em>, <em>'Q': 225.0</em>, <em>'R': 274.0}</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.dssp.processDSSP" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.dssp.</code><code class="descname">processDSSP</code><span class="sig-paren">(</span><em>dsspfile</em>, <em>chain=None</em>, <em>max_asa={'A': 129.0</em>, <em>'C': 167.0</em>, <em>'Q': 225.0</em>, <em>'F': 240.0</em>, <em>'N': 195.0</em>, <em>'L': 201.0</em>, <em>'H': 224.0</em>, <em>'K': 236.0</em>, <em>'Y': 263.0</em>, <em>'P': 159.0</em>, <em>'W': 285.0</em>, <em>'I': 197.0</em>, <em>'R': 274.0</em>, <em>'M': 224.0</em>, <em>'G': 104.0</em>, <em>'E': 223.0</em>, <em>'D': 193.0</em>, <em>'V': 174.0</em>, <em>'T': 172.0</em>, <em>'S': 155.0}</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.dssp.processDSSP" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get secondary structure and solvent accessibility from <code class="docutils literal"><span class="pre">dssp</span></code>.</p>
 <p><a class="reference external" href="http://swift.cmbi.ru.nl/gv/dssp/">dssp</a> is a program
 that calculates secondary structure and absolute solvent
@@ -258,6 +258,12 @@ Multiple images are displayed side-by-side.</dd>
 </dd></dl>
 
 <dl class="function">
+<dt id="dms_tools2.parseargs.batch_diffselParser">
+<code class="descclassname">dms_tools2.parseargs.</code><code class="descname">batch_diffselParser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.parseargs.batch_diffselParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <cite>argparse.ArgumentParser</cite> for <code class="docutils literal"><span class="pre">dms2_batch_diffsel</span></code>.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="dms_tools2.parseargs.batch_prefsParser">
 <code class="descclassname">dms_tools2.parseargs.</code><code class="descname">batch_prefsParser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.parseargs.batch_prefsParser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <cite>argparse.ArgumentParser</cite> for <code class="docutils literal"><span class="pre">dms2_batch_prefs</span></code>.</p>
@@ -273,6 +279,53 @@ Multiple images are displayed side-by-side.</dd>
 <dt id="dms_tools2.parseargs.bcsubampParser">
 <code class="descclassname">dms_tools2.parseargs.</code><code class="descname">bcsubampParser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.parseargs.bcsubampParser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <cite>argparse.ArgumentParser</cite> for <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.parseargs.checkName">
+<code class="descclassname">dms_tools2.parseargs.</code><code class="descname">checkName</code><span class="sig-paren">(</span><em>name</em>, <em>nametype</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.parseargs.checkName" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if <cite>name</cite> is an allowable name.</p>
+<p>Allowed names can contain most characters but <strong>not</strong>
+LaTex special characters.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>name</cite> (str)</dt>
+<dd>Name to check</dd>
+<dt><cite>nametype</cite> (str)</dt>
+<dd>If we print an exception what do we call the parameter
+that failed? For instance, <cite>name</cite> or <cite>group</cite>.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>Returns <cite>True</cite> if <cite>name</cite> is an allowable name.
+Otherwise raises a <cite>ValueError</cite> explaining why the
+<cite>name</cite> is invalid.</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">checkName</span><span class="p">(</span><span class="s1">&#39;sample-1&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">checkName</span><span class="p">(</span><span class="s1">&#39;sample 1&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">checkName</span><span class="p">(</span><span class="s1">&#39;PGT151 - 5 nM&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">checkName</span><span class="p">(</span><span class="s1">&#39;sample_1&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="gr">ValueError</span>: <span class="n">name sample_1 contains following illegal characters: _</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">checkName</span><span class="p">(</span><span class="s1">&#39;sample_1&#39;</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="gr">ValueError</span>: <span class="n">group sample_1 contains following illegal characters: _</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="function">
@@ -843,6 +896,66 @@ R to be <cite>1 + 1.5 (r_max - 1)</cite>.</dd>
 </dl>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.prefs.prefsToMutEffects">
+<code class="descclassname">dms_tools2.prefs.</code><code class="descname">prefsToMutEffects</code><span class="sig-paren">(</span><em>prefs</em>, <em>charlist</em><span class="sig-paren">)</span><a class="headerlink" href="#dms_tools2.prefs.prefsToMutEffects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts amino acid preferences to effects of specific mutations.</p>
+<p>If the preference of site <span class="math">\(r\)</span> for amino acid <span class="math">\(a\)</span> is
+<span class="math">\(\pi_{r,a}\)</span>, then the estimated effect (e.g., ratio of
+enrichment ratios) for mutating that site from <span class="math">\(x\)</span> to
+<span class="math">\(y\)</span> is <span class="math">\(\frac{\pi_{r,y}}{\pi_{r,x}}\)</span>. Very small
+values indicate disfavored mutations, and very large values
+indicate highly favored mutations. The logarithm base 2 of the
+expected effects is also a useful measure – negative values
+are disfavored mutations, positive values are favored ones.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>prefs</cite> (pandas DataFrame)</dt>
+<dd>Preferences to analyze. The columns should be <cite>site</cite> and
+a column for every character in <cite>charlist</cite>.</dd>
+<dt><cite>charlist</cite> (list)</dt>
+<dd>The list of characters that we are analyzing. For instance,
+<cite>dms_tools2.AAS</cite> for amino acids.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><p class="first">A pandas Data Frame where the columns are:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li><cite>site</cite>: the site</li>
+<li><cite>initial</cite>: the initial character (e.g., amino acid)</li>
+<li><cite>final</cite>: the final character after the mutation</li>
+<li><cite>mutation</cite>: mutation in the string form <cite>A1G</cite></li>
+<li><cite>effect</cite>: the effect of the mutation</li>
+<li><cite>log2effect</cite>: the log2 of the effect of the mutation.</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">charlist</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">prefs</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+<span class="gp">... </span>        <span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;A&#39;</span><span class="p">:[</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;C&#39;</span><span class="p">:[</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;G&#39;</span><span class="p">:[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">effects</span> <span class="o">=</span> <span class="n">prefsToMutEffects</span><span class="p">(</span><span class="n">prefs</span><span class="p">,</span> <span class="n">charlist</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">set</span><span class="p">(</span><span class="n">effects</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;initial&#39;</span><span class="p">,</span> <span class="s1">&#39;final&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s1">&#39;mutation&#39;</span><span class="p">,</span> <span class="s1">&#39;effect&#39;</span><span class="p">,</span> <span class="s1">&#39;log2effect&#39;</span><span class="p">}</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">effects</span><span class="p">[</span><span class="n">effects</span><span class="p">[</span><span class="s1">&#39;initial&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;A&#39;</span><span class="p">][</span><span class="s1">&#39;effect&#39;</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">effects</span><span class="p">[</span><span class="n">effects</span><span class="p">[</span><span class="s1">&#39;initial&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;C&#39;</span><span class="p">][</span><span class="s1">&#39;effect&#39;</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">effects</span><span class="p">[</span><span class="s1">&#39;effect&#39;</span><span class="p">],</span> <span class="mi">2</span><span class="o">**</span><span class="n">effects</span><span class="p">[</span><span class="s1">&#39;log2effect&#39;</span><span class="p">])</span>
+<span class="go">True</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -1488,7 +1601,7 @@ re-scaled preferences.</dd>
 
 <dl class="data">
 <dt id="dms_tools2.AA_TO_CODONS">
-<code class="descclassname">dms_tools2.</code><code class="descname">AA_TO_CODONS</code><em class="property"> = {'D': ['GAC', 'GAT'], 'K': ['AAA', 'AAG'], 'M': ['ATG'], 'G': ['GGA', 'GGC', 'GGG', 'GGT'], 'L': ['CTA', 'CTC', 'CTG', 'CTT', 'TTA', 'TTG'], 'S': ['AGC', 'AGT', 'TCA', 'TCC', 'TCG', 'TCT'], 'E': ['GAA', 'GAG'], 'P': ['CCA', 'CCC', 'CCG', 'CCT'], '*': ['TAA', 'TAG', 'TGA'], 'C': ['TGC', 'TGT'], 'F': ['TTC', 'TTT'], 'W': ['TGG'], 'Y': ['TAC', 'TAT'], 'V': ['GTA', 'GTC', 'GTG', 'GTT'], 'R': ['AGA', 'AGG', 'CGA', 'CGC', 'CGG', 'CGT'], 'N': ['AAC', 'AAT'], 'T': ['ACA', 'ACC', 'ACG', 'ACT'], 'A': ['GCA', 'GCC', 'GCG', 'GCT'], 'H': ['CAC', 'CAT'], 'Q': ['CAA', 'CAG'], 'I': ['ATA', 'ATC', 'ATT']}</em><a class="headerlink" href="#dms_tools2.AA_TO_CODONS" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.</code><code class="descname">AA_TO_CODONS</code><em class="property"> = {'A': ['GCA', 'GCC', 'GCG', 'GCT'], 'C': ['TGC', 'TGT'], '*': ['TAA', 'TAG', 'TGA'], 'I': ['ATA', 'ATC', 'ATT'], 'N': ['AAC', 'AAT'], 'F': ['TTC', 'TTT'], 'L': ['CTA', 'CTC', 'CTG', 'CTT', 'TTA', 'TTG'], 'D': ['GAC', 'GAT'], 'K': ['AAA', 'AAG'], 'Y': ['TAC', 'TAT'], 'Q': ['CAA', 'CAG'], 'P': ['CCA', 'CCC', 'CCG', 'CCT'], 'W': ['TGG'], 'M': ['ATG'], 'R': ['AGA', 'AGG', 'CGA', 'CGC', 'CGG', 'CGT'], 'G': ['GGA', 'GGC', 'GGG', 'GGT'], 'E': ['GAA', 'GAG'], 'H': ['CAC', 'CAT'], 'V': ['GTA', 'GTC', 'GTG', 'GTT'], 'T': ['ACA', 'ACC', 'ACG', 'ACT'], 'S': ['AGC', 'AGT', 'TCA', 'TCC', 'TCG', 'TCT']}</em><a class="headerlink" href="#dms_tools2.AA_TO_CODONS" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict back-translating amino acid to list of codons.</p>
 </dd></dl>
 
@@ -1500,13 +1613,13 @@ re-scaled preferences.</dd>
 
 <dl class="data">
 <dt id="dms_tools2.CODON_TO_AA">
-<code class="descclassname">dms_tools2.</code><code class="descname">CODON_TO_AA</code><em class="property"> = {'CGA': 'R', 'GCA': 'A', 'TAG': '*', 'AGC': 'S', 'GCC': 'A', 'CGC': 'R', 'TCT': 'S', 'GCG': 'A', 'TGA': '*', 'ATG': 'M', 'CTC': 'L', 'TCG': 'S', 'CTA': 'L', 'TGC': 'C', 'GGG': 'G', 'GTT': 'V', 'ATA': 'I', 'ATC': 'I', 'TAC': 'Y', 'CCA': 'P', 'CTT': 'L', 'TAT': 'Y', 'TTT': 'F', 'CCG': 'P', 'GCT': 'A', 'CTG': 'L', 'AAC': 'N', 'GTA': 'V', 'TAA': '*', 'AGG': 'R', 'GGA': 'G', 'TGG': 'W', 'AGT': 'S', 'TCC': 'S', 'ACG': 'T', 'TTA': 'L', 'CCC': 'P', 'AAA': 'K', 'ACA': 'T', 'GAC': 'D', 'TTC': 'F', 'CAT': 'H', 'GGC': 'G', 'GAT': 'D', 'ATT': 'I', 'ACT': 'T', 'GTC': 'V', 'AAG': 'K', 'TGT': 'C', 'ACC': 'T', 'GTG': 'V', 'GAG': 'E', 'CCT': 'P', 'AAT': 'N', 'CAG': 'Q', 'CGT': 'R', 'GAA': 'E', 'AGA': 'R', 'GGT': 'G', 'CAC': 'H', 'CAA': 'Q', 'CGG': 'R', 'TTG': 'L', 'TCA': 'S'}</em><a class="headerlink" href="#dms_tools2.CODON_TO_AA" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.</code><code class="descname">CODON_TO_AA</code><em class="property"> = {'GAA': 'E', 'TGA': '*', 'GCT': 'A', 'TCT': 'S', 'TTG': 'L', 'TCA': 'S', 'CTA': 'L', 'CTG': 'L', 'CAC': 'H', 'AGG': 'R', 'TTA': 'L', 'GTT': 'V', 'TGG': 'W', 'CCG': 'P', 'GAG': 'E', 'TAA': '*', 'TTT': 'F', 'GGT': 'G', 'TAC': 'Y', 'AGA': 'R', 'AAA': 'K', 'CAT': 'H', 'TGT': 'C', 'TGC': 'C', 'TCG': 'S', 'GTG': 'V', 'AGT': 'S', 'CGT': 'R', 'CGC': 'R', 'TCC': 'S', 'GCC': 'A', 'AAC': 'N', 'GCA': 'A', 'TTC': 'F', 'CTC': 'L', 'GAT': 'D', 'GGC': 'G', 'AGC': 'S', 'CGA': 'R', 'AAG': 'K', 'ATG': 'M', 'ACG': 'T', 'TAG': '*', 'ACA': 'T', 'ACC': 'T', 'GGA': 'G', 'CCA': 'P', 'GCG': 'A', 'ACT': 'T', 'AAT': 'N', 'ATC': 'I', 'CTT': 'L', 'ATT': 'I', 'TAT': 'Y', 'CAG': 'Q', 'GGG': 'G', 'CCC': 'P', 'GTC': 'V', 'ATA': 'I', 'CCT': 'P', 'GTA': 'V', 'CGG': 'R', 'CAA': 'Q', 'GAC': 'D'}</em><a class="headerlink" href="#dms_tools2.CODON_TO_AA" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict translating codons to amino acids</p>
 </dd></dl>
 
 <dl class="data">
 <dt id="dms_tools2.NTCOMPLEMENT">
-<code class="descclassname">dms_tools2.</code><code class="descname">NTCOMPLEMENT</code><em class="property"> = {'C': 'G', 'A': 'T', 'T': 'A', 'G': 'C', 'N': 'N'}</em><a class="headerlink" href="#dms_tools2.NTCOMPLEMENT" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.</code><code class="descname">NTCOMPLEMENT</code><em class="property"> = {'A': 'T', 'C': 'G', 'T': 'A', 'G': 'C', 'N': 'N'}</em><a class="headerlink" href="#dms_tools2.NTCOMPLEMENT" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict mapping each nucleotide to its complement.</p>
 </dd></dl>
 

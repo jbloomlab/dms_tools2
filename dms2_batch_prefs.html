@@ -24,7 +24,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="dms2_logoplot" href="dms2_logoplot.html" />
+    <link rel="next" title="dms2_diffsel" href="dms2_diffsel.html" />
     <link rel="prev" title="dms2_prefs" href="dms2_prefs.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -146,7 +146,9 @@ It then creates the summary plots described in <a class="reference internal" hre
 </tr>
 <tr><td>&#160;</td><td><p class="first">Prefix of output summary files and plots.</p>
 <p class="last">As detailed in Output files below, dms2_batch_prefs creates a variety of plots summarizing the output.
-This files are in the directory specified by –outdir, and have the prefix specified here.</p>
+These files are in the directory specified by –outdir, and have the prefix specified here.
+This name should only contain letters, numbers, dashes, and spaces.
+Underscores are not allowed as they are a LaTex special character.</p>
 </td></tr>
 </tbody>
 </table>
@@ -236,11 +238,13 @@ The time can be reduced by specifying more CPUs to use with <code class="docutil
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="diffsel.html">Differential selection</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="programs.html">Executable programs</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="dms2_bcsubamp.html"><code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="dms2_batch_bcsubamp.html"><code class="docutils literal"><span class="pre">dms2_batch_bcsubamp</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="dms2_prefs.html"><code class="docutils literal"><span class="pre">dms2_prefs</span></code></a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal"><span class="pre">dms2_batch_prefs</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms2_diffsel.html"><code class="docutils literal"><span class="pre">dms2_diffsel</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="dms2_logoplot.html"><code class="docutils literal"><span class="pre">dms2_logoplot</span></code></a></li>
 </ul>
 </li>
@@ -254,7 +258,7 @@ The time can be reduced by specifying more CPUs to use with <code class="docutil
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="programs.html">Executable programs</a><ul>
       <li>Previous: <a href="dms2_prefs.html" title="previous chapter"><code class="docutils literal"><span class="pre">dms2_prefs</span></code></a></li>
-      <li>Next: <a href="dms2_logoplot.html" title="next chapter"><code class="docutils literal"><span class="pre">dms2_logoplot</span></code></a></li>
+      <li>Next: <a href="dms2_diffsel.html" title="next chapter"><code class="docutils literal"><span class="pre">dms2_diffsel</span></code></a></li>
   </ul></li>
   </ul></li>
 </ul>
