@@ -33,7 +33,7 @@ def sessionInfo():
             ]
     for modname in ['Bio', 'HTSeq', 'pandas', 'numpy', 'IPython',
             'matplotlib', 'plotnine', 'natsort', 'pystan', 'scipy',
-            'seaborn', 'phydmslib']:
+            'seaborn', 'phydmslib', 'jupyter']:
         try:
             v = importlib.import_module(modname).__version__
             s.append('\t{0} version: {1}'.format(modname, v))
@@ -80,13 +80,18 @@ def initLogger(logfile, prog, args):
         formatter = logging.Formatter(
                 '%(asctime)s - %(levelname)s - %(message)s')
         logfile_handler.setFormatter(formatter)
-        logger.info("Beginning execution of {0} in directory {1}\n".format(
-                prog, os.getcwd()))
-        logger.info("Progress is being logged to {0}".format(logfile))
-        logger.info("{0}\n".format(sessionInfo()))
-        logger.info("Parsed the following arguments:\n\t{0}\n".format(
-                '\n\t'.join(['{0} = {1}'.format(arg, val) for (arg, val)
-                in args.items()])))
+        try:
+            logger.info("Beginning execution of {0} in directory {1}\n"
+                .format(prog, os.getcwd()))
+            logger.info("Progress is being logged to {0}".format(logfile))
+            logger.info("{0}\n".format(sessionInfo()))
+            logger.info("Parsed the following arguments:\n\t{0}\n".format(
+                    '\n\t'.join(['{0} = {1}'.format(arg, val) for (arg, val)
+                    in args.items()])))
+        except:
+            logger.exception("Error")
+            raise
+
         return logger
 
 
