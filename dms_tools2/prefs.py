@@ -659,6 +659,78 @@ def inferSitePrefs(charlist, wtchar, error_model, counts,
                 return (False, pi_means, pi_95credint, '\n'.join(logstring))
 
 
+def prefsToMutEffects(prefs, charlist):
+    """Converts amino acid preferences to effects of specific mutations.
+
+    If the preference of site :math:`r` for amino acid :math:`a` is
+    :math:`\pi_{r,a}`, then the estimated effect (e.g., ratio of
+    enrichment ratios) for mutating that site from :math:`x` to
+    :math:`y` is :math:`\\frac{\pi_{r,y}}{\pi_{r,x}}`. Very small
+    values indicate disfavored mutations, and very large values
+    indicate highly favored mutations. The logarithm base 2 of the
+    expected effects is also a useful measure -- negative values
+    are disfavored mutations, positive values are favored ones.
+
+    Args:
+        `prefs` (pandas DataFrame)
+            Preferences to analyze. The columns should be `site` and
+            a column for every character in `charlist`.
+        `charlist` (list)
+            The list of characters that we are analyzing. For instance,
+            `dms_tools2.AAS` for amino acids.
+
+    Returns:
+        A pandas Data Frame where the columns are:
+
+            * `site`: the site
+
+            * `initial`: the initial character (e.g., amino acid)
+
+            * `final`: the final character after the mutation
+
+            * `mutation`: mutation in the string form `A1G`
+
+            * `effect`: the effect of the mutation
+
+            * `log2effect`: the log2 of the effect of the mutation.
+
+    >>> charlist = ['A', 'C', 'G']
+    >>> prefs = pandas.DataFrame({
+    ...         'site':[1, 2],
+    ...         'A':[0.25, 0.25],
+    ...         'C':[0.25, 0.5],
+    ...         'G':[0.5, 0.25],
+    ...         })
+    >>> effects = prefsToMutEffects(prefs, charlist)
+    >>> set(effects.columns) == {'site', 'initial', 'final',
+    ...         'mutation', 'effect', 'log2effect'}
+    True
+    >>> numpy.allclose(effects[effects['initial'] == 'A']['effect'],
+    ...         [1, 1, 2, 1, 2, 1])
+    True
+    >>> numpy.allclose(effects[effects['initial'] == 'C']['effect'],
+    ...         [1, 1, 2, 0.5, 1, 0.5])
+    True
+    >>> numpy.allclose(effects['effect'], 2**effects['log2effect'])
+    True
+    """
+    assert set(prefs.columns) <= set(['site'] + charlist)
+    initial = prefs.melt(id_vars='site', value_vars=charlist,
+                var_name='initial', value_name='initial_pref')
+    final = initial.rename(columns=
+            {'initial':'final', 'initial_pref':'final_pref'})
+    effects = final.merge(initial, on='site')
+    effects['effect'] = effects['final_pref'] / effects['initial_pref']
+    effects['log2effect'] = numpy.log2(effects['effect'])
+    effects['mutation'] = (effects['initial'] + 
+            effects['site'].map(str) + effects['final'])
+    return (effects
+            .drop(['final_pref', 'initial_pref'], axis=1)
+            .sort_values(['site', 'initial', 'final'])
+            [['site', 'initial', 'final', 'mutation', 'effect', 'log2effect']]
+            .reset_index(drop=True)
+            )
+
 
 if __name__ == '__main__':
     import doctest
