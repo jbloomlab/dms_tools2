@@ -117,6 +117,7 @@ def main():
         logger.info("Completed runs of dms2_bcsubamp.\n")
 
         # define dms2_bcsubamp output files and make sure they exist 
+        logfiles = args['outdir'] + '/' + batchruns['name'] + '.log'
         for (filename, filesuffix) in [
                 ('counts', '_{0}counts.csv'.format(args['chartype'])),
                 ('readstats', '_readstats.csv'),
@@ -124,9 +125,11 @@ def main():
                 ('bcstats', '_bcstats.csv')]:
             batchruns[filename] = (args['outdir'] + '/' + batchruns['name'] +
                     filesuffix)
-            assert all(map(os.path.isfile, batchruns[filename].values)),\
-                    "Did not create all of these files:\n{0}".format(
-                    '\n'.join(batchruns[filename].values))
+            assert all(map(os.path.isfile, batchruns[filename].values)), (
+                    "Did not create these files:\n{0}\n\nLook in the following "
+                    "log files for details of what went wrong:\n{1}".format(
+                    '\n'.join(batchruns[filename].values), 
+                    '\n'.join(logfiles.values)))
 
         logger.info("Plotting read stats to {0}".format(files['readstats']))
         dms_tools2.plot.plotReadStats(batchruns['name'], 
