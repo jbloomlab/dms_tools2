@@ -438,7 +438,10 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
         `datatype` (str)
             Type of data for which we are plotting correlations:
                 - `prefs`: in format returned by ``dms2_prefs``
-                - `mutdiffsel`: mutdiffsel returned by ``dms2_diffsel``
+                - `mutdiffsel`: mutdiffsel from ``dms2_diffsel``
+                - `abs_diffsel`: sitediffsel from ``dms2_diffsel``
+                - `positive_diffsel`: sitediffsel from ``dms2_diffsel``
+                - `max_diffsel`: sitediffsel from ``dms2_diffsel``
         `trim_unshared` (bool)
             What if files in `infiles` don't have same sites / mutations?
             If `True`, trim unshared one and just analyze ones
@@ -507,6 +510,27 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
                     )
         df.columns = df.columns.get_level_values(1)
 
+    elif datatype in ['abs_diffsel', 'positive_diffsel', 'max_diffsel']:
+        sitediffsel = [pandas.read_csv(f)
+                             .assign(name=name)
+                             .sort_values('site')
+                             [['name', 'site', datatype]]
+                        for (name, f) in zip(names, infiles)]
+        sites = set(sitediffsel[0]['site'].values)
+        for s in sitediffsel:
+            unsharedsites = sites.symmetric_difference(set(s['site']))
+            if trim_unshared:
+                sites -= unsharedsites
+            elif unsharedsites:
+                raise ValueError("infiles don't have same sites: {0}".
+                        format(unsharedsites))
+        df = (pandas.concat(sitediffsel, ignore_index=True)
+                    .query('site in @sites') # only keep shared sites
+                    .pivot_table(index='site', columns='name')
+                    .dropna()
+                    )
+        df.columns = df.columns.get_level_values(1)
+
     else:
         raise ValueError("Invalid datatype {0}".format(datatype))
 
@@ -530,8 +554,10 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
         for (i, j) in zip(*numpy.diag_indices_from(p.axes)):
             p.axes[i, j].set_visible(False)
 
-    elif datatype == 'mutdiffsel':
-        p.map_diag(seaborn.distplot, color='black')
+    elif datatype in ['mutdiffsel', 'abs_diffsel', 
+            'positive_diffsel', 'max_diffsel']:
+
+        p.map_diag(seaborn.distplot, color='black', kde=True, hist=False)
 
         (lowlim, highlim) = (df.values.min(), df.values.max())
         highlim += (highlim - lowlim) * 0.05

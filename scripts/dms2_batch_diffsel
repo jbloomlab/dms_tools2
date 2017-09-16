@@ -176,7 +176,10 @@ def main():
                     datatype = 'mutdiffsel'
                     infiles = samples['mutdiffsel']
                 else:
-                    continue
+                    datatype = {'absolutesitediffsel':'abs_diffsel',
+                                'positivesitediffsel':'positive_diffsel',
+                                'maxsitediffsel':'max_diffsel'}[seltype]
+                    infiles = samples['sitediffsel']
                 dms_tools2.plot.plotCorrMatrix(samples['name'], 
                         infiles, plotfile, datatype=datatype, 
                         title=g.replace('-', ' '))
