@@ -184,11 +184,6 @@ def main():
                         infiles, plotfile, datatype=datatype, 
                         title=g.replace('-', ' '))
 
-#        logger.info("Writing average preferences to {0}\n".format(
-#                files['avgprefs']))
-#        avgprefs = dms_tools2.utils.avgPrefs(batchruns['prefs'])
-#        avgprefs.to_csv(files['avgprefs'], index=False)
-
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))
         for (fname, fpath) in files.items():

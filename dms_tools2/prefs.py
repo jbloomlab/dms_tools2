@@ -13,12 +13,14 @@ to perform MCMC for Bayesian inferences.
 
 import time
 import math
+import tempfile
 import pickle
 import random
 import numpy
 import numpy.random
 import pandas
 import pystan
+import dms_tools2
 
 #: minimum value for Dirichlet prior elements
 PRIOR_MIN_VALUE = 1.0e-7 
@@ -730,6 +732,107 @@ def prefsToMutEffects(prefs, charlist):
             [['site', 'initial', 'final', 'mutation', 'effect', 'log2effect']]
             .reset_index(drop=True)
             )
+
+
+def rescalePrefs(prefs, stringency):
+    """Re-scale amino acid preferences by stringency parameter.
+
+    If the initial preference of site :math:`r` for amino-acid 
+    :math:`a` is :math:`\pi_{r,a}`, then the re-scaled preference is
+
+    .. math::
+    
+        \\frac{\left(\pi_{r,a}\\right)^{\\beta}}{\sum_{a'} \left(\pi_{r,a'}\\right)}
+
+    where :math:`\\beta` is the stringency parameter.
+
+    Args:
+        `prefs` (pandas.DataFrame)
+            Columns are 'site' and then every character (e.g.,
+            amino acid).
+        `stringency` (float >= 0)
+            The stringency parameter.
+
+    Returns:
+        A data frame in the same format as `prefs` but with the
+        re-scaled preferences.
+
+    >>> prefs = pandas.DataFrame(dict(
+    ...         [('site', [1, 2]), ('A', [0.24, 0.03]), ('C', [0.04, 0.43])]
+    ...         + [(aa, [0.04, 0.03]) for aa in dms_tools2.AAS if
+    ...         aa not in ['A', 'C']]))
+    >>> numpy.allclose(1, prefs.drop('site', axis=1).sum(axis=1))
+    True
+    >>> rescaled = rescalePrefs(prefs, 1.0)
+    >>> all([numpy.allclose(prefs[c], rescaled[c]) for c in prefs.columns])
+    True
+    >>> rescaled2 = rescalePrefs(prefs, 2.0)
+    >>> all(rescaled2['site'] == prefs['site'])
+    True
+    >>> numpy.allclose(rescaled2['A'], [0.6545, 0.0045], atol=1e-3)
+    True
+    >>> numpy.allclose(rescaled2['C'], [0.0182, 0.9153], atol=1e-3)
+    True
+    """
+    assert set(prefs.drop('site', axis=1).select_dtypes(
+            include=[numpy.number]).columns) == set(
+            prefs.drop('site', axis=1).columns), ('Non-numeric '
+            'columns other than "site"')
+
+    chars = prefs.drop('site', axis=1).columns
+    rescaled = prefs[chars].pow(stringency)
+    rescaled = rescaled.divide(rescaled.sum(axis=1), axis='index')
+    rescaled['site'] = prefs['site']
+    return rescaled[prefs.columns]
+
+
+def avgPrefs(prefsfiles):
+    """Gets average of site-specific preferences.
+
+    Args:
+        `prefsfiles` (list)
+            List of CSV files containing preferences, must all be
+            for same sites and characters.
+
+    Returns:
+        A `pandas.DataFrame` containing the average of the
+        preferences in `prefsfiles`. In this returned
+        data frame, `site` is the index
+
+    >>> tf1 = tempfile.NamedTemporaryFile
+    >>> tf2 = tempfile.NamedTemporaryFile
+    >>> with tf1(mode='w') as file1, tf2(mode='w') as file2:
+    ...     x = file1.write('site,A,C,G,T\\n'
+    ...                 '1,0.2,0.2,0.5,0.1\\n'
+    ...                 '2,0.3,0.3,0.3,0.1')
+    ...     file1.flush()
+    ...     x = file2.write('site,A,C,G,T\\n'
+    ...                 '1,0.4,0.1,0.1,0.4\\n'
+    ...                 '2,0.3,0.4,0.1,0.2')
+    ...     file2.flush()
+    ...     avg = avgPrefs([file1.name, file2.name])
+    >>> (avg['site'] == [1, 2]).all()
+    True
+    >>> numpy.allclose(avg['A'], [0.3, 0.3])
+    True
+    >>> numpy.allclose(avg['C'], [0.15, 0.35])
+    True
+    >>> numpy.allclose(avg['G'], [0.3, 0.2])
+    True
+    >>> numpy.allclose(avg['T'], [0.25, 0.15])
+    True
+    """
+    assert len(prefsfiles) >= 1
+    prefs = [pandas.read_csv(f, index_col='site').sort_index()
+            for f in prefsfiles]
+
+    # make sure all have the same columns in the same order
+    cols = prefs[0].columns
+    for i in range(len(prefs)):
+        assert set(cols) == set(prefs[i].columns)
+        prefs[i] = prefs[i][cols]
+
+    return pandas.concat(prefs).groupby('site').mean().reset_index()
 
 
 if __name__ == '__main__':

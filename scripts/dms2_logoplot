@@ -16,6 +16,7 @@ import pandas
 import phydmslib.weblogo
 import dms_tools2.parseargs
 import dms_tools2.utils
+import dms_tools2.prefs
 
 
 def main():
@@ -100,7 +101,7 @@ def main():
                 logger.info("Re-scaling preferences by stringency "
                     "parameter {0}".format(args['stringency']))
             # rescale even if stringency = 1 to re-norm after excludestop
-            data = dms_tools2.utils.rescalePrefs(data, args['stringency'])
+            data = dms_tools2.prefs.rescalePrefs(data, args['stringency'])
 
             # convert to dict needed for logo plot
             data = data.set_index('site').to_dict('index')
