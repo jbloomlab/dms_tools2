@@ -425,7 +425,7 @@ def plotCodonMutTypes(names, countsfiles, plotfile,
 
 
 def plotCorrMatrix(names, infiles, plotfile, datatype,
-        trim_unshared_sites=True):
+        trim_unshared=True, title=''):
     """Plots correlations among replicates.
 
     Args:
@@ -438,15 +438,24 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
         `datatype` (str)
             Type of data for which we are plotting correlations:
                 - `prefs`: in format returned by ``dms2_prefs``
-        `trim_unshared_sites` (bool)
-            What if files in `infiles` don't all have same sites?
-            If `True`, trim unshared sites and just analyze ones
-            shared among all files. If `False`, raise an error
-            if unshared sites.
+                - `mutdiffsel`: mutdiffsel returned by ``dms2_diffsel``
+        `trim_unshared` (bool)
+            What if files in `infiles` don't have same sites / mutations?
+            If `True`, trim unshared one and just analyze ones
+            shared among all files. If `False`, raise an error.
+        `title` (str)
+            Title to place above plot.
     """
     assert len(names) == len(infiles) == len(set(names)) > 1
     assert os.path.splitext(plotfile)[1].lower() == '.pdf'
 
+    # corr coefficients as here: https://stackoverflow.com/a/30942817
+    def corrfunc(x, y, **kws):
+        r, _ = scipy.stats.pearsonr(x, y)
+        ax = plt.gca()
+        ax.annotate('R = {0:.2f}'.format(r), xy=(0.05, 0.9), 
+                xycoords=ax.transAxes, fontsize=19, 
+                fontstyle='oblique')
 
     if datatype == 'prefs':
         # read prefs into dataframe, ensuring all have same characters
@@ -460,7 +469,7 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
                 raise ValueError("infiles don't have same characters: {0}"
                         .format(unsharedchars))
             unsharedsites = sites.symmetric_difference(set(p['site']))
-            if trim_unshared_sites:
+            if trim_unshared:
                 sites -= unsharedsites
             elif unsharedsites:
                 raise ValueError("infiles don't have same sites: {0}".
@@ -475,32 +484,71 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
                     )
         df.columns = df.columns.get_level_values(1)
 
+    elif datatype == 'mutdiffsel':
+        mutdiffsel = [pandas.read_csv(f)
+                            .assign(name=name)
+                            .assign(mutname=lambda x: x.wildtype +
+                                    x.site.map(str) + x.mutation)
+                            .sort_values('mutname')
+                            [['name', 'mutname', 'mutdiffsel']]
+                      for (name, f) in zip(names, infiles)]
+        muts = set(mutdiffsel[0]['mutname'].values)
+        for m in mutdiffsel:
+            unsharedmuts = muts.symmetric_difference(set(m['mutname']))
+            if trim_unshared:
+                muts -= unsharedmuts
+            elif unsharedmuts:
+                raise ValueError("infiles don't have same muts: {0}".
+                        format(unsharedmuts))
+        df = (pandas.concat(mutdiffsel, ignore_index=True)
+                    .query('mutname in @muts') # only keep shared muts
+                    .pivot_table(index='mutname', columns='name')
+                    .dropna()
+                    )
+        df.columns = df.columns.get_level_values(1)
+
     else:
         raise ValueError("Invalid datatype {0}".format(datatype))
 
-    # using https://stackoverflow.com/a/30942817 for plot
-    def corrfunc(x, y, **kws):
-        r, _ = scipy.stats.pearsonr(x, y)
-        ax = plt.gca()
-        ax.annotate('R = {0:.2f}'.format(r), xy=(0.05, 0.9), 
-                xycoords=ax.transAxes, fontsize=19, 
-                fontstyle='oblique')
+    # map lower / upper / diagonal as here:
+    # https://stackoverflow.com/a/30942817 for plot
     p = seaborn.PairGrid(df)
     p.map_lower(plt.scatter, s=22, alpha=0.35, color='black', 
             marker='o', edgecolor='none', rasterized=True)
     p.map_lower(corrfunc)
-    p.set(  xlim=(0, 1), 
-            ylim=(0, 1), 
-            xticks=[0, 0.5, 1],
-            yticks=[0, 0.5, 1],
-            xticklabels=['0', '0.5', '1'],
-            yticklabels=['0', '0.5', '1'],
-            )
-    # hide upper triangle plots as here: https://stackoverflow.com/a/34091733
-    for (i, j) in zip(*numpy.triu_indices_from(p.axes, 1)):
-        p.axes[i, j].set_visible(False)
-    for (i, j) in zip(*numpy.diag_indices_from(p.axes)):
-        p.axes[i, j].set_visible(False)
+    if datatype == 'prefs':
+        p.set(  xlim=(0, 1), 
+                ylim=(0, 1), 
+                xticks=[0, 0.5, 1],
+                yticks=[0, 0.5, 1],
+                xticklabels=['0', '0.5', '1'],
+                yticklabels=['0', '0.5', '1'],
+                )
+        # hide upper, diag: https://stackoverflow.com/a/34091733
+        for (i, j) in zip(*numpy.triu_indices_from(p.axes, 1)):
+            p.axes[i, j].set_visible(False)
+        for (i, j) in zip(*numpy.diag_indices_from(p.axes)):
+            p.axes[i, j].set_visible(False)
+
+    elif datatype == 'mutdiffsel':
+        p.map_diag(seaborn.distplot, color='black')
+
+        (lowlim, highlim) = (df.values.min(), df.values.max())
+        highlim += (highlim - lowlim) * 0.05
+        lowlim -= (highlim - lowlim) * 0.05
+        p.set(xlim=(lowlim, highlim), ylim=(lowlim, highlim))
+
+        # hide upper
+        for (i, j) in zip(*numpy.triu_indices_from(p.axes, 1)):
+            p.axes[i, j].set_visible(False)
+
+    else:
+        raise ValueError("invalid datatype")
+        p.map_upper(seaborn.kdeplot, n_levels=20, cmap='Blues_d')
+
+    if title:
+        # following here: https://stackoverflow.com/a/29814281
+        p.fig.suptitle(title)
 
     p.savefig(plotfile)
     plt.clf()

@@ -39,13 +39,6 @@ def main():
     files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
             args['summaryprefix'], s))) for (f, s) in filesuffixes.items()])
 
-    # do we need to proceed
-    if args['use_existing'] == 'yes' and all(map(
-                os.path.isfile, files.values())):
-            print("Output summary files already exist and '--use_existing' "
-                    "is 'yes', so exiting with no further action.")
-            sys.exit(0)
-
     logger = dms_tools2.utils.initLogger(files['log'], prog, args)
 
     # log in try / except / finally loop
@@ -59,7 +52,7 @@ def main():
         # read batchfile, strip any whitespace from strings
         logger.info("Parsing info from {0}".format(args['batchfile']))
         assert os.path.isfile(args['batchfile']), \
-                "no batchfile {0}".format(batchfile)
+                "no batchfile {0}".format(args['batchfile'])
         batchruns = pandas.read_csv(args['batchfile'], na_filter=False)
         batchruns.columns = batchruns.columns.str.strip()
         colnames = set(['name', 'sel', 'mock'])
@@ -71,14 +64,41 @@ def main():
                 batchruns.to_csv(index=False)))
         assert all([dms_tools2.parseargs.checkName(name, 'name') for name
                 in batchruns['name']])
-        if 'group' in batchruns.columns:
+        if 'group' not in batchruns.columns:
+            batchruns['group'] = ''
+            batchruns['outname'] = batchruns['name']
+            groups = groupprefixes = sorted(set(batchruns['group']))
+        else:
             assert all([dms_tools2.parseargs.checkName(group, 'group') for
                     group in batchruns['group']])
             batchruns['outname'] = batchruns['group'] + '-' + batchruns['name']
-        else:
-            batchruns['outname'] = batchruns['name']
+            groups = sorted(set(batchruns['group']))
+            groupprefixes = [g + '-' for g in groups]
         assert (len(set(batchruns['outname'].values)) ==
                 len(batchruns['outname'])), "Duplicated name"
+
+        # add more expected output files based on group
+        for (g, gprefix) in zip(groups, groupprefixes):
+            for seltype in ['mutdiffsel', 'absolutesitediffsel', 
+                    'positivesitediffsel', 'maxsitediffsel']:
+                filesuffixes[g + seltype + 'corr'] = '_{0}{1}corr.pdf'.format(
+                        gprefix, seltype)
+            for avgtype in ['mean', 'median']:
+                for seltype in ['mutdiffsel', 'sitediffsel']:
+                    filesuffixes[g + avgtype + seltype] = \
+                            '_{0}{1}{2}.csv'.format(
+                            gprefix, avgtype, seltype)
+        files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
+                args['summaryprefix'], s))) for (f, s) in 
+                filesuffixes.items()])
+
+        # do we need to proceed
+        if args['use_existing'] == 'yes' and all(map(
+                os.path.isfile, files.values())):
+            logger.info("Output summary files already exist and "
+                    "'--use_existing' is 'yes', so exiting with no "
+                    "further action.")
+            sys.exit(0)
 
         # determine how many cpus to use
         if args['ncpus'] == -1:
@@ -132,9 +152,34 @@ def main():
                     raise RuntimeError("Failed to create {0}.\nHere is end of "
                             "{1}:\n{2}".format(f, flog, '\n'.join(lines[-25 : ])))
 
-#        logger.info("Plotting correlations to {0}\n".format(files['corr']))
-#        dms_tools2.plot.plotCorrMatrix(batchruns['name'], 
-#                batchruns['prefs'], files['corr'], datatype='prefs')
+        # summarize for each group
+        groups = sorted(set(batchruns['group']))
+        groupprefixes = ['{0}{1}'.format(g, {True:'', False:'-'}[g == ''])
+                for g in groups]
+
+        # process diffsel each group
+        for (g, gprefix) in zip(groups, groupprefixes):
+
+            samples = batchruns.query('group == @g')
+            logger.info("Analyzing the diffsel values for the "
+                    "{0} samples{1}.".format(len(samples),
+                    {True:'', False:' in group {0}'.format(g)}[g == '']))
+
+            for seltype in ['mutdiffsel', 'absolutesitediffsel', 
+                    'positivesitediffsel', 'maxsitediffsel']:
+                if len(samples) <= 1:
+                    continue
+                plotfile = files[g + seltype + 'corr']
+                logger.info("Plotting {0} correlations to {1}\n".format(
+                        seltype, plotfile))
+                if seltype == 'mutdiffsel':
+                    datatype = 'mutdiffsel'
+                    infiles = samples['mutdiffsel']
+                else:
+                    continue
+                dms_tools2.plot.plotCorrMatrix(samples['name'], 
+                        infiles, plotfile, datatype=datatype, 
+                        title=g.replace('-', ' '))
 
 #        logger.info("Writing average preferences to {0}\n".format(
 #                files['avgprefs']))
