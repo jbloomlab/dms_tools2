@@ -7,6 +7,7 @@ Performs operations related to estimating differential selection.
 """
 
 import os
+import tempfile
 import numpy
 import pandas
 from dms_tools2 import CODONS, CODON_TO_AA
@@ -185,6 +186,78 @@ def mutToSiteDiffSel(mutdiffsel):
                    )
     return sitediffsel
 
+
+def avgMutDiffSel(mutdiffselfiles, avgtype):
+    """Gets mean or median mutation differential selection.
+
+    Args:
+        `mutdiffselfiles` (list)
+            List of CSV files with mutdiffsel as returned by
+            ``dms2_diffsel``.
+        `avgtype` (str)
+            Type of "average" to calculate. Possibilities:
+                - `mean`
+                - `median`
+
+    Returns:
+        A `pandas.DataFrame` containing the mean or median
+        mutation differential selection.
+
+    >>> tf = tempfile.NamedTemporaryFile
+    >>> with tf(mode='w') as f1, tf(mode='w') as f2, tf(mode='w') as f3:
+    ...     x = f1.write('site,wildtype,mutation,mutdiffsel\\n'
+    ...                  '157,K,D,8.3\\n'
+    ...                  '156,G,S,2.0')
+    ...     f1.flush()
+    ...     x = f2.write('site,wildtype,mutation,mutdiffsel\\n'
+    ...                  '157,K,D,6.3\\n'
+    ...                  '156,G,S,-1.1')
+    ...     f2.flush()
+    ...     x = f3.write('site,wildtype,mutation,mutdiffsel\\n'
+    ...                  '157,K,D,2.2\\n'
+    ...                  '156,G,S,0.0')
+    ...     f3.flush()
+    ...     mean = avgMutDiffSel([f1.name, f2.name, f3.name], 'mean')
+    ...     median = avgMutDiffSel([f1.name, f2.name, f3.name], 'median')
+    >>> (mean['site'] == [157, 156]).all()
+    True
+    >>> (median['site'] == [157, 156]).all()
+    True
+    >>> (mean['wildtype'] == ['K', 'G']).all()
+    True
+    >>> (median['wildtype'] == ['K', 'G']).all()
+    True
+    >>> (mean['mutation'] == ['D', 'S']).all()
+    True
+    >>> (median['mutation'] == ['D', 'S']).all()
+    True
+    >>> numpy.allclose(mean['mutdiffsel'], [5.6, 0.3])
+    True
+    >>> numpy.allclose(median['mutdiffsel'], [6.3, 0.0])
+    True
+    """
+    diffsels = []
+    cols = ['site', 'wildtype', 'mutation', 'mutdiffsel']
+    for f in mutdiffselfiles:
+        diffsels.append(pandas.read_csv(f)
+                        [cols]
+                        .sort_values(['site', 'wildtype', 'mutation'])
+                        .reset_index()
+                        )
+        assert all([(diffsels[0][c] == diffsels[-1][c]).all() for c in
+                ['site', 'wildtype', 'mutation']]), "files do not have same muts" 
+    avg = pandas.concat(diffsels).groupby(cols[ : -1])
+    if avgtype == 'mean':
+        avg = avg.mean()
+    elif avgtype == 'median':
+        avg = avg.median()
+    else:
+        raise ValueError("invalid avgtype {0}".format(avgtype))
+    return (avg.reset_index()
+               .sort_values('mutdiffsel', ascending=False)
+               [cols]
+               .reset_index(drop=True)
+               )
 
 
 if __name__ == '__main__':
