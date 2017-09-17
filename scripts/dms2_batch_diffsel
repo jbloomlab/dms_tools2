@@ -12,6 +12,7 @@ import functools
 import subprocess
 import multiprocessing
 import multiprocessing.dummy
+import natsort
 import pandas
 import dms_tools2.parseargs
 import dms_tools2.utils
@@ -37,18 +38,18 @@ def main():
     filesuffixes = {
             'log':'.log',
             }
+    lineplottypes = ['positive', 'total', 'max', 'minmax']
+    for pt in lineplottypes:
+        filesuffixes['mean' + pt] = '_mean{0}diffsel.pdf'.format(pt)
+        filesuffixes['median' + pt] = '_median{0}diffsel.pdf'.format(pt)
     files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
-            args['summaryprefix'], s))) for (f, s) in filesuffixes.items()])
+            args['summaryprefix'], s))) for (f, s) in 
+            filesuffixes.items()])
 
     logger = dms_tools2.utils.initLogger(files['log'], prog, args)
 
     # log in try / except / finally loop
     try:
-
-        for (ftype, f) in files.items():
-            if os.path.isfile(f) and ftype != 'log':
-                logger.info("Removing existing file {0}".format(f))
-                os.remove(f)
 
         # read batchfile, strip any whitespace from strings
         logger.info("Parsing info from {0}".format(args['batchfile']))
@@ -100,6 +101,11 @@ def main():
                     "'--use_existing' is 'yes', so exiting with no "
                     "further action.")
             sys.exit(0)
+
+        for (ftype, f) in files.items():
+            if os.path.isfile(f) and ftype != 'log':
+                logger.info("Removing existing file {0}".format(f))
+                os.remove(f)
 
         # determine how many cpus to use
         if args['ncpus'] == -1:
@@ -154,11 +160,12 @@ def main():
                             "{1}:\n{2}".format(f, flog, '\n'.join(lines[-25 : ])))
 
         # summarize for each group
-        groups = sorted(set(batchruns['group']))
+        groups = natsort.natsorted(set(batchruns['group']))
         groupprefixes = ['{0}{1}'.format(g, {True:'', False:'-'}[g == ''])
                 for g in groups]
 
         # process diffsel each group
+        avgsitediffsel = {'mean':[], 'median':[]}
         for (g, gprefix) in zip(groups, groupprefixes):
 
             samples = batchruns.query('group == @g')
@@ -197,6 +204,17 @@ def main():
                         .sort_values('abs_diffsel', ascending=False)
                         .to_csv(f, index=False)
                         )
+                avgsitediffsel[avgtype].append(f)
+
+        # plots of diffsel for all groups
+        for avgtype in ['mean', 'median']:
+            for pt in lineplottypes:
+                f = files[avgtype + pt]
+                logger.info("Plotting {0} {1} diffsel to {2}".format(
+                        avgtype, pt, f))
+                dms_tools2.plot.plotSiteDiffSel(
+                        [g.replace('-', ' ') for g in groups],
+                        avgsitediffsel[avgtype], f, pt)
 
     except SystemExit as e:
         if e.code != 0:

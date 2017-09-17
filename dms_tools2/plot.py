@@ -13,6 +13,7 @@ and `seaborn <https://seaborn.pydata.org/index.html>`_.
 import re
 import os
 import math
+import natsort
 import pandas
 import numpy
 import scipy.stats
@@ -44,6 +45,46 @@ import dms_tools2.utils
 #: `scale_color_manual(COLOR_BLIND_PALETTE)`.
 COLOR_BLIND_PALETTE = ["#000000", "#E69F00", "#56B4E9", "#009E73",
                        "#F0E442", "#0072B2", "#D55E00", "#CC79A7"]
+
+
+def breaksAndLabels(xi, x, n):
+    """Get breaks and labels for an axis.
+
+    Useful when you would like to re-label a numeric x-axis
+    with string labels.
+
+    Uses `matplotlib.ticker.MaxNLocator` to choose pretty breaks.
+
+    Args:
+        `xi` (list or array)
+            Integer values actually assigned to axis points.
+        `x` (list)
+            Strings corresponding to each numeric value in `xi`.
+        `n` (int)
+            Approximate number of ticks to use.
+
+    Returns:
+        The tuple `(breaks, labels)` where `breaks` gives the
+        locations of breaks taken from `xi`, and `labels` is
+        the label for each break.
+
+    >>> xi = list(range(213))
+    >>> x = [str(i + 1) for i in xi]
+    >>> (breaks, labels) = breaksAndLabels(xi, x, 5)
+    >>> breaks
+    [0, 50, 100, 150, 200]
+    >>> labels
+    ['1', '51', '101', '151', '201']
+    """
+    assert len(xi) == len(x)
+    assert all([isinstance(i, numpy.integer) for i in xi]), \
+            "xi not integer values:\n{0}".format(xi)
+    xi = list(xi)
+    assert sorted(set(xi)) == xi, "xi not unique and ordered"
+    breaks = matplotlib.ticker.MaxNLocator(n).tick_values(xi[0], xi[-1])
+    breaks = [int(i) for i in breaks if xi[0] <= i <= xi[-1]]
+    labels = [x[xi.index(i)] for i in breaks]
+    return (breaks, labels)
 
 
 def latexSciNot(xlist):
@@ -577,6 +618,82 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
         p.fig.suptitle(title)
 
     p.savefig(plotfile)
+    plt.close()
+
+
+def plotSiteDiffSel(names, diffselfiles, plotfile, 
+        diffseltype, maxcol=2):
+    """Plot site differential selection along sequence.
+
+    Args:
+        `names` (list or series)
+            Names of samples for which we plot statistics.
+        `diffselfiles` (list or series)
+            ``*sitediffsel.csv`` files as created by ``dms2_diffsel``
+            or ``dms2_batch_diffsel``
+        `plotfile` (str)
+            Name of created PDF plot file.
+        `diffseltype` (str)
+            Type of differential selection to plot:
+                - `positive`: positive sitediffsel
+                - `total`: positive and negative sitediffsel
+                - `max`: maximum mutdiffsel
+                - `minmax`: minimum and maximum mutdiffsel
+        `maxcol` (int)
+            Number of columns in faceted plot.
+    """
+    assert len(names) == len(diffselfiles) == len(set(names)) > 0
+    assert os.path.splitext(plotfile)[1].lower() == '.pdf'
+
+    diffsels = [pandas.read_csv(f).assign(name=name) for (name, f) 
+            in zip(names, diffselfiles)]
+    assert all([set(diffsels[0]['site']) == set(df['site']) for df in 
+            diffsels]), "diffselfiles not all for same sites"
+    diffsel = pandas.concat(diffsels, ignore_index=True)
+
+    if diffseltype == 'positive':
+        rename = {'positive_diffsel':'above'}
+    elif diffseltype == 'total':
+        rename = {'positive_diffsel':'above',
+                  'negative_diffsel':'below'}
+    elif diffseltype == 'max':
+        rename = {'max_diffsel':'above'}
+    elif diffseltype == 'minmax':
+        rename = {'max_diffsel':'above',
+                  'min_diffsel':'below'}
+    else:
+        raise ValueError("invalid diffseltype {0}".format(diffseltype))
+    diffsel = (diffsel.rename(columns=rename)
+                      .melt(id_vars=['site', 'name'], 
+                            value_vars=list(rename.values()),
+                            value_name='diffsel',
+                            var_name='direction')
+                      )
+    # natural sort by site: https://stackoverflow.com/a/29582718
+    diffsel = diffsel.reindex(index=natsort.order_by_index(
+            diffsel.index, natsort.index_natsorted(diffsel.site)))
+    # now some manipulations to make site str while siteindex is int
+    diffsel['site'] = diffsel['site'].apply(str)
+    diffsel['siteindex'] = pandas.Categorical(diffsel['site'],
+            diffsel['site'].unique()).codes
+    
+    ncol = min(maxcol, len(names))
+    nrow = math.ceil(len(names) / float(ncol))
+
+    (xbreaks, xlabels) = breaksAndLabels(diffsel['siteindex'].unique(), 
+            diffsel['site'].unique(), n=6)
+    p = (ggplot(diffsel, aes(x='siteindex', y='diffsel', color='direction'))
+            + geom_line()
+            + xlab('site')
+            + ylab('differential selection')
+            + scale_x_continuous(breaks=xbreaks, labels=xlabels)
+            + scale_color_manual(COLOR_BLIND_PALETTE)
+            + guides(color=False)
+            )
+    if not ((len(names) == 1) and ((not names[0]) or names[0].isspace())):
+        p += facet_wrap('~name', ncol=ncol)
+    p += theme(figure_size=(4.6 * (0.3 + ncol), 1.9 * (0.2 + nrow)))
+    p.save(plotfile)
     plt.close()
 
 
