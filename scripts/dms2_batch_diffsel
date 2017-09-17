@@ -82,7 +82,7 @@ def main():
         # add more expected output files based on group
         for (g, gprefix) in zip(groups, groupprefixes):
             for seltype in ['mutdiffsel', 'absolutesitediffsel', 
-                    'positivesitediffsel', 'maxsitediffsel']:
+                    'positivesitediffsel', 'maxmutdiffsel']:
                 filesuffixes[g + seltype + 'corr'] = '_{0}{1}corr.pdf'.format(
                         gprefix, seltype)
             for avgtype in ['mean', 'median']:
@@ -174,7 +174,7 @@ def main():
                     {True:'', False:' in group {0}'.format(g)}[g == '']))
 
             for seltype in ['mutdiffsel', 'absolutesitediffsel', 
-                    'positivesitediffsel', 'maxsitediffsel']:
+                    'positivesitediffsel', 'maxmutdiffsel']:
                 if len(samples) <= 1:
                     continue
                 plotfile = files[g + seltype + 'corr']
@@ -186,7 +186,7 @@ def main():
                 else:
                     datatype = {'absolutesitediffsel':'abs_diffsel',
                                 'positivesitediffsel':'positive_diffsel',
-                                'maxsitediffsel':'max_diffsel'}[seltype]
+                                'maxmutdiffsel':'max_diffsel'}[seltype]
                     infiles = samples['sitediffsel']
                 dms_tools2.plot.plotCorrMatrix(samples['name'], 
                         infiles, plotfile, datatype=datatype, 
