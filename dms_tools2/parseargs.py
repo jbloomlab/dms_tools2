@@ -50,7 +50,7 @@ def checkName(name, nametype):
     ValueError: group sample_1 contains following illegal characters: _
     """
     if not name or name.isspace():
-        raise ValueError("name is all whitespace")
+        raise ValueError("{0} is all whitespace".format(nametype))
     illegal_chars = [c for c in name if 
             re.search('^[a-zA-Z0-9\- ]$', c) is None]
     if illegal_chars:
