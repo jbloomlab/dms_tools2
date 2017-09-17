@@ -77,7 +77,7 @@ def breaksAndLabels(xi, x, n):
     ['1', '51', '101', '151', '201']
     """
     assert len(xi) == len(x)
-    assert all([isinstance(i, numpy.integer) for i in xi]), \
+    assert all([isinstance(i, (int, numpy.integer)) for i in xi]), \
             "xi not integer values:\n{0}".format(xi)
     xi = list(xi)
     assert sorted(set(xi)) == xi, "xi not unique and ordered"
