@@ -68,7 +68,7 @@ An example of this plot is in the `Doud2016 example`_.
 Log file
 ++++++++++++
 A log file is created that summarizes the output.
-For instance, if you run ``dms2_batch_prefs`` with the arguments ``--outdir results --summaryprefix summary`` then the plot will be ``./results/summary.log``.
+For instance, if you run ``dms2_batch_prefs`` with the arguments ``--outdir results --summaryprefix summary`` then the log will be ``./results/summary.log``.
 
 Program run time
 ---------------------------
