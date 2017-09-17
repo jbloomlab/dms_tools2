@@ -118,7 +118,7 @@ def plotReadStats(names, readstatfiles, plotfile):
             + scale_fill_manual(COLOR_BLIND_PALETTE)
             )
     p.save(plotfile, height=2.7, width=(1.2 + 0.25 * len(names)))
-    plt.clf()
+    plt.close()
 
 
 def plotBCStats(names, bcstatsfiles, plotfile):
@@ -148,7 +148,7 @@ def plotBCStats(names, bcstatsfiles, plotfile):
             + scale_fill_manual(COLOR_BLIND_PALETTE)
             )
     p.save(plotfile, height=2.7, width=(1.2 + 0.25 * len(names)))
-    plt.clf()
+    plt.close()
 
 
 def plotReadsPerBC(names, readsperbcfiles, plotfile, 
@@ -201,7 +201,7 @@ def plotReadsPerBC(names, readsperbcfiles, plotfile,
             + theme(figure_size=(1.5 * (0.8 + ncol), 1.2 * (0.4 + nrow)))
             )
     p.save(plotfile)
-    plt.clf()
+    plt.close()
 
 
 def plotDepth(names, countsfiles, plotfile, maxcol=4):
@@ -237,7 +237,7 @@ def plotDepth(names, countsfiles, plotfile, maxcol=4):
             + theme(figure_size=(2.25 * (0.6 + ncol), 1.3 * (0.3 + nrow)))
             )
     p.save(plotfile)
-    plt.clf()
+    plt.close()
 
 
 def plotMutFreq(names, countsfiles, plotfile, maxcol=4):
@@ -273,7 +273,7 @@ def plotMutFreq(names, countsfiles, plotfile, maxcol=4):
             + theme(figure_size=(2.25 * (0.6 + ncol), 1.3 * (0.3 + nrow)))
             )
     p.save(plotfile)
-    plt.clf()
+    plt.close()
 
 
 def plotCumulMutCounts(names, countsfiles, plotfile, chartype,
@@ -345,7 +345,7 @@ def plotCumulMutCounts(names, countsfiles, plotfile, chartype,
             + ylab('fraction $\leq$ this many counts')
             )
     p.save(plotfile)
-    plt.clf()
+    plt.close()
 
 
 def plotCodonMutTypes(names, countsfiles, plotfile,
@@ -421,7 +421,7 @@ def plotCodonMutTypes(names, countsfiles, plotfile,
         p += guides(fill=guide_legend(ncol=2))
 
     p.save(plotfile, height=2.7, width=(1.2 + 0.25 * len(names)))
-    plt.clf()
+    plt.close()
 
 
 def plotCorrMatrix(names, infiles, plotfile, datatype,
@@ -577,7 +577,7 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
         p.fig.suptitle(title)
 
     p.savefig(plotfile)
-    plt.clf()
+    plt.close()
 
 
 
