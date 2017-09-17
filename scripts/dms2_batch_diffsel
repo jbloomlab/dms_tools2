@@ -16,6 +16,7 @@ import pandas
 import dms_tools2.parseargs
 import dms_tools2.utils
 import dms_tools2.plot
+import dms_tools2.diffsel
 
 
 def main():
@@ -170,7 +171,7 @@ def main():
                 if len(samples) <= 1:
                     continue
                 plotfile = files[g + seltype + 'corr']
-                logger.info("Plotting {0} correlations to {1}\n".format(
+                logger.info("Plotting {0} correlations to {1}".format(
                         seltype, plotfile))
                 if seltype == 'mutdiffsel':
                     datatype = 'mutdiffsel'
@@ -183,6 +184,23 @@ def main():
                 dms_tools2.plot.plotCorrMatrix(samples['name'], 
                         infiles, plotfile, datatype=datatype, 
                         title=g.replace('-', ' '))
+
+            for avgtype in ['mean', 'median']:
+                f = files[g + avgtype + 'mutdiffsel']
+                logger.info("Writing {0} mutdiffsel to {1}".format(avgtype, f))
+                avgmutdiffsel = dms_tools2.diffsel.avgMutDiffSel(
+                        samples['mutdiffsel'], avgtype)
+                avgmutdiffsel.to_csv(f, index=False)
+                f = files[g + avgtype + 'sitediffsel']
+                logger.info("Writing {0} sitediffsel to {1}".format(avgtype, f))
+                (dms_tools2.diffsel.mutToSiteDiffSel(avgmutdiffsel)
+                        .sort_values('abs_diffsel', ascending=False)
+                        .to_csv(f, index=False)
+                        )
+
+    except SystemExit as e:
+        if e.code != 0:
+            raise
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))
