@@ -1,0 +1,467 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>plot &#8212; dms_tools2 2.0a0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0a0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="prefs" href="dms_tools2.prefs.html" />
+    <link rel="prev" title="parseargs" href="dms_tools2.parseargs.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="module-dms_tools2.plot"></span><div class="section" id="plot">
+<h1>plot<a class="headerlink" href="#plot" title="Permalink to this headline">¶</a></h1>
+<p>Plotting functions for <code class="docutils literal"><span class="pre">dms_tools2</span></code>.</p>
+<p>Uses <a class="reference external" href="https://plotnine.readthedocs.io/en/stable">plotnine</a>
+and <a class="reference external" href="https://seaborn.pydata.org/index.html">seaborn</a>.</p>
+<dl class="data">
+<dt id="dms_tools2.plot.COLOR_BLIND_PALETTE">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">COLOR_BLIND_PALETTE</code><em class="property"> = ['#000000', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7']</em><a class="headerlink" href="#dms_tools2.plot.COLOR_BLIND_PALETTE" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/">color-blind safe palette</a>
+use by adding to your plots the following
+<cite>scale_fill_manual(COLOR_BLIND_PALETTE)</cite> or
+<cite>scale_color_manual(COLOR_BLIND_PALETTE)</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.plot.breaksAndLabels">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">breaksAndLabels</code><span class="sig-paren">(</span><em>xi</em>, <em>x</em>, <em>n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#breaksAndLabels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.breaksAndLabels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get breaks and labels for an axis.</p>
+<p>Useful when you would like to re-label a numeric x-axis
+with string labels.</p>
+<p>Uses <cite>matplotlib.ticker.MaxNLocator</cite> to choose pretty breaks.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>xi</cite> (list or array)</dt>
+<dd>Integer values actually assigned to axis points.</dd>
+<dt><cite>x</cite> (list)</dt>
+<dd>Strings corresponding to each numeric value in <cite>xi</cite>.</dd>
+<dt><cite>n</cite> (int)</dt>
+<dd>Approximate number of ticks to use.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>The tuple <cite>(breaks, labels)</cite> where <cite>breaks</cite> gives the
+locations of breaks taken from <cite>xi</cite>, and <cite>labels</cite> is
+the label for each break.</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">xi</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">213</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xi</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">breaks</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span> <span class="o">=</span> <span class="n">breaksAndLabels</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">breaks</span>
+<span class="go">[0, 50, 100, 150, 200]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span>
+<span class="go">[&#39;1&#39;, &#39;51&#39;, &#39;101&#39;, &#39;151&#39;, &#39;201&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.plot.latexSciNot">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">latexSciNot</code><span class="sig-paren">(</span><em>xlist</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#latexSciNot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.latexSciNot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts list of numbers to LaTex scientific notation.</p>
+<p>Useful for nice axis-tick formatting.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>xlist</cite> (list)</dt>
+<dd>Numbers to format.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>List of latex scientific notation formatted strings.</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">latexSciNot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3120</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0000927</span><span class="p">])</span>
+<span class="go">[&#39;$0$&#39;, &#39;$3$&#39;, &#39;$3.1 \\times 10^{3}$&#39;, &#39;$-9.3 \\times 10^{-5}$&#39;]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">latexSciNot</span><span class="p">([</span><span class="mf">0.001</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mf">1e6</span><span class="p">])</span>
+<span class="go">[&#39;$0.001$&#39;, &#39;$1$&#39;, &#39;$10^{3}$&#39;, &#39;$10^{6}$&#39;]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">latexSciNot</span><span class="p">([</span><span class="o">-</span><span class="mf">0.002</span><span class="p">,</span> <span class="mf">0.003</span><span class="p">,</span> <span class="mf">0.000011</span><span class="p">])</span>
+<span class="go">[&#39;$-0.002$&#39;, &#39;$0.003$&#39;, &#39;$1.1 \\times 10^{-5}$&#39;]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">latexSciNot</span><span class="p">([</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">])</span>
+<span class="go">[&#39;$-0.1$&#39;, &#39;$0$&#39;, &#39;$0.1$&#39;, &#39;$0.2$&#39;]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">latexSciNot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="go">[&#39;$0$&#39;, &#39;$1$&#39;, &#39;$2$&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.plot.plotBCStats">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotBCStats</code><span class="sig-paren">(</span><em>names</em>, <em>bcstatsfiles</em>, <em>plotfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotBCStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotBCStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code> barcode statistics for set of samples.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>names</cite> (list or series)</dt>
+<dd>Names of the samples for which we are plotting statistics.</dd>
+<dt><cite>bcstatsfiles</cite> (list or series)</dt>
+<dd>Names of <code class="docutils literal"><span class="pre">*_bcstats.csv</span></code> files created by <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code>.</dd>
+<dt><cite>plotfile</cite> (str)</dt>
+<dd>Name of PDF plot file to create.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.plot.plotCodonMutTypes">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotCodonMutTypes</code><span class="sig-paren">(</span><em>names</em>, <em>countsfiles</em>, <em>plotfile</em>, <em>classification='aachange'</em>, <em>csvfile=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotCodonMutTypes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotCodonMutTypes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot average frequency codon mutation types.</p>
+<p>The averages are determined by summing counts for all sites.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>names</cite> (list or series)</dt>
+<dd>Names of samples for which we plot statistics.</dd>
+<dt><cite>countsfiles</cite> (list or series)</dt>
+<dd><code class="docutils literal"><span class="pre">*_codoncounts.csv</span></code> files of type created by <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code>.</dd>
+<dt><cite>plotfile</cite> (str)</dt>
+<dd>Name of created PDF plot file.</dd>
+<dt><cite>classification</cite> (str)</dt>
+<dd><p class="first">The method used to classify the mutation types. Can be:</p>
+<blockquote class="last">
+<div><p><cite>aachange</cite> : stop, synonymous, nonsynonymous</p>
+<p><cite>n_ntchanges</cite> : number of nucleotide changes per codon</p>
+<p><cite>singlentchanges</cite> : nucleotide change in 1-nt mutations</p>
+</div></blockquote>
+</dd>
+<dt><cite>csvfile</cite> (str or <cite>None</cite>)</dt>
+<dd><cite>None</cite> or name of CSV file to which numerical data are written.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.plot.plotCorrMatrix">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotCorrMatrix</code><span class="sig-paren">(</span><em>names</em>, <em>infiles</em>, <em>plotfile</em>, <em>datatype</em>, <em>trim_unshared=True</em>, <em>title=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotCorrMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotCorrMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots correlations among replicates.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>names</cite> (list or series)</dt>
+<dd>Names of samples for which we plot statistics.</dd>
+<dt><cite>infiles</cite> (list or series)</dt>
+<dd>CSV files containing data. Format depends on <cite>datatype</cite>.</dd>
+<dt><cite>plotfile</cite> (str)</dt>
+<dd>Name of created PDF plot file.</dd>
+<dt><cite>datatype</cite> (str)</dt>
+<dd><dl class="first last docutils">
+<dt>Type of data for which we are plotting correlations:</dt>
+<dd><ul class="first last simple">
+<li><cite>prefs</cite>: in format returned by <code class="docutils literal"><span class="pre">dms2_prefs</span></code></li>
+<li><cite>mutdiffsel</cite>: mutdiffsel from <code class="docutils literal"><span class="pre">dms2_diffsel</span></code></li>
+<li><cite>abs_diffsel</cite>: sitediffsel from <code class="docutils literal"><span class="pre">dms2_diffsel</span></code></li>
+<li><cite>positive_diffsel</cite>: sitediffsel from <code class="docutils literal"><span class="pre">dms2_diffsel</span></code></li>
+<li><cite>max_diffsel</cite>: sitediffsel from <code class="docutils literal"><span class="pre">dms2_diffsel</span></code></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt><cite>trim_unshared</cite> (bool)</dt>
+<dd>What if files in <cite>infiles</cite> don’t have same sites / mutations?
+If <cite>True</cite>, trim unshared one and just analyze ones
+shared among all files. If <cite>False</cite>, raise an error.</dd>
+<dt><cite>title</cite> (str)</dt>
+<dd>Title to place above plot.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.plot.plotCumulMutCounts">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotCumulMutCounts</code><span class="sig-paren">(</span><em>names</em>, <em>countsfiles</em>, <em>plotfile</em>, <em>chartype</em>, <em>nmax=15</em>, <em>maxcol=6</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotCumulMutCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotCumulMutCounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot fraction of mutations seen &lt;= some number of times.</p>
+<p>For each set of counts in <cite>countsfiles</cite>, plot the fraction
+of mutations seen greater than or equal to some number of
+times. This is essentially a cumulative fraction plot.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>names</cite> (list or series)</dt>
+<dd>Names of samples for which we plot statistics.</dd>
+<dt><cite>countsfiles</cite> (list or series)</dt>
+<dd><code class="docutils literal"><span class="pre">*_codoncounts.csv</span></code> files of type created by <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code>.</dd>
+<dt><cite>plotfile</cite> (str)</dt>
+<dd>Name of created PDF plot file.</dd>
+<dt><cite>chartype</cite> (str)</dt>
+<dd><p class="first">The type of character in <cite>countsfiles</cite>.</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li><cite>codon</cite></li>
+</ul>
+</div></blockquote>
+</dd>
+<dt><cite>nmax</cite> (int)</dt>
+<dd>Plot out to this number of mutation occurrences.</dd>
+<dt><cite>maxcol</cite> (int)</dt>
+<dd>Number of columns in faceted plot.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.plot.plotDepth">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotDepth</code><span class="sig-paren">(</span><em>names</em>, <em>countsfiles</em>, <em>plotfile</em>, <em>maxcol=4</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotDepth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotDepth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot sequencing depth along primary sequence.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>names</cite> (list or series)</dt>
+<dd>Names of samples for which we plot statistics.</dd>
+<dt><cite>countsfiles</cite> (list or series)</dt>
+<dd><code class="docutils literal"><span class="pre">*_codoncounts.csv</span></code> files of type created by <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code>.</dd>
+<dt><cite>plotfile</cite> (str)</dt>
+<dd>Name of created PDF plot file containing count depth.</dd>
+<dt><cite>maxcol</cite> (int)</dt>
+<dd>Number of columns in faceted plot.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.plot.plotMutFreq">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotMutFreq</code><span class="sig-paren">(</span><em>names</em>, <em>countsfiles</em>, <em>plotfile</em>, <em>maxcol=4</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotMutFreq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotMutFreq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot mutation frequency along primary sequence.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>names</cite> (list or series)</dt>
+<dd>Names of samples for which we plot statistics.</dd>
+<dt><cite>countsfiles</cite> (list or series)</dt>
+<dd><code class="docutils literal"><span class="pre">*_codoncounts.csv</span></code> files of type created by <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code>.</dd>
+<dt><cite>plotfile</cite> (str)</dt>
+<dd>Name of created PDF plot file.</dd>
+<dt><cite>maxcol</cite> (int)</dt>
+<dd>Number of columns in faceted plot.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.plot.plotReadStats">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotReadStats</code><span class="sig-paren">(</span><em>names</em>, <em>readstatfiles</em>, <em>plotfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotReadStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotReadStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code> read statistics for a set of samples.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>names</cite> (list or series)</dt>
+<dd>Names of the samples for which we are plotting statistics.</dd>
+<dt><cite>readstatfiles</cite> (list or series)</dt>
+<dd>Names of <code class="docutils literal"><span class="pre">*_readstats.csv</span></code> files created by <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code>.</dd>
+<dt><cite>plotfile</cite> (str)</dt>
+<dd>Name of PDF plot file to create.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.plot.plotReadsPerBC">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotReadsPerBC</code><span class="sig-paren">(</span><em>names</em>, <em>readsperbcfiles</em>, <em>plotfile</em>, <em>maxreads=10</em>, <em>maxcol=6</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotReadsPerBC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotReadsPerBC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code> reads-per-barcode stats for set of samples.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>names</cite> (list or series)</dt>
+<dd>Names of samples for which we plot statistics.</dd>
+<dt><cite>readsperbcfiles</cite> (list or series)</dt>
+<dd>Names of <code class="docutils literal"><span class="pre">*_readsperbc.csv</span></code> files created by <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code>.</dd>
+<dt><cite>plotfile</cite> (str)</dt>
+<dd>Name of PDF plot file to create.</dd>
+<dt><cite>maxreads</cite> (int)</dt>
+<dd>For any barcodes with &gt; this many reads, just make a category
+of &gt;= this.</dd>
+<dt><cite>maxcol</cite> (int)</dt>
+<dd>Number of columns in faceted plot.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.plot.plotSiteDiffSel">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotSiteDiffSel</code><span class="sig-paren">(</span><em>names</em>, <em>diffselfiles</em>, <em>plotfile</em>, <em>diffseltype</em>, <em>maxcol=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotSiteDiffSel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotSiteDiffSel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot site differential selection along sequence.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>names</cite> (list or series)</dt>
+<dd>Names of samples for which we plot statistics.</dd>
+<dt><cite>diffselfiles</cite> (list or series)</dt>
+<dd><code class="docutils literal"><span class="pre">*sitediffsel.csv</span></code> files as created by <code class="docutils literal"><span class="pre">dms2_diffsel</span></code>
+or <code class="docutils literal"><span class="pre">dms2_batch_diffsel</span></code></dd>
+<dt><cite>plotfile</cite> (str)</dt>
+<dd>Name of created PDF plot file.</dd>
+<dt><cite>diffseltype</cite> (str)</dt>
+<dd><dl class="first last docutils">
+<dt>Type of differential selection to plot:</dt>
+<dd><ul class="first last simple">
+<li><cite>positive</cite>: positive sitediffsel</li>
+<li><cite>total</cite>: positive and negative sitediffsel</li>
+<li><cite>max</cite>: maximum mutdiffsel</li>
+<li><cite>minmax</cite>: minimum and maximum mutdiffsel</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt><cite>maxcol</cite> (int)</dt>
+<dd>Number of columns in faceted plot.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="programs.html">Executable programs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">Python API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="dms_tools2.html">dms_tools2 package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="api.html">Python API</a><ul>
+  <li><a href="dms_tools2.html">dms_tools2 package</a><ul>
+      <li>Previous: <a href="dms_tools2.parseargs.html" title="previous chapter">parseargs</a></li>
+      <li>Next: <a href="dms_tools2.prefs.html" title="next chapter">prefs</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/dms_tools2.plot.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

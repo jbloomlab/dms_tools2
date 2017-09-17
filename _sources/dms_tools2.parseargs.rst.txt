@@ -1,0 +1,4 @@
+.. automodule:: dms_tools2.parseargs
+    :members:
+    :undoc-members:
+    :show-inheritance:

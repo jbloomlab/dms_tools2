@@ -1,0 +1,979 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>dms_tools2.prefs &#8212; dms_tools2 2.0a0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0a0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dms_tools2.prefs</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">========================</span>
+<span class="sd">prefs</span>
+<span class="sd">========================</span>
+
+<span class="sd">Performs operations related to estimating site-specific amino-acid</span>
+<span class="sd">preferences.</span>
+
+<span class="sd">Uses `pystan &lt;https://pystan.readthedocs.io/en/latest&gt;`_</span>
+<span class="sd">to perform MCMC for Bayesian inferences.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">numpy.random</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+<span class="kn">import</span> <span class="nn">pystan</span>
+<span class="kn">import</span> <span class="nn">dms_tools2</span>
+
+<span class="c1">#: minimum value for Dirichlet prior elements</span>
+<span class="n">PRIOR_MIN_VALUE</span> <span class="o">=</span> <span class="mf">1.0e-7</span> 
+
+
+<div class="viewcode-block" id="StanModelNoneErr"><a class="viewcode-back" href="../../dms_tools2.prefs.html#dms_tools2.prefs.StanModelNoneErr">[docs]</a><span class="k">class</span> <span class="nc">StanModelNoneErr</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;``pystan`` model when `error_model` is `none`.</span>
+<span class="sd">    </span>
+<span class="sd">    For use by inferSitePrefs`.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compile ``pystan`` model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            `verbose` (bool)</span>
+<span class="sd">                Set to `True` if you want verbose compilation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pystancode</span> <span class="o">=</span>\
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">data {{</span>
+<span class="sd">    int&lt;lower=1&gt; Nchar; // 64 for codons, 20 for amino acids, 4 for nucleotides</span>
+<span class="sd">    int&lt;lower=0&gt; nrpre[Nchar]; // counts pre-selection</span>
+<span class="sd">    int&lt;lower=0&gt; nrpost[Nchar]; // counts post-selection</span>
+<span class="sd">    vector&lt;lower={0:g}&gt;[Nchar] pir_prior_params; // Dirichlet prior params</span>
+<span class="sd">    vector&lt;lower={0:g}&gt;[Nchar] mur_prior_params; // Dirichlet prior params</span>
+<span class="sd">}}</span>
+<span class="sd">parameters {{</span>
+<span class="sd">    simplex[Nchar] pir;</span>
+<span class="sd">    simplex[Nchar] mur;</span>
+<span class="sd">}}</span>
+<span class="sd">transformed parameters {{</span>
+<span class="sd">    simplex[Nchar] fr;</span>
+<span class="sd">    fr = pir .* mur / dot_product(pir, mur);</span>
+<span class="sd">}}</span>
+<span class="sd">model {{</span>
+<span class="sd">    pir ~ dirichlet(pir_prior_params);</span>
+<span class="sd">    mur ~ dirichlet(mur_prior_params);</span>
+<span class="sd">    nrpre ~ multinomial(mur);</span>
+<span class="sd">    nrpost ~ multinomial(fr);</span>
+<span class="sd">}}</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">PRIOR_MIN_VALUE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">pystan</span><span class="o">.</span><span class="n">StanModel</span><span class="p">(</span><span class="n">model_code</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pystancode</span><span class="p">,</span> 
+                <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StanModelSameErr"><a class="viewcode-back" href="../../dms_tools2.prefs.html#dms_tools2.prefs.StanModelSameErr">[docs]</a><span class="k">class</span> <span class="nc">StanModelSameErr</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;``pystan`` model when `error_model` is `same`.</span>
+<span class="sd">    </span>
+<span class="sd">    For use by inferSitePrefs`.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compile ``pystan`` model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            `verbose` (bool)</span>
+<span class="sd">                Set to `True` if you want verbose compilation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pystancode</span> <span class="o">=</span>\
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">data {{</span>
+<span class="sd">    int&lt;lower=1&gt; Nchar; // 64 for codons, 20 for amino acids, 4 for nucleotides</span>
+<span class="sd">    int&lt;lower=1, upper=Nchar&gt; iwtchar; // index of wildtype character in 1, ... numbering</span>
+<span class="sd">    int&lt;lower=0&gt; nrpre[Nchar]; // counts pre-selection</span>
+<span class="sd">    int&lt;lower=0&gt; nrpost[Nchar]; // counts post-selection</span>
+<span class="sd">    int&lt;lower=0&gt; nrerr[Nchar]; // counts in error control</span>
+<span class="sd">    vector&lt;lower={0:g}&gt;[Nchar] pir_prior_params; // Dirichlet prior params</span>
+<span class="sd">    vector&lt;lower={0:g}&gt;[Nchar] mur_prior_params; // Dirichlet prior params</span>
+<span class="sd">    vector&lt;lower={0:g}&gt;[Nchar] epsilonr_prior_params; // Dirichlet prior params</span>
+<span class="sd">}}</span>
+<span class="sd">transformed data {{</span>
+<span class="sd">    simplex[Nchar] deltar;</span>
+<span class="sd">    for (ichar in 1:Nchar) {{</span>
+<span class="sd">        deltar[ichar] = 0.0;</span>
+<span class="sd">    }}</span>
+<span class="sd">    deltar[iwtchar] = 1.0;</span>
+<span class="sd">}}</span>
+<span class="sd">parameters {{</span>
+<span class="sd">    simplex[Nchar] pir;</span>
+<span class="sd">    simplex[Nchar] mur;</span>
+<span class="sd">    simplex[Nchar] epsilonr;</span>
+<span class="sd">}}</span>
+<span class="sd">transformed parameters {{</span>
+<span class="sd">    simplex[Nchar] fr_plus_err;</span>
+<span class="sd">    simplex[Nchar] mur_plus_err;</span>
+<span class="sd">    fr_plus_err = pir .* mur / dot_product(pir, mur) + epsilonr - deltar;</span>
+<span class="sd">    mur_plus_err = mur + epsilonr - deltar;</span>
+<span class="sd">}}</span>
+<span class="sd">model {{</span>
+<span class="sd">    pir ~ dirichlet(pir_prior_params);</span>
+<span class="sd">    mur ~ dirichlet(mur_prior_params);</span>
+<span class="sd">    epsilonr ~ dirichlet(epsilonr_prior_params);</span>
+<span class="sd">    nrerr ~ multinomial(epsilonr);</span>
+<span class="sd">    nrpre ~ multinomial(mur_plus_err);</span>
+<span class="sd">    nrpost ~ multinomial(fr_plus_err);</span>
+<span class="sd">}}</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">PRIOR_MIN_VALUE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">pystan</span><span class="o">.</span><span class="n">StanModel</span><span class="p">(</span><span class="n">model_code</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pystancode</span><span class="p">,</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StanModelDifferentErr"><a class="viewcode-back" href="../../dms_tools2.prefs.html#dms_tools2.prefs.StanModelDifferentErr">[docs]</a><span class="k">class</span> <span class="nc">StanModelDifferentErr</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;``pystan`` model when `error_model` is `different`.</span>
+<span class="sd">    </span>
+<span class="sd">    For use by inferSitePrefs`.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compile ``pystan`` model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            `verbose` (bool)</span>
+<span class="sd">                Set to `True` if you want verbose compilation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pystancode</span> <span class="o">=</span>\
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">data {{</span>
+<span class="sd">    int&lt;lower=1&gt; Nchar; // 64 for codons, 20 for amino acids, 4 for nucleotides</span>
+<span class="sd">    int&lt;lower=1, upper=Nchar&gt; iwtchar; // index of wildtype character in 1, ... numbering</span>
+<span class="sd">    int&lt;lower=0&gt; nrpre[Nchar]; // counts pre-selection</span>
+<span class="sd">    int&lt;lower=0&gt; nrpost[Nchar]; // counts post-selection</span>
+<span class="sd">    int&lt;lower=0&gt; nrerrpre[Nchar]; // counts in pre-selection error control</span>
+<span class="sd">    int&lt;lower=0&gt; nrerrpost[Nchar]; // counts in post-selection error control</span>
+<span class="sd">    vector&lt;lower={0:g}&gt;[Nchar] pir_prior_params; // Dirichlet prior params</span>
+<span class="sd">    vector&lt;lower={0:g}&gt;[Nchar] mur_prior_params; // Dirichlet prior params</span>
+<span class="sd">    vector&lt;lower={0:g}&gt;[Nchar] epsilonr_prior_params; // Dirichlet prior params</span>
+<span class="sd">    vector&lt;lower={0:g}&gt;[Nchar] rhor_prior_params; // Dirichlet prior params</span>
+<span class="sd">}}</span>
+<span class="sd">transformed data {{</span>
+<span class="sd">    simplex[Nchar] deltar;</span>
+<span class="sd">    for (ichar in 1:Nchar) {{</span>
+<span class="sd">        deltar[ichar] = 0.0;</span>
+<span class="sd">    }}</span>
+<span class="sd">    deltar[iwtchar] = 1.0;</span>
+<span class="sd">}}</span>
+<span class="sd">parameters {{</span>
+<span class="sd">    simplex[Nchar] pir;</span>
+<span class="sd">    simplex[Nchar] mur;</span>
+<span class="sd">    simplex[Nchar] epsilonr;</span>
+<span class="sd">    simplex[Nchar] rhor;</span>
+<span class="sd">}}</span>
+<span class="sd">transformed parameters {{</span>
+<span class="sd">    simplex[Nchar] fr_plus_err;</span>
+<span class="sd">    simplex[Nchar] mur_plus_err;</span>
+<span class="sd">    fr_plus_err = pir .* mur / dot_product(pir, mur) + rhor - deltar;</span>
+<span class="sd">    mur_plus_err = mur + epsilonr - deltar;</span>
+<span class="sd">}}</span>
+<span class="sd">model {{</span>
+<span class="sd">    pir ~ dirichlet(pir_prior_params);</span>
+<span class="sd">    mur ~ dirichlet(mur_prior_params);</span>
+<span class="sd">    epsilonr ~ dirichlet(epsilonr_prior_params);</span>
+<span class="sd">    rhor ~ dirichlet(rhor_prior_params);</span>
+<span class="sd">    nrerrpre ~ multinomial(epsilonr);</span>
+<span class="sd">    nrerrpost ~ multinomial(rhor);</span>
+<span class="sd">    nrpre ~ multinomial(mur_plus_err);</span>
+<span class="sd">    nrpost ~ multinomial(fr_plus_err);</span>
+<span class="sd">}}</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">PRIOR_MIN_VALUE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">pystan</span><span class="o">.</span><span class="n">StanModel</span><span class="p">(</span><span class="n">model_code</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pystancode</span><span class="p">,</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_initialValuePrefs</span><span class="p">(</span><span class="n">error_model</span><span class="p">,</span> <span class="n">nchains</span><span class="p">,</span> <span class="n">iwtchar</span><span class="p">,</span> <span class="n">nchars</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Gets valid initial values for ``pystan`` preference inference.</span>
+
+<span class="sd">    Values initialized by ``pystan`` frequently have invalid values.</span>
+<span class="sd">    This function will generate random values that are valid</span>
+<span class="sd">    for initialization and return a list that can be passed to the </span>
+<span class="sd">    `StanModel` as the `init` argument.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">initattempts</span> <span class="o">=</span> <span class="mi">10</span> <span class="c1"># might fail for pathological random values</span>
+    <span class="n">nrescales</span> <span class="o">=</span> <span class="mi">10</span> <span class="c1"># rescale non-wildtype values down this many times</span>
+    <span class="n">rescalefactor</span> <span class="o">=</span> <span class="mf">5.0</span> <span class="c1"># rescale non-wildtype values down by this much</span>
+    <span class="n">deltar</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nchars</span><span class="p">)</span>
+    <span class="n">deltar</span><span class="p">[</span><span class="n">iwtchar</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">init</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">concparams</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span> <span class="k">for</span> <span class="n">ichar</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nchars</span><span class="p">)]</span>
+    <span class="n">concparams</span><span class="p">[</span><span class="n">iwtchar</span><span class="p">]</span> <span class="o">=</span> <span class="mf">10.0</span> <span class="c1"># make this element bigger</span>
+    <span class="k">if</span> <span class="n">error_model</span> <span class="o">==</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">chain</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nchains</span><span class="p">):</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">chain_init</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;pir&#39;</span><span class="p">:</span><span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">dirichlet</span><span class="p">(</span><span class="n">concparams</span><span class="p">),</span>
+                        <span class="s1">&#39;mur&#39;</span><span class="p">:</span><span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">dirichlet</span><span class="p">(</span><span class="n">concparams</span><span class="p">),</span>
+                        <span class="p">}</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">all</span><span class="p">(</span><span class="n">chain_init</span><span class="p">[</span><span class="s1">&#39;pir&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">PRIOR_MIN_VALUE</span><span class="p">)</span> <span class="ow">and</span> 
+                        <span class="nb">all</span><span class="p">(</span><span class="n">chain_init</span><span class="p">[</span><span class="s1">&#39;mur&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">PRIOR_MIN_VALUE</span><span class="p">)):</span>
+                    <span class="n">init</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chain_init</span><span class="p">)</span>
+                    <span class="k">break</span>
+        <span class="k">return</span> <span class="n">init</span>
+    <span class="k">elif</span> <span class="n">error_model</span> <span class="o">==</span> <span class="s1">&#39;same&#39;</span><span class="p">:</span>
+        <span class="n">posterrname</span> <span class="o">=</span> <span class="s1">&#39;epsilonr&#39;</span>
+    <span class="k">elif</span> <span class="n">error_model</span> <span class="o">==</span> <span class="s1">&#39;different&#39;</span><span class="p">:</span>
+        <span class="n">posterrname</span> <span class="o">=</span> <span class="s1">&#39;rhor&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid error_model </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">error_model</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">chain</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nchains</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">iattempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">initattempts</span><span class="p">):</span>
+            <span class="n">chain_init</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;pir&#39;</span><span class="p">:</span><span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">dirichlet</span><span class="p">(</span><span class="n">concparams</span><span class="p">),</span>
+                    <span class="s1">&#39;mur&#39;</span><span class="p">:</span><span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">dirichlet</span><span class="p">(</span><span class="n">concparams</span><span class="p">),</span>
+                    <span class="s1">&#39;epsilonr&#39;</span><span class="p">:</span><span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">dirichlet</span><span class="p">(</span><span class="n">concparams</span><span class="p">),</span>
+                    <span class="p">}</span>
+            <span class="k">if</span> <span class="n">error_model</span> <span class="o">==</span> <span class="s1">&#39;different&#39;</span><span class="p">:</span>
+                <span class="n">chain_init</span><span class="p">[</span><span class="s1">&#39;rhor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">dirichlet</span><span class="p">(</span><span class="n">concparams</span><span class="p">)</span>
+            <span class="n">irescale</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">while</span> <span class="n">irescale</span> <span class="o">&lt;</span> <span class="n">nrescales</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">any</span><span class="p">(</span>
+                    <span class="n">chain_init</span><span class="p">[</span><span class="s1">&#39;pir&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">chain_init</span><span class="p">[</span><span class="s1">&#39;mur&#39;</span><span class="p">]</span> <span class="o">/</span> 
+                    <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">chain_init</span><span class="p">[</span><span class="s1">&#39;pir&#39;</span><span class="p">],</span> <span class="n">chain_init</span><span class="p">[</span><span class="s1">&#39;mur&#39;</span><span class="p">])</span> 
+                    <span class="o">+</span> <span class="n">chain_init</span><span class="p">[</span><span class="n">posterrname</span><span class="p">]</span> <span class="o">-</span> <span class="n">deltar</span> <span class="o">&lt;</span> <span class="n">PRIOR_MIN_VALUE</span><span class="p">)</span>
+                    <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span><span class="n">chain_init</span><span class="p">[</span><span class="s1">&#39;mur&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">chain_init</span><span class="p">[</span><span class="s1">&#39;epsilonr&#39;</span><span class="p">]</span> 
+                    <span class="o">-</span> <span class="n">deltar</span> <span class="o">&lt;</span> <span class="n">PRIOR_MIN_VALUE</span><span class="p">)):</span> 
+                <span class="n">irescale</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">chain_init</span><span class="p">[</span><span class="s1">&#39;epsilonr&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">rescalefactor</span>
+                <span class="n">chain_init</span><span class="p">[</span><span class="s1">&#39;epsilonr&#39;</span><span class="p">][</span><span class="n">iwtchar</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span>
+                        <span class="p">[</span><span class="n">chain_init</span><span class="p">[</span><span class="s1">&#39;epsilonr&#39;</span><span class="p">][</span><span class="n">ichar</span><span class="p">]</span> <span class="k">for</span> <span class="n">ichar</span> 
+                        <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nchars</span><span class="p">)</span> <span class="k">if</span> <span class="n">ichar</span> <span class="o">!=</span> <span class="n">iwtchar</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">error_model</span> <span class="o">==</span> <span class="s1">&#39;different&#39;</span><span class="p">:</span>
+                    <span class="n">chain_init</span><span class="p">[</span><span class="s1">&#39;rhor&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">rescalefactor</span>
+                    <span class="n">chain_init</span><span class="p">[</span><span class="s1">&#39;rhor&#39;</span><span class="p">][</span><span class="n">iwtchar</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">([</span>
+                            <span class="n">chain_init</span><span class="p">[</span><span class="s1">&#39;rhor&#39;</span><span class="p">][</span><span class="n">ichar</span><span class="p">]</span> <span class="k">for</span> <span class="n">ichar</span> <span class="ow">in</span> 
+                            <span class="nb">range</span><span class="p">(</span><span class="n">nchars</span><span class="p">)</span> <span class="k">if</span> <span class="n">ichar</span> <span class="o">!=</span> <span class="n">iwtchar</span><span class="p">])</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">all</span><span class="p">(</span><span class="n">chain_init</span><span class="p">[</span><span class="s1">&#39;pir&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">chain_init</span><span class="p">[</span><span class="s1">&#39;mur&#39;</span><span class="p">]</span> <span class="o">/</span> 
+                    <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">chain_init</span><span class="p">[</span><span class="s1">&#39;pir&#39;</span><span class="p">],</span> <span class="n">chain_init</span><span class="p">[</span><span class="s1">&#39;mur&#39;</span><span class="p">])</span> <span class="o">+</span> 
+                    <span class="n">chain_init</span><span class="p">[</span><span class="n">posterrname</span><span class="p">]</span> <span class="o">-</span> <span class="n">deltar</span> <span class="o">&gt;</span> <span class="n">PRIOR_MIN_VALUE</span><span class="p">)</span> 
+                    <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="n">chain_init</span><span class="p">[</span><span class="s1">&#39;mur&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">chain_init</span><span class="p">[</span><span class="s1">&#39;epsilonr&#39;</span><span class="p">]</span> <span class="o">-</span> 
+                    <span class="n">deltar</span> <span class="o">&gt;</span> <span class="n">PRIOR_MIN_VALUE</span><span class="p">)):</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Failed to initialize&quot;</span><span class="p">)</span>
+        <span class="n">init</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chain_init</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">init</span>
+
+
+<div class="viewcode-block" id="inferPrefsByRatio"><a class="viewcode-back" href="../../dms_tools2.prefs.html#dms_tools2.prefs.inferPrefsByRatio">[docs]</a><span class="k">def</span> <span class="nf">inferPrefsByRatio</span><span class="p">(</span><span class="n">charlist</span><span class="p">,</span> <span class="n">sites</span><span class="p">,</span> <span class="n">wts</span><span class="p">,</span> <span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">,</span> <span class="n">errpre</span><span class="p">,</span>
+        <span class="n">errpost</span><span class="p">,</span> <span class="n">pseudocount</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Site-specific preferences from normalized enrichment ratios.</span>
+
+<span class="sd">    Calculates site-specific preference :math:`\pi_{r,a}` of each</span>
+<span class="sd">    site :math:`r` for each character :math:`a` using re-normalized</span>
+<span class="sd">    enrichment ratios. This function accomplishes the same goal as</span>
+<span class="sd">    `inferSitePrefs`, but is much simpler and faster, although less</span>
+<span class="sd">    statistically rigorous in principle.</span>
+
+<span class="sd">    Specifically, this function calculates the preferences as</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \pi_{r,a} = \\frac{\phi_{r,a}}{\sum_{a&#39;} \phi_{r,a&#39;}}</span>
+
+<span class="sd">    where :math:`\phi_{r,a}` is the enrichment ratio of character</span>
+<span class="sd">    :math:`a` relative to wildtype after selection. </span>
+<span class="sd">    </span>
+<span class="sd">    The actual definition of these enrichment ratios is somewhat</span>
+<span class="sd">    complex due to the need to correct for errors and add a</span>
+<span class="sd">    pseudocount. We have 4 sets of counts:</span>
+
+<span class="sd">        - `pre`: pre-selection counts</span>
+
+<span class="sd">        - `post`: post-selection counts</span>
+
+<span class="sd">        - `errpre`: error-control for pre-selection counts</span>
+
+<span class="sd">        - `errpost`: error-control for post-selection counts</span>
+
+<span class="sd">    For each set of counts :math:`s`, let :math:`N_r^s` (e.g., </span>
+<span class="sd">    :math:`N_r^{pre}`) denote the total counts for this sample at</span>
+<span class="sd">    site :math:`r`, and let :math:`n_{r,a}^{s}` (e.g., </span>
+<span class="sd">    :math:`n_{r,a}^{pre}`) denote the counts at that site for</span>
+<span class="sd">    character :math:`a`.</span>
+
+<span class="sd">    Because some of the counts are low, we add a pseudocount </span>
+<span class="sd">    :math:`P` to each observation. With this pseudocount, the </span>
+<span class="sd">    estimated frequency of character :math:`a` at site :math:`r`</span>
+<span class="sd">    in sample :math:`s` is </span>
+<span class="sd">    </span>
+<span class="sd">    .. math::</span>
+<span class="sd">    </span>
+<span class="sd">        f_{r,a}^s = \\frac{n_{r,a}^s + P}{N_{r,a}^s + A \\times P}</span>
+
+<span class="sd">    where :math:`A` is the number of characters in the alphabet (e.g.,</span>
+<span class="sd">    20 for amino acids without stop codons).</span>
+
+<span class="sd">    The **error-corrected** estimates of the frequency of character</span>
+<span class="sd">    :math:`a` before and after selection are then</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        f_{r,a}^{before} &amp;= \max\left(\\frac{P}{N_{r,a}^{pre} + A \\times P},</span>
+<span class="sd">        \; f_{r,a}^{pre} + \delta_{a,\\rm{wt}\left(r\\right)}</span>
+<span class="sd">        - f_{r,a}^{errpre}\\right)</span>
+
+<span class="sd">        f_{r,a}^{after} &amp;= \max\left(\\frac{P}{N_{r,a}^{post} + A \\times P},</span>
+<span class="sd">        \; f_{r,a}^{post} + \delta_{a,\\rm{wt}\left(r\\right)}</span>
+<span class="sd">        - f_{r,a}^{errpost}\\right)</span>
+
+<span class="sd">    where :math:`\delta_{a,\\rm{wt}\left(r\\right)}` is the </span>
+<span class="sd">    Kronecker-delta, equal to 1 if :math:`a` is the same as the</span>
+<span class="sd">    wildtype character :math:`\\rm{wt}\left(r\\right)` at site</span>
+<span class="sd">    :math:`r`, and 0 otherwise. We use the :math:`\max` operator</span>
+<span class="sd">    to ensure that even if the error-control frequency exceeds</span>
+<span class="sd">    the actual estimate, our estimated frequency never drops</span>
+<span class="sd">    below the pseudocount over the depth of the uncorrected sample.</span>
+
+<span class="sd">    Given these definitions, we then simply calculate the enrichment </span>
+<span class="sd">    ratios as </span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \phi_{r,a} = \\frac{\left(f_{r,a}^{after}\\right) / </span>
+<span class="sd">        \left(f_{r,\\rm{wt}\left(r\\right)}^{after}\\right)}</span>
+<span class="sd">        {\left(f_{r,a}^{before}\\right) / </span>
+<span class="sd">        \left(f_{r,\\rm{wt}\left(r\\right)}^{before}\\right)}</span>
+
+<span class="sd">    In the case where we are **not** using any error-controls, then</span>
+<span class="sd">    we simply set </span>
+<span class="sd">    :math:`f_{r,\\rm{wt}}^{errpre} = f_{r,\\rm{wt}}^{errpost} </span>
+<span class="sd">    = \delta_{a,\\rm{wt}\left(r\\right)}`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `charlist` (list)</span>
+<span class="sd">            Valid characters (e.g., codons, amino acids, nts).</span>
+<span class="sd">        `sites` (list)</span>
+<span class="sd">            Sites to analyze.</span>
+<span class="sd">        `wts` (list)</span>
+<span class="sd">            `wts[r]` is the wildtype character at site `sites[r]`.</span>
+<span class="sd">        `pre` (pandas.DataFrame)</span>
+<span class="sd">            Gives pre-selection counts. Should have columns</span>
+<span class="sd">            with names of &#39;site&#39; and all characters in `charlist`.</span>
+<span class="sd">            The rows give the counts of each character at that site.</span>
+<span class="sd">        `post` (pandas.DataFrame)</span>
+<span class="sd">            Like `pre` but for post-selection counts.</span>
+<span class="sd">        `errpre` (`None` or pandas.DataFrame)</span>
+<span class="sd">            Like `pre` but for pre-selection error-control counts,</span>
+<span class="sd">            or `None` if there is no such control.</span>
+<span class="sd">        `errpost` (`None` or pandas.DataFrame)</span>
+<span class="sd">            Like `pre` but for post-selection error-control counts,</span>
+<span class="sd">            or `None` if there is no such control.</span>
+<span class="sd">        `pseudocount` (float or int)</span>
+<span class="sd">            The pseudocount to add to each observation.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A pandas.DataFrame holding the preferences. The columns of</span>
+<span class="sd">        this dataframe are &#39;site&#39; and all characters in `charlist`.</span>
+<span class="sd">        For each site in `sites`, the rows give the preference</span>
+<span class="sd">        for that character.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">wts</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="n">wt</span> <span class="ow">in</span> <span class="n">charlist</span> <span class="k">for</span> <span class="n">wt</span> <span class="ow">in</span> <span class="n">wts</span><span class="p">]),</span> <span class="s2">&quot;invalid char in wts&quot;</span>
+    <span class="k">assert</span> <span class="n">pseudocount</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;pseudocount must be greater than zero&quot;</span>
+
+    <span class="n">dfs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;pre&#39;</span><span class="p">:</span><span class="n">pre</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+           <span class="s1">&#39;post&#39;</span><span class="p">:</span><span class="n">post</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+           <span class="p">}</span>
+    <span class="k">if</span> <span class="n">errpre</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dfs</span><span class="p">[</span><span class="s1">&#39;errpre&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">errpre</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">errpost</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dfs</span><span class="p">[</span><span class="s1">&#39;errpost&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">errpost</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">dfname</span> <span class="ow">in</span> <span class="n">dfs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">dfs</span><span class="p">[</span><span class="n">dfname</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">charlist</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">])</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;site in @sites&#39;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">wts</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">],</span> <span class="n">sites</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Nr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">charlist</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">[</span><span class="s1">&#39;f</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">+</span> <span class="n">pseudocount</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
+                    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Nr&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">charlist</span><span class="p">)</span> <span class="o">*</span> <span class="n">pseudocount</span><span class="p">)</span> 
+            <span class="n">df</span><span class="p">[</span><span class="s1">&#39;delta</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">wt</span> <span class="o">==</span> <span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">wt</span> <span class="ow">in</span> <span class="n">wts</span><span class="p">]</span>
+        <span class="n">dfs</span><span class="p">[</span><span class="n">dfname</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span>
+    <span class="c1"># fill values for errpre / errpost if they were None</span>
+    <span class="k">for</span> <span class="n">stype</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;pre&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">]:</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="s1">&#39;err</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stype</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">err</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dfs</span><span class="p">:</span>
+            <span class="n">dfs</span><span class="p">[</span><span class="n">err</span><span class="p">]</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="nb">dict</span><span class="p">([(</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">sites</span><span class="p">)]</span> <span class="o">+</span>
+                    <span class="p">[(</span><span class="s1">&#39;f</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">),</span> <span class="n">dfs</span><span class="p">[</span><span class="n">stype</span><span class="p">][</span><span class="s1">&#39;delta</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">)])</span>
+                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">]))</span>
+
+    <span class="c1"># compute phi values</span>
+    <span class="n">fr</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">ferr</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s1">&#39;before&#39;</span><span class="p">,</span> <span class="n">dfs</span><span class="p">[</span><span class="s1">&#39;pre&#39;</span><span class="p">],</span> <span class="n">dfs</span><span class="p">[</span><span class="s1">&#39;errpre&#39;</span><span class="p">]),</span>
+            <span class="p">(</span><span class="s1">&#39;after&#39;</span><span class="p">,</span> <span class="n">dfs</span><span class="p">[</span><span class="s1">&#39;post&#39;</span><span class="p">],</span> <span class="n">dfs</span><span class="p">[</span><span class="s1">&#39;errpost&#39;</span><span class="p">]),</span>
+            <span class="p">]:</span>
+        <span class="n">fr</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;wt&#39;</span><span class="p">:</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sites</span><span class="p">))}</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">:</span>
+            <span class="n">fr</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
+                    <span class="n">pseudocount</span> <span class="o">/</span> <span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;Nr&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> 
+                        <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">charlist</span><span class="p">)</span> <span class="o">*</span> <span class="n">pseudocount</span><span class="p">),</span>
+                    <span class="n">f</span><span class="p">[</span><span class="s1">&#39;f</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span><span class="o">.</span><span class="n">values</span> 
+                        <span class="o">+</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;delta</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span><span class="o">.</span><span class="n">values</span> 
+                        <span class="o">-</span> <span class="n">ferr</span><span class="p">[</span><span class="s1">&#39;f</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span><span class="o">.</span><span class="n">values</span>
+                    <span class="p">)</span>
+            <span class="n">fr</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;wt&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">fr</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">*</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;delta</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">phi</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;site&#39;</span><span class="p">:</span><span class="n">sites</span><span class="p">})</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">:</span>
+        <span class="n">phi</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">fr</span><span class="p">[</span><span class="s1">&#39;after&#39;</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">/</span> <span class="n">fr</span><span class="p">[</span><span class="s1">&#39;after&#39;</span><span class="p">][</span><span class="s1">&#39;wt&#39;</span><span class="p">])</span> <span class="o">/</span>
+                  <span class="p">(</span><span class="n">fr</span><span class="p">[</span><span class="s1">&#39;before&#39;</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">/</span> <span class="n">fr</span><span class="p">[</span><span class="s1">&#39;before&#39;</span><span class="p">][</span><span class="s1">&#39;wt&#39;</span><span class="p">]))</span>
+    <span class="n">phi</span><span class="p">[</span><span class="s1">&#39;denom&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">phi</span><span class="p">[</span><span class="n">charlist</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># normalize phi values to get pi values</span>
+    <span class="n">prefs</span> <span class="o">=</span> <span class="n">phi</span><span class="p">[</span><span class="n">charlist</span><span class="p">]</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">phi</span><span class="p">[</span><span class="s1">&#39;denom&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">prefs</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">sites</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">prefs</span></div>
+    
+
+<div class="viewcode-block" id="inferSitePrefs"><a class="viewcode-back" href="../../dms_tools2.prefs.html#dms_tools2.prefs.inferSitePrefs">[docs]</a><span class="k">def</span> <span class="nf">inferSitePrefs</span><span class="p">(</span><span class="n">charlist</span><span class="p">,</span> <span class="n">wtchar</span><span class="p">,</span> <span class="n">error_model</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> 
+        <span class="n">priors</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">niter</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">increasetries</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> 
+        <span class="n">r_max</span><span class="o">=</span><span class="mf">1.1</span><span class="p">,</span> <span class="n">neff_min</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">nchains</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">increasefac</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Infers site-specific preferences by MCMC for a specific site.</span>
+
+<span class="sd">    Infer the site-specific preferences :math:`\pi_{r,a}` for some site</span>
+<span class="sd">    :math:`r` for each character :math:`a` by integrating over the </span>
+<span class="sd">    posterior defined by the product of the following priors and </span>
+<span class="sd">    likelihoods, where :math:`\\boldsymbol{\mathbf{\pi_r}}` indicates</span>
+<span class="sd">    the vector of :math:`\pi_{r,a}` values for all characters:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \Pr\left(\\boldsymbol{\mathbf{\pi_r}}\\right) </span>
+<span class="sd">        &amp;= \mathrm{Dirichlet}\left(\\boldsymbol{\mathbf{a_{\pi,r}}}\\right)</span>
+
+<span class="sd">        \Pr\left(\\boldsymbol{\mathbf{\mu_r}}\\right) </span>
+<span class="sd">        &amp;= \mathrm{Dirichlet}\left(\\boldsymbol{\mathbf{a_{\mu,r}}}\\right)</span>
+
+<span class="sd">        \Pr\left(\\boldsymbol{\mathbf{\epsilon_r}}\\right) </span>
+<span class="sd">        &amp;= \mathrm{Dirichlet}\left(\\boldsymbol{\mathbf{a_{\epsilon,r}}}\\right)</span>
+
+<span class="sd">        \Pr\left(\\boldsymbol{\mathbf{\\rho_r}}\\right) </span>
+<span class="sd">        &amp;= \mathrm{Dirichlet}\left(\\boldsymbol{\mathbf{a_{\\rho,r}}}\\right)</span>
+
+<span class="sd">        \Pr\left(\\boldsymbol{\mathbf{n_r^{\\rm{pre}}}} \mid \\boldsymbol{\mathbf{\mu_r}}, \\boldsymbol{\mathbf{\epsilon_r}}\\right) </span>
+<span class="sd">        &amp;= \mathrm{Multinomial}\left(\\boldsymbol{\mathbf{n_r^{\\rm{pre}}}}; \\boldsymbol{\mathbf{\mu_r}} + \\boldsymbol{\mathbf{\epsilon_r}} - \\boldsymbol{\mathbf{\delta_r}}\\right)</span>
+
+<span class="sd">        \Pr\left(\\boldsymbol{\mathbf{n_r^{\\rm{post}}}} \mid \\boldsymbol{\mathbf{\mu_r}}, \\boldsymbol{\mathbf{\epsilon_r}}\\right) </span>
+<span class="sd">        &amp;= \mathrm{Multinomial}\left(\\boldsymbol{\mathbf{n_r^{\\rm{post}}}}; \\frac{\\boldsymbol{\mathbf{\mu_r}} \circ \\boldsymbol{\mathbf{\pi_r}}}{\\boldsymbol{\mathbf{\mu_r}} \cdot \\boldsymbol{\mathbf{\pi_r}}} + \\boldsymbol{\mathbf{\\rho_r}} - \\boldsymbol{\mathbf{\delta_r}}\\right)</span>
+
+<span class="sd">        \Pr\left(\\boldsymbol{\mathbf{n_r^{\\rm{err,pre}}}} \mid \\boldsymbol{\mathbf{\epsilon_r}}\\right) </span>
+<span class="sd">        &amp;= \mathrm{Multinomial}\left(\\boldsymbol{\mathbf{n_r^{\\rm{err,pre}}}}; \\boldsymbol{\mathbf{\epsilon_r}}\\right)</span>
+
+<span class="sd">        \Pr\left(\\boldsymbol{\mathbf{n_r^{\\rm{err,post}}}} \mid \\boldsymbol{\mathbf{\\rho_r}}\\right) </span>
+<span class="sd">        &amp;= \mathrm{Multinomial}\left(\\boldsymbol{\mathbf{n_r^{\\rm{err,post}}}}; \\boldsymbol{\mathbf{\\rho_r}}\\right)</span>
+
+<span class="sd">    where :math:`\\boldsymbol{\mathbf{\delta_r}}` is a vector that is </span>
+<span class="sd">    zero except for a one at the element corresponding to the wildtype.</span>
+
+<span class="sd">    The MCMC tries to guarantee convergence via the parameters specified</span>
+<span class="sd">    by `r_max`, `neff_min`, `nchains`, `niter`, `increasefac`, </span>
+<span class="sd">    and `increasetries`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `charlist` (list)</span>
+<span class="sd">           List of valid characters (e.g., codons, amino acids, nts).</span>
+<span class="sd">        `wtchar` (str)</span>
+<span class="sd">            Wildtype character at the site.</span>
+<span class="sd">        `error_model` (str or object)</span>
+<span class="sd">            Specifies how errors are estimated. Passing error model</span>
+<span class="sd">            objects is faster if calling this function repeatedly</span>
+<span class="sd">            as they will not need to be compiled. Can be:</span>
+<span class="sd">              - The str `none` or instance of `StanModelNoneErr`:</span>
+<span class="sd">                no errors (:math:`\\boldsymbol{\mathbf{\epsilon_r}} = \\boldsymbol{\mathbf{\\rho_r}} = \mathbf{0}`)</span>
+<span class="sd">              - The str `same` or instance of `StanModelSameErr`: </span>
+<span class="sd">                same error rates  pre and post-selection </span>
+<span class="sd">                (:math:`\\boldsymbol{\mathbf{\epsilon_r}} = \\boldsymbol{\mathbf{\\rho_r}}`).</span>
+<span class="sd">              - The str `different` or instance of `StanModelDifferentErr`: </span>
+<span class="sd">                different error rates pre- and post-selection</span>
+<span class="sd">                (:math:`\\boldsymbol{\mathbf{\epsilon_r}} \\ne \\boldsymbol{\mathbf{\\rho_r}}`).</span>
+<span class="sd">        `counts` (dict)</span>
+<span class="sd">            Deep sequencing counts. Each string key should specify</span>
+<span class="sd">            a dict keyed by all characters in `charlist` with</span>
+<span class="sd">            the values giving integer counts for that character. The keys:</span>
+<span class="sd">                - `pre`: :math:`\\boldsymbol{\mathbf{n_r^{\\rm{pre}}}}`</span>
+<span class="sd">                - `post`: :math:`\\boldsymbol{\mathbf{n_r^{\\rm{post}}}}`</span>
+<span class="sd">                - *err*: required if `error_model` is `same`, specifies</span>
+<span class="sd">                  :math:`\\boldsymbol{\mathbf{n_r^{\\rm{err,pre}}}} = \\boldsymbol{\mathbf{n_r^{\\rm{err,post}}}}`</span>
+<span class="sd">                - `errpre` and `errpost`: required if `error_model` is</span>
+<span class="sd">                  `different`, specify </span>
+<span class="sd">                  :math:`\\boldsymbol{\mathbf{n_r^{\\rm{err,pre}}}}` and</span>
+<span class="sd">                  :math:`\\boldsymbol{\mathbf{n_r^{\\rm{err,post}}}}`.</span>
+<span class="sd">        `priors` (dict)</span>
+<span class="sd">            Specifies parameter vectors for Dirichlet priors. Each string</span>
+<span class="sd">            key should specify a dict keyed by all characters and values</span>
+<span class="sd">            giving the prior for that character. Values less than </span>
+<span class="sd">            `PRIOR_MIN_VALUE` are set to `PRIOR_MIN_VALUE`. Keys are</span>
+<span class="sd">                - `pir_prior_params`: :math:`\\boldsymbol{\mathbf{a_{\pi,r}}}`</span>
+<span class="sd">                - `mur_prior_params`: :math:`\\boldsymbol{\mathbf{a_{\mu,r}}}`</span>
+<span class="sd">                - `epsilonr_prior_params`: only required if `error_model` is </span>
+<span class="sd">                  `same` or `different`, specifies </span>
+<span class="sd">                  :math:`\\boldsymbol{\mathbf{a_{\epsilon,r}}}`</span>
+<span class="sd">                - `rhor_prior_params` : only required if `error_model` is </span>
+<span class="sd">                  `different`, specifies</span>
+<span class="sd">                  :math:`\\boldsymbol{\mathbf{a_{\\rho,r}}}`</span>
+<span class="sd">        `seed` (int)</span>
+<span class="sd">            Random number seed for MCMC. </span>
+<span class="sd">        `n_jobs` (int)</span>
+<span class="sd">            Number of CPUs to use, -1 means all available.</span>
+<span class="sd">        `niter`, `increasetries`, `r_max`, `neff_min`, `nchains`, `increasefac`</span>
+<span class="sd">            Specify MCMC convergence. They all have reasonable defaults.</span>
+<span class="sd">            The MCMC is considered to have converged if the mean Gelman-Rubin R</span>
+<span class="sd">            statistic (http://www.jstor.org/stable/2246093) over all </span>
+<span class="sd">            :math:`\pi_{r,x}` values &lt;= `r_max` and the mean effective sample</span>
+<span class="sd">            size is &gt;= `neff_min`. The MCMC first runs with `nchains` chains</span>
+<span class="sd">            and `niter` iterations. If it fails to converge, it increases</span>
+<span class="sd">            the iterations by a factor of `increasefac` and tries again,</span>
+<span class="sd">            and repeats until it converges or has tried `increasetries`</span>
+<span class="sd">            times to increase the number of iterations. If the effective</span>
+<span class="sd">            sample size exceeds 3 times `neff_min` then we allow</span>
+<span class="sd">            R to be `1 + 1.5 (r_max - 1)`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The tuple `(converged, pi_means, pi_95credint, logstring)` where:</span>
+<span class="sd">            - `converged` is `True` if the MCMC converged, `False` otherwise.</span>
+<span class="sd">            - `pi_means` is dict keyed by characters in `charlist`</span>
+<span class="sd">               with the value giving the :math:`\pi_{r,a}`.</span>
+<span class="sd">            - `pi_95credint` is dict keyed by characters, values are 2-tuples</span>
+<span class="sd">               giving median-centered credible interval for :math:`\pi_{r,a}`.</span>
+<span class="sd">            - `logstring` is a string describing MCMC run and convergence.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logstring</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">Beginning MCMC at </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">()]</span>
+    <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">nchains</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;nchains must be at least two&quot;</span>
+    <span class="k">assert</span> <span class="n">niter</span> <span class="o">&gt;=</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;niter must be at least 100&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">charlist</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">charlist</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">wtchar</span> <span class="ow">in</span> <span class="n">charlist</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Nchar&#39;</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">charlist</span><span class="p">),</span> 
+            <span class="s1">&#39;iwtchar&#39;</span><span class="p">:</span><span class="n">charlist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">wtchar</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s1">&#39;nrpre&#39;</span><span class="p">:[</span><span class="n">counts</span><span class="p">[</span><span class="s1">&#39;pre&#39;</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">],</span>
+            <span class="s1">&#39;nrpost&#39;</span><span class="p">:[</span><span class="n">counts</span><span class="p">[</span><span class="s1">&#39;post&#39;</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">],</span>
+            <span class="s1">&#39;pir_prior_params&#39;</span><span class="p">:[</span><span class="nb">max</span><span class="p">(</span><span class="n">PRIOR_MIN_VALUE</span><span class="p">,</span> 
+                    <span class="n">priors</span><span class="p">[</span><span class="s1">&#39;pir_prior_params&#39;</span><span class="p">][</span><span class="n">c</span><span class="p">])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">],</span>
+            <span class="s1">&#39;mur_prior_params&#39;</span><span class="p">:[</span><span class="nb">max</span><span class="p">(</span><span class="n">PRIOR_MIN_VALUE</span><span class="p">,</span> 
+                    <span class="n">priors</span><span class="p">[</span><span class="s1">&#39;mur_prior_params&#39;</span><span class="p">][</span><span class="n">c</span><span class="p">])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">],</span>
+           <span class="p">}</span>
+    <span class="k">if</span> <span class="n">error_model</span> <span class="o">==</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
+        <span class="n">sm</span> <span class="o">=</span> <span class="n">StanModelNoneErr</span><span class="p">()</span><span class="o">.</span><span class="n">model</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">error_model</span><span class="p">,</span> <span class="n">StanModelNoneErr</span><span class="p">):</span>
+        <span class="n">sm</span> <span class="o">=</span> <span class="n">error_model</span><span class="o">.</span><span class="n">model</span>
+        <span class="n">error_model</span> <span class="o">=</span> <span class="s1">&#39;none&#39;</span>
+    <span class="k">elif</span> <span class="n">error_model</span> <span class="o">==</span> <span class="s1">&#39;same&#39;</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">error_model</span><span class="p">,</span> <span class="n">StanModelSameErr</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">error_model</span> <span class="o">==</span> <span class="s1">&#39;same&#39;</span><span class="p">:</span>
+            <span class="n">sm</span> <span class="o">=</span> <span class="n">StanModelSameErr</span><span class="p">()</span><span class="o">.</span><span class="n">model</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sm</span> <span class="o">=</span> <span class="n">error_model</span><span class="o">.</span><span class="n">model</span>
+            <span class="n">error_model</span> <span class="o">=</span> <span class="s1">&#39;same&#39;</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;nrerr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">counts</span><span class="p">[</span><span class="s1">&#39;err&#39;</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">]</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;epsilonr_prior_params&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">PRIOR_MIN_VALUE</span><span class="p">,</span> 
+                <span class="n">priors</span><span class="p">[</span><span class="s1">&#39;epsilonr_prior_params&#39;</span><span class="p">][</span><span class="n">c</span><span class="p">])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">error_model</span> <span class="o">==</span> <span class="s1">&#39;different&#39;</span> <span class="ow">or</span> 
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">error_model</span><span class="p">,</span> <span class="n">StanModelDifferentErr</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">error_model</span> <span class="o">==</span> <span class="s1">&#39;different&#39;</span><span class="p">:</span>
+            <span class="n">sm</span> <span class="o">=</span> <span class="n">StanModelDifferentErr</span><span class="p">()</span><span class="o">.</span><span class="n">model</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sm</span> <span class="o">=</span> <span class="n">error_model</span><span class="o">.</span><span class="n">model</span>
+            <span class="n">error_model</span> <span class="o">=</span> <span class="s1">&#39;different&#39;</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;nrerrpre&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">counts</span><span class="p">[</span><span class="s1">&#39;errpre&#39;</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">]</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;nrerrpost&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">counts</span><span class="p">[</span><span class="s1">&#39;errpost&#39;</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">]</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;epsilonr_prior_params&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">PRIOR_MIN_VALUE</span><span class="p">,</span> 
+                <span class="n">priors</span><span class="p">[</span><span class="s1">&#39;epsilonr_prior_params&#39;</span><span class="p">][</span><span class="n">c</span><span class="p">])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">]</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;rhor_prior_params&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">PRIOR_MIN_VALUE</span><span class="p">,</span> 
+                <span class="n">priors</span><span class="p">[</span><span class="s1">&#39;rhor_prior_params&#39;</span><span class="p">][</span><span class="n">c</span><span class="p">])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid error_model </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">error_model</span><span class="p">))</span>
+
+    <span class="n">ntry</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span> <span class="c1"># run until converged or tries exhausted</span>
+        <span class="n">init</span> <span class="o">=</span> <span class="n">_initialValuePrefs</span><span class="p">(</span><span class="n">error_model</span><span class="p">,</span> <span class="n">nchains</span><span class="p">,</span> 
+                <span class="n">charlist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">wtchar</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">charlist</span><span class="p">))</span>
+        <span class="n">fit</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">sampling</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="nb">iter</span><span class="o">=</span><span class="n">niter</span><span class="p">,</span> <span class="n">chains</span><span class="o">=</span><span class="n">nchains</span><span class="p">,</span> 
+                <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span> <span class="n">refresh</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="n">init</span><span class="p">)</span>
+        <span class="c1"># extract output</span>
+        <span class="n">fitsummary</span> <span class="o">=</span> <span class="n">fit</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+        <span class="n">rownames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">fitsummary</span><span class="p">[</span><span class="s1">&#39;summary_rownames&#39;</span><span class="p">])</span>
+        <span class="n">colnames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">fitsummary</span><span class="p">[</span><span class="s1">&#39;summary_colnames&#39;</span><span class="p">])</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="n">fitsummary</span><span class="p">[</span><span class="s1">&#39;summary&#39;</span><span class="p">]</span>
+        <span class="n">char_row_indices</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">c</span><span class="p">,</span> <span class="n">rownames</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;pir[</span><span class="si">{0}</span><span class="s1">]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">charlist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">c</span><span class="p">))))</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">])</span> 
+        <span class="n">rindex</span> <span class="o">=</span> <span class="n">colnames</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;Rhat&#39;</span><span class="p">)</span>
+        <span class="n">neffindex</span> <span class="o">=</span> <span class="n">colnames</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;n_eff&#39;</span><span class="p">)</span>
+        <span class="n">rlist</span> <span class="o">=</span> <span class="p">[</span><span class="n">summary</span><span class="p">[</span><span class="n">char_row_indices</span><span class="p">[</span><span class="n">c</span><span class="p">]][</span><span class="n">rindex</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">]</span>
+        <span class="n">rhat_is_nan</span> <span class="o">=</span> <span class="p">[</span><span class="n">rhat</span> <span class="k">for</span> <span class="n">rhat</span> <span class="ow">in</span> <span class="n">rlist</span> <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">rhat</span><span class="p">)]</span>
+        <span class="n">rlist</span> <span class="o">=</span> <span class="p">[</span><span class="n">rhat</span> <span class="k">for</span> <span class="n">rhat</span> <span class="ow">in</span> <span class="n">rlist</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">rhat</span><span class="p">)]</span>
+        <span class="n">nefflist</span> <span class="o">=</span> <span class="p">[</span><span class="n">summary</span><span class="p">[</span><span class="n">char_row_indices</span><span class="p">[</span><span class="n">c</span><span class="p">]][</span><span class="n">neffindex</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">]</span>
+        <span class="n">neffmean</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">nefflist</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nefflist</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rlist</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">rhat_is_nan</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">charlist</span><span class="p">)</span>
+            <span class="n">rmean</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">logstring</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">After </span><span class="si">{0}</span><span class="s1"> MCMC chains each of </span><span class="si">{1}</span><span class="s1"> steps, &#39;</span>
+                    <span class="s1">&#39;mean R = nan and mean Neff = </span><span class="si">{2}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">nchains</span><span class="p">,</span> <span class="n">niter</span><span class="p">,</span> <span class="n">neffmean</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rmean</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">rlist</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rlist</span><span class="p">))</span>
+            <span class="n">logstring</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">After </span><span class="si">{0}</span><span class="s1"> MCMC chains each of </span><span class="si">{1}</span><span class="s1"> steps, &#39;</span>
+                    <span class="s1">&#39;mean R = </span><span class="si">{2}</span><span class="s1"> and mean Neff = </span><span class="si">{3}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">nchains</span><span class="p">,</span> <span class="n">niter</span><span class="p">,</span> <span class="n">rmean</span><span class="p">,</span> <span class="n">neffmean</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">rhat_is_nan</span><span class="p">:</span>
+            <span class="n">logstring</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t\t</span><span class="s1">There are </span><span class="si">{0}</span><span class="s1"> characters where R is nan&#39;</span>
+                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rhat_is_nan</span><span class="p">)))</span>
+        <span class="c1"># allow convergence with stringent criteria when Rhat is nan</span>
+        <span class="c1"># pystan appears to give Rhat of nan for sites with low preference</span>
+        <span class="c1"># pystan Rhat values of nan are a bug according to pystan developers</span>
+        <span class="k">if</span> <span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">rhat_is_nan</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">charlist</span><span class="p">)</span> <span class="ow">and</span> 
+                <span class="n">rmean</span> <span class="o">!=</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">rmean</span> <span class="o">&lt;=</span> <span class="n">r_max</span> <span class="ow">and</span> <span class="n">neffmean</span> <span class="o">&gt;=</span> <span class="n">neff_min</span><span class="p">)</span> 
+                <span class="ow">or</span> <span class="p">(</span><span class="n">neffmean</span> <span class="o">&gt;=</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">neff_min</span> <span class="ow">and</span> <span class="p">((</span><span class="n">rmean</span> <span class="o">==</span> <span class="kc">None</span><span class="p">)</span> 
+                <span class="ow">or</span> <span class="p">(</span><span class="n">rmean</span> <span class="o">!=</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">rmean</span> <span class="o">&lt;=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">r_max</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">))))):</span>
+            <span class="c1"># converged</span>
+            <span class="n">logstring</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">MCMC converged at </span><span class="si">{0}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">()))</span>
+            <span class="n">meanindex</span> <span class="o">=</span> <span class="n">colnames</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;mean&#39;</span><span class="p">)</span>
+            <span class="n">lower95index</span> <span class="o">=</span> <span class="n">colnames</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;2.5%&#39;</span><span class="p">)</span>
+            <span class="n">upper95index</span> <span class="o">=</span> <span class="n">colnames</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;97.5%&#39;</span><span class="p">)</span>
+            <span class="n">pi_means</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">c</span><span class="p">,</span> <span class="n">summary</span><span class="p">[</span><span class="n">char_row_indices</span><span class="p">[</span><span class="n">c</span><span class="p">]][</span><span class="n">meanindex</span><span class="p">])</span> 
+                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">])</span>
+            <span class="n">pi_95credint</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">c</span><span class="p">,</span> 
+                    <span class="p">(</span><span class="n">summary</span><span class="p">[</span><span class="n">char_row_indices</span><span class="p">[</span><span class="n">c</span><span class="p">]][</span><span class="n">lower95index</span><span class="p">],</span> 
+                    <span class="n">summary</span><span class="p">[</span><span class="n">char_row_indices</span><span class="p">[</span><span class="n">c</span><span class="p">]][</span><span class="n">upper95index</span><span class="p">]))</span> 
+                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">])</span>
+            <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">pi_means</span><span class="p">,</span> <span class="n">pi_95credint</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">logstring</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># failed to converge</span>
+            <span class="k">if</span> <span class="n">ntry</span> <span class="o">&lt;</span> <span class="n">increasetries</span><span class="p">:</span>
+                <span class="n">ntry</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">niter</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">niter</span> <span class="o">*</span> <span class="n">increasefac</span><span class="p">)</span>
+                <span class="n">logstring</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">MCMC failed to converge. Doing retry &quot;</span>
+                        <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> with </span><span class="si">{1}</span><span class="s2"> iterations per chain.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">ntry</span><span class="p">,</span> <span class="n">niter</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;_no_converge_prefs_debug.pickle&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_debug</span><span class="p">:</span>
+                    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">((</span><span class="n">counts</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">fitsummary</span><span class="p">),</span> <span class="n">f_debug</span><span class="p">)</span>
+                <span class="n">logstring</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">MCMC FAILED to converge after &quot;</span>
+                        <span class="s2">&quot;all attempts at </span><span class="si">{0}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">()))</span>
+                <span class="n">meanindex</span> <span class="o">=</span> <span class="n">colnames</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;mean&#39;</span><span class="p">)</span>
+                <span class="n">lower95index</span> <span class="o">=</span> <span class="n">colnames</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;2.5%&#39;</span><span class="p">)</span>
+                <span class="n">upper95index</span> <span class="o">=</span> <span class="n">colnames</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;97.5%&#39;</span><span class="p">)</span>
+                <span class="n">pi_means</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">c</span><span class="p">,</span> <span class="n">summary</span><span class="p">[</span><span class="n">char_row_indices</span><span class="p">[</span><span class="n">c</span><span class="p">]][</span><span class="n">meanindex</span><span class="p">])</span> 
+                        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">])</span>
+                <span class="n">pi_95credint</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">c</span><span class="p">,</span> 
+                        <span class="p">(</span><span class="n">summary</span><span class="p">[</span><span class="n">char_row_indices</span><span class="p">[</span><span class="n">c</span><span class="p">]][</span><span class="n">lower95index</span><span class="p">],</span> 
+                        <span class="n">summary</span><span class="p">[</span><span class="n">char_row_indices</span><span class="p">[</span><span class="n">c</span><span class="p">]][</span><span class="n">upper95index</span><span class="p">]))</span> 
+                        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">])</span>
+                <span class="k">return</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">pi_means</span><span class="p">,</span> <span class="n">pi_95credint</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">logstring</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="prefsToMutEffects"><a class="viewcode-back" href="../../dms_tools2.prefs.html#dms_tools2.prefs.prefsToMutEffects">[docs]</a><span class="k">def</span> <span class="nf">prefsToMutEffects</span><span class="p">(</span><span class="n">prefs</span><span class="p">,</span> <span class="n">charlist</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Converts amino acid preferences to effects of specific mutations.</span>
+
+<span class="sd">    If the preference of site :math:`r` for amino acid :math:`a` is</span>
+<span class="sd">    :math:`\pi_{r,a}`, then the estimated effect (e.g., ratio of</span>
+<span class="sd">    enrichment ratios) for mutating that site from :math:`x` to</span>
+<span class="sd">    :math:`y` is :math:`\\frac{\pi_{r,y}}{\pi_{r,x}}`. Very small</span>
+<span class="sd">    values indicate disfavored mutations, and very large values</span>
+<span class="sd">    indicate highly favored mutations. The logarithm base 2 of the</span>
+<span class="sd">    expected effects is also a useful measure -- negative values</span>
+<span class="sd">    are disfavored mutations, positive values are favored ones.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `prefs` (pandas DataFrame)</span>
+<span class="sd">            Preferences to analyze. The columns should be `site` and</span>
+<span class="sd">            a column for every character in `charlist`.</span>
+<span class="sd">        `charlist` (list)</span>
+<span class="sd">            The list of characters that we are analyzing. For instance,</span>
+<span class="sd">            `dms_tools2.AAS` for amino acids.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A pandas Data Frame where the columns are:</span>
+
+<span class="sd">            * `site`: the site</span>
+
+<span class="sd">            * `initial`: the initial character (e.g., amino acid)</span>
+
+<span class="sd">            * `final`: the final character after the mutation</span>
+
+<span class="sd">            * `mutation`: mutation in the string form `A1G`</span>
+
+<span class="sd">            * `effect`: the effect of the mutation</span>
+
+<span class="sd">            * `log2effect`: the log2 of the effect of the mutation.</span>
+
+<span class="sd">    &gt;&gt;&gt; charlist = [&#39;A&#39;, &#39;C&#39;, &#39;G&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; prefs = pandas.DataFrame({</span>
+<span class="sd">    ...         &#39;site&#39;:[1, 2],</span>
+<span class="sd">    ...         &#39;A&#39;:[0.25, 0.25],</span>
+<span class="sd">    ...         &#39;C&#39;:[0.25, 0.5],</span>
+<span class="sd">    ...         &#39;G&#39;:[0.5, 0.25],</span>
+<span class="sd">    ...         })</span>
+<span class="sd">    &gt;&gt;&gt; effects = prefsToMutEffects(prefs, charlist)</span>
+<span class="sd">    &gt;&gt;&gt; set(effects.columns) == {&#39;site&#39;, &#39;initial&#39;, &#39;final&#39;,</span>
+<span class="sd">    ...         &#39;mutation&#39;, &#39;effect&#39;, &#39;log2effect&#39;}</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(effects[effects[&#39;initial&#39;] == &#39;A&#39;][&#39;effect&#39;],</span>
+<span class="sd">    ...         [1, 1, 2, 1, 2, 1])</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(effects[effects[&#39;initial&#39;] == &#39;C&#39;][&#39;effect&#39;],</span>
+<span class="sd">    ...         [1, 1, 2, 0.5, 1, 0.5])</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(effects[&#39;effect&#39;], 2**effects[&#39;log2effect&#39;])</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">prefs</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">charlist</span><span class="p">)</span>
+    <span class="n">initial</span> <span class="o">=</span> <span class="n">prefs</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">value_vars</span><span class="o">=</span><span class="n">charlist</span><span class="p">,</span>
+                <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;initial&#39;</span><span class="p">,</span> <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;initial_pref&#39;</span><span class="p">)</span>
+    <span class="n">final</span> <span class="o">=</span> <span class="n">initial</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span>
+            <span class="p">{</span><span class="s1">&#39;initial&#39;</span><span class="p">:</span><span class="s1">&#39;final&#39;</span><span class="p">,</span> <span class="s1">&#39;initial_pref&#39;</span><span class="p">:</span><span class="s1">&#39;final_pref&#39;</span><span class="p">})</span>
+    <span class="n">effects</span> <span class="o">=</span> <span class="n">final</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">initial</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+    <span class="n">effects</span><span class="p">[</span><span class="s1">&#39;effect&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">effects</span><span class="p">[</span><span class="s1">&#39;final_pref&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">effects</span><span class="p">[</span><span class="s1">&#39;initial_pref&#39;</span><span class="p">]</span>
+    <span class="n">effects</span><span class="p">[</span><span class="s1">&#39;log2effect&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">effects</span><span class="p">[</span><span class="s1">&#39;effect&#39;</span><span class="p">])</span>
+    <span class="n">effects</span><span class="p">[</span><span class="s1">&#39;mutation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">effects</span><span class="p">[</span><span class="s1">&#39;initial&#39;</span><span class="p">]</span> <span class="o">+</span> 
+            <span class="n">effects</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span> <span class="o">+</span> <span class="n">effects</span><span class="p">[</span><span class="s1">&#39;final&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">effects</span>
+            <span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;final_pref&#39;</span><span class="p">,</span> <span class="s1">&#39;initial_pref&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;initial&#39;</span><span class="p">,</span> <span class="s1">&#39;final&#39;</span><span class="p">])</span>
+            <span class="p">[[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;initial&#39;</span><span class="p">,</span> <span class="s1">&#39;final&#39;</span><span class="p">,</span> <span class="s1">&#39;mutation&#39;</span><span class="p">,</span> <span class="s1">&#39;effect&#39;</span><span class="p">,</span> <span class="s1">&#39;log2effect&#39;</span><span class="p">]]</span>
+            <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="rescalePrefs"><a class="viewcode-back" href="../../dms_tools2.prefs.html#dms_tools2.prefs.rescalePrefs">[docs]</a><span class="k">def</span> <span class="nf">rescalePrefs</span><span class="p">(</span><span class="n">prefs</span><span class="p">,</span> <span class="n">stringency</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Re-scale amino acid preferences by stringency parameter.</span>
+
+<span class="sd">    If the initial preference of site :math:`r` for amino-acid </span>
+<span class="sd">    :math:`a` is :math:`\pi_{r,a}`, then the re-scaled preference is</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">    </span>
+<span class="sd">        \\frac{\left(\pi_{r,a}\\right)^{\\beta}}{\sum_{a&#39;} \left(\pi_{r,a&#39;}\\right)}</span>
+
+<span class="sd">    where :math:`\\beta` is the stringency parameter.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `prefs` (pandas.DataFrame)</span>
+<span class="sd">            Columns are &#39;site&#39; and then every character (e.g.,</span>
+<span class="sd">            amino acid).</span>
+<span class="sd">        `stringency` (float &gt;= 0)</span>
+<span class="sd">            The stringency parameter.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A data frame in the same format as `prefs` but with the</span>
+<span class="sd">        re-scaled preferences.</span>
+
+<span class="sd">    &gt;&gt;&gt; prefs = pandas.DataFrame(dict(</span>
+<span class="sd">    ...         [(&#39;site&#39;, [1, 2]), (&#39;A&#39;, [0.24, 0.03]), (&#39;C&#39;, [0.04, 0.43])]</span>
+<span class="sd">    ...         + [(aa, [0.04, 0.03]) for aa in dms_tools2.AAS if</span>
+<span class="sd">    ...         aa not in [&#39;A&#39;, &#39;C&#39;]]))</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(1, prefs.drop(&#39;site&#39;, axis=1).sum(axis=1))</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; rescaled = rescalePrefs(prefs, 1.0)</span>
+<span class="sd">    &gt;&gt;&gt; all([numpy.allclose(prefs[c], rescaled[c]) for c in prefs.columns])</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; rescaled2 = rescalePrefs(prefs, 2.0)</span>
+<span class="sd">    &gt;&gt;&gt; all(rescaled2[&#39;site&#39;] == prefs[&#39;site&#39;])</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(rescaled2[&#39;A&#39;], [0.6545, 0.0045], atol=1e-3)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(rescaled2[&#39;C&#39;], [0.0182, 0.9153], atol=1e-3)</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">prefs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span>
+            <span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">number</span><span class="p">])</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span>
+            <span class="n">prefs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;Non-numeric &#39;</span>
+            <span class="s1">&#39;columns other than &quot;site&quot;&#39;</span><span class="p">)</span>
+
+    <span class="n">chars</span> <span class="o">=</span> <span class="n">prefs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span>
+    <span class="n">rescaled</span> <span class="o">=</span> <span class="n">prefs</span><span class="p">[</span><span class="n">chars</span><span class="p">]</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">stringency</span><span class="p">)</span>
+    <span class="n">rescaled</span> <span class="o">=</span> <span class="n">rescaled</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">rescaled</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
+    <span class="n">rescaled</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prefs</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">rescaled</span><span class="p">[</span><span class="n">prefs</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="avgPrefs"><a class="viewcode-back" href="../../dms_tools2.prefs.html#dms_tools2.prefs.avgPrefs">[docs]</a><span class="k">def</span> <span class="nf">avgPrefs</span><span class="p">(</span><span class="n">prefsfiles</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Gets average of site-specific preferences.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `prefsfiles` (list)</span>
+<span class="sd">            List of CSV files containing preferences, must all be</span>
+<span class="sd">            for same sites and characters.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A `pandas.DataFrame` containing the average of the</span>
+<span class="sd">        preferences in `prefsfiles`. In this returned</span>
+<span class="sd">        data frame, `site` is the index</span>
+
+<span class="sd">    &gt;&gt;&gt; tf1 = tempfile.NamedTemporaryFile</span>
+<span class="sd">    &gt;&gt;&gt; tf2 = tempfile.NamedTemporaryFile</span>
+<span class="sd">    &gt;&gt;&gt; with tf1(mode=&#39;w&#39;) as file1, tf2(mode=&#39;w&#39;) as file2:</span>
+<span class="sd">    ...     x = file1.write(&#39;site,A,C,G,T\\n&#39;</span>
+<span class="sd">    ...                 &#39;1,0.2,0.2,0.5,0.1\\n&#39;</span>
+<span class="sd">    ...                 &#39;2,0.3,0.3,0.3,0.1&#39;)</span>
+<span class="sd">    ...     file1.flush()</span>
+<span class="sd">    ...     x = file2.write(&#39;site,A,C,G,T\\n&#39;</span>
+<span class="sd">    ...                 &#39;1,0.4,0.1,0.1,0.4\\n&#39;</span>
+<span class="sd">    ...                 &#39;2,0.3,0.4,0.1,0.2&#39;)</span>
+<span class="sd">    ...     file2.flush()</span>
+<span class="sd">    ...     avg = avgPrefs([file1.name, file2.name])</span>
+<span class="sd">    &gt;&gt;&gt; (avg[&#39;site&#39;] == [1, 2]).all()</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(avg[&#39;A&#39;], [0.3, 0.3])</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(avg[&#39;C&#39;], [0.15, 0.35])</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(avg[&#39;G&#39;], [0.3, 0.2])</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(avg[&#39;T&#39;], [0.25, 0.15])</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">prefsfiles</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span>
+    <span class="n">prefs</span> <span class="o">=</span> <span class="p">[</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">prefsfiles</span><span class="p">]</span>
+
+    <span class="c1"># make sure all have the same columns in the same order</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="n">prefs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">columns</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">prefs</span><span class="p">)):</span>
+        <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">prefs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="n">prefs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">prefs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">cols</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">prefs</span><span class="p">)</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../programs.html">Executable programs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

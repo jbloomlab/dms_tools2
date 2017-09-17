@@ -1,0 +1,589 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>dms_tools2.parseargs &#8212; dms_tools2 2.0a0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0a0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dms_tools2.parseargs</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">===================</span>
+<span class="sd">parseargs</span>
+<span class="sd">===================</span>
+
+<span class="sd">Argument parsing for the executable scripts in ``dms_tools2``.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">dms_tools2</span>
+
+
+<div class="viewcode-block" id="checkName"><a class="viewcode-back" href="../../dms_tools2.parseargs.html#dms_tools2.parseargs.checkName">[docs]</a><span class="k">def</span> <span class="nf">checkName</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">nametype</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if `name` is an allowable name.</span>
+
+<span class="sd">    Allowed names can contain most characters but **not**</span>
+<span class="sd">    LaTex special characters.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `name` (str)</span>
+<span class="sd">            Name to check</span>
+<span class="sd">        `nametype` (str)</span>
+<span class="sd">            If we print an exception what do we call the parameter</span>
+<span class="sd">            that failed? For instance, `name` or `group`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Returns `True` if `name` is an allowable name.</span>
+<span class="sd">        Otherwise raises a `ValueError` explaining why the</span>
+<span class="sd">        `name` is invalid.</span>
+
+<span class="sd">    &gt;&gt;&gt; checkName(&#39;sample-1&#39;, &#39;name&#39;)</span>
+<span class="sd">    True</span>
+
+<span class="sd">    &gt;&gt;&gt; checkName(&#39;sample 1&#39;, &#39;name&#39;)</span>
+<span class="sd">    True</span>
+
+<span class="sd">    &gt;&gt;&gt; checkName(&#39;PGT151 - 5 nM&#39;, &#39;name&#39;)</span>
+<span class="sd">    True</span>
+
+<span class="sd">    &gt;&gt;&gt; checkName(&#39;sample_1&#39;, &#39;name&#39;)</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">        ...</span>
+<span class="sd">    ValueError: name sample_1 contains following illegal characters: _</span>
+
+<span class="sd">    &gt;&gt;&gt; checkName(&#39;sample_1&#39;, &#39;group&#39;)</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">        ...</span>
+<span class="sd">    ValueError: group sample_1 contains following illegal characters: _</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">name</span><span class="o">.</span><span class="n">isspace</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> is all whitespace&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nametype</span><span class="p">))</span>
+    <span class="n">illegal_chars</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">name</span> <span class="k">if</span> 
+            <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;^[a-zA-Z0-9\- ]$&#39;</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">illegal_chars</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> </span><span class="si">{1}</span><span class="s2"> contains following illegal characters: &quot;</span>
+                <span class="s2">&quot;</span><span class="si">{2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nametype</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">illegal_chars</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="parentParser"><a class="viewcode-back" href="../../dms_tools2.parseargs.html#dms_tools2.parseargs.parentParser">[docs]</a><span class="k">def</span> <span class="nf">parentParser</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Returns parent parser with some common options added.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `argparse.ArgumentParser` with the following arguments</span>
+<span class="sd">        already added: </span>
+
+<span class="sd">            - ``--outdir``</span>
+
+<span class="sd">            - ``--ncpus``</span>
+
+<span class="sd">            - ``--use_existing``</span>
+
+<span class="sd">            - ``-v / --version``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">add_help</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--outdir&#39;</span><span class="p">,</span>  
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Output files to this directory (create if needed).&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--ncpus&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> 
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Number of CPUs to use, -1 is all available.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--use_existing&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">],</span>
+            <span class="n">default</span><span class="o">=</span><span class="s1">&#39;no&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;If files with names of expected &#39;</span>
+            <span class="s1">&#39;output already exist, do not re-run.&#39;</span><span class="p">))</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-v&#39;</span><span class="p">,</span> <span class="s1">&#39;--version&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;version&#39;</span><span class="p">,</span> 
+            <span class="n">version</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(prog)s</span><span class="s1"> </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">__version__</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+
+<div class="viewcode-block" id="parserDescription"><a class="viewcode-back" href="../../dms_tools2.parseargs.html#dms_tools2.parseargs.parserDescription">[docs]</a><span class="k">def</span> <span class="nf">parserDescription</span><span class="p">(</span><span class="n">description</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Augments description with program information.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `description` (str)</span>
+<span class="sd">            Description of program</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A string with `description` augmented with information</span>
+<span class="sd">        on the `dms_tools2` package / version.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> Part of `</span><span class="si">{1}</span><span class="s2"> &lt;</span><span class="si">{4}</span><span class="s2">&gt;`_ (version </span><span class="si">{2}</span><span class="s2">) written by </span><span class="si">{3}</span><span class="s2">.&quot;</span>
+            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">description</span><span class="p">,</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="n">dms_tools2</span><span class="o">.</span><span class="n">__version__</span><span class="p">,</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">__author__</span><span class="p">,</span>
+            <span class="n">dms_tools2</span><span class="o">.</span><span class="n">__url__</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="bcsubampParentParser"><a class="viewcode-back" href="../../dms_tools2.parseargs.html#dms_tools2.parseargs.bcsubampParentParser">[docs]</a><span class="k">def</span> <span class="nf">bcsubampParentParser</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Parent parser for ``dms2_bcsubamp`` / ``dms2_batch_bcsubamp``.&quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+            <span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">parentParser</span><span class="p">()],</span>
+            <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentDefaultsHelpFormatter</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--refseq&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Align subamplicons to gene in this FASTA file.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--alignspecs&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Subamplicon alignment positions as &quot;</span>
+            <span class="s2">&quot;&#39;REFSEQSTART,REFSEQEND,R1START,R2START&#39;. &quot;</span>
+            <span class="s2">&quot;REFSEQSTART is nt (1, 2, ... numbering) in &quot;</span>
+            <span class="s2">&quot;&#39;refseq&#39; where nt R1START in R1 aligns. &quot;</span>
+            <span class="s2">&quot;REFSEQEND is nt in &#39;refseq&#39; where nt R2START &quot;</span>
+            <span class="s2">&quot;in R2 aligns.&#39;&quot;</span><span class="p">))</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--bclen&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Length of NNN... barcode at start of each read.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--fastqdir&#39;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;R1 and R2 files in this directory.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--R2&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Read 2 (R2) FASTQ &quot;</span>
+            <span class="s2">&quot;files assumed to have same names as R1 but with &quot;</span>
+            <span class="s2">&quot;&#39;_R1&#39; replaced by &#39;_R2&#39;. If that is not case, provide &quot;</span>
+            <span class="s2">&quot;names here.&quot;</span><span class="p">))</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--R1trim&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Trim R1 from 3&#39; end to this length. One value for &quot;</span>
+        <span class="s2">&quot;all reads or values for each subamplicon in &#39;alignspecs&#39;.&quot;</span><span class="p">))</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--R2trim&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Like &#39;--R1trim&#39;, but for R2.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--chartype&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;codon&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;codon&#39;</span><span class="p">],</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Character type for which we count mutations.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--maxmuts&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> 
+            <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Max allowed mismatches in alignment of subamplicon; &quot;</span>
+            <span class="s2">&quot;mismatches counted in terms of character &#39;--chartype&#39;.&quot;</span><span class="p">))</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--minq&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Only call nucleotides with Q score &gt;= this.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span> <span class="p">(</span><span class="s1">&#39;--minreads&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> 
+            <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Require this many reads in a barcode to agree to &quot;</span>
+            <span class="s2">&quot;call consensus nucleotide identity.&quot;</span><span class="p">))</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--minfraccall&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> 
+            <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Retain only barcodes where trimmed consensus &quot;</span>
+            <span class="s2">&quot;sequence for each read has &gt;= this frac sites called.&quot;</span><span class="p">))</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--minconcur&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Only call consensus identity for barcode when &gt;= &#39;</span>
+            <span class="s1">&#39;this fraction of reads concur.&#39;</span><span class="p">))</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--purgeread&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Randomly purge read pairs with this probability &quot;</span>
+            <span class="s2">&quot;to subsample data.&quot;</span><span class="p">))</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--purgebc&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> 
+            <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Randomly purge barcodes with this probability to &quot;</span>
+            <span class="s2">&quot;subsample data.&quot;</span><span class="p">))</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">bcinfo</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--bcinfo&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;bcinfo&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span> 
+            <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Create file with suffix &#39;bcinfo.txt.gz&#39; with info &quot;</span>
+            <span class="s2">&quot;about each barcode.&quot;</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+
+<div class="viewcode-block" id="bcsubampParser"><a class="viewcode-back" href="../../dms_tools2.parseargs.html#dms_tools2.parseargs.bcsubampParser">[docs]</a><span class="k">def</span> <span class="nf">bcsubampParser</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Returns `argparse.ArgumentParser` for ``dms2_bcsubamp``.&quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">parserDescription</span><span class="p">(</span>
+                <span class="s1">&#39;Align barcoded subamplicons and count mutations.&#39;</span><span class="p">),</span>
+            <span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">bcsubampParentParser</span><span class="p">()],</span>
+            <span class="n">conflict_handler</span><span class="o">=</span><span class="s1">&#39;resolve&#39;</span><span class="p">,</span>
+            <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentDefaultsHelpFormatter</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--name&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Sample name used for output files.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--R1&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Read 1 (R1) FASTQ files, can be gzipped. &quot;</span>
+            <span class="s2">&quot;See also &#39;--fastqdir&#39;.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+
+<div class="viewcode-block" id="batch_bcsubampParser"><a class="viewcode-back" href="../../dms_tools2.parseargs.html#dms_tools2.parseargs.batch_bcsubampParser">[docs]</a><span class="k">def</span> <span class="nf">batch_bcsubampParser</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Returns `argparse.ArgumentParser` for ``dms2_batch_bcsubamp``.&quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">parserDescription</span><span class="p">(</span>
+                <span class="s1">&#39;Perform many runs of ``dms2_bcsubamp`` and plot results.&#39;</span><span class="p">),</span>
+            <span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">bcsubampParentParser</span><span class="p">()],</span>
+            <span class="n">conflict_handler</span><span class="o">=</span><span class="s1">&#39;resolve&#39;</span><span class="p">,</span>
+            <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentDefaultsHelpFormatter</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--batchfile&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;CSV file specifying each &quot;</span>
+            <span class="s2">&quot;``dms2_bcsubamp`` run. Must have these columns: &quot;</span>
+            <span class="s2">&quot;`name`, `R1`&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--summaryprefix&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Prefix of output summary plots.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+
+<div class="viewcode-block" id="prefsParentParser"><a class="viewcode-back" href="../../dms_tools2.parseargs.html#dms_tools2.parseargs.prefsParentParser">[docs]</a><span class="k">def</span> <span class="nf">prefsParentParser</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Parent parser for ``dms2_prefs`` / ``dms2_batch_prefs``.&quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+            <span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">parentParser</span><span class="p">()],</span>
+            <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentDefaultsHelpFormatter</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--method&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;bayesian&#39;</span><span class="p">,</span> 
+            <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ratio&#39;</span><span class="p">,</span> <span class="s1">&#39;bayesian&#39;</span><span class="p">],</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Method to &quot;</span>
+            <span class="s2">&quot;estimate preferences: normalized enrichment ratios &quot;</span>
+            <span class="s2">&quot;or Bayesian inference.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--indir&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Input counts files in this &quot;</span>
+            <span class="s2">&quot;directory.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--chartype&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;codon_to_aa&#39;</span><span class="p">,</span>
+            <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;codon_to_aa&#39;</span><span class="p">],</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Characters for which &quot;</span>
+            <span class="s2">&quot;preferences are estimated. `codon_to_aa` = amino acids &quot;</span>
+            <span class="s2">&quot;from codon counts.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--excludestop&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">],</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Exclude stop codons as a possible amino acid?&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--conc&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Cprefs&#39;</span><span class="p">,</span> <span class="s1">&#39;Cmut&#39;</span><span class="p">,</span> <span class="s1">&#39;Cerr&#39;</span><span class="p">),</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Concentration parameters for priors for &quot;</span>
+            <span class="s2">&quot;``--method bayesian``. Priors are over preferences, &quot;</span>
+            <span class="s2">&quot;mutagenesis rate, and error rate(s).&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--pseudocount&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Pseudocount used with ``--method ratio``.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+
+<div class="viewcode-block" id="prefsParser"><a class="viewcode-back" href="../../dms_tools2.parseargs.html#dms_tools2.parseargs.prefsParser">[docs]</a><span class="k">def</span> <span class="nf">prefsParser</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Returns `argparse.ArgumentParser` for ``dms2_prefs``.&quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">parserDescription</span><span class="p">(</span>
+                <span class="s1">&#39;Estimate preferences from mutation counts.&#39;</span><span class="p">),</span>
+            <span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">prefsParentParser</span><span class="p">()],</span>
+            <span class="n">conflict_handler</span><span class="o">=</span><span class="s1">&#39;resolve&#39;</span><span class="p">,</span>
+            <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentDefaultsHelpFormatter</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--pre&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Pre-selection counts file or prefix used when creating &#39;</span>
+            <span class="s1">&#39;this file.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--post&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Like ``--pre`` but for post-selection counts.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--name&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Name used for output files.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--err&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;ERRPRE&#39;</span><span class="p">,</span> <span class="s1">&#39;ERRPOST&#39;</span><span class="p">),</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Like ``--pre`` but for counts for error control(s) for &quot;</span>
+            <span class="s2">&quot;``--pre`` and ``--post``. Specify same file twice for same &quot;</span>
+            <span class="s2">&quot;control for both.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+
+<div class="viewcode-block" id="batch_prefsParser"><a class="viewcode-back" href="../../dms_tools2.parseargs.html#dms_tools2.parseargs.batch_prefsParser">[docs]</a><span class="k">def</span> <span class="nf">batch_prefsParser</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Returns `argparse.ArgumentParser` for ``dms2_batch_prefs``.&quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">parserDescription</span><span class="p">(</span>
+                <span class="s1">&#39;Perform many runs of ``dms2_prefs`` and summarize results.&#39;</span><span class="p">),</span>
+            <span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">prefsParentParser</span><span class="p">()],</span>
+            <span class="n">conflict_handler</span><span class="o">=</span><span class="s1">&#39;resolve&#39;</span><span class="p">,</span>
+            <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentDefaultsHelpFormatter</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--batchfile&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;CSV file specifying each &quot;</span>
+            <span class="s2">&quot;``dms2_prefs`` run. Must have these columns: &quot;</span>
+            <span class="s2">&quot;`name`, `pre`, `post`. Can also have these columns: &quot;</span>
+            <span class="s2">&quot;`err` or `errpre` and `errpost`.&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--summaryprefix&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Prefix of output summary files and plots.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+
+<div class="viewcode-block" id="diffselParentParser"><a class="viewcode-back" href="../../dms_tools2.parseargs.html#dms_tools2.parseargs.diffselParentParser">[docs]</a><span class="k">def</span> <span class="nf">diffselParentParser</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Parent parser for ``dms2_diffsel`` / ``dms2_batch_diffsel``.&quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+            <span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">parentParser</span><span class="p">()],</span>
+            <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentDefaultsHelpFormatter</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--indir&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Input counts files in this &quot;</span>
+            <span class="s2">&quot;directory.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--chartype&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;codon_to_aa&#39;</span><span class="p">,</span>
+            <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;codon_to_aa&#39;</span><span class="p">],</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Characters for which &quot;</span>
+            <span class="s2">&quot;differential selection is estimated. `codon_to_aa` = amino &quot;</span>
+            <span class="s2">&quot;acids from codon counts.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--excludestop&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">],</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Exclude stop codons as a possible amino acid?&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--pseudocount&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Pseudocount added to each count for sample with smaller &quot;</span>
+            <span class="s2">&quot;depth; pseudocount for other sample scaled by relative depth.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--mincount&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Report as `NaN` the diffsel of mutations for which both &quot;</span>
+            <span class="s2">&quot;selected and mock-selected samples have &lt; this many counts.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+
+<div class="viewcode-block" id="diffselParser"><a class="viewcode-back" href="../../dms_tools2.parseargs.html#dms_tools2.parseargs.diffselParser">[docs]</a><span class="k">def</span> <span class="nf">diffselParser</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Returns `argparse.ArgumentParser` for ``dms2_diffsel``.&quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">parserDescription</span><span class="p">(</span>
+                <span class="s1">&#39;Estimate differential selection from mutation counts.&#39;</span><span class="p">),</span>
+            <span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">diffselParentParser</span><span class="p">()],</span>
+            <span class="n">conflict_handler</span><span class="o">=</span><span class="s1">&#39;resolve&#39;</span><span class="p">,</span>
+            <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentDefaultsHelpFormatter</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--name&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Name used for output files.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--sel&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Post-selection &quot;</span>
+            <span class="s2">&quot;counts file or prefix used when creating this file.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--mock&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Like ``--sel``, &quot;</span>
+            <span class="s2">&quot;but for mock-selection counts.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--err&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Like ``--sel`` but for &quot;</span>
+            <span class="s2">&quot;error-control to correct mutation counts.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+
+<div class="viewcode-block" id="batch_diffselParser"><a class="viewcode-back" href="../../dms_tools2.parseargs.html#dms_tools2.parseargs.batch_diffselParser">[docs]</a><span class="k">def</span> <span class="nf">batch_diffselParser</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Returns `argparse.ArgumentParser` for ``dms2_batch_diffsel``.&quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">parserDescription</span><span class="p">(</span>
+                <span class="s1">&#39;Perform many runs of ``dms2_diffsel`` and summarize results.&#39;</span><span class="p">),</span>
+            <span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">diffselParentParser</span><span class="p">()],</span>
+            <span class="n">conflict_handler</span><span class="o">=</span><span class="s1">&#39;resolve&#39;</span><span class="p">,</span>
+            <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentDefaultsHelpFormatter</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--batchfile&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;CSV file &#39;</span>
+            <span class="s1">&#39;specifying each ``dms2_diffsel`` run. Must have these &#39;</span>
+            <span class="s1">&#39;columns: `name`, `sel`, `mock`. Can also have these: &#39;</span>
+            <span class="s1">&#39;`err`, `group`. If `group` is used, samples are grouped &#39;</span>
+            <span class="s1">&#39;in summary plots.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--summaryprefix&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Prefix of output summary files and plots.&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+
+<div class="viewcode-block" id="logoplotParser"><a class="viewcode-back" href="../../dms_tools2.parseargs.html#dms_tools2.parseargs.logoplotParser">[docs]</a><span class="k">def</span> <span class="nf">logoplotParser</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Returns `argparse.ArgumentParser` for ``dms2_logoplot``.&quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">parserDescription</span><span class="p">(</span>
+                <span class="s1">&#39;Create logo plot visualization.&#39;</span><span class="p">),</span>
+            <span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">parentParser</span><span class="p">()],</span>
+            <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentDefaultsHelpFormatter</span><span class="p">)</span>
+
+    <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--prefs&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;CSV file of amino-acid preferences.&#39;</span><span class="p">)</span>
+    <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--diffsel&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;CSV file of amino-acid &#39;</span>
+            <span class="s1">&#39;differential selection.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--name&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Name used for output files.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--nperline&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Number of sites per line.&#39;</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">70</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--numberevery&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Number sites at this interval.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--excludestop&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">],</span>
+            <span class="n">default</span><span class="o">=</span><span class="s1">&#39;no&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Exclude stop codons as possible amino &#39;</span>
+            <span class="s1">&#39;acid?&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--stringency&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Stringency parameter to re-scale prefs.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--sortsites&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">],</span>
+            <span class="n">default</span><span class="o">=</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Sort sites from first to last &#39;</span>
+            <span class="s1">&#39;before plotting.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--mapmetric&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;functionalgroup&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span>
+            <span class="s1">&#39;kd&#39;</span><span class="p">,</span> <span class="s1">&#39;mw&#39;</span><span class="p">,</span> <span class="s1">&#39;charge&#39;</span><span class="p">,</span> <span class="s1">&#39;functionalgroup&#39;</span><span class="p">],</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Color amino acids &#39;</span>
+            <span class="s1">&#39;by Kyte-Doolittle hydrophobicity, molecular weight, charge, &#39;</span>
+            <span class="s1">&#39;or functional group.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--colormap&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;jet&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;`matplotlib &quot;</span>
+            <span class="s2">&quot;color map &lt;http://matplotlib.org/users/colormaps.html&gt;`_ for&quot;</span>
+            <span class="s2">&quot; amino acids when `--mapmetric` is &#39;kd&#39; or &#39;mw&#39;.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--overlay1&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+            <span class="n">metavar</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;FILE&#39;</span><span class="p">,</span> <span class="s1">&#39;SHORTNAME&#39;</span><span class="p">,</span> <span class="s1">&#39;LONGNAME&#39;</span><span class="p">),</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Color bar above logo plot to denote per-residue &quot;</span>
+            <span class="s2">&quot;property. FILE is CSV format with column names `site` &quot;</span>
+            <span class="s2">&quot;and SHORTNAME. SHORTNAME is &lt;= 5 character property name. &quot;</span>
+            <span class="s2">&quot;LONGNAME is longer name for legend. Sites not in FILE &quot;</span>
+            <span class="s2">&quot;are colored white.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--overlay2&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+            <span class="n">metavar</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;FILE&#39;</span><span class="p">,</span> <span class="s1">&#39;SHORTNAME&#39;</span><span class="p">,</span> <span class="s1">&#39;LONGNAME&#39;</span><span class="p">),</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Second overlay color bar.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--overlay3&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+            <span class="n">metavar</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;FILE&#39;</span><span class="p">,</span> <span class="s1">&#39;SHORTNAME&#39;</span><span class="p">,</span> <span class="s1">&#39;LONGNAME&#39;</span><span class="p">),</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Third overlay color bar.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--overlaycolormap&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;jet&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;`matplotlib &quot;</span>
+            <span class="s2">&quot;color map &lt;http://matplotlib.org/users/colormaps.html&gt;`_ for&quot;</span>
+            <span class="s2">&quot; overlay bars (e.g., &#39;jet&#39; or &#39;YlOrRd&#39;).&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--letterheight&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Relative height of letter stacks in logo plot.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--sepline&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">],</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Separate positive and negative diffsel with black line?&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../programs.html">Executable programs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

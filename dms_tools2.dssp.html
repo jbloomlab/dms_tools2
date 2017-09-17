@@ -1,0 +1,232 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>dssp &#8212; dms_tools2 2.0a0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0a0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ipython_utils" href="dms_tools2.ipython_utils.html" />
+    <link rel="prev" title="diffsel" href="dms_tools2.diffsel.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="module-dms_tools2.dssp"></span><div class="section" id="dssp">
+<h1>dssp<a class="headerlink" href="#dssp" title="Permalink to this headline">¶</a></h1>
+<p>Process output from <a class="reference external" href="http://swift.cmbi.ru.nl/gv/dssp/">dssp</a>.</p>
+<p><a class="reference external" href="http://swift.cmbi.ru.nl/gv/dssp/">dssp</a> can be used to calculate
+secondary structure and solvent accessibility information from a 
+PDB structure. This module can process that output.</p>
+<dl class="data">
+<dt id="dms_tools2.dssp.MAX_ASA_TIEN">
+<code class="descclassname">dms_tools2.dssp.</code><code class="descname">MAX_ASA_TIEN</code><em class="property"> = {'E': 223.0, 'P': 159.0, 'N': 195.0, 'A': 129.0, 'G': 104.0, 'H': 224.0, 'M': 224.0, 'K': 236.0, 'V': 174.0, 'F': 240.0, 'D': 193.0, 'Y': 263.0, 'T': 172.0, 'Q': 225.0, 'L': 201.0, 'I': 197.0, 'C': 167.0, 'W': 285.0, 'S': 155.0, 'R': 274.0}</em><a class="headerlink" href="#dms_tools2.dssp.MAX_ASA_TIEN" title="Permalink to this definition">¶</a></dt>
+<dd><p>max accessible surface area (square angstroms) for amino acids, from
+<a class="reference external" href="https://doi.org/10.1371/journal.pone.0080635">Tien et al (2013)</a>.
+<cite>MAX_ASA_TIEN[a]</cite> is the max surface area for amino acid <cite>a</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.dssp.processDSSP">
+<code class="descclassname">dms_tools2.dssp.</code><code class="descname">processDSSP</code><span class="sig-paren">(</span><em>dsspfile</em>, <em>chain=None</em>, <em>max_asa={'E': 223.0</em>, <em>'P': 159.0</em>, <em>'N': 195.0</em>, <em>'A': 129.0</em>, <em>'G': 104.0</em>, <em>'H': 224.0</em>, <em>'M': 224.0</em>, <em>'K': 236.0</em>, <em>'V': 174.0</em>, <em>'F': 240.0</em>, <em>'D': 193.0</em>, <em>'Y': 263.0</em>, <em>'T': 172.0</em>, <em>'Q': 225.0</em>, <em>'L': 201.0</em>, <em>'I': 197.0</em>, <em>'C': 167.0</em>, <em>'W': 285.0</em>, <em>'S': 155.0</em>, <em>'R': 274.0}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/dssp.html#processDSSP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.dssp.processDSSP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get secondary structure and solvent accessibility from <code class="docutils literal"><span class="pre">dssp</span></code>.</p>
+<p><a class="reference external" href="http://swift.cmbi.ru.nl/gv/dssp/">dssp</a> is a program
+that calculates secondary structure and absolute solvent
+accessibility from a PDB file.</p>
+<p>This function processes the text output provided by the
+<a class="reference external" href="http://swift.cmbi.ru.nl/gv/dssp/">dssp webserver</a>, at
+least given the format of that output as of Sept-4-2017.</p>
+<p>It returns a <cite>pandas.DataFrame</cite> that gives the secondary
+structure and solvent accessibility for each residue in the
+<code class="docutils literal"><span class="pre">dssp</span></code> output.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>dsspfile</cite> (str)</dt>
+<dd>Name of text file containing <code class="docutils literal"><span class="pre">dssp</span></code> output.</dd>
+<dt><cite>chain</cite> (str or <cite>None</cite>)</dt>
+<dd>If the PDB file analyzed by <code class="docutils literal"><span class="pre">dssp</span></code> to create <cite>dsspfile</cite>
+has more than one chain, specify the letter code for one
+of those chains with this argument.</dd>
+<dt><cite>max_asa</cite> (dict)</dt>
+<dd>Max surface area for each amino acid in square angstroms.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><p class="first">A <cite>pandas.DataFrame</cite> with the following columns:</p>
+<blockquote class="last">
+<div><ul>
+<li><p class="first"><cite>site</cite>: residue number for all sites in <cite>dsspfile</cite>.</p>
+</li>
+<li><p class="first"><cite>amino_acid</cite>: amino acid identity of site in <cite>dsspfile</cite>.</p>
+</li>
+<li><p class="first"><cite>ASA</cite>: absolute solvent accessibility of the residue.</p>
+</li>
+<li><p class="first"><cite>RSA</cite>: relative solvent accessibility of the residue.</p>
+</li>
+<li><p class="first"><cite>SS</cite>: <code class="docutils literal"><span class="pre">dssp</span></code> secondary structure code, one of:</p>
+<blockquote>
+<div><ul class="simple">
+<li><em>G</em>: 3-10 helix</li>
+<li><em>H</em>: alpha helix</li>
+<li><em>I</em>: pi helix</li>
+<li><em>B</em>: beta bridge</li>
+<li><em>E</em>: beta bulge</li>
+<li><em>T</em>: turn</li>
+<li><em>S</em>: high curvature</li>
+<li><em>-</em>: loop</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><cite>SS_class</cite>: broader secondary structure class:</p>
+<blockquote>
+<div><ul class="simple">
+<li><em>helix</em>: <cite>SS</cite> value of <em>G</em>, <em>H</em>, or <em>I</em></li>
+<li><em>strand</em>: <cite>SS</cite> value of <em>B</em> or <em>E</em></li>
+<li><em>loop</em>: any of the other <cite>SS</cite> values.</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="programs.html">Executable programs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">Python API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="dms_tools2.html">dms_tools2 package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="api.html">Python API</a><ul>
+  <li><a href="dms_tools2.html">dms_tools2 package</a><ul>
+      <li>Previous: <a href="dms_tools2.diffsel.html" title="previous chapter">diffsel</a></li>
+      <li>Next: <a href="dms_tools2.ipython_utils.html" title="next chapter">ipython_utils</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/dms_tools2.dssp.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

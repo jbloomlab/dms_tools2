@@ -1,0 +1,685 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>utils &#8212; dms_tools2 2.0a0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0a0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Citations" href="citations.html" />
+    <link rel="prev" title="prefs" href="dms_tools2.prefs.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="module-dms_tools2.utils"></span><div class="section" id="utils">
+<h1>utils<a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h1>
+<p>Miscellaneous utilities for <code class="docutils literal"><span class="pre">dms_tools2</span></code>.</p>
+<dl class="function">
+<dt id="dms_tools2.utils.adjustErrorCounts">
+<code class="descclassname">dms_tools2.utils.</code><code class="descname">adjustErrorCounts</code><span class="sig-paren">(</span><em>errcounts</em>, <em>counts</em>, <em>charlist</em>, <em>maxexcess</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#adjustErrorCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.adjustErrorCounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adjust error counts to not greatly exceed counts of interest.</p>
+<p>This function is useful when estimating preferences. Under the
+model, the error-control should not have a higher rate of error
+than the actual sample. However, this could happen if the experimental
+data don’t fully meet the assumptions. So this function scales
+down the error counts in that case.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>errcounts</cite> (pandas.DataFrame)</dt>
+<dd>Holds counts for error control.</dd>
+<dt><cite>counts</cite> (pandas.DataFrame)</dt>
+<dd>Holds counts for which we are correcting errors.</dd>
+<dt><cite>charlist</cite> (list)</dt>
+<dd>Characters for which we have counts.</dd>
+<dt><cite>maxexcess</cite> (int)</dt>
+<dd>Only let error-control counts exceed actual by this much.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A copy of <cite>errcounts</cite> except for any non-wildtype character,
+the maximum frequency of that character is adjusted to be
+at most the number predicted by the frequency in <cite>counts</cite>
+plus <cite>maxexcess</cite>.</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">counts</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">:[</span><span class="s1">&#39;A&#39;</span><span class="p">],</span> 
+<span class="gp">... </span>        <span class="s1">&#39;A&#39;</span><span class="p">:</span><span class="mi">500</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span><span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span><span class="mi">40</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">:</span><span class="mi">20</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">errcounts</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">:[</span><span class="s1">&#39;A&#39;</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;A&#39;</span><span class="p">:</span><span class="mi">250</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span><span class="mi">30</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">:</span><span class="mi">10</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">charlist</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">errcounts</span> <span class="o">=</span> <span class="n">errcounts</span><span class="p">[[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">charlist</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">adj_errcounts</span> <span class="o">=</span> <span class="n">adjustErrorCounts</span><span class="p">(</span><span class="n">errcounts</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">charlist</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">set</span><span class="p">(</span><span class="n">adj_errcounts</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">errcounts</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">adj_errcounts</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">errcounts</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">adj_errcounts</span><span class="p">[</span><span class="s1">&#39;wildtype&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">errcounts</span><span class="p">[</span><span class="s1">&#39;wildtype&#39;</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">adj_errcounts</span><span class="p">[</span><span class="n">adj_errcounts</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">][</span><span class="n">charlist</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">... </span>        <span class="o">==</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">250</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">10</span><span class="p">]))</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.utils.alignSubamplicon">
+<code class="descclassname">dms_tools2.utils.</code><code class="descname">alignSubamplicon</code><span class="sig-paren">(</span><em>refseq</em>, <em>r1</em>, <em>r2</em>, <em>refseqstart</em>, <em>refseqend</em>, <em>maxmuts</em>, <em>maxN</em>, <em>chartype</em>, <em>use_cutils=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#alignSubamplicon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.alignSubamplicon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to align subamplicon to reference sequence at defined location.</p>
+<p>Tries to align reads <cite>r1</cite> and <cite>r2</cite> to <cite>refseq</cite> at location
+specified by <cite>refseqstart</cite> and <cite>refseqend</cite>. Determines how many
+sites of type <cite>chartype</cite> have mutations, and if &lt;= <cite>maxmuts</cite> conside
+the subamplicon to align if fraction of ambiguous nucleotides &lt;= <cite>maxN</cite>.
+In <cite>r1</cite> and <cite>r2</cite>, an <code class="docutils literal"><span class="pre">N</span></code> indicates a non-called ambiguous identity.
+If the reads disagree in a region of overlap that is set to <code class="docutils literal"><span class="pre">N</span></code> in
+the final subamplicon, but if one read has <code class="docutils literal"><span class="pre">N</span></code> and the other a called
+identity, then the called identity is used in the final subamplicon.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>refseq</cite> (str)</dt>
+<dd>Sequence to which we align. if <cite>chartype</cite> is ‘codon’,
+must be a valid coding (length multiple of 3).</dd>
+<dt><cite>r1</cite> (str)</dt>
+<dd>The forward sequence to align.</dd>
+<dt><cite>r2</cite> (str)</dt>
+<dd>The reverse sequence to align. When reverse complemented,
+should read backwards in <cite>refseq</cite>.</dd>
+<dt><cite>refseqstart</cite> (int)</dt>
+<dd>The nucleotide in <cite>refseq</cite> (1, 2, … numbering) where the
+first nucleotide in <cite>r1</cite> aligns.</dd>
+<dt><cite>refseqend</cite> (int)</dt>
+<dd>The nucleotide in <cite>refseq</cite> (1, 2, … numbering) where the
+first nucleotide in <cite>r2</cite> aligns (note that <cite>r2</cite> then reads
+backwards towards the 5’ end of <cite>refseq</cite>).</dd>
+<dt><cite>maxmuts</cite> (int or float)</dt>
+<dd>Maximum number of mutations of character <cite>chartype</cite> that
+are allowed in the aligned subamplicons from the two reads.</dd>
+<dt><cite>maxN</cite> (int or float)</dt>
+<dd>Maximum number of nucleotides for which we allow
+ambiguous (<code class="docutils literal"><span class="pre">N</span></code>) identities in final subamplicon.</dd>
+<dt><cite>chartype</cite> (str)</dt>
+<dd>Character type for which we count mutations.
+Currently, the only allowable value is ‘codon’.</dd>
+<dt><cite>use_cutils</cite> (bool)</dt>
+<dd>Use the faster implementation in the <cite>_cutils</cite> module.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>If reads align, return aligned subamplicon as string (of length
+<cite>refseqend - refseqstart + 1</cite>). Otherwise return <cite>None</cite>.</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">refseq</span> <span class="o">=</span> <span class="s1">&#39;ATGGGGAAA&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">alignSubamplicon</span><span class="p">(</span><span class="n">refseq</span><span class="p">,</span> <span class="s1">&#39;GGGGAA&#39;</span><span class="p">,</span> <span class="s1">&#39;TTTCCC&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">==</span> <span class="s1">&#39;GGGGAAA&#39;</span> 
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">alignSubamplicon</span><span class="p">(</span><span class="n">refseq</span><span class="p">,</span> <span class="s1">&#39;GGGGAA&#39;</span><span class="p">,</span> <span class="s1">&#39;TTTCCC&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">==</span> <span class="kc">False</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">alignSubamplicon</span><span class="p">(</span><span class="n">refseq</span><span class="p">,</span> <span class="s1">&#39;GGGGAT&#39;</span><span class="p">,</span> <span class="s1">&#39;TTTCCC&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">==</span> <span class="kc">False</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">alignSubamplicon</span><span class="p">(</span><span class="n">refseq</span><span class="p">,</span> <span class="s1">&#39;GGGGAT&#39;</span><span class="p">,</span> <span class="s1">&#39;TTTCCC&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">==</span> <span class="s1">&#39;GGGGANA&#39;</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">alignSubamplicon</span><span class="p">(</span><span class="n">refseq</span><span class="p">,</span> <span class="s1">&#39;GGGGAT&#39;</span><span class="p">,</span> <span class="s1">&#39;TATCCC&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">==</span> <span class="s1">&#39;GGGGATA&#39;</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">alignSubamplicon</span><span class="p">(</span><span class="n">refseq</span><span class="p">,</span> <span class="s1">&#39;GGGGAT&#39;</span><span class="p">,</span> <span class="s1">&#39;TATCCC&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">==</span> <span class="kc">False</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">alignSubamplicon</span><span class="p">(</span><span class="n">refseq</span><span class="p">,</span> <span class="s1">&#39;GGGNAA&#39;</span><span class="p">,</span> <span class="s1">&#39;TTTCCC&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">==</span> <span class="s1">&#39;GGGGAAA&#39;</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">alignSubamplicon</span><span class="p">(</span><span class="n">refseq</span><span class="p">,</span> <span class="s1">&#39;GGGNAA&#39;</span><span class="p">,</span> <span class="s1">&#39;TTNCCC&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">==</span> <span class="s1">&#39;GGGGAAA&#39;</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">alignSubamplicon</span><span class="p">(</span><span class="n">refseq</span><span class="p">,</span> <span class="s1">&#39;GTTTAA&#39;</span><span class="p">,</span> <span class="s1">&#39;TTTAAA&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">==</span> <span class="s1">&#39;GTTTAAA&#39;</span> 
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">alignSubamplicon</span><span class="p">(</span><span class="n">refseq</span><span class="p">,</span> <span class="s1">&#39;GGGGTA&#39;</span><span class="p">,</span> <span class="s1">&#39;TTACCC&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">==</span> <span class="s1">&#39;GGGGTAA&#39;</span> 
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">alignSubamplicon</span><span class="p">(</span><span class="n">refseq</span><span class="p">,</span> <span class="s1">&#39;GGGCTA&#39;</span><span class="p">,</span> <span class="s1">&#39;TTAGCC&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">==</span> <span class="kc">False</span> 
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.utils.annotateCodonCounts">
+<code class="descclassname">dms_tools2.utils.</code><code class="descname">annotateCodonCounts</code><span class="sig-paren">(</span><em>counts</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#annotateCodonCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.annotateCodonCounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets annotated <cite>pandas.DataFrame</cite> from codon counts.</p>
+<p>Some of the programs (e.g., <cite>dms2_bcsubamplicons</cite>) create 
+<code class="docutils literal"><span class="pre">*_codoncounts.csv</span></code> files when run with <code class="docutils literal"><span class="pre">--chartype</span> <span class="pre">codon</span></code>.
+These CSV files have columns indicating the <cite>site</cite> and <cite>wildtype</cite>
+codon, as well as a column for each codon giving the counts for that 
+codon. This function reads that file (or a <cite>pandas.DataFrame</cite> read
+from it) to return a <cite>pandas.DataFrame</cite> where a variety of additional
+useful annotations have been added.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>counts</cite> (str)</dt>
+<dd>Name of existing codon counts CSV file, or <cite>pandas.DataFrame</cite>
+holding counts.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>df</cite> (<cite>pandas.DataFrame</cite>)</dt>
+<dd><p class="first">The DataFrame with the information in <cite>counts</cite> plus
+the following added columns for each site:</p>
+<blockquote class="last">
+<div><p><cite>ncounts</cite> : number of counts at site</p>
+<p><cite>mutfreq</cite> : mutation frequency at site</p>
+<p><cite>nstop</cite> : number of stop-codon mutations</p>
+<p><cite>nsyn</cite> : number of synonymous mutations</p>
+<p><cite>nnonsyn</cite> : number of nonsynonymous mutations</p>
+<p><cite>n1nt</cite> : number of 1-nucleotide codon mutations</p>
+<p><cite>n2nt</cite> : number of 2-nucleotide codon mutations</p>
+<p><cite>n3nt</cite> : number of 3-nucleotide codon mutations</p>
+<p><cite>AtoC</cite>, <cite>AtoG</cite>, etc : number of each nucleotide mutation
+type among codon mutations with <strong>one</strong> nucleotide change.</p>
+<p><cite>mutfreq1nt</cite>, <cite>mutfreq2nt</cite>, <cite>mutfreq3nt</cite> : frequency
+of 1-, 2-, and 3-nucleotide codon mutations at site.</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">:[</span><span class="s1">&#39;ATG&#39;</span><span class="p">,</span> <span class="s1">&#39;GGG&#39;</span><span class="p">],</span> <span class="s1">&#39;ATG&#39;</span><span class="p">:[</span><span class="mi">105</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;GGG&#39;</span><span class="p">:[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">117</span><span class="p">],</span> <span class="s1">&#39;GGA&#39;</span><span class="p">:[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="s1">&#39;TGA&#39;</span><span class="p">:[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">codon</span> <span class="ow">in</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">CODONS</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">if</span> <span class="n">codon</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="n">d</span><span class="p">[</span><span class="n">codon</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">counts</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">counts</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">f</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">annotateCodonCounts</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">([</span><span class="nb">all</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">==</span> <span class="n">counts</span><span class="p">[</span><span class="n">col</span><span class="p">])</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">counts</span><span class="o">.</span><span class="n">columns</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;ncounts&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">110</span><span class="p">,</span> <span class="mi">139</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;mutfreq&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">5</span> <span class="o">/</span> <span class="mf">110.</span><span class="p">,</span> <span class="mi">22</span> <span class="o">/</span> <span class="mf">139.</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;nstop&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;nsyn&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;nnonsyn&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;n1nt&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;n2nt&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;n3nt&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;GtoA&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;AtoC&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;mutfreq1nt&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span> <span class="o">/</span> <span class="mf">139.</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;mutfreq3nt&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">2</span> <span class="o">/</span> <span class="mf">110.</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.utils.buildReadConsensus">
+<code class="descclassname">dms_tools2.utils.</code><code class="descname">buildReadConsensus</code><span class="sig-paren">(</span><em>reads</em>, <em>minreads</em>, <em>minconcur</em>, <em>use_cutils=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#buildReadConsensus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.buildReadConsensus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds consensus sequence of some reads.</p>
+<p>You may want to pre-fill low-quality sites with <code class="docutils literal"><span class="pre">N</span></code>
+using <cite>lowQtoN</cite>. An <code class="docutils literal"><span class="pre">N</span></code> is considered a non-called identity.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>reads</cite> (list)</dt>
+<dd>List of reads as strings. If reads are not all same
+length, shorter ones are extended from 3’ end with <code class="docutils literal"><span class="pre">N</span></code>
+to match maximal length.</dd>
+<dt><cite>minreads</cite> (int)</dt>
+<dd>Only call consensus at a site if at least this many reads 
+have called identity.</dd>
+<dt><cite>minconcur</cite> (float)</dt>
+<dd>Only call consensus at site if &gt;= this fraction of called
+identities agree.</dd>
+<dt><cite>use_cutils</cite> (bool)</dt>
+<dd>Use the faster implementation in the <cite>_cutils</cite> module.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A string giving the consensus sequence. Non-called 
+sites are returned as <code class="docutils literal"><span class="pre">N`</span></code>.</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">reads</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ATGCAT&#39;</span><span class="p">,</span>
+<span class="gp">... </span>         <span class="s1">&#39;NTGNANA&#39;</span><span class="p">,</span>
+<span class="gp">... </span>         <span class="s1">&#39;ACGNNTAT&#39;</span><span class="p">,</span>
+<span class="gp">... </span>         <span class="s1">&#39;NTGNTA&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">buildReadConsensus</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;ATGNNNAN&#39;</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">reads</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;CTGCATAT&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">buildReadConsensus</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;NTGCATAT&#39;</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.utils.codonToAACounts">
+<code class="descclassname">dms_tools2.utils.</code><code class="descname">codonToAACounts</code><span class="sig-paren">(</span><em>counts</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#codonToAACounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.codonToAACounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes amino-acid counts <cite>pandas.DataFrame</cite> from codon counts.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>counts</cite> (<cite>pandas.DataFrame</cite>)</dt>
+<dd>Columns are the string <cite>site</cite> <cite>wildtype</cite> and all codons
+in <cite>dms_tools2.CODONS</cite>. Additional columns are allowed
+but ignored.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>aacounts</cite> (<cite>pandas.DataFrame</cite>)</dt>
+<dd>Columns are the string <cite>site</cite> and all amino acids
+in <cite>dms_tools.AAS_WITHSTOP</cite> with counts for each
+amino acid made by summing counts for encoding codons.</dd>
+</dl>
+</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;othercol&#39;</span><span class="p">:[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;ATG&#39;</span><span class="p">:[</span><span class="mi">105</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;GGG&#39;</span><span class="p">:[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">117</span><span class="p">],</span> <span class="s1">&#39;GGA&#39;</span><span class="p">:[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="s1">&#39;TGA&#39;</span><span class="p">:[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;wildtype&#39;</span><span class="p">:[</span><span class="s1">&#39;ATG&#39;</span><span class="p">,</span> <span class="s1">&#39;GGG&#39;</span><span class="p">]}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">codon</span> <span class="ow">in</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">CODONS</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">if</span> <span class="n">codon</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="n">d</span><span class="p">[</span><span class="n">codon</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">counts</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">aacounts</span> <span class="o">=</span> <span class="n">codonToAACounts</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;othercol&#39;</span> <span class="ow">in</span> <span class="n">aacounts</span><span class="o">.</span><span class="n">columns</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">aacounts</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">aacounts</span><span class="p">[</span><span class="s1">&#39;wildtype&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">aacounts</span><span class="p">[</span><span class="s1">&#39;M&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">105</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">aacounts</span><span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">137</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">aacounts</span><span class="p">[</span><span class="s1">&#39;*&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">aacounts</span><span class="p">[</span><span class="s1">&#39;V&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.utils.convertCountsFormat">
+<code class="descclassname">dms_tools2.utils.</code><code class="descname">convertCountsFormat</code><span class="sig-paren">(</span><em>oldfile</em>, <em>newfile</em>, <em>charlist</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#convertCountsFormat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.convertCountsFormat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert counts file from <code class="docutils literal"><span class="pre">dms_tools</span></code> to <code class="docutils literal"><span class="pre">dms_tools2</span></code> format.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>oldfile</cite> (str)</dt>
+<dd>Name of counts file in the old <code class="docutils literal"><span class="pre">dms_tools</span></code> format:
+<a class="reference external" href="http://jbloomlab.github.io/dms_tools/fileformats.html">http://jbloomlab.github.io/dms_tools/fileformats.html</a></dd>
+<dt><cite>newfile</cite> (str)</dt>
+<dd>Name of created counts file in the <code class="docutils literal"><span class="pre">dms_tools2</span></code> format:
+<a class="reference external" href="https://jbloomlab.github.io/dms_tools2/dms2_bcsubamp.html">https://jbloomlab.github.io/dms_tools2/dms2_bcsubamp.html</a></dd>
+<dt><cite>charlist</cite> (list)</dt>
+<dd>List of characters that we expect in the counts files.
+For instance, could be <cite>dms_tools2.CODONS</cite>.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.utils.incrementCounts">
+<code class="descclassname">dms_tools2.utils.</code><code class="descname">incrementCounts</code><span class="sig-paren">(</span><em>refseqstart</em>, <em>subamplicon</em>, <em>chartype</em>, <em>counts</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#incrementCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.incrementCounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Increment counts dict based on an aligned subamplicon.</p>
+<p>This is designed for keeping track of counts of different
+mutations / identities when aligning many subamplicons to
+a sequence.</p>
+<p>Any positions where <cite>subamplicon</cite> has an <code class="docutils literal"><span class="pre">N</span></code> are ignored,
+and not added to <cite>counts</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>refseqstart</cite> (int)</dt>
+<dd>First nucleotide position in 1, 2, … numbering 
+where <cite>subamplicon</cite> aligns.</dd>
+<dt><cite>subamplicon</cite> (str)</dt>
+<dd>The subamplicon.</dd>
+<dt><cite>chartype</cite> (str)</dt>
+<dd>Character type for which we are counting mutations.
+Currently, only allowable value is ‘codon’.</dd>
+<dt><cite>counts</cite> (dict)</dt>
+<dd>Stores counts of identities, and is incremented by
+this function. Is a dict keyed by every possible
+character (e.g., codon), with values lists with
+element <cite>i</cite> holding the counts for position <cite>i</cite>
+in 0, 1, … numbering.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>On completion, <cite>counts</cite> has been incremented.</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">codonlen</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">counts</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">codon</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">codonlen</span><span class="p">)</span> <span class="k">for</span> <span class="n">codon</span> 
+<span class="gp">... </span>        <span class="ow">in</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">CODONS</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">subamplicon1</span> <span class="o">=</span> <span class="s1">&#39;ATGGACTTTC&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">incrementCounts</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">subamplicon1</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">,</span> <span class="n">counts</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">subamplicon2</span> <span class="o">=</span> <span class="s1">&#39;GGTCTTTCCCGGN&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">incrementCounts</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">subamplicon2</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">,</span> <span class="n">counts</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">counts</span><span class="p">[</span><span class="s1">&#39;ATG&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">counts</span><span class="p">[</span><span class="s1">&#39;GAC&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">counts</span><span class="p">[</span><span class="s1">&#39;GTC&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">counts</span><span class="p">[</span><span class="s1">&#39;TTT&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">counts</span><span class="p">[</span><span class="s1">&#39;CCC&#39;</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">sum</span><span class="p">([</span><span class="nb">sum</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">counts</span><span class="o">.</span><span class="n">values</span><span class="p">()])</span> <span class="o">==</span> <span class="mi">6</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.utils.initLogger">
+<code class="descclassname">dms_tools2.utils.</code><code class="descname">initLogger</code><span class="sig-paren">(</span><em>logfile</em>, <em>prog</em>, <em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#initLogger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.initLogger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize output logging for scripts.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>logfile</cite> (str or <cite>sys.stdout</cite>)</dt>
+<dd>Name of file to which log is written, or 
+<cite>sys.stdout</cite> if you just want to write information
+to standard output.</dd>
+<dt><cite>prog</cite> (str)</dt>
+<dd>Name of program for which we are logging.</dd>
+<dt><cite>args</cite> (dict)</dt>
+<dd>Program arguments as arg / value pairs.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>If <cite>logfile</cite> is a string giving a file name, returns
+an opened and initialized <cite>logging.Logger</cite>. If <cite>logfile</cite>
+is <cite>sys.stdout</cite>, then writes information to <cite>sys.stdout</cite>.
+In either case, basic information is written about the program 
+and args.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.utils.iteratePairedFASTQ">
+<code class="descclassname">dms_tools2.utils.</code><code class="descname">iteratePairedFASTQ</code><span class="sig-paren">(</span><em>r1files</em>, <em>r2files</em>, <em>r1trim=None</em>, <em>r2trim=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#iteratePairedFASTQ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.iteratePairedFASTQ" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterates over FASTQ file pairs for paired-end sequencing reads.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>r1files</cite> (list or str)</dt>
+<dd>Name of R1 FASTQ file or list of such files. Can optionally
+be gzipped.</dd>
+<dt><cite>r2files</cite> (list or str)</dt>
+<dd>Like <cite>r1files</cite> but for R2 files.</dd>
+<dt><cite>r1trim</cite> (int or <cite>None</cite>)</dt>
+<dd>If not <cite>None</cite>, trim <cite>r1</cite> and <cite>q1</cite> to be no longer than this.</dd>
+<dt><cite>r2trim</cite> (int or <cite>None</cite>)</dt>
+<dd>Like <cite>r1trim</cite> but for R2.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><p class="first">Each iteration returns <cite>(name, r1, r2, q1, q2, fail)</cite> where:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li><cite>name</cite> is a string giving the read name</li>
+<li><cite>r1</cite> and <cite>r2</cite> are strings giving the reads</li>
+<li><cite>q1</cite> and <cite>q2</cite> are strings giving the PHRED Q scores</li>
+<li><cite>fail</cite> is <cite>True</cite> if either read failed Illumina chastity
+filter, <cite>False</cite> if both passed, <cite>None</cite> if info not present.</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+<p>We run a simple test by first writing an example FASTQ file and
+then testing on it.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">n1_1</span> <span class="o">=</span> <span class="s1">&#39;@DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1984 1:N:0:CGATGT&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r1_1</span> <span class="o">=</span> <span class="s1">&#39;ATGCAATTG&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">q1_1</span> <span class="o">=</span> <span class="s1">&#39;GGGGGIIII&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n2_1</span> <span class="o">=</span> <span class="s1">&#39;@DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1984 2:N:0:CGATGT&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r2_1</span> <span class="o">=</span> <span class="s1">&#39;CATGCATA&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">q2_1</span> <span class="o">=</span> <span class="s1">&#39;G&lt;GGGIII&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tf</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tf</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">r1file</span><span class="p">,</span> <span class="n">tf</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">r2file</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">dummyvar</span> <span class="o">=</span> <span class="n">r1file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+<span class="gp">... </span>            <span class="n">n1_1</span><span class="p">,</span> <span class="n">r1_1</span><span class="p">,</span> <span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="n">q1_1</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">n1_1</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;:N:&#39;</span><span class="p">,</span> <span class="s1">&#39;:Y:&#39;</span><span class="p">),</span> <span class="n">r1_1</span><span class="p">,</span> <span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="n">q1_1</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">n1_1</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="n">r1_1</span><span class="p">,</span> <span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="n">q1_1</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="p">]))</span>
+<span class="gp">... </span>    <span class="n">r1file</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">dummyvar</span> <span class="o">=</span> <span class="n">r2file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+<span class="gp">... </span>            <span class="n">n2_1</span><span class="p">,</span> <span class="n">r2_1</span><span class="p">,</span> <span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="n">q2_1</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">n2_1</span><span class="p">,</span> <span class="n">r2_1</span><span class="p">,</span> <span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="n">q2_1</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">n2_1</span><span class="p">,</span> <span class="n">r2_1</span><span class="p">,</span> <span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="n">q2_1</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="p">]))</span>
+<span class="gp">... </span>    <span class="n">r2file</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">itr</span> <span class="o">=</span> <span class="n">iteratePairedFASTQ</span><span class="p">(</span><span class="n">r1file</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">r2file</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">r1trim</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">r2trim</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="nb">next</span><span class="p">(</span><span class="n">itr</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="n">n1_1</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span> <span class="p">:</span> <span class="p">],</span> <span class="n">r1_1</span><span class="p">[</span> <span class="p">:</span> <span class="mi">4</span><span class="p">],</span> 
+<span class="gp">... </span>            <span class="n">r2_1</span><span class="p">[</span> <span class="p">:</span> <span class="mi">5</span><span class="p">],</span> <span class="n">q1_1</span><span class="p">[</span> <span class="p">:</span> <span class="mi">4</span><span class="p">],</span> <span class="n">q2_1</span><span class="p">[</span> <span class="p">:</span> <span class="mi">5</span><span class="p">],</span> <span class="kc">False</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="nb">next</span><span class="p">(</span><span class="n">itr</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="n">n1_1</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span> <span class="p">:</span> <span class="p">],</span> <span class="n">r1_1</span><span class="p">[</span> <span class="p">:</span> <span class="mi">4</span><span class="p">],</span> 
+<span class="gp">... </span>            <span class="n">r2_1</span><span class="p">[</span> <span class="p">:</span> <span class="mi">5</span><span class="p">],</span> <span class="n">q1_1</span><span class="p">[</span> <span class="p">:</span> <span class="mi">4</span><span class="p">],</span> <span class="n">q2_1</span><span class="p">[</span> <span class="p">:</span> <span class="mi">5</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="nb">next</span><span class="p">(</span><span class="n">itr</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="n">n1_1</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span> <span class="p">:</span> <span class="p">],</span> <span class="n">r1_1</span><span class="p">[</span> <span class="p">:</span> <span class="mi">4</span><span class="p">],</span> 
+<span class="gp">... </span>            <span class="n">r2_1</span><span class="p">[</span> <span class="p">:</span> <span class="mi">5</span><span class="p">],</span> <span class="n">q1_1</span><span class="p">[</span> <span class="p">:</span> <span class="mi">4</span><span class="p">],</span> <span class="n">q2_1</span><span class="p">[</span> <span class="p">:</span> <span class="mi">5</span><span class="p">],</span> <span class="kc">None</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="go">True</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.utils.lowQtoN">
+<code class="descclassname">dms_tools2.utils.</code><code class="descname">lowQtoN</code><span class="sig-paren">(</span><em>r</em>, <em>q</em>, <em>minq</em>, <em>use_cutils=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#lowQtoN"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.lowQtoN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replaces low quality nucleotides with <code class="docutils literal"><span class="pre">N</span></code> characters.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>r</cite> (str)</dt>
+<dd>A string representing a sequencing read.</dd>
+<dt><cite>q</cite> (str)</dt>
+<dd>String of same length as <cite>r</cite> holding Q scores
+in Sanger ASCII encoding.</dd>
+<dt><cite>minq</cite> (length-one string)</dt>
+<dd>Replace all positions in <cite>r</cite> where <cite>q</cite> is &lt; this.</dd>
+<dt><cite>use_cutils</cite> (bool)</dt>
+<dd>Use the faster implementation in the <cite>_cutils</cite> module.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A version of <cite>r</cite> where all positions <cite>i</cite> where 
+<cite>q[i] &lt; minq</cite> have been replaced with <code class="docutils literal"><span class="pre">N</span></code>.</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="s1">&#39;ATGCAT&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">q</span> <span class="o">=</span> <span class="s1">&#39;GB&lt;.0+&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">minq</span> <span class="o">=</span> <span class="s1">&#39;0&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lowQtoN</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">minq</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;ATGNAN&#39;</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.utils.reverseComplement">
+<code class="descclassname">dms_tools2.utils.</code><code class="descname">reverseComplement</code><span class="sig-paren">(</span><em>s</em>, <em>use_cutils=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#reverseComplement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.reverseComplement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets reverse complement of DNA sequence <cite>s</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>s</cite> (str)</dt>
+<dd>Sequence to reverse complement.</dd>
+<dt><cite>use_cutils</cite> (bool)</dt>
+<dd>Use the faster implementation in the <cite>_cutils</cite> module.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>Reverse complement of <cite>s</cite> as a str.</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="s1">&#39;ATGCAAN&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">reverseComplement</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;NTTGCAT&#39;</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.utils.sessionInfo">
+<code class="descclassname">dms_tools2.utils.</code><code class="descname">sessionInfo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#sessionInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.sessionInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns string with information about session / packages.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="programs.html">Executable programs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">Python API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="dms_tools2.html">dms_tools2 package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="api.html">Python API</a><ul>
+  <li><a href="dms_tools2.html">dms_tools2 package</a><ul>
+      <li>Previous: <a href="dms_tools2.prefs.html" title="previous chapter">prefs</a></li>
+      <li>Next: <a href="citations.html" title="next chapter">Citations</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/dms_tools2.utils.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

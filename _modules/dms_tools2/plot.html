@@ -1,0 +1,842 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>dms_tools2.plot &#8212; dms_tools2 2.0a0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0a0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dms_tools2.plot</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">===================</span>
+<span class="sd">plot</span>
+<span class="sd">===================</span>
+
+<span class="sd">Plotting functions for ``dms_tools2``.</span>
+
+<span class="sd">Uses `plotnine &lt;https://plotnine.readthedocs.io/en/stable&gt;`_</span>
+<span class="sd">and `seaborn &lt;https://seaborn.pydata.org/index.html&gt;`_.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">natsort</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;pdf&#39;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">plotnine</span> <span class="k">import</span> <span class="o">*</span>
+<span class="c1"># set ggplot theme</span>
+<span class="n">theme_set</span><span class="p">(</span><span class="n">theme_bw</span><span class="p">(</span><span class="n">base_size</span><span class="o">=</span><span class="mi">12</span><span class="p">))</span> 
+
+<span class="kn">import</span> <span class="nn">seaborn</span>
+<span class="n">seaborn</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="s1">&#39;talk&#39;</span><span class="p">,</span>
+            <span class="n">style</span><span class="o">=</span><span class="s1">&#39;white&#39;</span><span class="p">,</span>
+            <span class="n">rc</span><span class="o">=</span><span class="p">{</span>
+                <span class="s1">&#39;xtick.labelsize&#39;</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span>
+                <span class="s1">&#39;ytick.labelsize&#39;</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span>
+                <span class="s1">&#39;axes.labelsize&#39;</span><span class="p">:</span><span class="mi">19</span><span class="p">,</span>
+                <span class="s1">&#39;font.family&#39;</span><span class="p">:</span><span class="s1">&#39;sans-serif&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;font.sans-serif&#39;</span><span class="p">:[</span><span class="s1">&#39;DejaVu Sans&#39;</span><span class="p">],</span>
+                <span class="p">}</span>
+           <span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">dms_tools2.utils</span>
+
+<span class="c1">#: `color-blind safe palette &lt;http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/&gt;`_</span>
+<span class="c1">#: use by adding to your plots the following</span>
+<span class="c1">#: `scale_fill_manual(COLOR_BLIND_PALETTE)` or</span>
+<span class="c1">#: `scale_color_manual(COLOR_BLIND_PALETTE)`.</span>
+<span class="n">COLOR_BLIND_PALETTE</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;#000000&quot;</span><span class="p">,</span> <span class="s2">&quot;#E69F00&quot;</span><span class="p">,</span> <span class="s2">&quot;#56B4E9&quot;</span><span class="p">,</span> <span class="s2">&quot;#009E73&quot;</span><span class="p">,</span>
+                       <span class="s2">&quot;#F0E442&quot;</span><span class="p">,</span> <span class="s2">&quot;#0072B2&quot;</span><span class="p">,</span> <span class="s2">&quot;#D55E00&quot;</span><span class="p">,</span> <span class="s2">&quot;#CC79A7&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="breaksAndLabels"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.breaksAndLabels">[docs]</a><span class="k">def</span> <span class="nf">breaksAndLabels</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get breaks and labels for an axis.</span>
+
+<span class="sd">    Useful when you would like to re-label a numeric x-axis</span>
+<span class="sd">    with string labels.</span>
+
+<span class="sd">    Uses `matplotlib.ticker.MaxNLocator` to choose pretty breaks.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `xi` (list or array)</span>
+<span class="sd">            Integer values actually assigned to axis points.</span>
+<span class="sd">        `x` (list)</span>
+<span class="sd">            Strings corresponding to each numeric value in `xi`.</span>
+<span class="sd">        `n` (int)</span>
+<span class="sd">            Approximate number of ticks to use.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The tuple `(breaks, labels)` where `breaks` gives the</span>
+<span class="sd">        locations of breaks taken from `xi`, and `labels` is</span>
+<span class="sd">        the label for each break.</span>
+
+<span class="sd">    &gt;&gt;&gt; xi = list(range(213))</span>
+<span class="sd">    &gt;&gt;&gt; x = [str(i + 1) for i in xi]</span>
+<span class="sd">    &gt;&gt;&gt; (breaks, labels) = breaksAndLabels(xi, x, 5)</span>
+<span class="sd">    &gt;&gt;&gt; breaks</span>
+<span class="sd">    [0, 50, 100, 150, 200]</span>
+<span class="sd">    &gt;&gt;&gt; labels</span>
+<span class="sd">    [&#39;1&#39;, &#39;51&#39;, &#39;101&#39;, &#39;151&#39;, &#39;201&#39;]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">xi</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">integer</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xi</span><span class="p">]),</span> \
+            <span class="s2">&quot;xi not integer values:</span><span class="se">\n</span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xi</span><span class="p">)</span>
+    <span class="n">xi</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">xi</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">xi</span><span class="p">))</span> <span class="o">==</span> <span class="n">xi</span><span class="p">,</span> <span class="s2">&quot;xi not unique and ordered&quot;</span>
+    <span class="n">breaks</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">ticker</span><span class="o">.</span><span class="n">MaxNLocator</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">.</span><span class="n">tick_values</span><span class="p">(</span><span class="n">xi</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xi</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">breaks</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">breaks</span> <span class="k">if</span> <span class="n">xi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">xi</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="n">xi</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">breaks</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">breaks</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="latexSciNot"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.latexSciNot">[docs]</a><span class="k">def</span> <span class="nf">latexSciNot</span><span class="p">(</span><span class="n">xlist</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Converts list of numbers to LaTex scientific notation.</span>
+
+<span class="sd">    Useful for nice axis-tick formatting.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `xlist` (list)</span>
+<span class="sd">            Numbers to format.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List of latex scientific notation formatted strings.</span>
+
+<span class="sd">    &gt;&gt;&gt; latexSciNot([0, 3, 3120, -0.0000927])</span>
+<span class="sd">    [&#39;$0$&#39;, &#39;$3$&#39;, &#39;$3.1 \\\\times 10^{3}$&#39;, &#39;$-9.3 \\\\times 10^{-5}$&#39;]</span>
+
+<span class="sd">    &gt;&gt;&gt; latexSciNot([0.001, 1, 1000, 1e6])</span>
+<span class="sd">    [&#39;$0.001$&#39;, &#39;$1$&#39;, &#39;$10^{3}$&#39;, &#39;$10^{6}$&#39;]</span>
+
+<span class="sd">    &gt;&gt;&gt; latexSciNot([-0.002, 0.003, 0.000011])</span>
+<span class="sd">    [&#39;$-0.002$&#39;, &#39;$0.003$&#39;, &#39;$1.1 \\\\times 10^{-5}$&#39;]</span>
+
+<span class="sd">    &gt;&gt;&gt; latexSciNot([-0.1, 0.0, 0.1, 0.2])</span>
+<span class="sd">    [&#39;$-0.1$&#39;, &#39;$0$&#39;, &#39;$0.1$&#39;, &#39;$0.2$&#39;]</span>
+
+<span class="sd">    &gt;&gt;&gt; latexSciNot([0, 1, 2])</span>
+<span class="sd">    [&#39;$0$&#39;, &#39;$1$&#39;, &#39;$2$&#39;]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">formatlist</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xlist</span><span class="p">:</span>
+        <span class="n">xf</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{0:.2g}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">xf</span><span class="p">[</span> <span class="p">:</span> <span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;1e&#39;</span><span class="p">:</span>
+            <span class="n">xf</span> <span class="o">=</span> <span class="s2">&quot;$10^{{</span><span class="si">{0}</span><span class="s2">}}$&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">xf</span><span class="p">[</span><span class="mi">2</span> <span class="p">:</span> <span class="p">]))</span>
+        <span class="k">elif</span> <span class="n">xf</span><span class="p">[</span> <span class="p">:</span> <span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;-1e&#39;</span><span class="p">:</span>
+            <span class="n">xf</span> <span class="o">=</span> <span class="s2">&quot;$-10^{{</span><span class="si">{0}</span><span class="s2">}}$&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">xf</span><span class="p">[</span><span class="mi">3</span> <span class="p">:</span> <span class="p">]))</span>
+        <span class="k">elif</span> <span class="s1">&#39;e&#39;</span> <span class="ow">in</span> <span class="n">xf</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">exp</span><span class="p">)</span> <span class="o">=</span> <span class="n">xf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;e&#39;</span><span class="p">)</span>
+            <span class="n">xf</span> <span class="o">=</span> <span class="s1">&#39;$</span><span class="si">{0}</span><span class="s1"> </span><span class="se">\\</span><span class="s1">times 10^{{</span><span class="si">{1}</span><span class="s1">}}$&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">exp</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">xf</span> <span class="o">=</span> <span class="s1">&#39;$</span><span class="si">{0}</span><span class="s1">$&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xf</span><span class="p">)</span>
+        <span class="n">formatlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xf</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">formatlist</span></div>
+
+
+<div class="viewcode-block" id="plotReadStats"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.plotReadStats">[docs]</a><span class="k">def</span> <span class="nf">plotReadStats</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">readstatfiles</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plots ``dms2_bcsubamp`` read statistics for a set of samples.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        `names` (list or series)</span>
+<span class="sd">            Names of the samples for which we are plotting statistics.</span>
+<span class="sd">        `readstatfiles` (list or series)</span>
+<span class="sd">            Names of ``*_readstats.csv`` files created by ``dms2_bcsubamp``.</span>
+<span class="sd">        `plotfile` (str)</span>
+<span class="sd">            Name of PDF plot file to create.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">readstatfiles</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">names</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;.pdf&#39;</span>
+    <span class="n">readstats</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span>
+                <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">readstatfiles</span><span class="p">)],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">readstats</span><span class="p">[</span><span class="s1">&#39;retained&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">readstats</span><span class="p">[</span><span class="s1">&#39;total&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">readstats</span><span class="p">[</span><span class="s1">&#39;fail filter&#39;</span><span class="p">]</span>
+            <span class="o">-</span> <span class="n">readstats</span><span class="p">[</span><span class="s1">&#39;low Q barcode&#39;</span><span class="p">])</span>
+    <span class="n">readstats_melt</span> <span class="o">=</span> <span class="n">readstats</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> 
+            <span class="n">value_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;retained&#39;</span><span class="p">,</span> <span class="s1">&#39;fail filter&#39;</span><span class="p">,</span> <span class="s1">&#39;low Q barcode&#39;</span><span class="p">],</span>
+            <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;number of reads&#39;</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;read fate&#39;</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">readstats_melt</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">geom_col</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;number of reads&#39;</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="s1">&#39;read fate&#39;</span><span class="p">),</span>
+                <span class="n">position</span><span class="o">=</span><span class="s1">&#39;stack&#39;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">axis_text_x</span><span class="o">=</span><span class="n">element_text</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">vjust</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">hjust</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+                    <span class="n">axis_title_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span> 
+            <span class="o">+</span> <span class="n">scale_y_continuous</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">latexSciNot</span><span class="p">)</span> 
+            <span class="o">+</span> <span class="n">scale_fill_manual</span><span class="p">(</span><span class="n">COLOR_BLIND_PALETTE</span><span class="p">)</span>
+            <span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mf">2.7</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="p">(</span><span class="mf">1.2</span> <span class="o">+</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plotBCStats"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.plotBCStats">[docs]</a><span class="k">def</span> <span class="nf">plotBCStats</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">bcstatsfiles</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plots ``dms2_bcsubamp`` barcode statistics for set of samples.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `names` (list or series)</span>
+<span class="sd">            Names of the samples for which we are plotting statistics.</span>
+<span class="sd">        `bcstatsfiles` (list or series)</span>
+<span class="sd">            Names of ``*_bcstats.csv`` files created by ``dms2_bcsubamp``.</span>
+<span class="sd">        `plotfile` (str)</span>
+<span class="sd">            Name of PDF plot file to create.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">bcstatsfiles</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">names</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;.pdf&#39;</span>
+    <span class="n">bcstats</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span>
+                <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">bcstatsfiles</span><span class="p">)],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">bcstats_melt</span> <span class="o">=</span> <span class="n">bcstats</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> 
+            <span class="n">value_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;too few reads&#39;</span><span class="p">,</span> <span class="s1">&#39;not alignable&#39;</span><span class="p">,</span> <span class="s1">&#39;aligned&#39;</span><span class="p">],</span>
+            <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;number of barcodes&#39;</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;barcode fate&#39;</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">bcstats_melt</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">geom_col</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;number of barcodes&#39;</span><span class="p">,</span> 
+                <span class="n">fill</span><span class="o">=</span><span class="s1">&#39;barcode fate&#39;</span><span class="p">),</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;stack&#39;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">axis_text_x</span><span class="o">=</span><span class="n">element_text</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">vjust</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">hjust</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+                    <span class="n">axis_title_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>
+            <span class="o">+</span> <span class="n">scale_y_continuous</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">latexSciNot</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">scale_fill_manual</span><span class="p">(</span><span class="n">COLOR_BLIND_PALETTE</span><span class="p">)</span>
+            <span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mf">2.7</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="p">(</span><span class="mf">1.2</span> <span class="o">+</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plotReadsPerBC"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.plotReadsPerBC">[docs]</a><span class="k">def</span> <span class="nf">plotReadsPerBC</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">readsperbcfiles</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span> 
+        <span class="n">maxreads</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">maxcol</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plots ``dms2_bcsubamp`` reads-per-barcode stats for set of samples.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `names` (list or series)</span>
+<span class="sd">            Names of samples for which we plot statistics.</span>
+<span class="sd">        `readsperbcfiles` (list or series)</span>
+<span class="sd">            Names of ``*_readsperbc.csv`` files created by ``dms2_bcsubamp``.</span>
+<span class="sd">        `plotfile` (str)</span>
+<span class="sd">            Name of PDF plot file to create.</span>
+<span class="sd">        `maxreads` (int)</span>
+<span class="sd">            For any barcodes with &gt; this many reads, just make a category</span>
+<span class="sd">            of &gt;= this.</span>
+<span class="sd">        `maxcol` (int)</span>
+<span class="sd">            Number of columns in faceted plot.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">readsperbcfiles</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">names</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;.pdf&#39;</span>
+
+    <span class="c1"># read data frames, ensure &#39;number of reads&#39; from 1 to &gt;= maxreads</span>
+    <span class="n">dfs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">readsperbcfiles</span><span class="p">):</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="c1"># make &#39;number of reads&#39; maxreads hold number &gt;= maxreads barcodes</span>
+        <span class="n">n_ge</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;number of reads&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">maxreads</span><span class="p">][</span><span class="s1">&#39;number of reads&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;number of reads&#39;</span><span class="p">:[</span><span class="n">maxreads</span><span class="p">],</span>
+                <span class="s1">&#39;number of barcodes&#39;</span><span class="p">:[</span><span class="n">n_ge</span><span class="p">]}))</span>
+        <span class="k">for</span> <span class="n">nreads</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">maxreads</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">nreads</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;number of reads&#39;</span><span class="p">]:</span>
+                <span class="n">df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;number of reads&#39;</span><span class="p">:[</span><span class="n">nreads</span><span class="p">],</span>
+                        <span class="s1">&#39;number of barcodes&#39;</span><span class="p">:[</span><span class="mi">0</span><span class="p">]}))</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;number of reads&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">maxreads</span><span class="p">]</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dfs</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">ncol</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">maxcol</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">))</span>
+    <span class="n">nrow</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">ncol</span><span class="p">))</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">geom_col</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;number of reads&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;number of barcodes&#39;</span><span class="p">),</span>
+                <span class="n">position</span><span class="o">=</span><span class="s1">&#39;stack&#39;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">scale_x_continuous</span><span class="p">(</span><span class="n">breaks</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">maxreads</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">maxreads</span><span class="p">],</span>
+                    <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;$1$&#39;</span><span class="p">,</span> <span class="s1">&#39;$</span><span class="si">{0}</span><span class="s1">$&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">maxreads</span> <span class="o">//</span> <span class="mi">2</span><span class="p">),</span> 
+                    <span class="s1">&#39;$\geq </span><span class="si">{0}</span><span class="s1">$&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">maxreads</span><span class="p">)])</span>
+            <span class="o">+</span> <span class="n">scale_y_continuous</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">latexSciNot</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~name&#39;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="n">ncol</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">1.5</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.8</span> <span class="o">+</span> <span class="n">ncol</span><span class="p">),</span> <span class="mf">1.2</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.4</span> <span class="o">+</span> <span class="n">nrow</span><span class="p">)))</span>
+            <span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plotDepth"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.plotDepth">[docs]</a><span class="k">def</span> <span class="nf">plotDepth</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">countsfiles</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span> <span class="n">maxcol</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot sequencing depth along primary sequence.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `names` (list or series)</span>
+<span class="sd">            Names of samples for which we plot statistics.</span>
+<span class="sd">        `countsfiles` (list or series)</span>
+<span class="sd">            ``*_codoncounts.csv`` files of type created by ``dms2_bcsubamp``.</span>
+<span class="sd">        `plotfile` (str)</span>
+<span class="sd">            Name of created PDF plot file containing count depth.</span>
+<span class="sd">        `maxcol` (int)</span>
+<span class="sd">            Number of columns in faceted plot.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">countsfiles</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">names</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;.pdf&#39;</span>
+
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">annotateCodonCounts</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">countsfiles</span><span class="p">)],</span> 
+            <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;ncounts&#39;</span><span class="p">:</span><span class="s1">&#39;number of counts&#39;</span><span class="p">})</span>
+    
+    <span class="n">ncol</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">maxcol</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">))</span>
+    <span class="n">nrow</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">ncol</span><span class="p">))</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">counts</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;number of counts&#39;</span><span class="p">))</span>
+            <span class="o">+</span> <span class="n">geom_line</span><span class="p">()</span>
+            <span class="o">+</span> <span class="n">scale_y_continuous</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">latexSciNot</span><span class="p">,</span> 
+                    <span class="n">limits</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">counts</span><span class="p">[</span><span class="s1">&#39;number of counts&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+            <span class="o">+</span> <span class="n">scale_x_continuous</span><span class="p">(</span><span class="n">limits</span><span class="o">=</span><span class="p">(</span><span class="n">counts</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
+                    <span class="n">counts</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+            <span class="o">+</span> <span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~name&#39;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="n">ncol</span><span class="p">)</span> 
+            <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">2.25</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.6</span> <span class="o">+</span> <span class="n">ncol</span><span class="p">),</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.3</span> <span class="o">+</span> <span class="n">nrow</span><span class="p">)))</span>
+            <span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plotMutFreq"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.plotMutFreq">[docs]</a><span class="k">def</span> <span class="nf">plotMutFreq</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">countsfiles</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span> <span class="n">maxcol</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot mutation frequency along primary sequence.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `names` (list or series)</span>
+<span class="sd">            Names of samples for which we plot statistics.</span>
+<span class="sd">        `countsfiles` (list or series)</span>
+<span class="sd">            ``*_codoncounts.csv`` files of type created by ``dms2_bcsubamp``.</span>
+<span class="sd">        `plotfile` (str)</span>
+<span class="sd">            Name of created PDF plot file.</span>
+<span class="sd">        `maxcol` (int)</span>
+<span class="sd">            Number of columns in faceted plot.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">countsfiles</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">names</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;.pdf&#39;</span>
+
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">annotateCodonCounts</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">countsfiles</span><span class="p">)],</span> 
+            <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;mutfreq&#39;</span><span class="p">:</span><span class="s1">&#39;mutation frequency&#39;</span><span class="p">})</span>
+    
+    <span class="n">ncol</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">maxcol</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">))</span>
+    <span class="n">nrow</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">ncol</span><span class="p">))</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">counts</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;mutation frequency&#39;</span><span class="p">))</span>
+            <span class="o">+</span> <span class="n">geom_line</span><span class="p">()</span>
+            <span class="o">+</span> <span class="n">scale_y_continuous</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">latexSciNot</span><span class="p">,</span> 
+                    <span class="n">limits</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">counts</span><span class="p">[</span><span class="s1">&#39;mutation frequency&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+            <span class="o">+</span> <span class="n">scale_x_continuous</span><span class="p">(</span><span class="n">limits</span><span class="o">=</span><span class="p">(</span><span class="n">counts</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
+                    <span class="n">counts</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+            <span class="o">+</span> <span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~name&#39;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="n">ncol</span><span class="p">)</span> 
+            <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">2.25</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.6</span> <span class="o">+</span> <span class="n">ncol</span><span class="p">),</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.3</span> <span class="o">+</span> <span class="n">nrow</span><span class="p">)))</span>
+            <span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plotCumulMutCounts"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.plotCumulMutCounts">[docs]</a><span class="k">def</span> <span class="nf">plotCumulMutCounts</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">countsfiles</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span> <span class="n">chartype</span><span class="p">,</span>
+        <span class="n">nmax</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">maxcol</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot fraction of mutations seen &lt;= some number of times.</span>
+
+<span class="sd">    For each set of counts in `countsfiles`, plot the fraction</span>
+<span class="sd">    of mutations seen greater than or equal to some number of</span>
+<span class="sd">    times. This is essentially a cumulative fraction plot.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `names` (list or series)</span>
+<span class="sd">            Names of samples for which we plot statistics.</span>
+<span class="sd">        `countsfiles` (list or series)</span>
+<span class="sd">            ``*_codoncounts.csv`` files of type created by ``dms2_bcsubamp``.</span>
+<span class="sd">        `plotfile` (str)</span>
+<span class="sd">            Name of created PDF plot file.</span>
+<span class="sd">        `chartype` (str)</span>
+<span class="sd">            The type of character in `countsfiles`.</span>
+
+<span class="sd">                - `codon` </span>
+
+<span class="sd">        `nmax` (int)</span>
+<span class="sd">            Plot out to this number of mutation occurrences.</span>
+<span class="sd">        `maxcol` (int)</span>
+<span class="sd">            Number of columns in faceted plot.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">countsfiles</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">names</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;.pdf&#39;</span>
+
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span>
+            <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">countsfiles</span><span class="p">)],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">chartype</span> <span class="o">!=</span> <span class="s1">&#39;codon&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;invalid chartype of </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">chartype</span><span class="p">))</span>
+
+    <span class="n">codoncounts</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">countsfiles</span><span class="p">)],</span>
+            <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">character</span><span class="o">=</span><span class="s1">&#39;codons&#39;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">CODONS</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">codoncounts</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+    <span class="n">codonmelt</span> <span class="o">=</span> <span class="n">codoncounts</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;character&#39;</span><span class="p">],</span> 
+            <span class="n">value_vars</span><span class="o">=</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">CODONS</span><span class="p">,</span> <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;counts&#39;</span><span class="p">,</span>
+            <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;codon&#39;</span><span class="p">)</span>
+    <span class="n">codonmelt</span> <span class="o">=</span> <span class="n">codonmelt</span><span class="p">[</span><span class="n">codonmelt</span><span class="p">[</span><span class="s1">&#39;codon&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">codonmelt</span><span class="p">[</span><span class="s1">&#39;wildtype&#39;</span><span class="p">]]</span>
+
+    <span class="n">aacounts</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">codonToAACounts</span><span class="p">(</span>
+            <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="p">))</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">countsfiles</span><span class="p">)],</span>
+            <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">character</span><span class="o">=</span><span class="s1">&#39;amino acids&#39;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">AAS_WITHSTOP</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">aacounts</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+    <span class="n">aamelt</span> <span class="o">=</span> <span class="n">aacounts</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;character&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">],</span> 
+            <span class="n">value_vars</span><span class="o">=</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">AAS_WITHSTOP</span><span class="p">,</span> <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;counts&#39;</span><span class="p">,</span>
+            <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;aa&#39;</span><span class="p">)</span>
+    <span class="n">aamelt</span> <span class="o">=</span> <span class="n">aamelt</span><span class="p">[</span><span class="n">aamelt</span><span class="p">[</span><span class="s1">&#39;aa&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">aamelt</span><span class="p">[</span><span class="s1">&#39;wildtype&#39;</span><span class="p">]]</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">codonmelt</span><span class="p">,</span> <span class="n">aamelt</span><span class="p">],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">maxcol</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">ncol</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">maxcol</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">))</span>
+    <span class="n">nrow</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">ncol</span><span class="p">))</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="s1">&#39;counts&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;character&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;character&#39;</span><span class="p">))</span>
+            <span class="o">+</span> <span class="n">stat_ecdf</span><span class="p">(</span><span class="n">geom</span><span class="o">=</span><span class="s1">&#39;step&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">scale_x_continuous</span><span class="p">(</span><span class="n">limits</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nmax</span><span class="p">))</span>
+            <span class="o">+</span> <span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~name&#39;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="n">ncol</span><span class="p">)</span> 
+            <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">2.25</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.6</span> <span class="o">+</span> <span class="n">ncol</span><span class="p">),</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">+</span> <span class="n">nrow</span><span class="p">)),</span>
+                    <span class="n">legend_position</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="n">legend_direction</span><span class="o">=</span><span class="s1">&#39;horizontal&#39;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">labs</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> 
+            <span class="o">+</span> <span class="n">guides</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">guide_legend</span><span class="p">(</span><span class="n">title_position</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">))</span>
+            <span class="o">+</span> <span class="n">ylab</span><span class="p">(</span><span class="s1">&#39;fraction $\leq$ this many counts&#39;</span><span class="p">)</span>
+            <span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plotCodonMutTypes"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.plotCodonMutTypes">[docs]</a><span class="k">def</span> <span class="nf">plotCodonMutTypes</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">countsfiles</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span>
+        <span class="n">classification</span><span class="o">=</span><span class="s1">&#39;aachange&#39;</span><span class="p">,</span> <span class="n">csvfile</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot average frequency codon mutation types.</span>
+
+<span class="sd">    The averages are determined by summing counts for all sites.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `names` (list or series)</span>
+<span class="sd">            Names of samples for which we plot statistics.</span>
+<span class="sd">        `countsfiles` (list or series)</span>
+<span class="sd">            ``*_codoncounts.csv`` files of type created by ``dms2_bcsubamp``.</span>
+<span class="sd">        `plotfile` (str)</span>
+<span class="sd">            Name of created PDF plot file.</span>
+<span class="sd">        `classification` (str)</span>
+<span class="sd">            The method used to classify the mutation types. Can be:</span>
+
+<span class="sd">                `aachange` : stop, synonymous, nonsynonymous</span>
+
+<span class="sd">                `n_ntchanges` : number of nucleotide changes per codon</span>
+
+<span class="sd">                `singlentchanges` : nucleotide change in 1-nt mutations</span>
+
+<span class="sd">        `csvfile` (str or `None`)</span>
+<span class="sd">            `None` or name of CSV file to which numerical data are written.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">countsfiles</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">names</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;.pdf&#39;</span>
+
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">annotateCodonCounts</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">countsfiles</span><span class="p">)],</span> 
+            <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">classification</span> <span class="o">==</span> <span class="s1">&#39;aachange&#39;</span><span class="p">:</span>
+        <span class="n">muttypes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;stop&#39;</span><span class="p">:</span><span class="s1">&#39;nstop&#39;</span><span class="p">,</span> <span class="s1">&#39;synonymous&#39;</span><span class="p">:</span><span class="s1">&#39;nsyn&#39;</span><span class="p">,</span> 
+                <span class="s1">&#39;nonsynonymous&#39;</span><span class="p">:</span><span class="s1">&#39;nnonsyn&#39;</span><span class="p">}</span>
+    <span class="k">elif</span> <span class="n">classification</span> <span class="o">==</span> <span class="s1">&#39;n_ntchanges&#39;</span><span class="p">:</span>
+        <span class="n">muttypes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> nucleotide&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="s1">&#39;n</span><span class="si">{0}</span><span class="s1">nt&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])</span>
+    <span class="k">elif</span> <span class="n">classification</span> <span class="o">==</span> <span class="s1">&#39;singlentchanges&#39;</span><span class="p">:</span>
+        <span class="n">muttypes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">ntchange</span><span class="p">,</span> <span class="n">ntchange</span><span class="p">)</span> <span class="k">for</span> <span class="n">ntchange</span> <span class="ow">in</span> <span class="p">[</span>
+                <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">to</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nt1</span><span class="p">,</span> <span class="n">nt2</span><span class="p">)</span> <span class="k">for</span> <span class="n">nt1</span> <span class="ow">in</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">NTS</span>
+                <span class="k">for</span> <span class="n">nt2</span> <span class="ow">in</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">NTS</span> <span class="k">if</span> <span class="n">nt1</span> <span class="o">!=</span> <span class="n">nt2</span><span class="p">]])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid classification </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">classification</span><span class="p">))</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">counts</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">muttypes</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;ncounts&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">]]</span>
+            <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">ncounts</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;ncounts&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">))</span>
+            <span class="p">)</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">newcol</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="ow">in</span> <span class="n">muttypes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">df</span><span class="p">[</span><span class="n">newcol</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;ncounts&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">csvfile</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">muttypes</span><span class="o">.</span><span class="n">keys</span><span class="p">())]</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> 
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;mutation type&#39;</span><span class="p">,</span>
+                <span class="n">value_vars</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">muttypes</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+                <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;per-codon frequency&#39;</span><span class="p">)</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">geom_col</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;per-codon frequency&#39;</span><span class="p">,</span> 
+                <span class="n">fill</span><span class="o">=</span><span class="s1">&#39;mutation type&#39;</span><span class="p">),</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;stack&#39;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">axis_text_x</span><span class="o">=</span><span class="n">element_text</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">vjust</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">hjust</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+                    <span class="n">axis_title_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>
+            <span class="o">+</span> <span class="n">scale_y_continuous</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">latexSciNot</span><span class="p">)</span>
+            <span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">muttypes</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">COLOR_BLIND_PALETTE</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">+=</span> <span class="n">scale_fill_manual</span><span class="p">(</span><span class="n">COLOR_BLIND_PALETTE</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span> <span class="o">+=</span> <span class="n">guides</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="n">guide_legend</span><span class="p">(</span><span class="n">ncol</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+
+    <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mf">2.7</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="p">(</span><span class="mf">1.2</span> <span class="o">+</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plotCorrMatrix"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.plotCorrMatrix">[docs]</a><span class="k">def</span> <span class="nf">plotCorrMatrix</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">infiles</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span>
+        <span class="n">trim_unshared</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plots correlations among replicates.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `names` (list or series)</span>
+<span class="sd">            Names of samples for which we plot statistics.</span>
+<span class="sd">        `infiles` (list or series)</span>
+<span class="sd">            CSV files containing data. Format depends on `datatype`.</span>
+<span class="sd">        `plotfile` (str)</span>
+<span class="sd">            Name of created PDF plot file.</span>
+<span class="sd">        `datatype` (str)</span>
+<span class="sd">            Type of data for which we are plotting correlations:</span>
+<span class="sd">                - `prefs`: in format returned by ``dms2_prefs``</span>
+<span class="sd">                - `mutdiffsel`: mutdiffsel from ``dms2_diffsel``</span>
+<span class="sd">                - `abs_diffsel`: sitediffsel from ``dms2_diffsel``</span>
+<span class="sd">                - `positive_diffsel`: sitediffsel from ``dms2_diffsel``</span>
+<span class="sd">                - `max_diffsel`: sitediffsel from ``dms2_diffsel``</span>
+<span class="sd">        `trim_unshared` (bool)</span>
+<span class="sd">            What if files in `infiles` don&#39;t have same sites / mutations?</span>
+<span class="sd">            If `True`, trim unshared one and just analyze ones</span>
+<span class="sd">            shared among all files. If `False`, raise an error.</span>
+<span class="sd">        `title` (str)</span>
+<span class="sd">            Title to place above plot.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">infiles</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">names</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span>
+    <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;.pdf&#39;</span>
+
+    <span class="c1"># corr coefficients as here: https://stackoverflow.com/a/30942817</span>
+    <span class="k">def</span> <span class="nf">corrfunc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">kws</span><span class="p">):</span>
+        <span class="n">r</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s1">&#39;R = </span><span class="si">{0:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">r</span><span class="p">),</span> <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">),</span> 
+                <span class="n">xycoords</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">19</span><span class="p">,</span> 
+                <span class="n">fontstyle</span><span class="o">=</span><span class="s1">&#39;oblique&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;prefs&#39;</span><span class="p">:</span>
+        <span class="c1"># read prefs into dataframe, ensuring all have same characters</span>
+        <span class="n">prefs</span> <span class="o">=</span> <span class="p">[</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> 
+                <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">infiles</span><span class="p">)]</span>
+        <span class="n">chars</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">prefs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="n">sites</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">prefs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">prefs</span><span class="p">:</span>
+            <span class="n">unsharedchars</span> <span class="o">=</span> <span class="n">chars</span><span class="o">.</span><span class="n">symmetric_difference</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">unsharedchars</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;infiles don&#39;t have same characters: </span><span class="si">{0}</span><span class="s2">&quot;</span>
+                        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">unsharedchars</span><span class="p">))</span>
+            <span class="n">unsharedsites</span> <span class="o">=</span> <span class="n">sites</span><span class="o">.</span><span class="n">symmetric_difference</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="n">trim_unshared</span><span class="p">:</span>
+                <span class="n">sites</span> <span class="o">-=</span> <span class="n">unsharedsites</span>
+            <span class="k">elif</span> <span class="n">unsharedsites</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;infiles don&#39;t have same sites: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span>
+                        <span class="nb">format</span><span class="p">(</span><span class="n">unsharedsites</span><span class="p">))</span>
+        <span class="k">assert</span> <span class="p">{</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">}</span> <span class="o">&lt;</span> <span class="n">chars</span>
+        <span class="n">chars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">chars</span> <span class="o">-</span> <span class="p">{</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">})</span>
+        <span class="c1"># get measurements for each replicate in its own column</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">prefs</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;site in @sites&#39;</span><span class="p">)</span> <span class="c1"># only keep shared sites</span>
+                    <span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;char&#39;</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;char&#39;</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+                    <span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;mutdiffsel&#39;</span><span class="p">:</span>
+        <span class="n">mutdiffsel</span> <span class="o">=</span> <span class="p">[</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                            <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+                            <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">mutname</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">wildtype</span> <span class="o">+</span>
+                                    <span class="n">x</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">mutation</span><span class="p">)</span>
+                            <span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;mutname&#39;</span><span class="p">)</span>
+                            <span class="p">[[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;mutname&#39;</span><span class="p">,</span> <span class="s1">&#39;mutdiffsel&#39;</span><span class="p">]]</span>
+                      <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">infiles</span><span class="p">)]</span>
+        <span class="n">muts</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">mutdiffsel</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;mutname&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">mutdiffsel</span><span class="p">:</span>
+            <span class="n">unsharedmuts</span> <span class="o">=</span> <span class="n">muts</span><span class="o">.</span><span class="n">symmetric_difference</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;mutname&#39;</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="n">trim_unshared</span><span class="p">:</span>
+                <span class="n">muts</span> <span class="o">-=</span> <span class="n">unsharedmuts</span>
+            <span class="k">elif</span> <span class="n">unsharedmuts</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;infiles don&#39;t have same muts: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span>
+                        <span class="nb">format</span><span class="p">(</span><span class="n">unsharedmuts</span><span class="p">))</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">mutdiffsel</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;mutname in @muts&#39;</span><span class="p">)</span> <span class="c1"># only keep shared muts</span>
+                    <span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">&#39;mutname&#39;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+                    <span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;abs_diffsel&#39;</span><span class="p">,</span> <span class="s1">&#39;positive_diffsel&#39;</span><span class="p">,</span> <span class="s1">&#39;max_diffsel&#39;</span><span class="p">]:</span>
+        <span class="n">sitediffsel</span> <span class="o">=</span> <span class="p">[</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                             <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+                             <span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+                             <span class="p">[[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">datatype</span><span class="p">]]</span>
+                        <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">infiles</span><span class="p">)]</span>
+        <span class="n">sites</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">sitediffsel</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sitediffsel</span><span class="p">:</span>
+            <span class="n">unsharedsites</span> <span class="o">=</span> <span class="n">sites</span><span class="o">.</span><span class="n">symmetric_difference</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="n">trim_unshared</span><span class="p">:</span>
+                <span class="n">sites</span> <span class="o">-=</span> <span class="n">unsharedsites</span>
+            <span class="k">elif</span> <span class="n">unsharedsites</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;infiles don&#39;t have same sites: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span>
+                        <span class="nb">format</span><span class="p">(</span><span class="n">unsharedsites</span><span class="p">))</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">sitediffsel</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;site in @sites&#39;</span><span class="p">)</span> <span class="c1"># only keep shared sites</span>
+                    <span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+                    <span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid datatype </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">datatype</span><span class="p">))</span>
+
+    <span class="c1"># map lower / upper / diagonal as here:</span>
+    <span class="c1"># https://stackoverflow.com/a/30942817 for plot</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">seaborn</span><span class="o">.</span><span class="n">PairGrid</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">map_lower</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">22</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.35</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> 
+            <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">map_lower</span><span class="p">(</span><span class="n">corrfunc</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;prefs&#39;</span><span class="p">:</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>  <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> 
+                <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> 
+                <span class="n">xticks</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                <span class="n">yticks</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                <span class="n">xticklabels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;0.5&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">],</span>
+                <span class="n">yticklabels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;0.5&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">],</span>
+                <span class="p">)</span>
+        <span class="c1"># hide upper, diag: https://stackoverflow.com/a/34091733</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">triu_indices_from</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">axes</span><span class="p">,</span> <span class="mi">1</span><span class="p">)):</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">diag_indices_from</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">axes</span><span class="p">)):</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;mutdiffsel&#39;</span><span class="p">,</span> <span class="s1">&#39;abs_diffsel&#39;</span><span class="p">,</span> 
+            <span class="s1">&#39;positive_diffsel&#39;</span><span class="p">,</span> <span class="s1">&#39;max_diffsel&#39;</span><span class="p">]:</span>
+
+        <span class="n">p</span><span class="o">.</span><span class="n">map_diag</span><span class="p">(</span><span class="n">seaborn</span><span class="o">.</span><span class="n">distplot</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">kde</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">hist</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="p">(</span><span class="n">lowlim</span><span class="p">,</span> <span class="n">highlim</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">df</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+        <span class="n">highlim</span> <span class="o">+=</span> <span class="p">(</span><span class="n">highlim</span> <span class="o">-</span> <span class="n">lowlim</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.05</span>
+        <span class="n">lowlim</span> <span class="o">-=</span> <span class="p">(</span><span class="n">highlim</span> <span class="o">-</span> <span class="n">lowlim</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.05</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="n">lowlim</span><span class="p">,</span> <span class="n">highlim</span><span class="p">),</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="n">lowlim</span><span class="p">,</span> <span class="n">highlim</span><span class="p">))</span>
+
+        <span class="c1"># hide upper</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">triu_indices_from</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">axes</span><span class="p">,</span> <span class="mi">1</span><span class="p">)):</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;invalid datatype&quot;</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">map_upper</span><span class="p">(</span><span class="n">seaborn</span><span class="o">.</span><span class="n">kdeplot</span><span class="p">,</span> <span class="n">n_levels</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;Blues_d&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">title</span><span class="p">:</span>
+        <span class="c1"># following here: https://stackoverflow.com/a/29814281</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+
+    <span class="n">p</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plotSiteDiffSel"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.plotSiteDiffSel">[docs]</a><span class="k">def</span> <span class="nf">plotSiteDiffSel</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">diffselfiles</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span> 
+        <span class="n">diffseltype</span><span class="p">,</span> <span class="n">maxcol</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot site differential selection along sequence.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `names` (list or series)</span>
+<span class="sd">            Names of samples for which we plot statistics.</span>
+<span class="sd">        `diffselfiles` (list or series)</span>
+<span class="sd">            ``*sitediffsel.csv`` files as created by ``dms2_diffsel``</span>
+<span class="sd">            or ``dms2_batch_diffsel``</span>
+<span class="sd">        `plotfile` (str)</span>
+<span class="sd">            Name of created PDF plot file.</span>
+<span class="sd">        `diffseltype` (str)</span>
+<span class="sd">            Type of differential selection to plot:</span>
+<span class="sd">                - `positive`: positive sitediffsel</span>
+<span class="sd">                - `total`: positive and negative sitediffsel</span>
+<span class="sd">                - `max`: maximum mutdiffsel</span>
+<span class="sd">                - `minmax`: minimum and maximum mutdiffsel</span>
+<span class="sd">        `maxcol` (int)</span>
+<span class="sd">            Number of columns in faceted plot.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">diffselfiles</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">names</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;.pdf&#39;</span>
+
+    <span class="n">diffsels</span> <span class="o">=</span> <span class="p">[</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> 
+            <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">diffselfiles</span><span class="p">)]</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="nb">set</span><span class="p">(</span><span class="n">diffsels</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;site&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">df</span> <span class="ow">in</span> 
+            <span class="n">diffsels</span><span class="p">]),</span> <span class="s2">&quot;diffselfiles not all for same sites&quot;</span>
+    <span class="n">diffsel</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">diffsels</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">diffseltype</span> <span class="o">==</span> <span class="s1">&#39;positive&#39;</span><span class="p">:</span>
+        <span class="n">rename</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;positive_diffsel&#39;</span><span class="p">:</span><span class="s1">&#39;above&#39;</span><span class="p">}</span>
+    <span class="k">elif</span> <span class="n">diffseltype</span> <span class="o">==</span> <span class="s1">&#39;total&#39;</span><span class="p">:</span>
+        <span class="n">rename</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;positive_diffsel&#39;</span><span class="p">:</span><span class="s1">&#39;above&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;negative_diffsel&#39;</span><span class="p">:</span><span class="s1">&#39;below&#39;</span><span class="p">}</span>
+    <span class="k">elif</span> <span class="n">diffseltype</span> <span class="o">==</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span>
+        <span class="n">rename</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;max_diffsel&#39;</span><span class="p">:</span><span class="s1">&#39;above&#39;</span><span class="p">}</span>
+    <span class="k">elif</span> <span class="n">diffseltype</span> <span class="o">==</span> <span class="s1">&#39;minmax&#39;</span><span class="p">:</span>
+        <span class="n">rename</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;max_diffsel&#39;</span><span class="p">:</span><span class="s1">&#39;above&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;min_diffsel&#39;</span><span class="p">:</span><span class="s1">&#39;below&#39;</span><span class="p">}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;invalid diffseltype </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">diffseltype</span><span class="p">))</span>
+    <span class="n">diffsel</span> <span class="o">=</span> <span class="p">(</span><span class="n">diffsel</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">rename</span><span class="p">)</span>
+                      <span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">],</span> 
+                            <span class="n">value_vars</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">rename</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
+                            <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;diffsel&#39;</span><span class="p">,</span>
+                            <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;direction&#39;</span><span class="p">)</span>
+                      <span class="p">)</span>
+    <span class="c1"># natural sort by site: https://stackoverflow.com/a/29582718</span>
+    <span class="n">diffsel</span> <span class="o">=</span> <span class="n">diffsel</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">natsort</span><span class="o">.</span><span class="n">order_by_index</span><span class="p">(</span>
+            <span class="n">diffsel</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">natsort</span><span class="o">.</span><span class="n">index_natsorted</span><span class="p">(</span><span class="n">diffsel</span><span class="o">.</span><span class="n">site</span><span class="p">)))</span>
+    <span class="c1"># now some manipulations to make site str while siteindex is int</span>
+    <span class="n">diffsel</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">diffsel</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">diffsel</span><span class="p">[</span><span class="s1">&#39;siteindex&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">diffsel</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">],</span>
+            <span class="n">diffsel</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span><span class="o">.</span><span class="n">codes</span>
+    
+    <span class="n">ncol</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">maxcol</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">))</span>
+    <span class="n">nrow</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">ncol</span><span class="p">))</span>
+
+    <span class="p">(</span><span class="n">xbreaks</span><span class="p">,</span> <span class="n">xlabels</span><span class="p">)</span> <span class="o">=</span> <span class="n">breaksAndLabels</span><span class="p">(</span><span class="n">diffsel</span><span class="p">[</span><span class="s1">&#39;siteindex&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">(),</span> 
+            <span class="n">diffsel</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">(),</span> <span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">diffsel</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;siteindex&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;diffsel&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;direction&#39;</span><span class="p">))</span>
+            <span class="o">+</span> <span class="n">geom_line</span><span class="p">()</span>
+            <span class="o">+</span> <span class="n">xlab</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">ylab</span><span class="p">(</span><span class="s1">&#39;differential selection&#39;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">scale_x_continuous</span><span class="p">(</span><span class="n">breaks</span><span class="o">=</span><span class="n">xbreaks</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">xlabels</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">scale_color_manual</span><span class="p">(</span><span class="n">COLOR_BLIND_PALETTE</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">guides</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">((</span><span class="ow">not</span> <span class="n">names</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">or</span> <span class="n">names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isspace</span><span class="p">())):</span>
+        <span class="n">p</span> <span class="o">+=</span> <span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~name&#39;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="n">ncol</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">+=</span> <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">4.6</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.3</span> <span class="o">+</span> <span class="n">ncol</span><span class="p">),</span> <span class="mf">1.9</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.2</span> <span class="o">+</span> <span class="n">nrow</span><span class="p">)))</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../programs.html">Executable programs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>
