@@ -402,6 +402,15 @@ def logoplotParser():
     parser.add_argument('--stringency', type=float, default=1,
             help='Stringency parameter to re-scale prefs.')
 
+    parser.add_argument('--restrictdiffsel', default='all',
+            choices=['all', 'positive', 'negative'], 
+            help='Plot all diffsel, or only positive or negative.')
+
+    parser.add_argument('--diffselrange', nargs=2, type=float,
+            metavar=('MINDIFFSEL', 'MAXDIFFSEL'), 
+            help='Specify a fixed range for diffsel. Otherwise '
+            'determined from data range.')
+
     parser.add_argument('--sortsites', choices=['yes', 'no'],
             default='yes', help='Sort sites from first to last '
             'before plotting.')
