@@ -12,8 +12,8 @@ The requisite input data are in the ``./data/`` subdirectory:
 
     * `./data/known_escape.csv <./data/known_escape.csv>`_ is a file that contains the sites of the classically identified escape mutants from the four antibodies used in this study. These sites are numbered in sequential 1, 2, ... numbering of HA. It is the same set compiled in `Doud, Hensley, and Bloom (2017) <http://journals.plos.org/plospathogens/article?id=10.1371/journal.ppat.1006271>`_. The set was compiled from the following references:
 
-        - escape mutants in [Caton et al, 1982](https://www.ncbi.nlm.nih.gov/pubmed/6186384)
+        - escape mutants in `Caton et al, 1982 <https://www.ncbi.nlm.nih.gov/pubmed/6186384>`_
 
-        - escape mutants in [Das et al, 2013](https://www.ncbi.nlm.nih.gov/pubmed/23498956)
+        - escape mutants in `Das et al, 2013 <https://www.ncbi.nlm.nih.gov/pubmed/23498956>`_
 
-        - antibody naming scheme in [Magadan et al, 2013](http://jvi.asm.org/content/87/17/9742.full)
+        - antibody naming scheme in `Magadan et al, 2013 <http://jvi.asm.org/content/87/17/9742.full>`_
