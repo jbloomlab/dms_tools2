@@ -88,7 +88,8 @@ def main():
                 if os.path.isfile(fname + countsuffix):
                     fname = fname + countsuffix
                 else:
-                    raise ValueError("Missing file for --{0}".format(desc))
+                    raise ValueError("Missing file for --{0}:\n{1}"
+                            .format(desc, fname))
             counts[arg] = pandas.read_csv(fname)
 
         logger.info("Computing mutdiffsel...")

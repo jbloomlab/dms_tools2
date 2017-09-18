@@ -157,7 +157,7 @@ def main():
                     with open(flog) as flog_f:
                         lines = flog_f.readlines()
                     raise RuntimeError("Failed to create {0}.\nHere is end of "
-                            "{1}:\n{2}".format(f, flog, '\n'.join(lines[-25 : ])))
+                            "{1}:\n{2}".format(f, flog, ''.join(lines[-25 : ])))
 
         # summarize for each group
         groups = natsort.natsorted(set(batchruns['group']))
