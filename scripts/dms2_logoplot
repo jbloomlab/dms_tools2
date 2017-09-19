@@ -159,12 +159,13 @@ def main():
             (overlayfile, shortname, longname) = args[overlayarg]
             logger.info("Reading overlay for {0} from {1}...".format(
                     shortname, overlayfile))
-            assert len(shortname) < 6, "{0} SHORTNAME too long".format(
-                    overlayarg)
+            assert (len(shortname) < 6) or (shortname == 'wildtype'), \
+                "{0} SHORTNAME too long".format(overlayarg)
             overlaydf = pandas.read_csv(overlayfile)
             assert {'site', shortname} <= set(overlaydf.columns), \
                     "No 'site' and {0} columns in {1} FILE".format(
                     shortname, overlayarg)
+            overlaydf = overlaydf[['site', shortname]].drop_duplicates()
             overlaydf['site'] = overlaydf['site'].astype('str')
             assert len(overlaydf['site']) == len(set(overlaydf['site'])),\
                     "Duplicate sites in {0} FILE".format(overlayarg)
@@ -176,6 +177,8 @@ def main():
                     shortname, longname))
             logger.info("Read overlay for {0} sites.\n".format(
                     len(overlaydf['site'])))
+            if args['underlay'] == 'yes':
+                overlay.reverse()
         shortnames = [tup[1] for tup in overlay]
         assert len(set(shortnames)) == len(shortnames), ("Duplicate "
                 "SHORTNAME in overlay arguments")

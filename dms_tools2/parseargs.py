@@ -430,7 +430,9 @@ def logoplotParser():
             "property. FILE is CSV format with column names `site` "
             "and SHORTNAME. SHORTNAME is <= 5 character property name. "
             "LONGNAME is longer name for legend. Sites not in FILE "
-            "are colored white.")
+            "are colored white. To show wildtype identity, make "
+            "SHORTNAME and LONGNAME both `wildtype` and have this "
+            "column in FILE give 1-letter wildtype amino-acid code.")
 
     parser.add_argument('--overlay2', default=None, nargs=3,
             metavar=('FILE', 'SHORTNAME', 'LONGNAME'),
