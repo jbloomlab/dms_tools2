@@ -52,6 +52,7 @@ class test_logoplot_diffsel(unittest.TestCase):
                         'esc', 'known escape mutation',
                 '--restrictdiffsel', 'positive',
                 '--sepline', 'no',
+                '--underlay', 'yes',
                 ])
 
         for f in self.outfiles:

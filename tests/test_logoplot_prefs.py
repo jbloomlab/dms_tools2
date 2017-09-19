@@ -53,6 +53,7 @@ class test_logoplot_prefs(unittest.TestCase):
                 '--overlay2', os.path.join(self.indir, 'discrete_overlay.csv'),
                         'dp', 'discrete-property',
                 '--stringency', '2.0',
+                '--underlay', 'yes',
                 ])
 
         for f in self.outfiles:

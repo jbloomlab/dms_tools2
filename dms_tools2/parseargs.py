@@ -440,6 +440,9 @@ def logoplotParser():
             metavar=('FILE', 'SHORTNAME', 'LONGNAME'),
             help='Third overlay color bar.')
 
+    parser.add_argument('--underlay', default='no', choices=['yes', 'no'],
+            help='Plot underlay rather than overlay bars.')
+
     parser.add_argument('--overlaycolormap', default='jet', help="`matplotlib "
             "color map <http://matplotlib.org/users/colormaps.html>`_ for"
             " overlay bars (e.g., 'jet' or 'YlOrRd').")

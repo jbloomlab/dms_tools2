@@ -200,6 +200,7 @@ def main():
                     custom_cmap=args['colormap'],
                     map_metric=args['mapmetric'],
                     noseparator=nosepline,
+                    underlay={'no':False, 'yes':True}[args['underlay']],
                     )
         logger.info("Successfully created logo plot.\n")
 
