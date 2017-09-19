@@ -18,7 +18,7 @@ An example of the type of plot created for :ref:`prefs` is shown in the `Doud201
 If you run it using ``--diffsel`` to specify the input file, then the plot will visualize :ref:`diffsel`.
 An example of the type of plot created for :ref:`diffsel` is shown in the `Doud2017 example`_.
 
-.. _batch_logoplot_commandlineusage:
+.. _logoplot_commandlineusage:
 
 Command-line usage
 ---------------------------------------------

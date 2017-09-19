@@ -63,20 +63,22 @@ An example of the type of plot created for <a class="reference internal" href="p
 An example of the type of plot created for <a class="reference internal" href="diffsel.html#diffsel"><span class="std std-ref">Differential selection</span></a> is shown in the <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2017/analysis_notebook.ipynb">Doud2017 example</a>.</p>
 </div>
 <div class="section" id="command-line-usage">
-<span id="batch-logoplot-commandlineusage"></span><h2><a class="toc-backref" href="#id4">Command-line usage</a><a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
+<span id="logoplot-commandlineusage"></span><h2><a class="toc-backref" href="#id4">Command-line usage</a><a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
 <p>Create logo plot visualization. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.0a0) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">dms2_logoplot</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">outdir</span> <span class="n">OUTDIR</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">ncpus</span> <span class="n">NCPUS</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">use_existing</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span>
                      <span class="p">(</span><span class="o">--</span><span class="n">prefs</span> <span class="n">PREFS</span> <span class="o">|</span> <span class="o">--</span><span class="n">diffsel</span> <span class="n">DIFFSEL</span><span class="p">)</span> <span class="o">--</span><span class="n">name</span> <span class="n">NAME</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">nperline</span> <span class="n">NPERLINE</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">numberevery</span> <span class="n">NUMBEREVERY</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">excludestop</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span> <span class="p">[</span><span class="o">--</span><span class="n">stringency</span> <span class="n">STRINGENCY</span><span class="p">]</span>
+                     <span class="p">[</span><span class="o">--</span><span class="n">restrictdiffsel</span> <span class="p">{</span><span class="nb">all</span><span class="p">,</span><span class="n">positive</span><span class="p">,</span><span class="n">negative</span><span class="p">}]</span>
+                     <span class="p">[</span><span class="o">--</span><span class="n">diffselrange</span> <span class="n">MINDIFFSEL</span> <span class="n">MAXDIFFSEL</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">sortsites</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">mapmetric</span> <span class="p">{</span><span class="n">kd</span><span class="p">,</span><span class="n">mw</span><span class="p">,</span><span class="n">charge</span><span class="p">,</span><span class="n">functionalgroup</span><span class="p">}]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">colormap</span> <span class="n">COLORMAP</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">overlay1</span> <span class="n">FILE</span> <span class="n">SHORTNAME</span> <span class="n">LONGNAME</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">overlay2</span> <span class="n">FILE</span> <span class="n">SHORTNAME</span> <span class="n">LONGNAME</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">overlay3</span> <span class="n">FILE</span> <span class="n">SHORTNAME</span> <span class="n">LONGNAME</span><span class="p">]</span>
-                     <span class="p">[</span><span class="o">--</span><span class="n">overlaycolormap</span> <span class="n">OVERLAYCOLORMAP</span><span class="p">]</span>
+                     <span class="p">[</span><span class="o">--</span><span class="n">underlay</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span> <span class="p">[</span><span class="o">--</span><span class="n">overlaycolormap</span> <span class="n">OVERLAYCOLORMAP</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">letterheight</span> <span class="n">LETTERHEIGHT</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">sepline</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span>
 </pre></div>
 </div>
@@ -136,6 +138,16 @@ Underscores are not allowed as they are a LaTex special character.</p>
 <td><p class="first">Stringency parameter to re-scale prefs.</p>
 <p class="last">Default: 1</p>
 </td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd>--restrictdiffsel</kbd></td>
+</tr>
+<tr><td>&#160;</td><td><p class="first">Possible choices: all, positive, negative</p>
+<p>Plot all diffsel, or only positive or negative.</p>
+<p class="last">Default: “all”</p>
+</td></tr>
+<tr><td class="option-group">
+<kbd>--diffselrange</kbd></td>
+<td>Specify a fixed range for diffsel. Otherwise determined from data range.</td></tr>
 <tr><td class="option-group">
 <kbd>--sortsites</kbd></td>
 <td><p class="first">Possible choices: yes, no</p>
@@ -155,13 +167,19 @@ Underscores are not allowed as they are a LaTex special character.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd>--overlay1</kbd></td>
-<td>Color bar above logo plot to denote per-residue property. FILE is CSV format with column names <cite>site</cite> and SHORTNAME. SHORTNAME is &lt;= 5 character property name. LONGNAME is longer name for legend. Sites not in FILE are colored white.</td></tr>
+<td>Color bar above logo plot to denote per-residue property. FILE is CSV format with column names <cite>site</cite> and SHORTNAME. SHORTNAME is &lt;= 5 character property name. LONGNAME is longer name for legend. Sites not in FILE are colored white. To show wildtype identity, make SHORTNAME and LONGNAME both <cite>wildtype</cite> and have this column in FILE give 1-letter wildtype amino-acid code.</td></tr>
 <tr><td class="option-group">
 <kbd>--overlay2</kbd></td>
 <td>Second overlay color bar.</td></tr>
 <tr><td class="option-group">
 <kbd>--overlay3</kbd></td>
 <td>Third overlay color bar.</td></tr>
+<tr><td class="option-group">
+<kbd>--underlay</kbd></td>
+<td><p class="first">Possible choices: yes, no</p>
+<p>Plot underlay rather than overlay bars.</p>
+<p class="last">Default: “no”</p>
+</td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd>--overlaycolormap</kbd></td>
 </tr>
