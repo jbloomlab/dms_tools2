@@ -547,6 +547,54 @@ in Sanger ASCII encoding.</dd>
 </dd></dl>
 
 <dl class="function">
+<dt id="dms_tools2.utils.renumberSites">
+<code class="descclassname">dms_tools2.utils.</code><code class="descname">renumberSites</code><span class="sig-paren">(</span><em>renumbfile</em>, <em>infiles</em>, <em>missing='error'</em>, <em>outfiles=None</em>, <em>outprefix=None</em>, <em>outdir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#renumberSites"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.renumberSites" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renumber sites in CSV files.</p>
+<p>Switch numbering scheme in files with a column named <cite>site</cite>.</p>
+<p>You must specify <strong>exactly one</strong> of <cite>outfiles</cite>,
+<cite>outprefix</cite>, and <cite>outdir</cite> as something other than <cite>None</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>renumbfile</cite> (str)</dt>
+<dd>Name of existing CSV file with the re-numbering scheme.
+Should have columns with name <cite>original</cite> and <cite>new</cite>.
+Each entry in <cite>original</cite> should refer to a site in 
+the input files, and each entry in <cite>new</cite> should be
+the new number for this site. If an entry in <cite>new</cite>
+is <cite>None</cite> or <cite>nan</cite> then it is dropped from the newly
+numbered files regardless of <cite>missing</cite>.</dd>
+<dt><cite>infiles</cite> (list)</dt>
+<dd>List of existing CSV files that we are re-numbering.
+Each file must have an entry of <cite>site</cite>.</dd>
+<dt><cite>missing</cite> (str)</dt>
+<dd><dl class="first last docutils">
+<dt>How to handle sites in <cite>infiles</cite> but not <cite>renumbfile</cite>.</dt>
+<dd><ul class="first last simple">
+<li><cite>error</cite>: raise an error</li>
+<li><cite>skip</cite>: skip renumbering, leave with original number</li>
+<li><cite>drop</cite>: drop any sites not in <cite>renumbfile</cite></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt><cite>outfiles</cite> (list)</dt>
+<dd>List of output files of the same length as <cite>infiles</cite>.
+The numbered version of <cite>infiles</cite> is named as the
+corresponding entry in <cite>outfiles</cite>.</dd>
+<dt><cite>outdir</cite> (str)</dt>
+<dd>A directory name. The renumbered files have the same
+names as in <cite>infile</cite>, but are now placed in <cite>outdir</cite>.</dd>
+<dt><cite>outprefix</cite> (str)</dt>
+<dd>The renumbered files have the same names and locations
+as <cite>infiles</cite>, but have the pre-pended filename extension
+<cite>outprefix</cite>.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="dms_tools2.utils.reverseComplement">
 <code class="descclassname">dms_tools2.utils.</code><code class="descname">reverseComplement</code><span class="sig-paren">(</span><em>s</em>, <em>use_cutils=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#reverseComplement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.reverseComplement" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets reverse complement of DNA sequence <cite>s</cite>.</p>
