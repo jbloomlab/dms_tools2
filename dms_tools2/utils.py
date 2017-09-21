@@ -804,6 +804,121 @@ def convertCountsFormat(oldfile, newfile, charlist):
     old.to_csv(newfile, index=False)
 
 
+def renumberSites(renumbfile, infiles, missing='error',
+        outfiles=None, outprefix=None, outdir=None):
+    """Renumber sites in CSV files.
+
+    Switch numbering scheme in files with a column named `site`. 
+
+    You must specify **exactly one** of `outfiles`,
+    `outprefix`, and `outdir` as something other than `None`.
+
+    Args:
+        `renumbfile` (str)
+            Name of existing CSV file with the re-numbering scheme.
+            Should have columns with name `original` and `new`.
+            Each entry in `original` should refer to a site in 
+            the input files, and each entry in `new` should be
+            the new number for this site. If an entry in `new`
+            is `None` or `nan` then it is dropped from the newly
+            numbered files regardless of `missing`.
+        `infiles` (list)
+            List of existing CSV files that we are re-numbering.
+            Each file must have an entry of `site`.
+        `missing` (str)
+            How to handle sites in `infiles` but not `renumbfile`.
+                - `error`: raise an error
+                - `skip`: skip renumbering, leave with original number 
+                - `drop`: drop any sites not in `renumbfile`
+        `outfiles` (list)
+            List of output files of the same length as `infiles`.
+            The numbered version of `infiles` is named as the
+            corresponding entry in `outfiles`.
+        `outdir` (str)
+            A directory name. The renumbered files have the same
+            names as in `infile`, but are now placed in `outdir`.
+        `outprefix` (str)
+            The renumbered files have the same names and locations
+            as `infiles`, but have the pre-pended filename extension
+            `outprefix`.
+    """
+    assert os.path.isfile(renumbfile), "no renumbfile {0}".format(renumbfile)
+    renumb = pandas.read_csv(renumbfile)
+    assert {'original', 'new'} <=  set(renumb.columns), \
+            "renumbfile lacks columns `original` and/or `new`"
+    for col in ['original', 'new']:
+        assert len(renumb[col]) == len(set(renumb[col])), \
+                "duplicate sites for {0} in {1}".format(col, renumbfile)
+        renumb[col] = renumb[col].astype('str')
+
+    assert isinstance(infiles, list), "infiles is not a list"
+    nin = len(infiles)
+    infiles = [os.path.abspath(f) for f in infiles]
+    assert len(set(infiles)) == nin, "duplicate files in `infiles`"
+    
+    if outfiles is not None:
+        assert isinstance(outfiles, list), "`outfiles` not list"
+        assert (outdir is None) and (outprefix is None), \
+                "only specify one of `outfiles`, `outdir`, and `outprefix`"
+        nout = len(outfiles)
+        assert nout == nin, "`outfiles` and `infiles` different length"
+
+    elif outdir is not None:
+        assert isinstance(outdir, str), "`outdir` should be string"
+        assert (outfiles is None) and (outprefix is None), \
+                "only specify one of `outfiles`, `outdir`, and `outprefix`"
+        if not os.path.isdir(outdir):
+            os.mkdir(outdir)
+        outfiles = [os.path.join(outdir, os.path.basename(f))
+                for f in infiles]
+
+    elif outprefix is not None:
+        assert isinstance(outprefix, str), "`outdir` should be string"
+        assert (outfiles is None) and (outdir is None), \
+                "only specify one of `outfiles`, `outdir`, and `outprefix`"
+        outfiles = [os.path.join(os.path.dirname(f), outprefix + 
+                os.path.basename(f)) for f in infiles]
+
+    else:
+        raise ValueError("specify `outdir`, `outprefix`, `outfiles`")
+
+    outfiles = [os.path.abspath(f) for f in outfiles]
+    assert len(set(outfiles)) == len(outfiles), "duplicate files in `outfiles`"
+    assert not set(outfiles).intersection(set(infiles)), \
+            "some in and outfiles the same"
+
+    for (fin, fout) in zip(infiles, outfiles):
+        df_in = pandas.read_csv(fin)
+        assert 'site' in df_in.columns, "no `site` column in {0}".format(fin)
+        df_in['site'] = df_in['site'].astype('str')
+        if missing == 'error':
+            if set(df_in['site']) > set(renumb['original']):
+                raise ValueError("`missing` is `error`, excess sites in {0}"
+                    .format(fin))
+        elif missing == 'skip':
+            pass
+        elif missing == 'drop':
+            df_in = df_in[df_in['site'].isin(renumb['original'])]
+        else:
+            raise ValueError("invalid `missing` of {0}".format(missing))
+
+        # can't just use replace below because of this bug:
+        # https://github.com/pandas-dev/pandas/issues/16051
+        unmappedsites = df_in[~df_in['site'].isin(renumb['original'])]['site']
+        replacemap = dict(zip(
+                renumb['original'].append(unmappedsites),
+                renumb['new'].append(unmappedsites)))
+        df_in['site'] = df_in['site'].map(replacemap)
+
+        df_in = (df_in[df_in['site'].notnull()]
+                      .query('site != "NaN"')
+                      .query('site != "nan"')
+                      .query('site != "None"')
+                      )
+
+        df_in.to_csv(fout, index=False)
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
