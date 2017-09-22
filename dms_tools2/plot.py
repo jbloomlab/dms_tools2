@@ -182,7 +182,7 @@ def plotBCStats(names, bcstatsfiles, plotfile):
             value_name='number of barcodes', var_name='barcode fate')
     p = (ggplot(bcstats_melt)
             + geom_col(aes(x='name', y='number of barcodes', 
-                fill='barcode fate'), position='stack')
+                fill='barcode fate'), position=position_stack(reverse=True))
             + theme(axis_text_x=element_text(angle=90, vjust=1, hjust=0.5),
                     axis_title_x=element_blank())
             + scale_y_continuous(labels=latexSciNot)
