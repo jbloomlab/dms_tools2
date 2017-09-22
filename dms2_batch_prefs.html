@@ -63,6 +63,10 @@
 <div class="section" id="overview">
 <h2><a class="toc-backref" href="#id3">Overview</a><a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal"><span class="pre">dms2_batch_prefs</span></code> program processes files giving the number of observed counts of characters pre- and post-selection to estimate <a class="reference internal" href="prefs.html#prefs"><span class="std std-ref">Amino-acid preferences</span></a>.</p>
+<p>The <code class="docutils literal"><span class="pre">dms2_batch_prefs</span></code> program simply runs <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a> for each sample listed in a batch file specified by <code class="docutils literal"><span class="pre">--batchfile</span></code>.
+Specifically, as described in <a class="reference internal" href="#batch-prefs-commandlineusage"><span class="std std-ref">Command-line usage</span></a>, you can specify a few sample-specific arguments in the <code class="docutils literal"><span class="pre">--batchfile</span></code>.
+All other arguments are specified using the normal option syntax (e.g., <code class="docutils literal"><span class="pre">--indir</span> <span class="pre">INDIR</span></code>) and are shared between all samples specified in <code class="docutils literal"><span class="pre">--batchfile</span></code>.
+The result is the output for each individual run of <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a> plus the summary plots described in <a class="reference internal" href="#output-files">Output files</a>.</p>
 <p>The <code class="docutils literal"><span class="pre">dms2_batch_prefs</span></code> program simply runs <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a> for each sample listed in a batch file.
 It then creates the summary plots described in <a class="reference internal" href="#output-files">Output files</a>.</p>
 <p>The <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2016/analysis_notebook.ipynb">Doud2016 example</a> to illustrates the usage of <code class="docutils literal"><span class="pre">dms2_batch_prefs</span></code> on a real dataset.</p>
@@ -135,7 +139,7 @@ It then creates the summary plots described in <a class="reference internal" hre
 </td></tr>
 <tr><td class="option-group">
 <kbd>--batchfile</kbd></td>
-<td><p class="first">CSV file specifying each <code class="docutils literal"><span class="pre">dms2_prefs</span></code> run. Must have these columns: <cite>name</cite>, <cite>pre</cite>, <cite>post</cite>. Can also have these columns: <cite>err</cite> or <cite>errpre</cite> and <cite>errpost</cite>.</p>
+<td><p class="first">CSV file specifying each <code class="docutils literal"><span class="pre">dms2_prefs</span></code> run. Must have these columns: <cite>name</cite>, <cite>pre</cite>, <cite>post</cite>. Can also have these columns: <cite>err</cite> or <cite>errpre</cite> and <cite>errpost</cite>. Other columns are ignored, so other <code class="docutils literal"><span class="pre">dms2_prefs</span></code> args should be passed as separate command line args rather than in <code class="docutils literal"><span class="pre">--batchfile</span></code>.</p>
 <p>Each of the arguments name, pre, and post gives the value of the same parameter as passed to dms2_prefs.</p>
 <p>If you are running with no error-control counts, then do not specify –err or –errpre / –errpost.</p>
 <p>If you are running with a single error-control for both the pre- and post-selection counts, then specify this counts file with –err.</p>

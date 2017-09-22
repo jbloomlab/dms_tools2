@@ -11,6 +11,11 @@ Overview
 -------------
 The ``dms2_batch_prefs`` program processes files giving the number of observed counts of characters pre- and post-selection to estimate :ref:`prefs`.
 
+The ``dms2_batch_prefs`` program simply runs :ref:`dms2_prefs` for each sample listed in a batch file specified by ``--batchfile``.
+Specifically, as described in :ref:`batch_prefs_commandlineusage`, you can specify a few sample-specific arguments in the ``--batchfile``.
+All other arguments are specified using the normal option syntax (e.g., ``--indir INDIR``) and are shared between all samples specified in ``--batchfile``.
+The result is the output for each individual run of :ref:`dms2_prefs` plus the summary plots described in `Output files`_.
+
 The ``dms2_batch_prefs`` program simply runs :ref:`dms2_prefs` for each sample listed in a batch file.
 It then creates the summary plots described in `Output files`_.
 

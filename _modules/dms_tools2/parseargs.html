@@ -253,7 +253,10 @@
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--batchfile&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;CSV file specifying each &quot;</span>
             <span class="s2">&quot;``dms2_bcsubamp`` run. Must have these columns: &quot;</span>
-            <span class="s2">&quot;`name`, `R1`&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="s2">&quot;`name`, `R1`. Other columns are ignored, so other &quot;</span>
+            <span class="s2">&quot;``dms2_bcsubamp`` args should be passed as separate &quot;</span>
+            <span class="s2">&quot;command line args rather than in ``--batchfile``.&quot;</span><span class="p">,</span> 
+            <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--summaryprefix&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Prefix of output summary plots.&quot;</span><span class="p">)</span>
@@ -334,7 +337,10 @@
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--batchfile&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;CSV file specifying each &quot;</span>
             <span class="s2">&quot;``dms2_prefs`` run. Must have these columns: &quot;</span>
             <span class="s2">&quot;`name`, `pre`, `post`. Can also have these columns: &quot;</span>
-            <span class="s2">&quot;`err` or `errpre` and `errpost`.&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="s2">&quot;`err` or `errpre` and `errpost`. Other columns are ignored, &quot;</span>
+            <span class="s2">&quot;so other ``dms2_prefs`` args should be passed as separate &quot;</span>
+            <span class="s2">&quot;command line args rather than in ``--batchfile``.&quot;</span><span class="p">,</span>
+            <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--summaryprefix&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Prefix of output summary files and plots.&quot;</span><span class="p">)</span>
@@ -407,7 +413,9 @@
             <span class="s1">&#39;specifying each ``dms2_diffsel`` run. Must have these &#39;</span>
             <span class="s1">&#39;columns: `name`, `sel`, `mock`. Can also have these: &#39;</span>
             <span class="s1">&#39;`err`, `group`. If `group` is used, samples are grouped &#39;</span>
-            <span class="s1">&#39;in summary plots.&#39;</span><span class="p">)</span>
+            <span class="s1">&#39;in summary plots. Other columns are ignored, so other &#39;</span>
+            <span class="s1">&#39;``dms2_diffsel`` args should be passed as separate &#39;</span>
+            <span class="s1">&#39;command line args rather than in ``--batchfile``.&#39;</span><span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--summaryprefix&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Prefix of output summary files and plots.&#39;</span><span class="p">)</span>
