@@ -211,7 +211,10 @@ def batch_bcsubampParser():
 
     parser.add_argument('--batchfile', help="CSV file specifying each "
             "``dms2_bcsubamp`` run. Must have these columns: "
-            "`name`, `R1`", required=True)
+            "`name`, `R1`. Other columns are ignored, so other "
+            "``dms2_bcsubamp`` args should be passed as separate "
+            "command line args rather than in ``--batchfile``.", 
+            required=True)
 
     parser.add_argument('--summaryprefix', required=True,
             help="Prefix of output summary plots.")
@@ -292,7 +295,10 @@ def batch_prefsParser():
     parser.add_argument('--batchfile', help="CSV file specifying each "
             "``dms2_prefs`` run. Must have these columns: "
             "`name`, `pre`, `post`. Can also have these columns: "
-            "`err` or `errpre` and `errpost`.", required=True)
+            "`err` or `errpre` and `errpost`. Other columns are ignored, "
+            "so other ``dms2_prefs`` args should be passed as separate "
+            "command line args rather than in ``--batchfile``.",
+            required=True)
 
     parser.add_argument('--summaryprefix', required=True,
             help="Prefix of output summary files and plots.")
@@ -365,7 +371,9 @@ def batch_diffselParser():
             'specifying each ``dms2_diffsel`` run. Must have these '
             'columns: `name`, `sel`, `mock`. Can also have these: '
             '`err`, `group`. If `group` is used, samples are grouped '
-            'in summary plots.')
+            'in summary plots. Other columns are ignored, so other '
+            '``dms2_diffsel`` args should be passed as separate '
+            'command line args rather than in ``--batchfile``.')
 
     parser.add_argument('--summaryprefix', required=True,
             help='Prefix of output summary files and plots.')

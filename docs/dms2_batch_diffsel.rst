@@ -10,7 +10,11 @@
 Overview
 -------------
 The ``dms2_batch_diffsel`` program can be used to estimate :ref:`diffsel`.
-It simply runs :ref:`dms2_diffsel` for each sample listed in a batch file.
+
+The ``dms2_batch_diffsel`` program simply runs :ref:`dms2_diffsel` for each sample listed in a batch file specified by ``--batchfile``.
+Specifically, as described in :ref:`batch_diffsel_commandlineusage`, you can specify a few sample-specific arguments in the ``--batchfile``.
+All other arguments are specified using the normal option syntax (e.g., ``--indir INDIR``) and are shared between all samples specified in ``--batchfile``.
+The result is the output for each individual run of :ref:`dms2_diffsel` plus the summary plots described in `Output files`_.
 It then creates the summary plots described in `Output files`_.
 
 The `Doud2017 example`_ to illustrates the usage of ``dms2_batch_diffsel`` on a real dataset.
