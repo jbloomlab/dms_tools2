@@ -41,7 +41,7 @@ The :ref:`examples` include some analyses of this type; for instance see the `Do
 
 Definition of differential selection
 ---------------------------------------------
-The definition of *differential selection* used here was originally introduced in `Doud et al (2017)`_, and was extended in `Dingens et al (2017)`_ to include the error-control.
+The definition of *differential selection* used here was originally introduced in `Doud et al (2017)`_.
 A schematic of the overall integrated experimental and computational workflow is shown in :numref:`diffselworkflowfig`.
 
 .. _diffselworkflowfig:
