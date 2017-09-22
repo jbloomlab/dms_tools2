@@ -269,7 +269,7 @@ def plotDepth(names, countsfiles, plotfile, maxcol=4):
     nrow = math.ceil(len(names) / float(ncol))
 
     p = (ggplot(counts, aes(x='site', y='number of counts'))
-            + geom_line()
+            + geom_step(size=0.4)
             + scale_y_continuous(labels=latexSciNot, 
                     limits=(0, counts['number of counts'].max()))
             + scale_x_continuous(limits=(counts['site'].min(),
@@ -305,7 +305,7 @@ def plotMutFreq(names, countsfiles, plotfile, maxcol=4):
     nrow = math.ceil(len(names) / float(ncol))
 
     p = (ggplot(counts, aes(x='site', y='mutation frequency'))
-            + geom_line()
+            + geom_step(size=0.4)
             + scale_y_continuous(labels=latexSciNot, 
                     limits=(0, counts['mutation frequency'].max()))
             + scale_x_continuous(limits=(counts['site'].min(),
@@ -683,7 +683,7 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
     (xbreaks, xlabels) = breaksAndLabels(diffsel['siteindex'].unique(), 
             diffsel['site'].unique(), n=6)
     p = (ggplot(diffsel, aes(x='siteindex', y='diffsel', color='direction'))
-            + geom_line()
+            + geom_step(size=0.4)
             + xlab('site')
             + ylab('differential selection')
             + scale_x_continuous(breaks=xbreaks, labels=xlabels)
