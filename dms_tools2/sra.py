@@ -26,6 +26,7 @@ def fastqFromSRA(samples, fastq_dump, fastqdir, aspera=None,
             and `name`. The `run` column gives SRA run accessions
             (e.g., `SRR5241726`), and the `name` column gives the
             name for the run used in the final FASTQ files.
+            Will be modified to include `R1` and `R2` columns.
         `fastq_dump` (str)
             Path to ``fastq-dump`` executable. Requires a
             version >= 2.8.
@@ -41,7 +42,9 @@ def fastqFromSRA(samples, fastq_dump, fastqdir, aspera=None,
             `key <https://www.ncbi.nlm.nih.gov/sra/docs/aspera-key-pairs/>`_.
         `overwrite` (bool)
             If file already exists, do we overwrite it or just
-            use the existing one?
+            use the existing one? If `False` and all output files
+            already exist, then nothing is done and `fastq_dump`
+            no longer even needs to be a valid path.
         `passonly` (bool)
             Keep only reads with a passing `READ_FILTER` value.
 
@@ -49,9 +52,19 @@ def fastqFromSRA(samples, fastq_dump, fastqdir, aspera=None,
         Upon completion, the directory `fastqdir` contains
         files of the form ``<name>_R1.fastq.gz`` and
         ``<name>_R2.fastq.gz`` for all names in `samples`.
+        These names have been added as the columns `R1` and
+        `R2` to `samples`. Note that the file names but
+        **not** the directory names are added.
     """
     assert {'run', 'name'} <= set(samples.columns), \
             '`samples` does not have columns `run` and `name`'
+    samples['R1'] = samples['name'] + '_R1.fastq.gz'
+    samples['R2'] = samples['name'] + '_R2.fastq.gz'
+
+    if (all([os.path.isfile(os.path.join(fastqdir, f))
+            for r in ['R1', 'R2'] for f in samples[r]])
+            and not overwrite):
+        return # all files already present, nothing to do
 
     assert shutil.which(fastq_dump), ("fastq-dump not installed in a "
             "location accessible with command {0}".format(fastq_dump))
@@ -73,9 +86,11 @@ def fastqFromSRA(samples, fastq_dump, fastqdir, aspera=None,
         os.mkdir(fastqdir)
 
     for row in samples.iterrows():
-        (run, name) = (row[1]['run'], row[1]['name'])
-        r1 = os.path.join(fastqdir, '{0}_R1.fastq.gz'.format(name))
-        r2 = os.path.join(fastqdir, '{0}_R2.fastq.gz'.format(name))
+        row = row[1]
+        (run, name, r1base, r2base) = (
+                row['run'], row['name'], row['R1'], row['R2'])
+        r1 = os.path.join(fastqdir, r1base)
+        r2 = os.path.join(fastqdir, r2base)
 
         if (not overwrite) and os.path.isfile(r1) and os.path.isfile(r2):
             continue # files already exist
@@ -103,7 +118,6 @@ def fastqFromSRA(samples, fastq_dump, fastqdir, aspera=None,
                         '-q', # quiet mode
                         '--policy', 'fair',
                         '-l500m',
-                        '-L', '.',
                         '-i', asperakey,
                         target,
                         fastqdir]

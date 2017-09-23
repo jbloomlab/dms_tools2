@@ -45,6 +45,17 @@ class test_fastqFromSRA(unittest.TestCase):
 
         self.assertTrue(os.path.isfile(r1))
         self.assertTrue(os.path.isfile(r2))
+        self.assertTrue(os.path.abspath(r1) == os.path.abspath(
+                os.path.join(fastqdir, samples['R1'][0])))
+        self.assertTrue(os.path.abspath(r2) == os.path.abspath(
+                os.path.join(fastqdir, samples['R2'][0])))
+
+        # now make sure that we can run with overwrite False 
+        # and not need to do anything
+        dms_tools2.sra.fastqFromSRA(samples, 
+                'non existent file',
+                fastqdir,
+                aspera=('non existent', 'non existent'))
 
 
 class test_fastqFromSRA_aspera(test_fastqFromSRA):
