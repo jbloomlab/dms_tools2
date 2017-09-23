@@ -17,5 +17,6 @@ Submodules
    dms_tools2.parseargs
    dms_tools2.plot
    dms_tools2.prefs
+   dms_tools2.sra
    dms_tools2.utils
 

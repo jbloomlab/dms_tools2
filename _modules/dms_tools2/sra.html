@@ -1,0 +1,298 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>dms_tools2.sra &#8212; dms_tools2 2.0a0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0a0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dms_tools2.sra</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">===================</span>
+<span class="sd">sra</span>
+<span class="sd">===================</span>
+
+<span class="sd">Functions for downloading / handling data from the </span>
+<span class="sd">`Sequence Read Archive &lt;https://www.ncbi.nlm.nih.gov/sra&gt;`_ (SRA).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">distutils.version</span>
+
+
+<div class="viewcode-block" id="fastqFromSRA"><a class="viewcode-back" href="../../dms_tools2.sra.html#dms_tools2.sra.fastqFromSRA">[docs]</a><span class="k">def</span> <span class="nf">fastqFromSRA</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">fastq_dump</span><span class="p">,</span> <span class="n">fastqdir</span><span class="p">,</span> <span class="n">aspera</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">passonly</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Download data from SRA and extract FASTQ files.</span>
+
+<span class="sd">    Currently only works for runs containing paired-end reads.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `samples` (`pandas.DataFrame`)</span>
+<span class="sd">            A dataframe that must have columns named `run`</span>
+<span class="sd">            and `name`. The `run` column gives SRA run accessions</span>
+<span class="sd">            (e.g., `SRR5241726`), and the `name` column gives the</span>
+<span class="sd">            name for the run used in the final FASTQ files.</span>
+<span class="sd">            Will be modified to include `R1` and `R2` columns.</span>
+<span class="sd">        `fastq_dump` (str)</span>
+<span class="sd">            Path to ``fastq-dump`` executable. Requires a</span>
+<span class="sd">            version &gt;= 2.8.</span>
+<span class="sd">        `fastqdir` (str)</span>
+<span class="sd">            Directory in which to place the FASTQ files.</span>
+<span class="sd">            Created if it does not already exist.</span>
+<span class="sd">        `aspera` (`None` or 2-tuple)</span>
+<span class="sd">            If `None`, use ``fastq-dump`` for downloads (this is slower).</span>
+<span class="sd">            However, downloads are faster with </span>
+<span class="sd">            `aspera &lt;https://www.ncbi.nlm.nih.gov/books/NBK242625/&gt;`_</span>
+<span class="sd">            To use aspera, specify the 2-tuple `(ascp, asperakey)` where </span>
+<span class="sd">            `ascp` is path to ``ascp`` executable, and `asperakey` is the</span>
+<span class="sd">            `key &lt;https://www.ncbi.nlm.nih.gov/sra/docs/aspera-key-pairs/&gt;`_.</span>
+<span class="sd">        `overwrite` (bool)</span>
+<span class="sd">            If file already exists, do we overwrite it or just</span>
+<span class="sd">            use the existing one? If `False` and all output files</span>
+<span class="sd">            already exist, then nothing is done and `fastq_dump`</span>
+<span class="sd">            no longer even needs to be a valid path.</span>
+<span class="sd">        `passonly` (bool)</span>
+<span class="sd">            Keep only reads with a passing `READ_FILTER` value.</span>
+
+<span class="sd">    Result:</span>
+<span class="sd">        Upon completion, the directory `fastqdir` contains</span>
+<span class="sd">        files of the form ``&lt;name&gt;_R1.fastq.gz`` and</span>
+<span class="sd">        ``&lt;name&gt;_R2.fastq.gz`` for all names in `samples`.</span>
+<span class="sd">        These names have been added as the columns `R1` and</span>
+<span class="sd">        `R2` to `samples`. Note that the file names but</span>
+<span class="sd">        **not** the directory names are added.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="p">{</span><span class="s1">&#39;run&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">}</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">samples</span><span class="o">.</span><span class="n">columns</span><span class="p">),</span> \
+            <span class="s1">&#39;`samples` does not have columns `run` and `name`&#39;</span>
+    <span class="n">samples</span><span class="p">[</span><span class="s1">&#39;R1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">samples</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;_R1.fastq.gz&#39;</span>
+    <span class="n">samples</span><span class="p">[</span><span class="s1">&#39;R2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">samples</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;_R2.fastq.gz&#39;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nb">all</span><span class="p">([</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fastqdir</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;R1&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">[</span><span class="n">r</span><span class="p">]])</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">):</span>
+        <span class="k">return</span> <span class="c1"># all files already present, nothing to do</span>
+
+    <span class="k">assert</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">fastq_dump</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;fastq-dump not installed in a &quot;</span>
+            <span class="s2">&quot;location accessible with command </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fastq_dump</span><span class="p">))</span>
+    <span class="n">fastq_dump_version</span> <span class="o">=</span> <span class="p">(</span><span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">([</span><span class="n">fastq_dump</span><span class="p">,</span> <span class="s1">&#39;--version&#39;</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+    <span class="n">fastq_dump_minversion</span> <span class="o">=</span> <span class="s1">&#39;2.8&#39;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">distutils</span><span class="o">.</span><span class="n">version</span><span class="o">.</span><span class="n">StrictVersion</span><span class="p">(</span><span class="n">fastq_dump_version</span><span class="p">)</span> <span class="o">&gt;=</span>
+            <span class="n">distutils</span><span class="o">.</span><span class="n">version</span><span class="o">.</span><span class="n">StrictVersion</span><span class="p">(</span><span class="n">fastq_dump_minversion</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;fastq-dump version </span><span class="si">{0}</span><span class="s2"> is installed. You need &quot;</span>
+            <span class="s2">&quot;at least version </span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fastq_dump_version</span><span class="p">,</span> 
+            <span class="n">fastq_dump_minversion</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">aspera</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="p">(</span><span class="n">ascp</span><span class="p">,</span> <span class="n">asperakey</span><span class="p">)</span> <span class="o">=</span> <span class="n">aspera</span>
+        <span class="k">assert</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">ascp</span><span class="p">),</span> <span class="s2">&quot;ascp is not installed at </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ascp</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">asperakey</span><span class="p">),</span> <span class="s2">&quot;no aspera key </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">asperakey</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">fastqdir</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">fastqdir</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">samples</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">r1base</span><span class="p">,</span> <span class="n">r2base</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">row</span><span class="p">[</span><span class="s1">&#39;run&#39;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;R1&#39;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;R2&#39;</span><span class="p">])</span>
+        <span class="n">r1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fastqdir</span><span class="p">,</span> <span class="n">r1base</span><span class="p">)</span>
+        <span class="n">r2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fastqdir</span><span class="p">,</span> <span class="n">r2base</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">overwrite</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">r1</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">r2</span><span class="p">):</span>
+            <span class="k">continue</span> <span class="c1"># files already exist</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># names of files produced by fastq-dump</span>
+            <span class="n">r1init</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fastqdir</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{0}{1}</span><span class="s1">_1.fastq.gz&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">run</span><span class="p">,</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span><span class="s1">&#39;_pass&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">:</span><span class="s1">&#39;&#39;</span><span class="p">}[</span><span class="nb">bool</span><span class="p">(</span><span class="n">passonly</span><span class="p">)]))</span>
+            <span class="n">r2init</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fastqdir</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{0}{1}</span><span class="s1">_2.fastq.gz&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">run</span><span class="p">,</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span><span class="s1">&#39;_pass&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">:</span><span class="s1">&#39;&#39;</span><span class="p">}[</span><span class="nb">bool</span><span class="p">(</span><span class="n">passonly</span><span class="p">)]))</span>
+
+            <span class="k">if</span> <span class="n">aspera</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># use aspera to download</span>
+
+                <span class="c1"># directory name explanation here: </span>
+                <span class="c1"># https://www.ncbi.nlm.nih.gov/books/NBK158899/</span>
+                <span class="n">target</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;anonftp@ftp.ncbi.nlm.nih.gov:&#39;</span>
+                          <span class="s1">&#39;/sra/sra-instant/reads/ByRun/sra/SRR/</span><span class="si">{0}</span><span class="s1">/</span><span class="si">{1}</span><span class="s1">&#39;</span>
+                          <span class="s1">&#39;/</span><span class="si">{1}</span><span class="s1">.sra&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">run</span><span class="p">[</span> <span class="p">:</span> <span class="mi">6</span><span class="p">],</span> <span class="n">run</span><span class="p">))</span>
+
+                <span class="n">asperacmds</span> <span class="o">=</span> <span class="p">[</span><span class="n">ascp</span><span class="p">,</span> 
+                        <span class="s1">&#39;--overwrite&#39;</span><span class="p">,</span> 
+                            <span class="p">{</span><span class="kc">True</span><span class="p">:</span><span class="s1">&#39;always&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">:</span><span class="s1">&#39;never&#39;</span><span class="p">}[</span><span class="nb">bool</span><span class="p">(</span><span class="n">overwrite</span><span class="p">)],</span>
+                        <span class="s1">&#39;-T&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;-q&#39;</span><span class="p">,</span> <span class="c1"># quiet mode</span>
+                        <span class="s1">&#39;--policy&#39;</span><span class="p">,</span> <span class="s1">&#39;fair&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;-l500m&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;-L&#39;</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;-i&#39;</span><span class="p">,</span> <span class="n">asperakey</span><span class="p">,</span>
+                        <span class="n">target</span><span class="p">,</span>
+                        <span class="n">fastqdir</span><span class="p">]</span>
+                <span class="n">asperaout</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">(</span><span class="n">asperacmds</span><span class="p">)</span>
+                <span class="n">downloadedrun</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fastqdir</span><span class="p">,</span> <span class="n">run</span> <span class="o">+</span> <span class="s1">&#39;.sra&#39;</span><span class="p">)</span>
+                <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">downloadedrun</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">downloadedrun</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="c1"># run fastq-dump</span>
+            <span class="n">cmds</span> <span class="o">=</span> <span class="p">[</span><span class="n">fastq_dump</span><span class="p">,</span>
+                    <span class="s1">&#39;--outdir&#39;</span><span class="p">,</span> <span class="n">fastqdir</span><span class="p">,</span>
+                    <span class="s1">&#39;--gzip&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;--readids&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;--skip-technical&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;--dumpbase&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;--clip&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;--split-files&#39;</span><span class="p">,</span>
+                    <span class="p">]</span>
+            <span class="k">if</span> <span class="n">passonly</span><span class="p">:</span>
+                <span class="n">cmds</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;--read-filter&#39;</span><span class="p">,</span> <span class="s1">&#39;pass&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">downloadedrun</span><span class="p">:</span>
+                <span class="n">cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">downloadedrun</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">run</span><span class="p">)</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">cmds</span><span class="p">)</span>
+
+            <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">r1init</span><span class="p">,</span> <span class="n">r1</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">r2init</span><span class="p">,</span> <span class="n">r2</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">downloadedrun</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">downloadedrun</span><span class="p">)</span></div>
+                
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../programs.html">Executable programs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

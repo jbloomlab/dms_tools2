@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Python Module Index &#8212; dms_tools2 2.0a0 documentation</title>
+    <title>sra &#8212; dms_tools2 2.0a0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -24,14 +24,13 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-
+    <link rel="next" title="utils" href="dms_tools2.utils.html" />
+    <link rel="prev" title="prefs" href="dms_tools2.prefs.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
-
 
   </head>
   <body>
@@ -42,64 +41,57 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
+  <span class="target" id="module-dms_tools2.sra"></span><div class="section" id="sra">
+<h1>sra<a class="headerlink" href="#sra" title="Permalink to this headline">¶</a></h1>
+<p>Functions for downloading / handling data from the 
+<a class="reference external" href="https://www.ncbi.nlm.nih.gov/sra">Sequence Read Archive</a> (SRA).</p>
+<dl class="function">
+<dt id="dms_tools2.sra.fastqFromSRA">
+<code class="descclassname">dms_tools2.sra.</code><code class="descname">fastqFromSRA</code><span class="sig-paren">(</span><em>samples</em>, <em>fastq_dump</em>, <em>fastqdir</em>, <em>aspera=None</em>, <em>overwrite=False</em>, <em>passonly=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/sra.html#fastqFromSRA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.sra.fastqFromSRA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download data from SRA and extract FASTQ files.</p>
+<p>Currently only works for runs containing paired-end reads.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>samples</cite> (<cite>pandas.DataFrame</cite>)</dt>
+<dd>A dataframe that must have columns named <cite>run</cite>
+and <cite>name</cite>. The <cite>run</cite> column gives SRA run accessions
+(e.g., <cite>SRR5241726</cite>), and the <cite>name</cite> column gives the
+name for the run used in the final FASTQ files.
+Will be modified to include <cite>R1</cite> and <cite>R2</cite> columns.</dd>
+<dt><cite>fastq_dump</cite> (str)</dt>
+<dd>Path to <code class="docutils literal"><span class="pre">fastq-dump</span></code> executable. Requires a
+version &gt;= 2.8.</dd>
+<dt><cite>fastqdir</cite> (str)</dt>
+<dd>Directory in which to place the FASTQ files.
+Created if it does not already exist.</dd>
+<dt><cite>aspera</cite> (<cite>None</cite> or 2-tuple)</dt>
+<dd>If <cite>None</cite>, use <code class="docutils literal"><span class="pre">fastq-dump</span></code> for downloads (this is slower).
+However, downloads are faster with 
+<a class="reference external" href="https://www.ncbi.nlm.nih.gov/books/NBK242625/">aspera</a>
+To use aspera, specify the 2-tuple <cite>(ascp, asperakey)</cite> where 
+<cite>ascp</cite> is path to <code class="docutils literal"><span class="pre">ascp</span></code> executable, and <cite>asperakey</cite> is the
+<a class="reference external" href="https://www.ncbi.nlm.nih.gov/sra/docs/aspera-key-pairs/">key</a>.</dd>
+<dt><cite>overwrite</cite> (bool)</dt>
+<dd>If file already exists, do we overwrite it or just
+use the existing one? If <cite>False</cite> and all output files
+already exist, then nothing is done and <cite>fastq_dump</cite>
+no longer even needs to be a valid path.</dd>
+<dt><cite>passonly</cite> (bool)</dt>
+<dd>Keep only reads with a passing <cite>READ_FILTER</cite> value.</dd>
+</dl>
+</dd>
+<dt>Result:</dt>
+<dd>Upon completion, the directory <cite>fastqdir</cite> contains
+files of the form <code class="docutils literal"><span class="pre">&lt;name&gt;_R1.fastq.gz</span></code> and
+<code class="docutils literal"><span class="pre">&lt;name&gt;_R2.fastq.gz</span></code> for all names in <cite>samples</cite>.
+These names have been added as the columns <cite>R1</cite> and
+<cite>R2</cite> to <cite>samples</cite>. Note that the file names but
+<strong>not</strong> the directory names are added.</dd>
+</dl>
+</dd></dl>
 
-   <h1>Python Module Index</h1>
-
-   <div class="modindex-jumpbox">
-   <a href="#cap-d"><strong>d</strong></a>
-   </div>
-
-   <table class="indextable modindextable">
-     <tr class="pcap"><td></td><td>&#160;</td><td></td></tr>
-     <tr class="cap" id="cap-d"><td></td><td>
-       <strong>d</strong></td><td></td></tr>
-     <tr>
-       <td><img src="_static/minus.png" class="toggler"
-              id="toggle-1" style="display: none" alt="-" /></td>
-       <td>
-       <a href="dms_tools2.html#module-dms_tools2"><code class="xref">dms_tools2</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="dms_tools2.diffsel.html#module-dms_tools2.diffsel"><code class="xref">dms_tools2.diffsel</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="dms_tools2.dssp.html#module-dms_tools2.dssp"><code class="xref">dms_tools2.dssp</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="dms_tools2.ipython_utils.html#module-dms_tools2.ipython_utils"><code class="xref">dms_tools2.ipython_utils</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="dms_tools2.parseargs.html#module-dms_tools2.parseargs"><code class="xref">dms_tools2.parseargs</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="dms_tools2.plot.html#module-dms_tools2.plot"><code class="xref">dms_tools2.plot</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="dms_tools2.prefs.html#module-dms_tools2.prefs"><code class="xref">dms_tools2.prefs</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="dms_tools2.sra.html#module-dms_tools2.sra"><code class="xref">dms_tools2.sra</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="dms_tools2.utils.html#module-dms_tools2.utils"><code class="xref">dms_tools2.utils</code></a></td><td>
-       <em></em></td></tr>
-   </table>
+</div>
 
 
           </div>
@@ -145,14 +137,17 @@
 
 
 <h3>Navigation</h3>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="prefs.html">Amino-acid preferences</a></li>
 <li class="toctree-l1"><a class="reference internal" href="diffsel.html">Differential selection</a></li>
 <li class="toctree-l1"><a class="reference internal" href="programs.html">Executable programs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">Python API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">Python API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="dms_tools2.html">dms_tools2 package</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="citations.html">Citations</a></li>
 </ul>
 
@@ -160,6 +155,12 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="api.html">Python API</a><ul>
+  <li><a href="dms_tools2.html">dms_tools2 package</a><ul>
+      <li>Previous: <a href="dms_tools2.prefs.html" title="previous chapter">prefs</a></li>
+      <li>Next: <a href="dms_tools2.utils.html" title="next chapter">utils</a></li>
+  </ul></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>
@@ -184,6 +185,9 @@
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
+      |
+      <a href="_sources/dms_tools2.sra.rst.txt"
+          rel="nofollow">Page source</a>
     </div>
 
     
