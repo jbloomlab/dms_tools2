@@ -22,6 +22,11 @@ Mutational antigenic profiling of influenza hemagglutinin by Doud et al (2017)
 `Doud et al (2017)`_ performed mutational antigenic profiling of influenza hemagglutinin against a set of strain-specific antibodies, using :ref:`bcsubamp` to obtain high sequencing accuracy, and then estimating the :ref:`diffsel` from each antibody.
 You can see a `Jupyter notebook`_ that analyzes their data by clicking here: `Doud2017 example`_.
 
+Mutational antigenic profiling of the BF520 HIV Env against PGT151 by Dingens et al (2017)
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+`Dingens et al (2017)`_ performed mutational antigenic profiling of HIV Env (BF520 strain) against the PGT151 broadly neutralizing antibody, using :ref:`bcsubamp` to obtain high sequencing accuracy, and then estimating the :ref:`diffsel` from PGT151 on each mutation.
+You can see a `Jupyter notebook`_ that analyzes their data by clicking here: `Dingens2017 example`_.
+
 Downloading and running the example notebooks
 -------------------------------------------------
 Each example analysis is available on the GitHub repository that hosts the `dms_tools2 source code`_. 

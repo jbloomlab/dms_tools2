@@ -31,6 +31,7 @@
 .. _`Doud and Bloom (2016)`: http://www.mdpi.com/1999-4915/8/6/155
 .. _`Doud2016 example`: https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2016/analysis_notebook.ipynb
 .. _`Doud2017 example`: https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2017/analysis_notebook.ipynb
+.. _`Dingens2017 example`: https://github.com/jbloomlab/dms_tools2/blob/master/examples/Dingens2017/analysis_notebook.ipynb
 .. _`Jupyter notebook`: https://ipython.org/notebook.html
 .. _`fastq-dump`: https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?view=toolkit_doc&f=fastq-dump
 .. _`Sequence Read Archive`: https://www.ncbi.nlm.nih.gov/sra
