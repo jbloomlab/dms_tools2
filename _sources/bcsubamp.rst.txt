@@ -110,6 +110,8 @@ Here are some example analyses:
     
     * `Doud2017 example`_
 
+    * `Dingens2017 example`_
+
 More details and notes
 ------------------------
 The `Bloom lab`_ has now published a number of papers using this deep sequencing strategy.
