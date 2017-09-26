@@ -77,6 +77,7 @@ setup(
             'scripts/dms2_logoplot',
             ],
     ext_modules = [
-            Extension('dms_tools2._cutils', ['dms_tools2/_cutils.c'])
+            Extension('dms_tools2._cutils', ['dms_tools2/_cutils.c'],
+                    extra_compile_args=["-Wno-error=declaration-after-statement"])
             ],
 )
