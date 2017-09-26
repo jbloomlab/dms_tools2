@@ -835,6 +835,65 @@ def avgPrefs(prefsfiles):
     return pandas.concat(prefs).groupby('site').mean().reset_index()
 
 
+def prefsEntropy(prefs, charlist):
+    """Calculate site entropy and number of effective characters.
+
+    The site entropy :math:`h_r` for site :math:`r` is defined as
+    :math:`h_r = -\sum_{x} \pi_{r,x} \log\left(\pi_{r,x}\\right)`
+    where :math:`\pi_{r,x}` is the preference for character (e.g.,
+    amino acid) :math:`x` at site :math:`r`, and the log is
+    the natural logarithm.
+
+    The number of effective characters at site :math:`r`
+    is :math:`N_{\\rm{eff}, r} = e^{h_r}`.
+
+    Args:
+        `prefs` (pandas DataFrame)
+            Data frame with the preferences. Should have a column
+            named `site` and a column for each character in
+            `charlist`. 
+        `charlist` (list)
+            List of the characters of interest, for example
+            the amino acids.
+
+    Returns:
+        A copy of `prefs` that has additional columns named
+        `entropy` and `neffective`, giving the site entropy and
+        number of effective characters for each site. For
+        the entropies, log is taken to base :math:`e`.
+
+    >>> charlist = ['A', 'C', 'G', 'T']
+    >>> prefs = pandas.DataFrame({
+    ...         'site':[1, 2, 3],
+    ...         'A':[0.25, 0.6, 1 / 3.],
+    ...         'C':[0.25, 0.3, 1 / 3.],
+    ...         'G':[0.25, 0.1, 1 / 3.],
+    ...         'T':[0.25, 0.0, 0.0],
+    ...         })
+    >>> prefs_entropy = prefsEntropy(prefs, charlist)
+    >>> (set(['entropy', 'neffective', 'site'] + charlist) == 
+    ...         set(prefs_entropy.columns))
+    True
+    >>> h2 = -0.6 * math.log(0.6) - 0.3 * math.log(0.3) - 0.1 * math.log(0.1)
+    >>> numpy.allclose(prefs_entropy['entropy'], [math.log(4), h2, math.log(3)])
+    True
+    >>> numpy.allclose(prefs_entropy['neffective'], [4, math.exp(h2), 3])
+    True
+    """
+    assert 'site' in prefs.columns, "prefs does not have `site` column"
+    assert set(charlist) < set(prefs.columns), "cols do not contain charlist"
+    assert charlist, "no characters specified"
+    assert numpy.allclose(prefs[charlist].sum(axis=1), 1, atol=1e-4),\
+            "prefs do not sum to one"
+    prefs_entropy = prefs.copy()
+    prefs_entropy['entropy'] = 0
+    for char in charlist:
+        p_char = prefs_entropy[char].where(prefs_entropy[char] > 0, 1)
+        prefs_entropy['entropy'] -= numpy.log(p_char) * p_char
+    prefs_entropy['neffective'] = numpy.exp(prefs_entropy['entropy'])
+    return prefs_entropy
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
