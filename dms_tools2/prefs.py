@@ -845,7 +845,7 @@ def prefsEntropy(prefs, charlist):
     the natural logarithm.
 
     The number of effective characters at site :math:`r`
-    is :math:`N_{\\rm{eff}, r} = e^{h_r}`.
+    is :math:`N_{\\rm{eff}, r} = \exp\left(h_r\\right)`.
 
     Args:
         `prefs` (pandas DataFrame)
