@@ -49,7 +49,7 @@ secondary structure and solvent accessibility information from a
 PDB structure. This module can process that output.</p>
 <dl class="data">
 <dt id="dms_tools2.dssp.MAX_ASA_TIEN">
-<code class="descclassname">dms_tools2.dssp.</code><code class="descname">MAX_ASA_TIEN</code><em class="property"> = {'E': 223.0, 'L': 201.0, 'G': 104.0, 'V': 174.0, 'H': 224.0, 'Y': 263.0, 'T': 172.0, 'R': 274.0, 'Q': 225.0, 'K': 236.0, 'P': 159.0, 'N': 195.0, 'W': 285.0, 'F': 240.0, 'M': 224.0, 'D': 193.0, 'I': 197.0, 'C': 167.0, 'A': 129.0, 'S': 155.0}</em><a class="headerlink" href="#dms_tools2.dssp.MAX_ASA_TIEN" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.dssp.</code><code class="descname">MAX_ASA_TIEN</code><em class="property"> = {'G': 104.0, 'S': 155.0, 'Q': 225.0, 'D': 193.0, 'R': 274.0, 'K': 236.0, 'I': 197.0, 'M': 224.0, 'H': 224.0, 'Y': 263.0, 'P': 159.0, 'V': 174.0, 'E': 223.0, 'N': 195.0, 'W': 285.0, 'F': 240.0, 'C': 167.0, 'T': 172.0, 'L': 201.0, 'A': 129.0}</em><a class="headerlink" href="#dms_tools2.dssp.MAX_ASA_TIEN" title="Permalink to this definition">¶</a></dt>
 <dd><p>max accessible surface area (square angstroms) for amino acids, from
 <a class="reference external" href="https://doi.org/10.1371/journal.pone.0080635">Tien et al (2013)</a>.
 <cite>MAX_ASA_TIEN[a]</cite> is the max surface area for amino acid <cite>a</cite>.</p>
@@ -57,7 +57,7 @@ PDB structure. This module can process that output.</p>
 
 <dl class="function">
 <dt id="dms_tools2.dssp.processDSSP">
-<code class="descclassname">dms_tools2.dssp.</code><code class="descname">processDSSP</code><span class="sig-paren">(</span><em>dsspfile</em>, <em>chain=None</em>, <em>max_asa={'E': 223.0</em>, <em>'L': 201.0</em>, <em>'G': 104.0</em>, <em>'V': 174.0</em>, <em>'H': 224.0</em>, <em>'Y': 263.0</em>, <em>'T': 172.0</em>, <em>'R': 274.0</em>, <em>'Q': 225.0</em>, <em>'K': 236.0</em>, <em>'P': 159.0</em>, <em>'N': 195.0</em>, <em>'W': 285.0</em>, <em>'F': 240.0</em>, <em>'M': 224.0</em>, <em>'D': 193.0</em>, <em>'I': 197.0</em>, <em>'C': 167.0</em>, <em>'A': 129.0</em>, <em>'S': 155.0}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/dssp.html#processDSSP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.dssp.processDSSP" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.dssp.</code><code class="descname">processDSSP</code><span class="sig-paren">(</span><em>dsspfile</em>, <em>chain=None</em>, <em>max_asa={'G': 104.0</em>, <em>'S': 155.0</em>, <em>'Q': 225.0</em>, <em>'D': 193.0</em>, <em>'R': 274.0</em>, <em>'K': 236.0</em>, <em>'I': 197.0</em>, <em>'M': 224.0</em>, <em>'H': 224.0</em>, <em>'Y': 263.0</em>, <em>'P': 159.0</em>, <em>'V': 174.0</em>, <em>'E': 223.0</em>, <em>'N': 195.0</em>, <em>'W': 285.0</em>, <em>'F': 240.0</em>, <em>'C': 167.0</em>, <em>'T': 172.0</em>, <em>'L': 201.0</em>, <em>'A': 129.0}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/dssp.html#processDSSP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.dssp.processDSSP" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get secondary structure and solvent accessibility from <code class="docutils literal"><span class="pre">dssp</span></code>.</p>
 <p><a class="reference external" href="http://swift.cmbi.ru.nl/gv/dssp/">dssp</a> is a program
 that calculates secondary structure and absolute solvent

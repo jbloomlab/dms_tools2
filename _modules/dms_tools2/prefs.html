@@ -877,6 +877,65 @@
     <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">prefs</span><span class="p">)</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span></div>
 
 
+<div class="viewcode-block" id="prefsEntropy"><a class="viewcode-back" href="../../dms_tools2.prefs.html#dms_tools2.prefs.prefsEntropy">[docs]</a><span class="k">def</span> <span class="nf">prefsEntropy</span><span class="p">(</span><span class="n">prefs</span><span class="p">,</span> <span class="n">charlist</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate site entropy and number of effective characters.</span>
+
+<span class="sd">    The site entropy :math:`h_r` for site :math:`r` is defined as</span>
+<span class="sd">    :math:`h_r = -\sum_{x} \pi_{r,x} \log\left(\pi_{r,x}\\right)`</span>
+<span class="sd">    where :math:`\pi_{r,x}` is the preference for character (e.g.,</span>
+<span class="sd">    amino acid) :math:`x` at site :math:`r`, and the log is</span>
+<span class="sd">    the natural logarithm.</span>
+
+<span class="sd">    The number of effective characters at site :math:`r`</span>
+<span class="sd">    is :math:`N_{\\rm{eff}, r} = \exp\left(h_r\\right)`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `prefs` (pandas DataFrame)</span>
+<span class="sd">            Data frame with the preferences. Should have a column</span>
+<span class="sd">            named `site` and a column for each character in</span>
+<span class="sd">            `charlist`. </span>
+<span class="sd">        `charlist` (list)</span>
+<span class="sd">            List of the characters of interest, for example</span>
+<span class="sd">            the amino acids.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A copy of `prefs` that has additional columns named</span>
+<span class="sd">        `entropy` and `neffective`, giving the site entropy and</span>
+<span class="sd">        number of effective characters for each site. For</span>
+<span class="sd">        the entropies, log is taken to base :math:`e`.</span>
+
+<span class="sd">    &gt;&gt;&gt; charlist = [&#39;A&#39;, &#39;C&#39;, &#39;G&#39;, &#39;T&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; prefs = pandas.DataFrame({</span>
+<span class="sd">    ...         &#39;site&#39;:[1, 2, 3],</span>
+<span class="sd">    ...         &#39;A&#39;:[0.25, 0.6, 1 / 3.],</span>
+<span class="sd">    ...         &#39;C&#39;:[0.25, 0.3, 1 / 3.],</span>
+<span class="sd">    ...         &#39;G&#39;:[0.25, 0.1, 1 / 3.],</span>
+<span class="sd">    ...         &#39;T&#39;:[0.25, 0.0, 0.0],</span>
+<span class="sd">    ...         })</span>
+<span class="sd">    &gt;&gt;&gt; prefs_entropy = prefsEntropy(prefs, charlist)</span>
+<span class="sd">    &gt;&gt;&gt; (set([&#39;entropy&#39;, &#39;neffective&#39;, &#39;site&#39;] + charlist) == </span>
+<span class="sd">    ...         set(prefs_entropy.columns))</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; h2 = -0.6 * math.log(0.6) - 0.3 * math.log(0.3) - 0.1 * math.log(0.1)</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(prefs_entropy[&#39;entropy&#39;], [math.log(4), h2, math.log(3)])</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(prefs_entropy[&#39;neffective&#39;], [4, math.exp(h2), 3])</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="s1">&#39;site&#39;</span> <span class="ow">in</span> <span class="n">prefs</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="s2">&quot;prefs does not have `site` column&quot;</span>
+    <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">charlist</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">set</span><span class="p">(</span><span class="n">prefs</span><span class="o">.</span><span class="n">columns</span><span class="p">),</span> <span class="s2">&quot;cols do not contain charlist&quot;</span>
+    <span class="k">assert</span> <span class="n">charlist</span><span class="p">,</span> <span class="s2">&quot;no characters specified&quot;</span>
+    <span class="k">assert</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">prefs</span><span class="p">[</span><span class="n">charlist</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">),</span>\
+            <span class="s2">&quot;prefs do not sum to one&quot;</span>
+    <span class="n">prefs_entropy</span> <span class="o">=</span> <span class="n">prefs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">prefs_entropy</span><span class="p">[</span><span class="s1">&#39;entropy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">:</span>
+        <span class="n">p_char</span> <span class="o">=</span> <span class="n">prefs_entropy</span><span class="p">[</span><span class="n">char</span><span class="p">]</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">prefs_entropy</span><span class="p">[</span><span class="n">char</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">prefs_entropy</span><span class="p">[</span><span class="s1">&#39;entropy&#39;</span><span class="p">]</span> <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p_char</span><span class="p">)</span> <span class="o">*</span> <span class="n">p_char</span>
+    <span class="n">prefs_entropy</span><span class="p">[</span><span class="s1">&#39;neffective&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">prefs_entropy</span><span class="p">[</span><span class="s1">&#39;entropy&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">prefs_entropy</span></div>
+
+
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">doctest</span>
     <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
