@@ -37,6 +37,7 @@ seaborn.set(context='talk',
                 }
            )
 
+from dms_tools2 import CODONS, AAS, AAS_WITHSTOP
 import dms_tools2.utils
 
 #: `color-blind safe palette <http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/>`_
@@ -245,28 +246,40 @@ def plotReadsPerBC(names, readsperbcfiles, plotfile,
     plt.close()
 
 
-def plotDepth(names, countsfiles, plotfile, maxcol=4):
+def plotDepth(names, countsfiles, plotfile, maxcol=4, charlist=CODONS):
     """Plot sequencing depth along primary sequence.
 
     Args:
         `names` (list or series)
             Names of samples for which we plot statistics.
         `countsfiles` (list or series)
-            ``*_codoncounts.csv`` files of type created by ``dms2_bcsubamp``.
+            Files containing character counts at each site.
+            Should have column named `site` and a column
+            for each character in `charlist`.
         `plotfile` (str)
             Name of created PDF plot file containing count depth.
         `maxcol` (int)
             Number of columns in faceted plot.
+        `charlist` (list)
+            Characters contained in `countsfiles`. For instance,
+            list of codons or amino acids.
     """
     assert len(names) == len(countsfiles) == len(set(names))
     assert os.path.splitext(plotfile)[1].lower() == '.pdf'
 
-    counts = pandas.concat([dms_tools2.utils.annotateCodonCounts(f).assign(
-            name=name) for (name, f) in zip(names, countsfiles)], 
-            ignore_index=True).rename(columns={'ncounts':'number of counts'})
+    counts = pandas.concat(
+            [pandas.read_csv(f)
+                   .assign(name=name)
+                   .assign(ncounts=lambda x: x[charlist].sum(axis=1))
+                   .rename(columns={'ncounts':'number of counts'})
+            for (name, f) in zip(names, countsfiles)], ignore_index=True)
     
     ncol = min(maxcol, len(names))
     nrow = math.ceil(len(names) / float(ncol))
+
+    # make name a category to preserve order
+    counts['name'] = counts['name'].astype('category', 
+            categories=names)
 
     p = (ggplot(counts, aes(x='site', y='number of counts'))
             + geom_step(size=0.4)
@@ -277,7 +290,7 @@ def plotDepth(names, countsfiles, plotfile, maxcol=4):
             + facet_wrap('~name', ncol=ncol) 
             + theme(figure_size=(2.25 * (0.6 + ncol), 1.3 * (0.3 + nrow)))
             )
-    p.save(plotfile)
+    p.save(plotfile, verbose=False)
     plt.close()
 
 
@@ -354,9 +367,9 @@ def plotCumulMutCounts(names, countsfiles, plotfile, chartype,
     codoncounts = pandas.concat([pandas.read_csv(f).assign(name=name)
             for (name, f) in zip(names, countsfiles)],
             ignore_index=True).assign(character='codons')
-    assert set(dms_tools2.CODONS) <= set(codoncounts.columns)
+    assert set(CODONS) <= set(codoncounts.columns)
     codonmelt = codoncounts.melt(id_vars=['name', 'wildtype', 'character'], 
-            value_vars=dms_tools2.CODONS, value_name='counts',
+            value_vars=CODONS, value_name='counts',
             var_name='codon')
     codonmelt = codonmelt[codonmelt['codon'] != codonmelt['wildtype']]
 
@@ -364,9 +377,9 @@ def plotCumulMutCounts(names, countsfiles, plotfile, chartype,
             pandas.read_csv(f)).assign(name=name)
             for (name, f) in zip(names, countsfiles)],
             ignore_index=True).assign(character='amino acids')
-    assert set(dms_tools2.AAS_WITHSTOP) <= set(aacounts.columns)
+    assert set(AAS_WITHSTOP) <= set(aacounts.columns)
     aamelt = aacounts.melt(id_vars=['name', 'character', 'wildtype'], 
-            value_vars=dms_tools2.AAS_WITHSTOP, value_name='counts',
+            value_vars=AAS_WITHSTOP, value_name='counts',
             var_name='aa')
     aamelt = aamelt[aamelt['aa'] != aamelt['wildtype']]
 
