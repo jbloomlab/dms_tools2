@@ -102,6 +102,17 @@ def main():
             for (arg, val) in args.items():
                 if arg in ['batchfile', 'ncpus', 'summaryprefix']:
                     continue
+                elif arg in row:
+                    assert val is not None, ("`{0}` specified in `batchfile`"
+                            " and as command-line argument.".format(arg))
+                    newargs.append('--{0}'.format(arg))
+                    val = row[arg]
+                    if arg in ['R1trim', 'R2trim']:
+                        val = row[arg].split()
+                    if isinstance(val, list):
+                        newargs += list(map(str, val))
+                    else:
+                        newargs.append(str(val))
                 elif val:
                     newargs.append('--{0}'.format(arg))
                     if isinstance(val, list):

@@ -136,11 +136,11 @@ def bcsubampParentParser():
             "'_R1' replaced by '_R2'. If that is not case, provide "
             "names here."))
 
-    parser.add_argument('--R1trim', type=int, default=300, nargs='+',
-        help=("Trim R1 from 3' end to this length. One value for "
-        "all reads or values for each subamplicon in 'alignspecs'."))
+    parser.add_argument('--R1trim', type=int, nargs='+',
+        help=("Trim R1 from 3' end to this length. One value for all "
+        "reads or values for each subamplicon in ``--alignspecs``."))
 
-    parser.add_argument('--R2trim', type=int, default=300, nargs='+',
+    parser.add_argument('--R2trim', type=int, nargs='+',
         help="Like '--R1trim', but for R2.")
 
     parser.add_argument('--chartype', default='codon', choices=['codon'],
@@ -211,7 +211,11 @@ def batch_bcsubampParser():
 
     parser.add_argument('--batchfile', help="CSV file specifying each "
             "``dms2_bcsubamp`` run. Must have these columns: "
-            "`name`, `R1`. Other columns are ignored, so other "
+            "`name`, `R1`. Can optionally have columns `R1trim` and "
+            "`R2trim` with spaces delimiting subamplicon-specific trimming. "
+            "If `R1trim` / `R2trim` in batch file, do **not** "
+            "also give values for ``--R1trim`` and ``--R2trim``. "
+            "Other columns are ignored, so other "
             "``dms2_bcsubamp`` args should be passed as separate "
             "command line args rather than in ``--batchfile``.", 
             required=True)

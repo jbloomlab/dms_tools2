@@ -30,10 +30,6 @@ Command-line usage
    :func: batch_bcsubampParser
    :prog: dms2_batch_bcsubamp
 
-   \-\-batchfile
-    The `name` and `R1` columns in the specified batch file are the values of those arguments used when running ``dms2_bcsubamp`` for that sample.
-    Any other columns in the batch file are ignored.
-
    \-\-summaryprefix
     As detailed in `Output files` below, ``dms2_batch_bcsubamp`` creates a variety of plots summarizing the output.
     These files are in the directory specified by ``--outdir``, and have the prefix specified here.

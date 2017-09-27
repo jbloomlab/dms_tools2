@@ -142,7 +142,9 @@ def main():
         maxtrim = {}
         for r in ['R1', 'R2']:
             trimarg = args['{0}trim'.format(r)]
-            if isinstance(trimarg, int):
+            if trimarg is None:
+                trimarg = [None]
+            elif isinstance(trimarg, int):
                 trimarg = [trimarg]
             if len(trimarg) == 1:
                 trims_d[r] = [trimarg[0]] * len(alignspecs)
@@ -150,11 +152,15 @@ def main():
                 trims_d[r] = trimarg
             assert len(trims_d[r]) == len(alignspecs), ("--{0}trim must be "
                     "one value or same length as --alignspecs".format(r))
-            assert all([t > bclen for t in trims_d[r]]), ("--{0}trim must "
-                    "all be greater than --bclen of {1}".format(r, bclen))
-            maxtrim[r] = max(trims_d[r])
-            # we remove barcodes from reads below, so adjust trims
-            trims_d[r] = [t - bclen for t in trims_d[r]]
+            assert all([(t is None) or (t > bclen) for t in trims_d[r]]), \
+                    ("--{0}trim must all be greater than --bclen of {1}"
+                    .format(r, bclen))
+            if all([t is None for t in trims_d[r]]):
+                maxtrim[r] = None
+            else:
+                maxtrim[r] = max(trims_d[r])
+                # we remove barcodes from reads below, so adjust trims
+                trims_d[r] = [t - bclen for t in trims_d[r]]
         trims = [(trims_d['R1'][i], trims_d['R2'][i]) for i in 
                 range(len(alignspecs))]
 
@@ -317,8 +323,14 @@ def main():
                     r1start, r2start, maxN)) \
                     in zip(trims, alignspecs):
 
-                r1trimconsensus = consensus['R1'][ : r1trim]
-                r2trimconsensus = consensus['R2'][ : r2trim]
+                if r1trim is None:
+                    r1trimconsensus = consensus['R1']
+                else:
+                    r1trimconsensus = consensus['R1'][ : r1trim]
+                if r2trim is None:
+                    r2trimconsensus = consensus['R2'][ : r2trim]
+                else:
+                    r2trimconsensus = consensus['R2'][ : r2trim]
 
                 subamplicon = dms_tools2.utils.alignSubamplicon(refseq,
                         r1trimconsensus[r1start - 1 : ], 
