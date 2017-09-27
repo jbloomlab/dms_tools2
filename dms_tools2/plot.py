@@ -159,7 +159,8 @@ def plotReadStats(names, readstatfiles, plotfile):
             + scale_y_continuous(labels=latexSciNot) 
             + scale_fill_manual(COLOR_BLIND_PALETTE)
             )
-    p.save(plotfile, height=2.7, width=(1.2 + 0.25 * len(names)))
+    p.save(plotfile, height=2.7, width=(1.2 + 0.25 * len(names)),
+            verbose=False)
     plt.close()
 
 
@@ -189,7 +190,8 @@ def plotBCStats(names, bcstatsfiles, plotfile):
             + scale_y_continuous(labels=latexSciNot)
             + scale_fill_manual(COLOR_BLIND_PALETTE)
             )
-    p.save(plotfile, height=2.7, width=(1.2 + 0.25 * len(names)))
+    p.save(plotfile, height=2.7, width=(1.2 + 0.25 * len(names)),
+            verbose=False)
     plt.close()
 
 
@@ -230,6 +232,9 @@ def plotReadsPerBC(names, readsperbcfiles, plotfile,
         dfs.append(df)
     df = pandas.concat(dfs, ignore_index=True)
 
+    # make name a category to preserve order
+    df['name'] = df['name'].astype('category', categories=names)
+
     ncol = min(maxcol, len(names))
     nrow = math.ceil(len(names) / float(ncol))
     p = (ggplot(df)
@@ -242,7 +247,7 @@ def plotReadsPerBC(names, readsperbcfiles, plotfile,
             + facet_wrap('~name', ncol=ncol)
             + theme(figure_size=(1.5 * (0.8 + ncol), 1.2 * (0.4 + nrow)))
             )
-    p.save(plotfile)
+    p.save(plotfile, verbose=False)
     plt.close()
 
 
@@ -317,6 +322,10 @@ def plotMutFreq(names, countsfiles, plotfile, maxcol=4):
     ncol = min(maxcol, len(names))
     nrow = math.ceil(len(names) / float(ncol))
 
+    # make name a category to preserve order
+    counts['name'] = counts['name'].astype('category', 
+            categories=names)
+
     p = (ggplot(counts, aes(x='site', y='mutation frequency'))
             + geom_step(size=0.4)
             + scale_y_continuous(labels=latexSciNot, 
@@ -326,7 +335,7 @@ def plotMutFreq(names, countsfiles, plotfile, maxcol=4):
             + facet_wrap('~name', ncol=ncol) 
             + theme(figure_size=(2.25 * (0.6 + ncol), 1.3 * (0.3 + nrow)))
             )
-    p.save(plotfile)
+    p.save(plotfile, verbose=False)
     plt.close()
 
 
@@ -385,6 +394,9 @@ def plotCumulMutCounts(names, countsfiles, plotfile, chartype,
 
     df = pandas.concat([codonmelt, aamelt], ignore_index=True)
 
+    # make name a category to preserve order
+    df['name'] = df['name'].astype('category', categories=names)
+
     maxcol = 4
     ncol = min(maxcol, len(names))
     nrow = math.ceil(len(names) / float(ncol))
@@ -398,7 +410,7 @@ def plotCumulMutCounts(names, countsfiles, plotfile, chartype,
             + guides(color=guide_legend(title_position='left'))
             + ylab('fraction $\leq$ this many counts')
             )
-    p.save(plotfile)
+    p.save(plotfile, verbose=False)
     plt.close()
 
 
@@ -474,7 +486,8 @@ def plotCodonMutTypes(names, countsfiles, plotfile,
     else:
         p += guides(fill=guide_legend(ncol=2))
 
-    p.save(plotfile, height=2.7, width=(1.2 + 0.25 * len(names)))
+    p.save(plotfile, height=2.7, width=(1.2 + 0.25 * len(names)),
+            verbose=False)
     plt.close()
 
 
@@ -693,6 +706,10 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
     ncol = min(maxcol, len(names))
     nrow = math.ceil(len(names) / float(ncol))
 
+    # make name a category to preserve order
+    diffsel['name'] = diffsel['name'].astype('category', 
+            categories=names)
+
     (xbreaks, xlabels) = breaksAndLabels(diffsel['siteindex'].unique(), 
             diffsel['site'].unique(), n=6)
     p = (ggplot(diffsel, aes(x='siteindex', y='diffsel', color='direction'))
@@ -706,7 +723,7 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
     if not ((len(names) == 1) and ((not names[0]) or names[0].isspace())):
         p += facet_wrap('~name', ncol=ncol)
     p += theme(figure_size=(4.6 * (0.3 + ncol), 1.9 * (0.2 + nrow)))
-    p.save(plotfile)
+    p.save(plotfile, verbose=False)
     plt.close()
 
 
