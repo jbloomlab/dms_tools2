@@ -103,8 +103,8 @@ def main():
                 if arg in ['batchfile', 'ncpus', 'summaryprefix']:
                     continue
                 elif arg in row:
-                    assert val is not None, ("`{0}` specified in `batchfile`"
-                            " and as command-line argument.".format(arg))
+                    assert val is None, ("`{0}` specified in `batchfile` and"
+                            " as command-line argument ({1}).".format(arg, val))
                     newargs.append('--{0}'.format(arg))
                     val = row[arg]
                     if arg in ['R1trim', 'R2trim']:
