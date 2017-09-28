@@ -178,11 +178,11 @@
             <span class="s2">&quot;&#39;_R1&#39; replaced by &#39;_R2&#39;. If that is not case, provide &quot;</span>
             <span class="s2">&quot;names here.&quot;</span><span class="p">))</span>
 
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--R1trim&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Trim R1 from 3&#39; end to this length. One value for &quot;</span>
-        <span class="s2">&quot;all reads or values for each subamplicon in &#39;alignspecs&#39;.&quot;</span><span class="p">))</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--R1trim&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Trim R1 from 3&#39; end to this length. One value for all &quot;</span>
+        <span class="s2">&quot;reads or values for each subamplicon in ``--alignspecs``.&quot;</span><span class="p">))</span>
 
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--R2trim&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--R2trim&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Like &#39;--R1trim&#39;, but for R2.&quot;</span><span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--chartype&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;codon&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;codon&#39;</span><span class="p">],</span>
@@ -253,7 +253,11 @@
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--batchfile&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;CSV file specifying each &quot;</span>
             <span class="s2">&quot;``dms2_bcsubamp`` run. Must have these columns: &quot;</span>
-            <span class="s2">&quot;`name`, `R1`. Other columns are ignored, so other &quot;</span>
+            <span class="s2">&quot;`name`, `R1`. Can optionally have columns `R1trim` and &quot;</span>
+            <span class="s2">&quot;`R2trim` with spaces delimiting subamplicon-specific trimming. &quot;</span>
+            <span class="s2">&quot;If `R1trim` / `R2trim` in batch file, do **not** &quot;</span>
+            <span class="s2">&quot;also give values for ``--R1trim`` and ``--R2trim``. &quot;</span>
+            <span class="s2">&quot;Other columns are ignored, so other &quot;</span>
             <span class="s2">&quot;``dms2_bcsubamp`` args should be passed as separate &quot;</span>
             <span class="s2">&quot;command line args rather than in ``--batchfile``.&quot;</span><span class="p">,</span> 
             <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>

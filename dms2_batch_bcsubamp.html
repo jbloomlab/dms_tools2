@@ -128,14 +128,10 @@ This argument determines how many CPUs are used if running multiple jobs.</p>
 <td>Read 2 (R2) FASTQ files assumed to have same names as R1 but with ‘_R1’ replaced by ‘_R2’. If that is not case, provide names here.</td></tr>
 <tr><td class="option-group">
 <kbd>--R1trim</kbd></td>
-<td><p class="first">Trim R1 from 3’ end to this length. One value for all reads or values for each subamplicon in ‘alignspecs’.</p>
-<p class="last">Default: 300</p>
-</td></tr>
+<td>Trim R1 from 3’ end to this length. One value for all reads or values for each subamplicon in <code class="docutils literal"><span class="pre">--alignspecs</span></code>.</td></tr>
 <tr><td class="option-group">
 <kbd>--R2trim</kbd></td>
-<td><p class="first">Like ‘–R1trim’, but for R2.</p>
-<p class="last">Default: 300</p>
-</td></tr>
+<td>Like ‘–R1trim’, but for R2.</td></tr>
 <tr><td class="option-group">
 <kbd>--chartype</kbd></td>
 <td><p class="first">Possible choices: codon</p>
@@ -184,10 +180,7 @@ This argument determines how many CPUs are used if running multiple jobs.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd>--batchfile</kbd></td>
-<td><p class="first">CSV file specifying each <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code> run. Must have these columns: <cite>name</cite>, <cite>R1</cite>. Other columns are ignored, so other <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code> args should be passed as separate command line args rather than in <code class="docutils literal"><span class="pre">--batchfile</span></code>.</p>
-<p class="last">The name and R1 columns in the specified batch file are the values of those arguments used when running dms2_bcsubamp for that sample.
-Any other columns in the batch file are ignored.</p>
-</td></tr>
+<td>CSV file specifying each <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code> run. Must have these columns: <cite>name</cite>, <cite>R1</cite>. Can optionally have columns <cite>R1trim</cite> and <cite>R2trim</cite> with spaces delimiting subamplicon-specific trimming. If <cite>R1trim</cite> / <cite>R2trim</cite> in batch file, do <strong>not</strong> also give values for <code class="docutils literal"><span class="pre">--R1trim</span></code> and <code class="docutils literal"><span class="pre">--R2trim</span></code>. Other columns are ignored, so other <code class="docutils literal"><span class="pre">dms2_bcsubamp</span></code> args should be passed as separate command line args rather than in <code class="docutils literal"><span class="pre">--batchfile</span></code>.</td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd>--summaryprefix</kbd></td>
 </tr>

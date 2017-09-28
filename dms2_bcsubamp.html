@@ -171,17 +171,14 @@ Instead of repeatedly listing that directory name, you can just provide it here 
 </td></tr>
 <tr><td class="option-group">
 <kbd>--R1trim</kbd></td>
-<td><p class="first">Trim R1 from 3’ end to this length. One value for all reads or values for each subamplicon in ‘alignspecs’.</p>
-<p>Default: 300</p>
+<td><p class="first">Trim R1 from 3’ end to this length. One value for all reads or values for each subamplicon in <code class="docutils literal"><span class="pre">--alignspecs</span></code>.</p>
 <p>Often your reads will be longer than needed, so it is helpful to trim the low-quality nucleotides that tend to be at the end of long readfs.</p>
 <p>If you specify one number, then all R1 reads are trimmed to this length. If you specify a list of numbers equal to the entries for –alignspecs, then each read is trimmed differently depending on which subamplicon it aligns to.</p>
 <p class="last">Note that the trimming is done to the initial read, and so the trimmed length specifies here includes the barcode, the primer binding site, and then the part of the read that provides useful sequence information.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd>--R2trim</kbd></td>
-<td><p class="first">Like ‘–R1trim’, but for R2.</p>
-<p class="last">Default: 300</p>
-</td></tr>
+<td>Like ‘–R1trim’, but for R2.</td></tr>
 <tr><td class="option-group">
 <kbd>--chartype</kbd></td>
 <td><p class="first">Possible choices: codon</p>
