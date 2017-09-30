@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.0.dev2
+-----
+* Standardized color scheme in ``*_cumulmutcounts.pdf`` plot.
+
 2.0.1
 ------
 * A few packaging changes for PyPI
