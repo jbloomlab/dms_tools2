@@ -510,6 +510,7 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
                 - `abs_diffsel`: sitediffsel from ``dms2_diffsel``
                 - `positive_diffsel`: sitediffsel from ``dms2_diffsel``
                 - `max_diffsel`: sitediffsel from ``dms2_diffsel``
+                - `mutfracsurvive`: from ``dms2_fracsurvive``
         `trim_unshared` (bool)
             What if files in `infiles` don't have same sites / mutations?
             If `True`, trim unshared one and just analyze ones
@@ -555,44 +556,45 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
                     )
         df.columns = df.columns.get_level_values(1)
 
-    elif datatype == 'mutdiffsel':
-        mutdiffsel = [pandas.read_csv(f)
-                            .assign(name=name)
-                            .assign(mutname=lambda x: x.wildtype +
-                                    x.site.map(str) + x.mutation)
-                            .sort_values('mutname')
-                            [['name', 'mutname', 'mutdiffsel']]
-                      for (name, f) in zip(names, infiles)]
-        muts = set(mutdiffsel[0]['mutname'].values)
-        for m in mutdiffsel:
+    elif datatype in ['mutdiffsel', 'mutfracsurvive']:
+        mut_df = [pandas.read_csv(f)
+                        .assign(name=name)
+                        .assign(mutname=lambda x: x.wildtype +
+                                x.site.map(str) + x.mutation)
+                        .sort_values('mutname')
+                        [['name', 'mutname', datatype]]
+                    for (name, f) in zip(names, infiles)]
+        muts = set(mut_df[0]['mutname'].values)
+        for m in mut_df:
             unsharedmuts = muts.symmetric_difference(set(m['mutname']))
             if trim_unshared:
                 muts -= unsharedmuts
             elif unsharedmuts:
                 raise ValueError("infiles don't have same muts: {0}".
                         format(unsharedmuts))
-        df = (pandas.concat(mutdiffsel, ignore_index=True)
+        df = (pandas.concat(mut_df, ignore_index=True)
                     .query('mutname in @muts') # only keep shared muts
                     .pivot_table(index='mutname', columns='name')
                     .dropna()
                     )
         df.columns = df.columns.get_level_values(1)
 
-    elif datatype in ['abs_diffsel', 'positive_diffsel', 'max_diffsel']:
-        sitediffsel = [pandas.read_csv(f)
-                             .assign(name=name)
-                             .sort_values('site')
-                             [['name', 'site', datatype]]
-                        for (name, f) in zip(names, infiles)]
-        sites = set(sitediffsel[0]['site'].values)
-        for s in sitediffsel:
+    elif datatype in ['abs_diffsel', 'positive_diffsel', 'max_diffsel',
+            'sitefracsurvive', 'maxfracsurvive']:
+        site_df = [pandas.read_csv(f)
+                         .assign(name=name)
+                         .sort_values('site')
+                         [['name', 'site', datatype]]
+                    for (name, f) in zip(names, infiles)]
+        sites = set(site_df[0]['site'].values)
+        for s in site_df:
             unsharedsites = sites.symmetric_difference(set(s['site']))
             if trim_unshared:
                 sites -= unsharedsites
             elif unsharedsites:
                 raise ValueError("infiles don't have same sites: {0}".
                         format(unsharedsites))
-        df = (pandas.concat(sitediffsel, ignore_index=True)
+        df = (pandas.concat(site_df, ignore_index=True)
                     .query('site in @sites') # only keep shared sites
                     .pivot_table(index='site', columns='name')
                     .dropna()
@@ -622,8 +624,9 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
         for (i, j) in zip(*numpy.diag_indices_from(p.axes)):
             p.axes[i, j].set_visible(False)
 
-    elif datatype in ['mutdiffsel', 'abs_diffsel', 
-            'positive_diffsel', 'max_diffsel']:
+    elif datatype in ['mutdiffsel', 'abs_diffsel', 'positive_diffsel',
+            'max_diffsel', 'mutfracsurvive', 'sitefracsurvive',
+            'maxfracsurvive']:
 
         p.map_diag(seaborn.distplot, color='black', kde=True, hist=False)
 
