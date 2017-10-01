@@ -385,6 +385,63 @@ def batch_diffselParser():
     return parser
 
 
+def fracsurviveParser():
+    """Returns `argparse.ArgumentParser` for ``dms2_fracsurvive``."""
+    parser = argparse.ArgumentParser(
+            description=parserDescription(
+                'Estimate fraction surviving for each mutation.'),
+            parents=[diffselParentParser()],
+            conflict_handler='resolve',
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--name', required=True, 
+            help='Name used for output files.')
+
+    parser.add_argument('--sel', required=True, help="Post-selection "
+            "counts file or prefix used when creating this file.")
+
+    parser.add_argument('--mock', required=True, help="Like ``--sel``, "
+            "but for mock-selection counts.")
+
+    parser.add_argument('--libfracsurvive', required=True, type=float,
+            help='Overall fraction of total library surviving the '
+            'selection versus the mock condition.')
+
+    parser.add_argument('--err', help="Like ``--sel`` but for "
+            "error-control to correct mutation counts.")
+
+    return parser
+
+
+def fracsurviveParentParser():
+    """Parent parser ``dms2_fracsurvive`` / ``dms2_batch_fracsurvive``"""
+    parser = argparse.ArgumentParser(
+            parents=[parentParser()],
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--indir', help="Input counts files in this "
+            "directory.")
+
+    parser.add_argument('--chartype', default='codon_to_aa',
+            choices=['codon_to_aa'], help="Characters for which "
+            "fraction surviving selection is estimated. `codon_to_aa` ="
+            " amino acids from codon counts.")
+
+    parser.add_argument('--excludestop', default='yes', choices=['yes', 'no'],
+            help="Exclude stop codons as a possible amino acid?")
+
+    parser.add_argument('--pseudocount', default=5, type=float,
+            help="Pseudocount added to each count for sample with smaller "
+            "depth; pseudocount for other sample scaled by relative depth.")
+
+    parser.add_argument('--mincount', default=0, type=float,
+            help="Report as `NaN` the fracsurvive of mutations for which "
+            "both selected and mock-selected samples have < this many counts.")
+
+    return parser
+
+
+
 def logoplotParser():
     """Returns `argparse.ArgumentParser` for ``dms2_logoplot``."""
     parser = argparse.ArgumentParser(
