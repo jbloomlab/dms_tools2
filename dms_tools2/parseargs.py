@@ -390,7 +390,7 @@ def fracsurviveParser():
     parser = argparse.ArgumentParser(
             description=parserDescription(
                 'Estimate fraction surviving for each mutation.'),
-            parents=[diffselParentParser()],
+            parents=[fracsurviveParentParser()],
             conflict_handler='resolve',
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
@@ -409,6 +409,29 @@ def fracsurviveParser():
 
     parser.add_argument('--err', help="Like ``--sel`` but for "
             "error-control to correct mutation counts.")
+
+    return parser
+
+
+def batch_fracsurviveParser():
+    """Returns `argparse.ArgumentParser` for ``dms2_batch_fracsurvive``"""
+    parser = argparse.ArgumentParser(
+            description=parserDescription(
+                'Perform runs of ``dms2_fracsurvive`` and summarize results.'),
+            parents=[fracsurviveParentParser()],
+            conflict_handler='resolve',
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--batchfile', required=True, help='CSV file '
+            'specifying each ``dms2_fracsurvive`` run. Must have these '
+            'columns: `name`, `sel`, `mock`, `libfracsurvive`. Can also ' 
+            'have these `err`, `group`. If `group` is used, samples are '
+            'grouped in summary plots. Other columns are ignored, so '
+            'other ``dms2_fracsurvive`` args should be passed as separate '
+            'command line args rather than in ``--batchfile``.')
+
+    parser.add_argument('--summaryprefix', required=True,
+            help='Prefix of output summary files and plots.')
 
     return parser
 

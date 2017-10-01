@@ -75,6 +75,7 @@ setup(
             'scripts/dms2_diffsel',
             'scripts/dms2_batch_diffsel',
             'scripts/dms2_fracsurvive',
+            'scripts/dms2_batch_fracsurvive',
             'scripts/dms2_logoplot',
             ],
     ext_modules = [
