@@ -3,7 +3,7 @@ Change Log
 
 2.1a0
 ------
-* Added programs and docs for ease of escape calculations.
+* Added programs and docs for `fracsurvive`.
 
 2.0.dev2
 -----
