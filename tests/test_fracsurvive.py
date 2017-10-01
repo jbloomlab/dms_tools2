@@ -30,8 +30,8 @@ class TestFracSurvive(unittest.TestCase):
 
         self.mock = os.path.join(self.indir, 'mock-1_codoncounts.csv')
         self.assertTrue(os.path.isfile(self.mock))
-        self.sel = os.path.join(self.indir, 'H17L19-1-c1_codoncounts.csv')
-        self.assertTrue(os.path.isfile(self.sel))
+        self.sel = os.path.join(self.indir, 'H17L19-c1-1_codoncounts.csv')
+        self.assertTrue(os.path.isfile(self.sel), "no {0}".format(self.sel))
         self.libfracsurvive = 0.021
         self.mincounts = [0, 10]
 
