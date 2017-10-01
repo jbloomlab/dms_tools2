@@ -10,7 +10,7 @@ If you use `dms_tools2`_ in your research, **please cite the following reference
 
 **Bloom JD.** `"Software for the analysis and visualization of deep mutational scanning data." <http://www.biomedcentral.com/content/pdf/s12859-015-0590-4.pdf>`_. *BMC Bioinformatics*, 16:168 (2015).
 
-    - Note that this is actually the reference for the older `dms_tools <https://github.com/jbloom/dms_tools>`_ software; a new reference for `dms_tools2`_ will eventually be forthcoming.
+    - This citation actually describes the older `dms_tools <https://github.com/jbloom/dms_tools>`_ software and is not an up-to-date description of the current capabilities of `dms_tools2`_. However, it is the scientific citation for the software -- and our ability to get support to continue maintaining `dms_tools2`_ will depend in part on using citations to document that it is being used. So **please cite this paper!**
 
 The :ref:`dms2_logoplot` program utilizes a slightly modified version of the `weblogo`_ package, so if you use :ref:`dms2_logoplot` please also cite the `reference for weblogo`_.
 
