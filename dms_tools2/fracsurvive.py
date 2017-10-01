@@ -167,50 +167,42 @@ def mutToSiteFracSurvive(mutfracsurvive):
             - `sitefracsurvive`: sum of mutfracsurvive at site
             - `maxfracsurvive`: maximum mutfracsurvive at site
 
-    >>> mutdiffsel = (pandas.DataFrame({
+    >>> mutfracsurvive = (pandas.DataFrame({
     ...         'site':[1, 2, 3, 4],
     ...         'wildtype':['A', 'C', 'C', 'A'],
-    ...         'A':[numpy.nan, 4.1, -0.1, numpy.nan],
-    ...         'C':[-0.2, numpy.nan, numpy.nan, 0.3],
-    ...         'G':[3.2, 0.1, -0.2, 0.1],
-    ...         'T':[-0.2, 0.0, -0.1, 0.4],
+    ...         'A':[numpy.nan, 0.9, 0.1, numpy.nan],
+    ...         'C':[0.2, numpy.nan, numpy.nan, 0.3],
+    ...         'G':[0.8, 0.1, 0.2, 0.0],
+    ...         'T':[0.2, 0.0, 0.1, 0.4],
     ...         })
     ...         .melt(id_vars=['site', 'wildtype'],
-    ...               var_name='mutation', value_name='mutdiffsel')
+    ...               var_name='mutation', value_name='mutfracsurvive')
     ...         .reset_index(drop=True)
     ...         )
-    >>> sitediffsel = mutToSiteDiffSel(mutdiffsel)
-    >>> all(sitediffsel.columns == ['site', 'abs_diffsel', 
-    ...         'positive_diffsel', 'negative_diffsel', 
-    ...         'max_diffsel', 'min_diffsel'])
+    >>> sitefracsurvive = mutToSiteFracSurvive(mutfracsurvive)
+    >>> all(sitefracsurvive.columns == ['site', 'sitefracsurvive', 
+    ...         'maxfracsurvive'])
     True
-    >>> all(sitediffsel['site'] == [1, 2, 3, 4])
+    >>> all(sitefracsurvive['site'] == [1, 2, 3, 4])
     True
-    >>> numpy.allclose(sitediffsel['abs_diffsel'], [3.6, 4.2, 0.4, 0.8])
+    >>> numpy.allclose(sitefracsurvive['sitefracsurvive'],
+    ...         [1.2, 1.0, 0.4, 0.7])
     True
-    >>> numpy.allclose(sitediffsel['positive_diffsel'], [3.2, 4.2, 0, 0.8])
-    True
-    >>> numpy.allclose(sitediffsel['negative_diffsel'], [-0.4, 0, -0.4, 0])
-    True
-    >>> numpy.allclose(sitediffsel['max_diffsel'], [3.2, 4.1, 0, 0.4])
-    True
-    >>> numpy.allclose(sitediffsel['min_diffsel'], [-0.2, 0, -0.2, 0])
+    >>> numpy.allclose(sitefracsurvive['maxfracsurvive'],
+    ...         [0.8, 0.9, 0.2, 0.4])
     True
     """
-    sitediffsel = (mutdiffsel
-                   .pivot(index='site', columns='mutation', values='mutdiffsel')
-                   .fillna(0)
-                   .assign(abs_diffsel=lambda x: x.abs().sum(axis=1),
-                           positive_diffsel=lambda x: x[x >= 0].sum(axis=1),
-                           negative_diffsel=lambda x: x[x <= 0].sum(axis=1),
-                           max_diffsel=lambda x: x.max(axis=1),
-                           min_diffsel=lambda x: x.min(axis=1),
-                          )
-                   .reset_index()
-                   [['site', 'abs_diffsel', 'positive_diffsel', 
-                    'negative_diffsel', 'max_diffsel', 'min_diffsel']]
-                   )
-    return sitediffsel
+    sitefracsurvive = (
+            mutfracsurvive
+            .pivot(index='site', columns='mutation', values='mutfracsurvive')
+            .fillna(0)
+            .assign(sitefracsurvive=lambda x: x.abs().sum(axis=1),
+                    maxfracsurvive=lambda x: x.max(axis=1),
+                    )
+            .reset_index()
+            [['site', 'sitefracsurvive', 'maxfracsurvive']]
+            )
+    return sitefracsurvive
 
 
 def avgMutDiffSel(mutdiffselfiles, avgtype):

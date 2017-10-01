@@ -66,7 +66,12 @@ More generally, the fraction of variants with mutation of :math:`r` to :math:`x`
 
    F_{r,x} = \frac{\gamma \times \rho_{r,x}^{\rm{selected}}}{\rho_{r,x}^{\rm{mock}}}.
 
-It is this quantity :math:`F_{r,x}` that is reported by :ref:`dms2_fracsurvive` / :ref:`dms2_batch_fracsurvive` as the fraction of variants with the mutation surviving the selection.
+It is this quantity :math:`F_{r,x}` that is reported by :ref:`dms2_fracsurvive` / :ref:`dms2_batch_fracsurvive` as the fraction of variants with the mutation surviving the selection (denoted as `mutfracsurvive`).
+In addition, these programs report two site-wise measures:
+
+    * The `sitefracsurvive` which is simply the sum of all `mutfracsurvive` values at a site, :math:`\sum_x F_{r,x}`.
+
+    * The `maxfracsurvive` which is simply the **maximum** `mutfracsurvive` (:math:`F_{r,x}`) value at that site.
 
 Error correction
 ++++++++++++++++++++++++
