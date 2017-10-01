@@ -164,7 +164,8 @@ def mutToSiteFracSurvive(mutfracsurvive):
     Returns:
         The dataframe `sitefracsurvive`, which has the following columns:
             - `site`
-            - `sitefracsurvive`: sum of mutfracsurvive at site
+            - `sitefracsurvive`: sum of mutfracsurvive at site (includes
+              value for wildtype)
             - `maxfracsurvive`: maximum mutfracsurvive at site
 
     >>> mutfracsurvive = (pandas.DataFrame({

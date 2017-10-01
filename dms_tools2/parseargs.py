@@ -404,8 +404,8 @@ def fracsurviveParser():
             "but for mock-selection counts.")
 
     parser.add_argument('--libfracsurvive', required=True, type=float,
-            help='Overall fraction of total library surviving the '
-            'selection versus the mock condition.')
+            help='Overall fraction of total library surviving selection '
+            'versus mock condition. Should be between 0 and 1.')
 
     parser.add_argument('--err', help="Like ``--sel`` but for "
             "error-control to correct mutation counts.")
