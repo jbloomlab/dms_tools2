@@ -653,22 +653,27 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
 
 def plotSiteDiffSel(names, diffselfiles, plotfile, 
         diffseltype, maxcol=2):
-    """Plot site differential selection along sequence.
+    """Plot site diffsel or fracsurvive along sequence.
+
+    Despite the function name, this function can be used to
+    plot either differential selection or fraction surviving.
 
     Args:
         `names` (list or series)
             Names of samples for which we plot statistics.
         `diffselfiles` (list or series)
-            ``*sitediffsel.csv`` files as created by ``dms2_diffsel``
-            or ``dms2_batch_diffsel``
+            ``*sitediffsel.csv`` files from ``dms2_diffsel`` or
+            ``*sitefracsurvive.csv`` files from ``dms2_fracsurvive``.
         `plotfile` (str)
             Name of created PDF plot file.
         `diffseltype` (str)
-            Type of differential selection to plot:
+            Type of diffsel or fracsurvive to plot:
                 - `positive`: positive sitediffsel
                 - `total`: positive and negative sitediffsel
                 - `max`: maximum mutdiffsel
                 - `minmax`: minimum and maximum mutdiffsel
+                - `sitefracsurvive`: total site fracsurvive
+                - `maxfracsurvive`: max mutfracsurvive at site
         `maxcol` (int)
             Number of columns in faceted plot.
     """
@@ -681,6 +686,7 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
             diffsels]), "diffselfiles not all for same sites"
     diffsel = pandas.concat(diffsels, ignore_index=True)
 
+    ylabel = 'differential selection'
     if diffseltype == 'positive':
         rename = {'positive_diffsel':'above'}
     elif diffseltype == 'total':
@@ -691,6 +697,9 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
     elif diffseltype == 'minmax':
         rename = {'max_diffsel':'above',
                   'min_diffsel':'below'}
+    elif diffseltype in ['sitefracsurvive', 'maxfracsurvive']:
+        ylabel = 'fraction surviving'
+        rename = {diffseltype:'above'}
     else:
         raise ValueError("invalid diffseltype {0}".format(diffseltype))
     diffsel = (diffsel.rename(columns=rename)
@@ -719,7 +728,7 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
     p = (ggplot(diffsel, aes(x='siteindex', y='diffsel', color='direction'))
             + geom_step(size=0.4)
             + xlab('site')
-            + ylab('differential selection')
+            + ylab(ylabel)
             + scale_x_continuous(breaks=xbreaks, labels=xlabels)
             + scale_color_manual(COLOR_BLIND_PALETTE)
             + guides(color=False)
