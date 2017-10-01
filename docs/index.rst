@@ -34,6 +34,7 @@ Contents
    bcsubamp
    prefs
    diffsel
+   fracsurvive
    programs
    api
    citations
