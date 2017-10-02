@@ -38,7 +38,7 @@ def main():
     filesuffixes = {
             'log':'.log',
             }
-    lineplottypes = ['site', 'max']
+    lineplottypes = ['avg', 'max']
     for pt in lineplottypes:
         filesuffixes['mean' + pt] = '_mean{0}fracsurvive.pdf'.format(pt)
         filesuffixes['median' + pt] = '_median{0}fracsurvive.pdf'.format(pt)
@@ -81,7 +81,7 @@ def main():
 
         # add more expected output files based on group
         for (g, gprefix) in zip(groups, groupprefixes):
-            for seltype in ['mutfracsurvive', 'sitefracsurvive',
+            for seltype in ['mutfracsurvive', 'avgfracsurvive',
                     'maxfracsurvive']:
                 filesuffixes[g + seltype + 'corr'] = '_{0}{1}corr.pdf'.format(
                         gprefix, seltype)
@@ -174,7 +174,7 @@ def main():
                     "{0} samples{1}.".format(len(samples),
                     {True:'', False:' in group {0}'.format(g)}[g == '']))
 
-            for datatype in ['mutfracsurvive', 'sitefracsurvive',
+            for datatype in ['mutfracsurvive', 'avgfracsurvive',
                     'maxfracsurvive']:
                 if len(samples) <= 1:
                     continue
@@ -199,7 +199,7 @@ def main():
                 logger.info("Writing {0} sitefracsurvive to {1}"
                         .format(avgtype, f))
                 (dms_tools2.fracsurvive.mutToSiteFracSurvive(avgmutfracsurvive)
-                        .sort_values('sitefracsurvive', ascending=False)
+                        .sort_values('avgfracsurvive', ascending=False)
                         .to_csv(f, index=False)
                         )
                 avgsitefracsurvive[avgtype].append(f)

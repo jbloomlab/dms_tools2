@@ -580,7 +580,7 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
         df.columns = df.columns.get_level_values(1)
 
     elif datatype in ['abs_diffsel', 'positive_diffsel', 'max_diffsel',
-            'sitefracsurvive', 'maxfracsurvive']:
+            'avgfracsurvive', 'maxfracsurvive']:
         site_df = [pandas.read_csv(f)
                          .assign(name=name)
                          .sort_values('site')
@@ -625,7 +625,7 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
             p.axes[i, j].set_visible(False)
 
     elif datatype in ['mutdiffsel', 'abs_diffsel', 'positive_diffsel',
-            'max_diffsel', 'mutfracsurvive', 'sitefracsurvive',
+            'max_diffsel', 'mutfracsurvive', 'avgfracsurvive',
             'maxfracsurvive']:
 
         p.map_diag(seaborn.distplot, color='black', kde=True, hist=False)
@@ -672,7 +672,7 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
                 - `total`: positive and negative sitediffsel
                 - `max`: maximum mutdiffsel
                 - `minmax`: minimum and maximum mutdiffsel
-                - `sitefracsurvive`: total site fracsurvive
+                - `avgfracsurvive`: total site fracsurvive
                 - `maxfracsurvive`: max mutfracsurvive at site
         `maxcol` (int)
             Number of columns in faceted plot.
@@ -697,7 +697,7 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
     elif diffseltype == 'minmax':
         rename = {'max_diffsel':'above',
                   'min_diffsel':'below'}
-    elif diffseltype in ['sitefracsurvive', 'maxfracsurvive']:
+    elif diffseltype in ['avgfracsurvive', 'maxfracsurvive']:
         ylabel = 'fraction surviving'
         rename = {diffseltype:'above'}
     else:

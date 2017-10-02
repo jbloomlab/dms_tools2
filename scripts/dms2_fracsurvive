@@ -115,8 +115,8 @@ def main():
         logger.info("Computing sitefracsurvive...")
         sitefracsurvive = (dms_tools2.fracsurvive.mutToSiteFracSurvive(
                                 mutfracsurvive)
-                       .sort_values('sitefracsurvive', ascending=False))
-        logger.info("Sites with largest sitefracsurvive:\n{0}\n"
+                       .sort_values('avgfracsurvive', ascending=False))
+        logger.info("Sites with largest avgfracsurvive:\n{0}\n"
                 .format(sitefracsurvive.head(10).to_string(index=False,
                 float_format='{:.2f}'.format)))
         logger.info("Writing to {0}".format(files['sitefracsurvive']))

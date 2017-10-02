@@ -164,44 +164,49 @@ def mutToSiteFracSurvive(mutfracsurvive):
     Returns:
         The dataframe `sitefracsurvive`, which has the following columns:
             - `site`
-            - `sitefracsurvive`: sum of mutfracsurvive at site (includes
-              value for wildtype)
+            - `avgfracsurvive`: avg mutfracsurvive over non-wildtype chars 
             - `maxfracsurvive`: maximum mutfracsurvive at site
+
+        Mutations for which mutfracsurvive is `NaN` are ignored,
+        and the site values are also `NaN` if all mutation values
+        are `NaN` for that site.
 
     >>> mutfracsurvive = (pandas.DataFrame({
     ...         'site':[1, 2, 3, 4],
-    ...         'wildtype':['A', 'C', 'C', 'A'],
-    ...         'A':[numpy.nan, 0.9, 0.1, numpy.nan],
-    ...         'C':[0.2, numpy.nan, numpy.nan, 0.3],
-    ...         'G':[0.8, 0.1, 0.2, 0.0],
-    ...         'T':[0.2, 0.0, 0.1, 0.4],
+    ...         'wildtype':['A', 'G', 'C', 'G'],
+    ...         'A':[numpy.nan, 0.6, 0.1, numpy.nan],
+    ...         'C':[0.2, numpy.nan, numpy.nan, numpy.nan],
+    ...         'G':[0.8, 0.9, 0.2, 0.1],
+    ...         'T':[0.2, 0.0, 0.3, numpy.nan],
     ...         })
     ...         .melt(id_vars=['site', 'wildtype'],
     ...               var_name='mutation', value_name='mutfracsurvive')
     ...         .reset_index(drop=True)
     ...         )
     >>> sitefracsurvive = mutToSiteFracSurvive(mutfracsurvive)
-    >>> all(sitefracsurvive.columns == ['site', 'sitefracsurvive', 
+    >>> all(sitefracsurvive.columns == ['site', 'avgfracsurvive',
     ...         'maxfracsurvive'])
     True
     >>> all(sitefracsurvive['site'] == [1, 2, 3, 4])
     True
-    >>> numpy.allclose(sitefracsurvive['sitefracsurvive'],
-    ...         [1.2, 1.0, 0.4, 0.7])
+    >>> numpy.allclose(sitefracsurvive['avgfracsurvive'],
+    ...         [0.4, 0.3, 0.2, numpy.nan], equal_nan=True)
     True
     >>> numpy.allclose(sitefracsurvive['maxfracsurvive'],
-    ...         [0.8, 0.9, 0.2, 0.4])
+    ...         [0.8, 0.6, 0.3, numpy.nan], equal_nan=True)
     True
     """
     sitefracsurvive = (
             mutfracsurvive
+            .assign(mutfracsurvive=lambda x: x['mutfracsurvive'].where(
+                    x['mutation'] != x['wildtype'], numpy.nan))
             .pivot(index='site', columns='mutation', values='mutfracsurvive')
-            .fillna(0)
-            .assign(sitefracsurvive=lambda x: x.abs().sum(axis=1),
+            .assign(avgfracsurvive=lambda x: x.abs().sum(axis=1, skipna=True)
+                            / x.count(axis=1),
                     maxfracsurvive=lambda x: x.max(axis=1),
                     )
             .reset_index()
-            [['site', 'sitefracsurvive', 'maxfracsurvive']]
+            [['site', 'avgfracsurvive', 'maxfracsurvive']]
             )
     return sitefracsurvive
 

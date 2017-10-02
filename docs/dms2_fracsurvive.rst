@@ -55,7 +55,7 @@ Mutation fraction surviving file
 This file has the suffix ``_mutfracsurvive.csv``.
 It gives the fraction surviving for each mutation at each site, which is the :math:`F_{r,x}` value defined in Equation :eq:`fracsurvive` of the :ref:`fracsurvive` section.
 Note that the quantity is calculated for the wildtype as well as the mutant characters at each site.
-If ``--mincounts`` is greater than zero, the fraction surviving may be undefined for some mutations due to low counts, and any such undefined values are also shown as ``NaN``.
+If ``--mincounts`` is greater than zero, the fraction surviving may be undefined for some mutations due to low counts, and any such undefined values are also shown as `NaN`.
 
 Here are the first and last few lines of a ``_mutfracsurvive.csv`` file::
 
@@ -80,14 +80,13 @@ All values in the ``_sitefracsurvive.csv`` file can be calculated from the value
 
 Specifically, it gives the following quantities:
 
-* ``sitefracsurvive`` is the sum of all of the mutation fraction surviving values (:math:`F_{r,x}` values defined by Equation :eq:`fracsurvive` of the :ref:`fracsurvive` section) for each site. Note that this sum includes the value for the wildtype character.
+* `avgfracsurvive` is the average of the mutation fraction surviving values (:math:`F_{r,x}` values defined by Equation :eq:`fracsurvive` of the :ref:`fracsurvive` section) taken over all **non**-wildtype characters for each site. If any of the mutation fraction suriving values are `NaN` (which can happen if you use ``--mincounts``), they are **not** included in this average.
 
-* ``maxfracsurvive`` is the **maximum** mutation fraction surviving (:math:`F_{r,x}` value) at a site.
-
+* `maxfracsurvive` is the **maximum** mutation fraction surviving (:math:`F_{r,x}` value) taken over all **non**-wildtype characters for each site.
 
 Here are the first and last lines of a ``_sitefracsurvive.csv`` file::
 
-    site,sitefracsurvive,maxfracsurvive
+    site,avgfracsurvive,maxfracsurvive
     153,5.418102358336695,0.54440652255242
     157,4.823831784374435,0.5933429890043687
     136,3.145572238866535,0.33671209426557835
@@ -98,6 +97,6 @@ Here are the first and last lines of a ``_sitefracsurvive.csv`` file::
     176,0.2265131458408955,0.02157678717020969
     175,0.17997158991931006,0.027496593984557578
 
-If all mutations at a site have a mutation fraction surviving of ``NaN`` (which can be the case if ``--mincounts`` is > 0), then the site values are reported as 0.
+If all mutations at a site have a mutation fraction surviving of `NaN` (which can be the case if ``--mincounts`` is > 0), then the site values are reported as `NaN`.
 
 .. include:: weblinks.txt

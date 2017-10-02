@@ -55,7 +55,8 @@ class TestFracSurvive(unittest.TestCase):
 
             for (suffix, columntotest) in [
                     ('_mutfracsurvive.csv', 'mutfracsurvive'),
-                    ('_sitefracsurvive.csv', 'sitefracsurvive')
+                    ('_sitefracsurvive.csv', 'avgfracsurvive'),
+                    ('_sitefracsurvive.csv', 'maxfracsurvive'),
                     ]:
                 f = os.path.join(self.testdir, name + suffix)
                 self.assertTrue(os.path.isfile(f))

@@ -69,11 +69,13 @@ More generally, the fraction of variants with mutation of :math:`r` to :math:`x`
 
 It is this quantity :math:`F_{r,x}` that is reported by :ref:`dms2_fracsurvive` / :ref:`dms2_batch_fracsurvive` as the fraction of variants with the mutation surviving the selection (denoted as `mutfracsurvive`).
 Note that this quantity is calculated for the wildtype character at each site as well as all mutant characters.
-In addition, these programs report two site-wise measures:
 
-    * The `sitefracsurvive` which is simply the sum of all `mutfracsurvive` values at a site, :math:`\sum_x F_{r,x}`. Includes the value for the wildtype character at the site.
+In addition, these programs report two site-wise measures.
+These measures are calculated over all **non**-wildtype characters at each site:
 
-    * The `maxfracsurvive` which is simply the **maximum** `mutfracsurvive` (:math:`F_{r,x}`) value at that site.
+    * The `avgfracsurvive` which is simply the average over all non-wildtype characters of the `mutfracsurvive` values at a site. If some `mutfracsurvive` values are `NaN` (which can happen if you use the ``--mincounts`` option), they are **not** included in the average.
+
+    * The `maxfracsurvive` which is simply the **maximum** `mutfracsurvive` over all non-wildtype characters at a site.
 
 Error correction
 ++++++++++++++++++++++++
