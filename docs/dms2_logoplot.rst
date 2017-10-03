@@ -18,6 +18,8 @@ An example of the type of plot created for :ref:`prefs` is shown in the `Doud201
 If you run it using ``--diffsel`` to specify the input file, then the plot will visualize :ref:`diffsel`.
 An example of the type of plot created for :ref:`diffsel` is shown in the `Doud2017 example`_.
 
+If you run it using ``--fracsurvive`` to specify the input file, then the plot will visualize the :ref:`fracsurvive` for each mutation.
+
 .. _logoplot_commandlineusage:
 
 Command-line usage
@@ -43,6 +45,8 @@ An example of such a logo plot is in the `Doud2016 example`_.
 
 If you run with ``--diffsel``, then the logo plot will be a file with the suffix ``_diffsel.pdf``.
 An example of such a logo plot is in the `Doud2017 example`_.
+
+If you run with ``--fracsurvive``, then the logo plot will be a file with the suffix ``_fracsurvive.pdf``.
 
 
 .. include:: weblinks.txt

@@ -477,6 +477,8 @@ def logoplotParser():
     group.add_argument('--prefs', help='CSV file of amino-acid preferences.')
     group.add_argument('--diffsel', help='CSV file of amino-acid '
             'differential selection.')
+    group.add_argument('--fracsurvive', help='CSV file of amino-acid '
+            'fraction surviving.')
 
     parser.add_argument('--name', required=True, 
             help='Name used for output files.')
@@ -500,8 +502,12 @@ def logoplotParser():
 
     parser.add_argument('--diffselrange', nargs=2, type=float,
             metavar=('MINDIFFSEL', 'MAXDIFFSEL'), 
-            help='Specify a fixed range for diffsel. Otherwise '
+            help='Specify a fixed range for `diffsel`. Otherwise '
             'determined from data range.')
+
+    parser.add_argument('--fracsurvivemax', type=float,
+            help='Specify maximum value for `fracsurvive`. '
+            'Otherwise determined from data range.')
 
     parser.add_argument('--sortsites', choices=['yes', 'no'],
             default='yes', help='Sort sites from first to last '
