@@ -5,6 +5,8 @@ Change Log
 ------
 * Added programs and docs for `fracsurvive`.
 
+* Added ``--scalebar`` to ``dms2_logoplot``
+
 2.0.dev2
 -----
 * Standardized color scheme in ``*_cumulmutcounts.pdf`` plot.

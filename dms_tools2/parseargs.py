@@ -543,6 +543,11 @@ def logoplotParser():
     parser.add_argument('--underlay', default='no', choices=['yes', 'no'],
             help='Plot underlay rather than overlay bars.')
 
+    parser.add_argument('--scalebar', default=None, nargs=2,
+            metavar=('BARHEIGHT', 'LABEL'), help='Plot a scale bar '
+            'indicating BARHEIGHT with LABEL. Only for `diffsel` and '
+            '`fracsurvive`.')
+
     parser.add_argument('--overlaycolormap', default='jet', help="`matplotlib "
             "color map <http://matplotlib.org/users/colormaps.html>`_ for"
             " overlay bars (e.g., 'jet' or 'YlOrRd').")

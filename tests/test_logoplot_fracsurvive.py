@@ -15,6 +15,8 @@ import pandas
 class test_logoplot_fracsurvive(unittest.TestCase):
     """Runs ``dms2_logoplot`` with fracsurvive as input."""
 
+    OVERLAY = True
+
     def setUp(self):
         """Set up input data."""
 
@@ -28,7 +30,19 @@ class test_logoplot_fracsurvive(unittest.TestCase):
                 os.path.abspath(os.path.dirname(__file__)),
                 './logoplot_input_files/')
 
-        self.name = 'fracsurvive'
+        if self.OVERLAY:
+            self.name = 'fracsurvive'
+            self.overlay = [
+                    '--overlay1',
+                    os.path.join(self.indir, 'HA_fracsurvive.csv'),
+                    'wildtype', 'wildtype',
+                    '--overlay2',
+                    os.path.join(self.indir, 'diffsel_overlay.csv'),
+                    'esc', 'known escape mutation'
+                    ]
+        else:
+            self.name = 'fracsurvive-no-overlay'
+            self.overlay = []
 
         # define output files
         self.outfiles = [os.path.join(self.testdir, 
@@ -39,6 +53,7 @@ class test_logoplot_fracsurvive(unittest.TestCase):
             if os.path.isfile(f):
                 os.remove(f)
 
+
     def test_logoplot_fracsurvive(self):
         """Run ``dms2_logoplot`` with fracsurvive as input."""
 
@@ -47,18 +62,21 @@ class test_logoplot_fracsurvive(unittest.TestCase):
                 '--name', self.name,
                 '--fracsurvive', os.path.join(self.indir, 'HA_fracsurvive.csv'),
                 '--outdir', self.testdir,
-                '--overlay1', os.path.join(self.indir, 'HA_fracsurvive.csv'),
-                        'wildtype', 'wildtype',
-                '--overlay2', os.path.join(self.indir, 'diffsel_overlay.csv'),
-                        'esc', 'known escape mutation',
                 '--sepline', 'no',
                 '--underlay', 'yes',
-                '--nperline', '90',
-                '--fracsurvivemax', '10',
-                ])
+                '--nperline', '120',
+                '--fracsurvivemax', '5',
+                '--scalebar', '1', 'fraction surviving = 1',
+                ] + self.overlay)
 
         for f in self.outfiles:
             self.assertTrue(os.path.isfile(f), "did not create {0}".format(f))
+
+
+class test_logoplot_fracsurvive_no_overlay(test_logoplot_fracsurvive):
+    """Runs ``dms2_logoplot`` with fracsurvive as input and no overlay."""
+    OVERLAY = False
+
 
 
 if __name__ == '__main__':
