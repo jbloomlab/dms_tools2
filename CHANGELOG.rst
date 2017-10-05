@@ -5,6 +5,8 @@ Change Log
 -----
 * Standardized color scheme in ``*_cumulmutcounts.pdf`` plot.
 
+* Ensure naturally sorted average prefs from ``dms2_batch_prefs``.
+
 2.0.1
 ------
 * A few packaging changes for PyPI
