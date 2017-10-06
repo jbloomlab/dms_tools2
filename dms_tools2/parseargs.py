@@ -165,6 +165,10 @@ def bcsubampParentParser():
             help=('Only call consensus identity for barcode when >= '
             'this fraction of reads concur.'))
 
+    parser.add_argument('--sitemask', help='Use to only consider '
+            'mutations at a subset of sites. Should be a CSV file '
+            'with column named `site` listing all sites to include.')
+
     parser.add_argument('--purgeread', type=float, default=0,
             help=("Randomly purge read pairs with this probability "
             "to subsample data."))

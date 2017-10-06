@@ -7,9 +7,13 @@ Change Log
 
 * Added ``--scalebar`` to ``dms2_logoplot``
 
-2.0.dev2
------
+2.0.2
+------
+* Added ``--sitemask`` option to ``dms2_bcsubamp`` / ``dms2_batch_bcsubamp``.
+
 * Standardized color scheme in ``*_cumulmutcounts.pdf`` plot.
+
+* Ensure naturally sorted average prefs from ``dms2_batch_prefs``.
 
 2.0.1
 ------

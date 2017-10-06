@@ -16,6 +16,7 @@ import math
 import tempfile
 import pickle
 import random
+import natsort
 import numpy
 import numpy.random
 import pandas
@@ -803,23 +804,23 @@ def avgPrefs(prefsfiles):
     >>> tf2 = tempfile.NamedTemporaryFile
     >>> with tf1(mode='w') as file1, tf2(mode='w') as file2:
     ...     x = file1.write('site,A,C,G,T\\n'
-    ...                 '1,0.2,0.2,0.5,0.1\\n'
-    ...                 '2,0.3,0.3,0.3,0.1')
+    ...                 '10,0.2,0.2,0.5,0.1\\n'
+    ...                 '2a,0.3,0.3,0.3,0.1')
     ...     file1.flush()
     ...     x = file2.write('site,A,C,G,T\\n'
-    ...                 '1,0.4,0.1,0.1,0.4\\n'
-    ...                 '2,0.3,0.4,0.1,0.2')
+    ...                 '10,0.4,0.1,0.1,0.4\\n'
+    ...                 '2a,0.3,0.4,0.1,0.2')
     ...     file2.flush()
     ...     avg = avgPrefs([file1.name, file2.name])
-    >>> (avg['site'] == [1, 2]).all()
+    >>> (avg['site'] == ['2a', '10']).all()
     True
     >>> numpy.allclose(avg['A'], [0.3, 0.3])
     True
-    >>> numpy.allclose(avg['C'], [0.15, 0.35])
+    >>> numpy.allclose(avg['C'], [0.35, 0.15])
     True
-    >>> numpy.allclose(avg['G'], [0.3, 0.2])
+    >>> numpy.allclose(avg['G'], [0.2, 0.3])
     True
-    >>> numpy.allclose(avg['T'], [0.25, 0.15])
+    >>> numpy.allclose(avg['T'], [0.15, 0.25])
     True
     """
     assert len(prefsfiles) >= 1
@@ -832,7 +833,13 @@ def avgPrefs(prefsfiles):
         assert set(cols) == set(prefs[i].columns)
         prefs[i] = prefs[i][cols]
 
-    return pandas.concat(prefs).groupby('site').mean().reset_index()
+    avgprefs = pandas.concat(prefs).groupby('site').mean().reset_index()
+
+    # natural sort by site: https://stackoverflow.com/a/29582718
+    avgprefs = avgprefs.reindex(index=natsort.order_by_index(avgprefs.index,
+            natsort.index_natsorted(avgprefs.site)))
+
+    return avgprefs
 
 
 def prefsEntropy(prefs, charlist):
