@@ -5,7 +5,9 @@ Change Log
 ------
 * Added programs and docs for `fracsurvive`.
 
-* Added ``--scalebar`` to ``dms2_logoplot``
+* Added ``--scalebar`` to ``dms2_logoplot``.
+
+* Preserve group order for faceted plots by batch programs.
 
 2.0.2
 ------

@@ -161,7 +161,7 @@ def main():
                             "{1}:\n{2}".format(f, flog, ''.join(lines[-25 : ])))
 
         # summarize for each group
-        groups = natsort.natsorted(set(batchruns['group']))
+        groups = batchruns['group'].unique()
         groupprefixes = ['{0}{1}'.format(g, {True:'', False:'-'}[g == ''])
                 for g in groups]
 

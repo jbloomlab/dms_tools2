@@ -68,8 +68,8 @@ class test_batch_fracsurvive(unittest.TestCase):
                   str(gamma),
                   ) 
                  for r in [1, 2, 3]
-                 for (antibody, gamma) in [
-                    ('H17L19-c1', 0.021), ('H17L19-c3', 0.003)]
+                 for (antibody, gamma) in reversed([
+                    ('H17L19-c1', 0.021), ('H17L19-c3', 0.003)])
                 ],
                 columns=['group', 'name', 'sel', 'mock', 'err', 
                     'libfracsurvive']
