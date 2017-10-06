@@ -1,7 +1,7 @@
 Change Log
 ===========
 
-2.0.dev2
+2.0.2
 -----
 * Added ``--sitemask`` option to ``dms2_bcsubamp`` / ``dms2_batch_bcsubamp``.
 
