@@ -15,7 +15,8 @@ from dms_tools2 import CODONS, CODON_TO_AA
 
 
 def computeMutFracSurvive(libfracsurvive, sel, mock, countcharacters,
-        pseudocount, translate_to_aa, err=None, mincount=0):
+        pseudocount, translate_to_aa, err=None, mincount=0,
+        aboveavg=False):
     """Compute fraction surviving for each mutation.
 
     Args:
@@ -40,6 +41,10 @@ def computeMutFracSurvive(libfracsurvive, sel, mock, countcharacters,
         `mincount` (int >= 0)
             Report as `NaN` the mutfracsurvive for any mutation where 
             neither `sel` nor `mock` has at least this many counts.
+        `aboveavg` (bool)
+            If `True`, compute the fraction suriviving 
+            **above the library average** by subtracting off 
+            `libfracsurvive` and then setting any negative values to 0.
 
     Returns:
         A `pandas.DataFrame` with the fraction surviving for each mutation.
@@ -69,6 +74,15 @@ def computeMutFracSurvive(libfracsurvive, sel, mock, countcharacters,
     True
     >>> numpy.allclose(mutfracsurvive.query('site == 2')['mutfracsurvive'],
     ...         [0.1, 0.05, 0.2, 0.1])
+    True
+    >>> mutfracsurvive_above = computeMutFracSurvive(libfracsurvive,
+    ...         sel, mock, countchars, pseudocount, False, aboveavg=True)
+    >>> all(mutfracsurvive['site'] == mutfracsurvive_above['site'])
+    True
+    >>> all(mutfracsurvive['mutation'] == mutfracsurvive_above['mutation'])
+    True
+    >>> numpy.allclose(mutfracsurvive_above.query('site == 1')
+    ...         ['mutfracsurvive'], [0.1, 0, 0, 0])
     True
     """
     assert pseudocount > 0
@@ -150,6 +164,12 @@ def computeMutFracSurvive(libfracsurvive, sel, mock, countcharacters,
             (m['nselP'] / m['NselP']) / (m['nmockP'] / m['NmockP'])
             ).where((m['nsel'] >= mincount) | (m['nmock'] >= mincount),
                     numpy.nan)
+
+    if aboveavg:
+        m['mutfracsurvive'] = (
+                (m['mutfracsurvive'] - libfracsurvive)
+                .clip(lower=0)
+                )
 
     return m[['site', 'wildtype', 'mutation', 'mutfracsurvive']]
 

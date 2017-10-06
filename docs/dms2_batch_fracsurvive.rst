@@ -17,7 +17,7 @@ All other arguments are specified using the normal option syntax (e.g., ``--indi
 The result is the output for each individual run of :ref:`dms2_fracsurvive` plus the summary plots described in `Output files`_.
 It then creates the summary plots described in `Output files`_.
 
-Because ``dms2_batch_fracsurvive`` simply runs ``dms2_fracsurvive`` on each sample specified by the ``--batchfile`` argument described below, see the ``dms2_fracsurvive`` :ref:`fracsurvive_commandlineusage` for details that are helpful for understanding some of the arguments in the ``dms2_batch_fracsurvive`` :ref:`batch_fracsurvive_commandlineusage` below.
+Because ``dms2_batch_fracsurvive`` simply runs :ref:`dms2_fracsurvive` on each sample specified by the ``--batchfile`` argument described below, see the :ref:`dms2_fracsurvive` :ref:`fracsurvive_commandlineusage` for details that are helpful for understanding some of the arguments in the ``dms2_batch_fracsurvive`` :ref:`batch_fracsurvive_commandlineusage` below.
 
 .. _batch_fracsurvive_commandlineusage:
 

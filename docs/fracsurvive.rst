@@ -95,6 +95,27 @@ These measures are calculated over all **non**-wildtype characters at each site:
 
     * The `maxfracsurvive` which is simply the **maximum** `mutfracsurvive` over all non-wildtype characters at a site.
 
+Fraction surviving above average
+++++++++++++++++++++++++++++++++++
+In the section above, :math:`F_{r,x}` is defined in Equation :eq:`fracsurvive` as the fraction of variants that survive given that they have the mutation of site :math:`r` to :math:`x`.
+Note also that :math:`\gamma` is the total fraction of the library that survives selection, or equivalently the average fraction that survives weighted over the variant frequencies.
+
+In some cases, it is more useful to show that average fraction of variants that survive **above this library average.**
+To do this, we calculate the average fraction that survives above average as
+
+.. math::
+  :label: fracsurviveaboveavg
+
+  F_{r,x}^{\rm{aboveavg}} = \max\left(0, F_{r,x} - \gamma\right).
+
+If you call :ref:`dms2_fracsurvive` or :ref:`dms2_batch_fracsurvive` with the ``--aboveavg yes`` option then all results use these :math:`F_{r,x}^{\rm{aboveavg}}` in place of :math:`F_{r,x}` values.
+
+The distinction is as follows.
+If you want your results to reflect the average fraction of variants with each mutation that survive, then use the default ``--aboveavg no`` option.
+In this case, you expect the fraction surviving to be > 0 for most variants, since a bit of your library probably gets through the selection even without an advantageous mutation.
+On the other hand, if you just want to look for mutations that are enhancing how variants perform above the average, then use the ``--aboveavg yes`` option.
+Then you only see fraction surviving > 0 for variants that are favored during the selection -- but the quantitative values of this fraction surviving are no longer directly interpretable as the true fraction surviving, since they are in reference to the library average baseline.
+
 Error correction
 ++++++++++++++++++++++++
 You can optionally correct for the potential inflation of some counts by sequencing errors by using the ``--err`` option to :ref:`dms2_fracsurvive` / :ref:`dms2_batch_fracsurvive`.

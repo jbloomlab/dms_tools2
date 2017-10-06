@@ -456,6 +456,10 @@ def fracsurviveParentParser():
             "fraction surviving selection is estimated. `codon_to_aa` ="
             " amino acids from codon counts.")
 
+    parser.add_argument('--aboveavg', default='no', choices=['yes', 'no'],
+            help="Report fracsurvive **above** the library average "
+            "rather than direct fracsurvive values.")
+
     parser.add_argument('--excludestop', default='yes', choices=['yes', 'no'],
             help="Exclude stop codons as a possible amino acid?")
 

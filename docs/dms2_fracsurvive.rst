@@ -55,6 +55,7 @@ Mutation fraction surviving file
 This file has the suffix ``_mutfracsurvive.csv``.
 It gives the fraction surviving for each mutation at each site, which is the :math:`F_{r,x}` value defined in Equation :eq:`fracsurvive` of the :ref:`fracsurvive` section.
 Note that the quantity is calculated for the wildtype as well as the mutant characters at each site.
+Note also that if you are using ``--aboveavg yes`` then these are the fraction surviving **above the library average**, denoted as :math:`F_{r,x}^{\rm{aboveavg}}` in Equation :eq:`fracsurviveaboveavg` of the :ref:`fracsurvive` section.
 If ``--mincounts`` is greater than zero, the fraction surviving may be undefined for some mutations due to low counts, and any such undefined values are also shown as `NaN`.
 
 Here are the first and last few lines of a ``_mutfracsurvive.csv`` file::
@@ -80,9 +81,9 @@ All values in the ``_sitefracsurvive.csv`` file can be calculated from the value
 
 Specifically, it gives the following quantities:
 
-* `avgfracsurvive` is the average of the mutation fraction surviving values (:math:`F_{r,x}` values defined by Equation :eq:`fracsurvive` of the :ref:`fracsurvive` section) taken over all **non**-wildtype characters for each site. If any of the mutation fraction suriving values are `NaN` (which can happen if you use ``--mincounts``), they are **not** included in this average.
+* `avgfracsurvive` is the average of the mutation fraction surviving values. If any of the mutation fraction surviving values are `NaN` (which can happen if you use ``--mincounts``), they are **not** included in this average.
 
-* `maxfracsurvive` is the **maximum** mutation fraction surviving (:math:`F_{r,x}` value) taken over all **non**-wildtype characters for each site.
+* `maxfracsurvive` is the **maximum** mutation fraction surviving taken over all **non**-wildtype characters for each site.
 
 Here are the first and last lines of a ``_sitefracsurvive.csv`` file::
 

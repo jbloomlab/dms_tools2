@@ -96,10 +96,18 @@ def main():
             counts[arg] = pandas.read_csv(fname)
 
         logger.info("Computing fracsurvive for each mutation...")
+        if args['aboveavg'] == 'yes':
+            logger.info('These are the fracsurvive **above** the library '
+                    'average of {0}'.format(libfracsurvive))
+            aboveavg = True
+        elif args['aboveavg'] == 'no':
+            aboveavg = False
+        else:
+            raise ValueError("Invalid aboveavg {0}".format(args['aboveavg']))
         mutfracsurvive = dms_tools2.fracsurvive.computeMutFracSurvive(
                 libfracsurvive, counts['sel'], counts['mock'], countchars,
                 args['pseudocount'], translate_to_aa, counts['err'],
-                args['mincount'])
+                args['mincount'], aboveavg=aboveavg)
         if args['excludestop'] == 'yes':
             mutfracsurvive = mutfracsurvive.query(
                     '(mutation != "*") & (wildtype != "*")')
