@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.prefs &#8212; dms_tools2 2.0.dev2 documentation</title>
+    <title>dms_tools2.prefs &#8212; dms_tools2 2.0.2 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.0.dev2',
+        VERSION:     '2.0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -58,6 +58,7 @@
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">pickle</span>
 <span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">natsort</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">numpy.random</span>
 <span class="kn">import</span> <span class="nn">pandas</span>
@@ -845,23 +846,23 @@
 <span class="sd">    &gt;&gt;&gt; tf2 = tempfile.NamedTemporaryFile</span>
 <span class="sd">    &gt;&gt;&gt; with tf1(mode=&#39;w&#39;) as file1, tf2(mode=&#39;w&#39;) as file2:</span>
 <span class="sd">    ...     x = file1.write(&#39;site,A,C,G,T\\n&#39;</span>
-<span class="sd">    ...                 &#39;1,0.2,0.2,0.5,0.1\\n&#39;</span>
-<span class="sd">    ...                 &#39;2,0.3,0.3,0.3,0.1&#39;)</span>
+<span class="sd">    ...                 &#39;10,0.2,0.2,0.5,0.1\\n&#39;</span>
+<span class="sd">    ...                 &#39;2a,0.3,0.3,0.3,0.1&#39;)</span>
 <span class="sd">    ...     file1.flush()</span>
 <span class="sd">    ...     x = file2.write(&#39;site,A,C,G,T\\n&#39;</span>
-<span class="sd">    ...                 &#39;1,0.4,0.1,0.1,0.4\\n&#39;</span>
-<span class="sd">    ...                 &#39;2,0.3,0.4,0.1,0.2&#39;)</span>
+<span class="sd">    ...                 &#39;10,0.4,0.1,0.1,0.4\\n&#39;</span>
+<span class="sd">    ...                 &#39;2a,0.3,0.4,0.1,0.2&#39;)</span>
 <span class="sd">    ...     file2.flush()</span>
 <span class="sd">    ...     avg = avgPrefs([file1.name, file2.name])</span>
-<span class="sd">    &gt;&gt;&gt; (avg[&#39;site&#39;] == [1, 2]).all()</span>
+<span class="sd">    &gt;&gt;&gt; (avg[&#39;site&#39;] == [&#39;2a&#39;, &#39;10&#39;]).all()</span>
 <span class="sd">    True</span>
 <span class="sd">    &gt;&gt;&gt; numpy.allclose(avg[&#39;A&#39;], [0.3, 0.3])</span>
 <span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; numpy.allclose(avg[&#39;C&#39;], [0.15, 0.35])</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(avg[&#39;C&#39;], [0.35, 0.15])</span>
 <span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; numpy.allclose(avg[&#39;G&#39;], [0.3, 0.2])</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(avg[&#39;G&#39;], [0.2, 0.3])</span>
 <span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; numpy.allclose(avg[&#39;T&#39;], [0.25, 0.15])</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(avg[&#39;T&#39;], [0.15, 0.25])</span>
 <span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">prefsfiles</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span>
@@ -874,7 +875,13 @@
         <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">prefs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
         <span class="n">prefs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">prefs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">cols</span><span class="p">]</span>
 
-    <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">prefs</span><span class="p">)</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span></div>
+    <span class="n">avgprefs</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">prefs</span><span class="p">)</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+
+    <span class="c1"># natural sort by site: https://stackoverflow.com/a/29582718</span>
+    <span class="n">avgprefs</span> <span class="o">=</span> <span class="n">avgprefs</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">natsort</span><span class="o">.</span><span class="n">order_by_index</span><span class="p">(</span><span class="n">avgprefs</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+            <span class="n">natsort</span><span class="o">.</span><span class="n">index_natsorted</span><span class="p">(</span><span class="n">avgprefs</span><span class="o">.</span><span class="n">site</span><span class="p">)))</span>
+
+    <span class="k">return</span> <span class="n">avgprefs</span></div>
 
 
 <div class="viewcode-block" id="prefsEntropy"><a class="viewcode-back" href="../../dms_tools2.prefs.html#dms_tools2.prefs.prefsEntropy">[docs]</a><span class="k">def</span> <span class="nf">prefsEntropy</span><span class="p">(</span><span class="n">prefs</span><span class="p">,</span> <span class="n">charlist</span><span class="p">):</span>

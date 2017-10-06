@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.parseargs &#8212; dms_tools2 2.0.dev2 documentation</title>
+    <title>dms_tools2.parseargs &#8212; dms_tools2 2.0.2 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.0.dev2',
+        VERSION:     '2.0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -206,6 +206,10 @@
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--minconcur&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
             <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Only call consensus identity for barcode when &gt;= &#39;</span>
             <span class="s1">&#39;this fraction of reads concur.&#39;</span><span class="p">))</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--sitemask&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Use to only consider &#39;</span>
+            <span class="s1">&#39;mutations at a subset of sites. Should be a CSV file &#39;</span>
+            <span class="s1">&#39;with column named `site` listing all sites to include.&#39;</span><span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--purgeread&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
             <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Randomly purge read pairs with this probability &quot;</span>
