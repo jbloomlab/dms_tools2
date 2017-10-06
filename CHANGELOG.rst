@@ -7,7 +7,7 @@ Change Log
 
 * Added ``--scalebar`` to ``dms2_logoplot``.
 
-* Preserve group order for faceted plots by batch programs.
+* Add `grouplabel` option and preserve group order for faceted plots by batch programs.
 
 2.0.2
 ------

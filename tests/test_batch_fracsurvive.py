@@ -66,13 +66,15 @@ class test_batch_fracsurvive(unittest.TestCase):
                   'mock-{0}'.format(r),
                   'err-ctrl',
                   str(gamma),
+                  antibodylabel
                   ) 
                  for r in [1, 2, 3]
-                 for (antibody, gamma) in reversed([
-                    ('H17L19-c1', 0.021), ('H17L19-c3', 0.003)])
+                 for (antibody, gamma, antibodylabel) in reversed([
+                    ('H17L19-c1', 0.021, 'H17L19 1 $\mu$g/ml'), 
+                    ('H17L19-c3', 0.003, 'H17L19 10 $\mu$g/ml')])
                 ],
                 columns=['group', 'name', 'sel', 'mock', 'err', 
-                    'libfracsurvive']
+                    'libfracsurvive', 'grouplabel']
                 )
         df.to_csv(batchfile, index=False)
 

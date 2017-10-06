@@ -205,13 +205,19 @@ def main():
                 avgsitefracsurvive[avgtype].append(f)
 
         # plots of fracsurvive for all groups
+        if 'grouplabel' in batchruns.columns:
+            grouplabels = batchruns['grouplabel'].unique()
+            assert (len(groups) == len(grouplabels) ==
+                    len(batchruns.groupby(['group', 'grouplabel']))),\
+                    "not a unique pairing of `group` and `grouplabel`"
+        else:
+            grouplabels = [g.replace('-', ' ') for g in groups]
         for avgtype in ['mean', 'median']:
             for pt in lineplottypes:
                 f = files[avgtype + pt]
                 logger.info("Plotting {0} {1}fracsurvive to {2}".format(
                         avgtype, pt, f))
-                dms_tools2.plot.plotSiteDiffSel(
-                        [g.replace('-', ' ') for g in groups],
+                dms_tools2.plot.plotSiteDiffSel(grouplabels,
                         avgsitefracsurvive[avgtype], f, pt + 'fracsurvive')
 
     except SystemExit as e:

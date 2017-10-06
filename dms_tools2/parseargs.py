@@ -378,9 +378,10 @@ def batch_diffselParser():
     parser.add_argument('--batchfile', required=True, help='CSV file '
             'specifying each ``dms2_diffsel`` run. Must have these '
             'columns: `name`, `sel`, `mock`. Can also have these: '
-            '`err`, `group`. If `group` is used, samples are grouped '
-            'in summary plots. Other columns are ignored, so other '
-            '``dms2_diffsel`` args should be passed as separate '
+            '`err`, `group`, `grouplabel`. If `group` is used, '
+            'samples are grouped in summary plots labeled by `group`, '
+            'or by `grouplabel` if specified. Other columns are ignored, '
+            'so other ``dms2_diffsel`` args should be passed as separate '
             'command line args rather than in ``--batchfile``.')
 
     parser.add_argument('--summaryprefix', required=True,
@@ -429,8 +430,9 @@ def batch_fracsurviveParser():
     parser.add_argument('--batchfile', required=True, help='CSV file '
             'specifying each ``dms2_fracsurvive`` run. Must have these '
             'columns: `name`, `sel`, `mock`, `libfracsurvive`. Can also ' 
-            'have these `err`, `group`. If `group` is used, samples are '
-            'grouped in summary plots. Other columns are ignored, so '
+            'have these `err`, `group`, `grouplabel`. If `group` is used, '
+            'samples are grouped in summary plots labeled by `group`, or by '
+            '`grouplabel` if it is specified. Other columns are ignored, so '
             'other ``dms2_fracsurvive`` args should be passed as separate '
             'command line args rather than in ``--batchfile``.')
 
