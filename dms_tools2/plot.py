@@ -245,7 +245,7 @@ def plotReadsPerBC(names, readsperbcfiles, plotfile,
                     '$\geq {0}$'.format(maxreads)])
             + scale_y_continuous(labels=latexSciNot)
             + facet_wrap('~name', ncol=ncol)
-            + theme(figure_size=(1.5 * (0.8 + ncol), 1.2 * (0.4 + nrow)))
+            + theme(figure_size=(1.9 * (0.8 + ncol), 1.3 * (0.4 + nrow)))
             )
     p.save(plotfile, verbose=False)
     plt.close()
