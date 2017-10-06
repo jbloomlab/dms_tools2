@@ -365,6 +365,18 @@ def main():
 
         counts = pandas.DataFrame.from_dict(counts).set_index('site')[
                 ['wildtype'] + dms_tools2.CODONS]
+        if args['sitemask']:
+            logger.info('Filtering to only sites listed in sitemask {0}'
+                    .format(args['sitemask']))
+            assert os.path.isfile(args['sitemask']), \
+                    'no file {0}'.format(args['sitemask'])
+            sitemask = pandas.read_csv(args['sitemask'])
+            assert 'site' in sitemask.columns, 'no `site` column in sitemask'
+            sitestokeep = sitemask['site'].unique()
+            norig = len(counts)
+            counts = counts.query('site in @sitestokeep')
+            logger.info('Filtered from {0} to {1} sites.'
+                    .format(norig, len(counts)))
         logger.info("Writing the counts of each {0} identity at each "
                 "site to {1}\n".format(args['chartype'], files['counts']))
         counts.to_csv(files['counts'])
