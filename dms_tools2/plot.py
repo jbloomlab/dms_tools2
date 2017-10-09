@@ -710,7 +710,8 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
                       )
     # natural sort by site: https://stackoverflow.com/a/29582718
     diffsel = diffsel.reindex(index=natsort.order_by_index(
-            diffsel.index, natsort.index_natsorted(diffsel.site)))
+            diffsel.index, natsort.index_natsorted(diffsel.site,
+            signed=True)))
     # now some manipulations to make site str while siteindex is int
     diffsel['site'] = diffsel['site'].apply(str)
     diffsel['siteindex'] = pandas.Categorical(diffsel['site'],

@@ -81,7 +81,7 @@ def main():
         sites = data['site'].unique()
         logger.info("Read data for {0} sites.\n".format(len(sites)))
         if args['sortsites'] == 'yes':
-            sites = natsort.natsorted(sites)
+            sites = natsort.natsorted(sites, signed=True)
         elif args['sortsites'] != 'no':
             raise ValueError("invalid --sortsites")
 

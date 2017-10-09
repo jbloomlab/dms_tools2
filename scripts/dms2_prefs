@@ -108,7 +108,8 @@ def main():
         sites = wts = None
         for c in counts.values():
             (csites, cwts) = zip(*natsort.natsorted(zip(
-                    c['site'].values, c['wildtype'].values)))
+                    c['site'].values, c['wildtype'].values),
+                    signed=True))
             if sites == wts == None:
                 sites = csites
                 wts = cwts
