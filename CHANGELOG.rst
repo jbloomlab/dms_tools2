@@ -9,6 +9,8 @@ Change Log
 
 * Add `grouplabel` option and preserve group order for faceted plots by batch programs.
 
+* Handle dependencies without `__version__` attribute
+
 2.0.2
 ------
 * Added ``--sitemask`` option to ``dms2_bcsubamp`` / ``dms2_batch_bcsubamp``.
