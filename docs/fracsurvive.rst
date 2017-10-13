@@ -23,20 +23,17 @@ An example of hypothetical fraction surviving data for such an experiment are in
 
 .. _fracsurviveexamplefig:
 
-.. figure:: _static/frac_survive_example_plot.png
-   :figwidth: 90%
+.. figure:: _static/fracsurvive_fig.jpg
+   :figwidth: 95%
    :align: center
    :alt: Illustration of `fracsurvive` definition on hypothetical antibody-escape mutations.
 
-   Illustration of the concept of the fraction of a mutation surviving antibody selection.
-   **(A)** Neutralization curves for mutants of a short protein sequence (`VLS`) for which one mutation (`V1K`) strongly escapes the antibody. 
-   For each dotted vertical line, we can read off the fraction of each variant that survives treatment with a *low* (left line), *middle* (center line), or *high* (right line) concentration of antibody.
-   **(B)** We use logo plots to represent the fraction of viruses with each mutation that survive each antibody treatment.
-   At the low antibody concentration, all variants survive.
-   At the middle antibody concentration, the `V1K` variant survives, but a substantial fraction of the other variants are neutralized.
-   At the high antibody concentration, the `V1K` variant still survives but variants without this mutation are almost completely neutralized.
-   **(C)**, **(D)** The same plots, but for an antibody with no strong escape mutants.
-   The `V1K` mutation still causes a slight reduction in neutralization sensitivity, but the effect is small and so only a small fraction of this variant survive at antibody concentrations where the wildtype variant is mostly neutralized.
+   Quantifying the fraction of virions with each mutation that escape antibody neutralization.
+   This figure shows hypothetical data for four viral variants: wildtype and three mutants.
+   **(A)** Virions with the V1K mutation (orange) completely survive an antibody concentration where most other virions are neutralized.
+   **(B)** This resistance is manifested by a large shift in V1K's neutralization curve.
+   **(C)** For each dotted vertical line drawn through the neutralization curves in (B), we calculate the fraction of virions with that mutation that survive the antibody, and indicate this fraction by the height of the letter corresponding to that amino acid at that site.
+   **(D-F)** Similar data to the first three panels, but now V1K has only a small antigenic effect, and so only modestly increases the fraction of virions that survive antibody treatment.
 
 The `dms_tools2`_ software contains programs to estimate the fraction of each mutation surviving from the overall fraction of the library that survives the selection and the deep sequencing data.
 Specifically, you can make these estimates using :ref:`dms2_batch_fracsurvive`, which in turn calls :ref:`dms2_fracsurvive`.
