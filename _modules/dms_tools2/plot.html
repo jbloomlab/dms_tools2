@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.plot &#8212; dms_tools2 2.0.2 documentation</title>
+    <title>dms_tools2.plot &#8212; dms_tools2 2.1.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.0.2',
+        VERSION:     '2.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -287,7 +287,7 @@
                     <span class="s1">&#39;$\geq </span><span class="si">{0}</span><span class="s1">$&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">maxreads</span><span class="p">)])</span>
             <span class="o">+</span> <span class="n">scale_y_continuous</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">latexSciNot</span><span class="p">)</span>
             <span class="o">+</span> <span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~name&#39;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="n">ncol</span><span class="p">)</span>
-            <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">1.5</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.8</span> <span class="o">+</span> <span class="n">ncol</span><span class="p">),</span> <span class="mf">1.2</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.4</span> <span class="o">+</span> <span class="n">nrow</span><span class="p">)))</span>
+            <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">1.9</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.8</span> <span class="o">+</span> <span class="n">ncol</span><span class="p">),</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.4</span> <span class="o">+</span> <span class="n">nrow</span><span class="p">)))</span>
             <span class="p">)</span>
     <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
@@ -552,6 +552,7 @@
 <span class="sd">                - `abs_diffsel`: sitediffsel from ``dms2_diffsel``</span>
 <span class="sd">                - `positive_diffsel`: sitediffsel from ``dms2_diffsel``</span>
 <span class="sd">                - `max_diffsel`: sitediffsel from ``dms2_diffsel``</span>
+<span class="sd">                - `mutfracsurvive`: from ``dms2_fracsurvive``</span>
 <span class="sd">        `trim_unshared` (bool)</span>
 <span class="sd">            What if files in `infiles` don&#39;t have same sites / mutations?</span>
 <span class="sd">            If `True`, trim unshared one and just analyze ones</span>
@@ -597,44 +598,45 @@
                     <span class="p">)</span>
         <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;mutdiffsel&#39;</span><span class="p">:</span>
-        <span class="n">mutdiffsel</span> <span class="o">=</span> <span class="p">[</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-                            <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
-                            <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">mutname</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">wildtype</span> <span class="o">+</span>
-                                    <span class="n">x</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">mutation</span><span class="p">)</span>
-                            <span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;mutname&#39;</span><span class="p">)</span>
-                            <span class="p">[[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;mutname&#39;</span><span class="p">,</span> <span class="s1">&#39;mutdiffsel&#39;</span><span class="p">]]</span>
-                      <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">infiles</span><span class="p">)]</span>
-        <span class="n">muts</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">mutdiffsel</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;mutname&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">mutdiffsel</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;mutdiffsel&#39;</span><span class="p">,</span> <span class="s1">&#39;mutfracsurvive&#39;</span><span class="p">]:</span>
+        <span class="n">mut_df</span> <span class="o">=</span> <span class="p">[</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                        <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+                        <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">mutname</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">wildtype</span> <span class="o">+</span>
+                                <span class="n">x</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">mutation</span><span class="p">)</span>
+                        <span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;mutname&#39;</span><span class="p">)</span>
+                        <span class="p">[[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;mutname&#39;</span><span class="p">,</span> <span class="n">datatype</span><span class="p">]]</span>
+                    <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">infiles</span><span class="p">)]</span>
+        <span class="n">muts</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">mut_df</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;mutname&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">mut_df</span><span class="p">:</span>
             <span class="n">unsharedmuts</span> <span class="o">=</span> <span class="n">muts</span><span class="o">.</span><span class="n">symmetric_difference</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;mutname&#39;</span><span class="p">]))</span>
             <span class="k">if</span> <span class="n">trim_unshared</span><span class="p">:</span>
                 <span class="n">muts</span> <span class="o">-=</span> <span class="n">unsharedmuts</span>
             <span class="k">elif</span> <span class="n">unsharedmuts</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;infiles don&#39;t have same muts: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span>
                         <span class="nb">format</span><span class="p">(</span><span class="n">unsharedmuts</span><span class="p">))</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">mutdiffsel</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">mut_df</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                     <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;mutname in @muts&#39;</span><span class="p">)</span> <span class="c1"># only keep shared muts</span>
                     <span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">&#39;mutname&#39;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
                     <span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
                     <span class="p">)</span>
         <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;abs_diffsel&#39;</span><span class="p">,</span> <span class="s1">&#39;positive_diffsel&#39;</span><span class="p">,</span> <span class="s1">&#39;max_diffsel&#39;</span><span class="p">]:</span>
-        <span class="n">sitediffsel</span> <span class="o">=</span> <span class="p">[</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-                             <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
-                             <span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
-                             <span class="p">[[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">datatype</span><span class="p">]]</span>
-                        <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">infiles</span><span class="p">)]</span>
-        <span class="n">sites</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">sitediffsel</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sitediffsel</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;abs_diffsel&#39;</span><span class="p">,</span> <span class="s1">&#39;positive_diffsel&#39;</span><span class="p">,</span> <span class="s1">&#39;max_diffsel&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;avgfracsurvive&#39;</span><span class="p">,</span> <span class="s1">&#39;maxfracsurvive&#39;</span><span class="p">]:</span>
+        <span class="n">site_df</span> <span class="o">=</span> <span class="p">[</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                         <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+                         <span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+                         <span class="p">[[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">datatype</span><span class="p">]]</span>
+                    <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">infiles</span><span class="p">)]</span>
+        <span class="n">sites</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">site_df</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">site_df</span><span class="p">:</span>
             <span class="n">unsharedsites</span> <span class="o">=</span> <span class="n">sites</span><span class="o">.</span><span class="n">symmetric_difference</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]))</span>
             <span class="k">if</span> <span class="n">trim_unshared</span><span class="p">:</span>
                 <span class="n">sites</span> <span class="o">-=</span> <span class="n">unsharedsites</span>
             <span class="k">elif</span> <span class="n">unsharedsites</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;infiles don&#39;t have same sites: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span>
                         <span class="nb">format</span><span class="p">(</span><span class="n">unsharedsites</span><span class="p">))</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">sitediffsel</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">site_df</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                     <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;site in @sites&#39;</span><span class="p">)</span> <span class="c1"># only keep shared sites</span>
                     <span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
                     <span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
@@ -664,8 +666,9 @@
         <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">diag_indices_from</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">axes</span><span class="p">)):</span>
             <span class="n">p</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
 
-    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;mutdiffsel&#39;</span><span class="p">,</span> <span class="s1">&#39;abs_diffsel&#39;</span><span class="p">,</span> 
-            <span class="s1">&#39;positive_diffsel&#39;</span><span class="p">,</span> <span class="s1">&#39;max_diffsel&#39;</span><span class="p">]:</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;mutdiffsel&#39;</span><span class="p">,</span> <span class="s1">&#39;abs_diffsel&#39;</span><span class="p">,</span> <span class="s1">&#39;positive_diffsel&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;max_diffsel&#39;</span><span class="p">,</span> <span class="s1">&#39;mutfracsurvive&#39;</span><span class="p">,</span> <span class="s1">&#39;avgfracsurvive&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;maxfracsurvive&#39;</span><span class="p">]:</span>
 
         <span class="n">p</span><span class="o">.</span><span class="n">map_diag</span><span class="p">(</span><span class="n">seaborn</span><span class="o">.</span><span class="n">distplot</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">kde</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">hist</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
@@ -692,22 +695,27 @@
 
 <div class="viewcode-block" id="plotSiteDiffSel"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.plotSiteDiffSel">[docs]</a><span class="k">def</span> <span class="nf">plotSiteDiffSel</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">diffselfiles</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span> 
         <span class="n">diffseltype</span><span class="p">,</span> <span class="n">maxcol</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Plot site differential selection along sequence.</span>
+    <span class="sd">&quot;&quot;&quot;Plot site diffsel or fracsurvive along sequence.</span>
+
+<span class="sd">    Despite the function name, this function can be used to</span>
+<span class="sd">    plot either differential selection or fraction surviving.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        `names` (list or series)</span>
 <span class="sd">            Names of samples for which we plot statistics.</span>
 <span class="sd">        `diffselfiles` (list or series)</span>
-<span class="sd">            ``*sitediffsel.csv`` files as created by ``dms2_diffsel``</span>
-<span class="sd">            or ``dms2_batch_diffsel``</span>
+<span class="sd">            ``*sitediffsel.csv`` files from ``dms2_diffsel`` or</span>
+<span class="sd">            ``*sitefracsurvive.csv`` files from ``dms2_fracsurvive``.</span>
 <span class="sd">        `plotfile` (str)</span>
 <span class="sd">            Name of created PDF plot file.</span>
 <span class="sd">        `diffseltype` (str)</span>
-<span class="sd">            Type of differential selection to plot:</span>
+<span class="sd">            Type of diffsel or fracsurvive to plot:</span>
 <span class="sd">                - `positive`: positive sitediffsel</span>
 <span class="sd">                - `total`: positive and negative sitediffsel</span>
 <span class="sd">                - `max`: maximum mutdiffsel</span>
 <span class="sd">                - `minmax`: minimum and maximum mutdiffsel</span>
+<span class="sd">                - `avgfracsurvive`: total site fracsurvive</span>
+<span class="sd">                - `maxfracsurvive`: max mutfracsurvive at site</span>
 <span class="sd">        `maxcol` (int)</span>
 <span class="sd">            Number of columns in faceted plot.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -720,6 +728,7 @@
             <span class="n">diffsels</span><span class="p">]),</span> <span class="s2">&quot;diffselfiles not all for same sites&quot;</span>
     <span class="n">diffsel</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">diffsels</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
+    <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;differential selection&#39;</span>
     <span class="k">if</span> <span class="n">diffseltype</span> <span class="o">==</span> <span class="s1">&#39;positive&#39;</span><span class="p">:</span>
         <span class="n">rename</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;positive_diffsel&#39;</span><span class="p">:</span><span class="s1">&#39;above&#39;</span><span class="p">}</span>
     <span class="k">elif</span> <span class="n">diffseltype</span> <span class="o">==</span> <span class="s1">&#39;total&#39;</span><span class="p">:</span>
@@ -730,6 +739,9 @@
     <span class="k">elif</span> <span class="n">diffseltype</span> <span class="o">==</span> <span class="s1">&#39;minmax&#39;</span><span class="p">:</span>
         <span class="n">rename</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;max_diffsel&#39;</span><span class="p">:</span><span class="s1">&#39;above&#39;</span><span class="p">,</span>
                   <span class="s1">&#39;min_diffsel&#39;</span><span class="p">:</span><span class="s1">&#39;below&#39;</span><span class="p">}</span>
+    <span class="k">elif</span> <span class="n">diffseltype</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;avgfracsurvive&#39;</span><span class="p">,</span> <span class="s1">&#39;maxfracsurvive&#39;</span><span class="p">]:</span>
+        <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;fraction surviving&#39;</span>
+        <span class="n">rename</span> <span class="o">=</span> <span class="p">{</span><span class="n">diffseltype</span><span class="p">:</span><span class="s1">&#39;above&#39;</span><span class="p">}</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;invalid diffseltype </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">diffseltype</span><span class="p">))</span>
     <span class="n">diffsel</span> <span class="o">=</span> <span class="p">(</span><span class="n">diffsel</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">rename</span><span class="p">)</span>
@@ -740,7 +752,8 @@
                       <span class="p">)</span>
     <span class="c1"># natural sort by site: https://stackoverflow.com/a/29582718</span>
     <span class="n">diffsel</span> <span class="o">=</span> <span class="n">diffsel</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">natsort</span><span class="o">.</span><span class="n">order_by_index</span><span class="p">(</span>
-            <span class="n">diffsel</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">natsort</span><span class="o">.</span><span class="n">index_natsorted</span><span class="p">(</span><span class="n">diffsel</span><span class="o">.</span><span class="n">site</span><span class="p">)))</span>
+            <span class="n">diffsel</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">natsort</span><span class="o">.</span><span class="n">index_natsorted</span><span class="p">(</span><span class="n">diffsel</span><span class="o">.</span><span class="n">site</span><span class="p">,</span>
+            <span class="n">signed</span><span class="o">=</span><span class="kc">True</span><span class="p">)))</span>
     <span class="c1"># now some manipulations to make site str while siteindex is int</span>
     <span class="n">diffsel</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">diffsel</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
     <span class="n">diffsel</span><span class="p">[</span><span class="s1">&#39;siteindex&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">diffsel</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">],</span>
@@ -758,7 +771,7 @@
     <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">diffsel</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;siteindex&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;diffsel&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;direction&#39;</span><span class="p">))</span>
             <span class="o">+</span> <span class="n">geom_step</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
             <span class="o">+</span> <span class="n">xlab</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
-            <span class="o">+</span> <span class="n">ylab</span><span class="p">(</span><span class="s1">&#39;differential selection&#39;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">ylab</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
             <span class="o">+</span> <span class="n">scale_x_continuous</span><span class="p">(</span><span class="n">breaks</span><span class="o">=</span><span class="n">xbreaks</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">xlabels</span><span class="p">)</span>
             <span class="o">+</span> <span class="n">scale_color_manual</span><span class="p">(</span><span class="n">COLOR_BLIND_PALETTE</span><span class="p">)</span>
             <span class="o">+</span> <span class="n">guides</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -825,6 +838,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../prefs.html">Amino-acid preferences</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fracsurvive.html">Fraction surviving</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../programs.html">Executable programs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../citations.html">Citations</a></li>

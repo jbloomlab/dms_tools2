@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>plot &#8212; dms_tools2 2.0.2 documentation</title>
+    <title>plot &#8212; dms_tools2 2.1.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '2.0.2',
+        VERSION:     '2.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -195,6 +195,7 @@ the label for each break.</dd>
 <li><cite>abs_diffsel</cite>: sitediffsel from <code class="docutils literal"><span class="pre">dms2_diffsel</span></code></li>
 <li><cite>positive_diffsel</cite>: sitediffsel from <code class="docutils literal"><span class="pre">dms2_diffsel</span></code></li>
 <li><cite>max_diffsel</cite>: sitediffsel from <code class="docutils literal"><span class="pre">dms2_diffsel</span></code></li>
+<li><cite>mutfracsurvive</cite>: from <code class="docutils literal"><span class="pre">dms2_fracsurvive</span></code></li>
 </ul>
 </dd>
 </dl>
@@ -332,25 +333,29 @@ of &gt;= this.</dd>
 <dl class="function">
 <dt id="dms_tools2.plot.plotSiteDiffSel">
 <code class="descclassname">dms_tools2.plot.</code><code class="descname">plotSiteDiffSel</code><span class="sig-paren">(</span><em>names</em>, <em>diffselfiles</em>, <em>plotfile</em>, <em>diffseltype</em>, <em>maxcol=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotSiteDiffSel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotSiteDiffSel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot site differential selection along sequence.</p>
+<dd><p>Plot site diffsel or fracsurvive along sequence.</p>
+<p>Despite the function name, this function can be used to
+plot either differential selection or fraction surviving.</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
 <dt><cite>names</cite> (list or series)</dt>
 <dd>Names of samples for which we plot statistics.</dd>
 <dt><cite>diffselfiles</cite> (list or series)</dt>
-<dd><code class="docutils literal"><span class="pre">*sitediffsel.csv</span></code> files as created by <code class="docutils literal"><span class="pre">dms2_diffsel</span></code>
-or <code class="docutils literal"><span class="pre">dms2_batch_diffsel</span></code></dd>
+<dd><code class="docutils literal"><span class="pre">*sitediffsel.csv</span></code> files from <code class="docutils literal"><span class="pre">dms2_diffsel</span></code> or
+<code class="docutils literal"><span class="pre">*sitefracsurvive.csv</span></code> files from <code class="docutils literal"><span class="pre">dms2_fracsurvive</span></code>.</dd>
 <dt><cite>plotfile</cite> (str)</dt>
 <dd>Name of created PDF plot file.</dd>
 <dt><cite>diffseltype</cite> (str)</dt>
 <dd><dl class="first last docutils">
-<dt>Type of differential selection to plot:</dt>
+<dt>Type of diffsel or fracsurvive to plot:</dt>
 <dd><ul class="first last simple">
 <li><cite>positive</cite>: positive sitediffsel</li>
 <li><cite>total</cite>: positive and negative sitediffsel</li>
 <li><cite>max</cite>: maximum mutdiffsel</li>
 <li><cite>minmax</cite>: minimum and maximum mutdiffsel</li>
+<li><cite>avgfracsurvive</cite>: total site fracsurvive</li>
+<li><cite>maxfracsurvive</cite>: max mutfracsurvive at site</li>
 </ul>
 </dd>
 </dl>
@@ -414,6 +419,7 @@ or <code class="docutils literal"><span class="pre">dms2_batch_diffsel</span></c
 <li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="prefs.html">Amino-acid preferences</a></li>
 <li class="toctree-l1"><a class="reference internal" href="diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fracsurvive.html">Fraction surviving</a></li>
 <li class="toctree-l1"><a class="reference internal" href="programs.html">Executable programs</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="api.html">Python API</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="dms_tools2.html">dms_tools2 package</a></li>

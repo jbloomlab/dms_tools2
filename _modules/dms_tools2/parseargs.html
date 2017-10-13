@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.parseargs &#8212; dms_tools2 2.0.2 documentation</title>
+    <title>dms_tools2.parseargs &#8212; dms_tools2 2.1.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.0.2',
+        VERSION:     '2.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -420,15 +420,101 @@
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--batchfile&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;CSV file &#39;</span>
             <span class="s1">&#39;specifying each ``dms2_diffsel`` run. Must have these &#39;</span>
             <span class="s1">&#39;columns: `name`, `sel`, `mock`. Can also have these: &#39;</span>
-            <span class="s1">&#39;`err`, `group`. If `group` is used, samples are grouped &#39;</span>
-            <span class="s1">&#39;in summary plots. Other columns are ignored, so other &#39;</span>
-            <span class="s1">&#39;``dms2_diffsel`` args should be passed as separate &#39;</span>
+            <span class="s1">&#39;`err`, `group`, `grouplabel`. If `group` is used, &#39;</span>
+            <span class="s1">&#39;samples are grouped in summary plots labeled by `group`, &#39;</span>
+            <span class="s1">&#39;or by `grouplabel` if specified. Other columns are ignored, &#39;</span>
+            <span class="s1">&#39;so other ``dms2_diffsel`` args should be passed as separate &#39;</span>
             <span class="s1">&#39;command line args rather than in ``--batchfile``.&#39;</span><span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--summaryprefix&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Prefix of output summary files and plots.&#39;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">parser</span></div>
+
+
+<div class="viewcode-block" id="fracsurviveParser"><a class="viewcode-back" href="../../dms_tools2.parseargs.html#dms_tools2.parseargs.fracsurviveParser">[docs]</a><span class="k">def</span> <span class="nf">fracsurviveParser</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Returns `argparse.ArgumentParser` for ``dms2_fracsurvive``.&quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">parserDescription</span><span class="p">(</span>
+                <span class="s1">&#39;Estimate fraction surviving for each mutation.&#39;</span><span class="p">),</span>
+            <span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">fracsurviveParentParser</span><span class="p">()],</span>
+            <span class="n">conflict_handler</span><span class="o">=</span><span class="s1">&#39;resolve&#39;</span><span class="p">,</span>
+            <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentDefaultsHelpFormatter</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--name&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Name used for output files.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--sel&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Post-selection &quot;</span>
+            <span class="s2">&quot;counts file or prefix used when creating this file.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--mock&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Like ``--sel``, &quot;</span>
+            <span class="s2">&quot;but for mock-selection counts.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--libfracsurvive&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Overall fraction of total library surviving selection &#39;</span>
+            <span class="s1">&#39;versus mock condition. Should be between 0 and 1.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--err&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Like ``--sel`` but for &quot;</span>
+            <span class="s2">&quot;error-control to correct mutation counts.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+
+<div class="viewcode-block" id="batch_fracsurviveParser"><a class="viewcode-back" href="../../dms_tools2.parseargs.html#dms_tools2.parseargs.batch_fracsurviveParser">[docs]</a><span class="k">def</span> <span class="nf">batch_fracsurviveParser</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Returns `argparse.ArgumentParser` for ``dms2_batch_fracsurvive``&quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">parserDescription</span><span class="p">(</span>
+                <span class="s1">&#39;Perform runs of ``dms2_fracsurvive`` and summarize results.&#39;</span><span class="p">),</span>
+            <span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">fracsurviveParentParser</span><span class="p">()],</span>
+            <span class="n">conflict_handler</span><span class="o">=</span><span class="s1">&#39;resolve&#39;</span><span class="p">,</span>
+            <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentDefaultsHelpFormatter</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--batchfile&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;CSV file &#39;</span>
+            <span class="s1">&#39;specifying each ``dms2_fracsurvive`` run. Must have these &#39;</span>
+            <span class="s1">&#39;columns: `name`, `sel`, `mock`, `libfracsurvive`. Can also &#39;</span> 
+            <span class="s1">&#39;have these `err`, `group`, `grouplabel`. If `group` is used, &#39;</span>
+            <span class="s1">&#39;samples are grouped in summary plots labeled by `group`, or by &#39;</span>
+            <span class="s1">&#39;`grouplabel` if it is specified. Other columns are ignored, so &#39;</span>
+            <span class="s1">&#39;other ``dms2_fracsurvive`` args should be passed as separate &#39;</span>
+            <span class="s1">&#39;command line args rather than in ``--batchfile``.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--summaryprefix&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Prefix of output summary files and plots.&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+
+<div class="viewcode-block" id="fracsurviveParentParser"><a class="viewcode-back" href="../../dms_tools2.parseargs.html#dms_tools2.parseargs.fracsurviveParentParser">[docs]</a><span class="k">def</span> <span class="nf">fracsurviveParentParser</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Parent parser ``dms2_fracsurvive`` / ``dms2_batch_fracsurvive``&quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+            <span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">parentParser</span><span class="p">()],</span>
+            <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentDefaultsHelpFormatter</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--indir&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Input counts files in this &quot;</span>
+            <span class="s2">&quot;directory.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--chartype&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;codon_to_aa&#39;</span><span class="p">,</span>
+            <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;codon_to_aa&#39;</span><span class="p">],</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Characters for which &quot;</span>
+            <span class="s2">&quot;fraction surviving selection is estimated. `codon_to_aa` =&quot;</span>
+            <span class="s2">&quot; amino acids from codon counts.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--aboveavg&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;no&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">],</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Report fracsurvive **above** the library average &quot;</span>
+            <span class="s2">&quot;rather than direct fracsurvive values.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--excludestop&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">],</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Exclude stop codons as a possible amino acid?&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--pseudocount&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Pseudocount added to each count for sample with smaller &quot;</span>
+            <span class="s2">&quot;depth; pseudocount for other sample scaled by relative depth.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--mincount&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Report as `NaN` the fracsurvive of mutations for which &quot;</span>
+            <span class="s2">&quot;both selected and mock-selected samples have &lt; this many counts.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parser</span></div>
+
 
 
 <div class="viewcode-block" id="logoplotParser"><a class="viewcode-back" href="../../dms_tools2.parseargs.html#dms_tools2.parseargs.logoplotParser">[docs]</a><span class="k">def</span> <span class="nf">logoplotParser</span><span class="p">():</span>
@@ -443,6 +529,8 @@
     <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--prefs&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;CSV file of amino-acid preferences.&#39;</span><span class="p">)</span>
     <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--diffsel&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;CSV file of amino-acid &#39;</span>
             <span class="s1">&#39;differential selection.&#39;</span><span class="p">)</span>
+    <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--fracsurvive&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;CSV file of amino-acid &#39;</span>
+            <span class="s1">&#39;fraction surviving.&#39;</span><span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--name&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
             <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Name used for output files.&#39;</span><span class="p">)</span>
@@ -466,8 +554,12 @@
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--diffselrange&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
             <span class="n">metavar</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;MINDIFFSEL&#39;</span><span class="p">,</span> <span class="s1">&#39;MAXDIFFSEL&#39;</span><span class="p">),</span> 
-            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Specify a fixed range for diffsel. Otherwise &#39;</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Specify a fixed range for `diffsel`. Otherwise &#39;</span>
             <span class="s1">&#39;determined from data range.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--fracsurvivemax&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Specify maximum value for `fracsurvive`. &#39;</span>
+            <span class="s1">&#39;Otherwise determined from data range.&#39;</span><span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--sortsites&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">],</span>
             <span class="n">default</span><span class="o">=</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Sort sites from first to last &#39;</span>
@@ -502,6 +594,11 @@
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--underlay&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;no&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">],</span>
             <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Plot underlay rather than overlay bars.&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--scalebar&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">metavar</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;BARHEIGHT&#39;</span><span class="p">,</span> <span class="s1">&#39;LABEL&#39;</span><span class="p">),</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Plot a scale bar &#39;</span>
+            <span class="s1">&#39;indicating BARHEIGHT with LABEL. Only for `diffsel` and &#39;</span>
+            <span class="s1">&#39;`fracsurvive`.&#39;</span><span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--overlaycolormap&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;jet&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;`matplotlib &quot;</span>
             <span class="s2">&quot;color map &lt;http://matplotlib.org/users/colormaps.html&gt;`_ for&quot;</span>
@@ -571,6 +668,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../prefs.html">Amino-acid preferences</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fracsurvive.html">Fraction surviving</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../programs.html">Executable programs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../citations.html">Citations</a></li>

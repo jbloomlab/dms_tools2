@@ -13,6 +13,7 @@ Submodules
 
    dms_tools2.diffsel
    dms_tools2.dssp
+   dms_tools2.fracsurvive
    dms_tools2.ipython_utils
    dms_tools2.parseargs
    dms_tools2.plot

@@ -1,0 +1,351 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>fracsurvive &#8212; dms_tools2 2.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ipython_utils" href="dms_tools2.ipython_utils.html" />
+    <link rel="prev" title="dssp" href="dms_tools2.dssp.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="module-dms_tools2.fracsurvive"></span><div class="section" id="fracsurvive">
+<h1>fracsurvive<a class="headerlink" href="#fracsurvive" title="Permalink to this headline">¶</a></h1>
+<p>Performs operations related to estimating the fraction of each
+mutation that survives a selection.</p>
+<dl class="function">
+<dt id="dms_tools2.fracsurvive.avgMutFracSurvive">
+<code class="descclassname">dms_tools2.fracsurvive.</code><code class="descname">avgMutFracSurvive</code><span class="sig-paren">(</span><em>mutfracsurvivefiles</em>, <em>avgtype</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/fracsurvive.html#avgMutFracSurvive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.fracsurvive.avgMutFracSurvive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets mean or median mutation fraction surviving.</p>
+<p>Typically used to get an average across replicates.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>mutfracsurvivefiles</cite> (list)</dt>
+<dd>List of CSV files with mutfracsurvivesel as returned by
+<code class="docutils literal"><span class="pre">dms2_fracsurvive</span></code>.</dd>
+<dt><cite>avgtype</cite> (str)</dt>
+<dd><dl class="first last docutils">
+<dt>Type of “average” to calculate. Possibilities:</dt>
+<dd><ul class="first last simple">
+<li><cite>mean</cite></li>
+<li><cite>median</cite></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A <cite>pandas.DataFrame</cite> containing the mean or median
+mutation fraction survive (<cite>mutfracsurvive</cite>).</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tf</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tf</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f1</span><span class="p">,</span> <span class="n">tf</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f2</span><span class="p">,</span> <span class="n">tf</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f3</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">x</span> <span class="o">=</span> <span class="n">f1</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;site,wildtype,mutation,mutfracsurvive</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                 <span class="s1">&#39;156,G,S,0.9</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                 <span class="s1">&#39;157,K,D,0.1&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">f1</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">x</span> <span class="o">=</span> <span class="n">f2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;site,wildtype,mutation,mutfracsurvive</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                 <span class="s1">&#39;157,K,D,0.1</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                 <span class="s1">&#39;156,G,S,1.0&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">f2</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">x</span> <span class="o">=</span> <span class="n">f3</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;site,wildtype,mutation,mutfracsurvive</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                 <span class="s1">&#39;157,K,D,0.4</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                 <span class="s1">&#39;156,G,S,0.5&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">f3</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">mean</span> <span class="o">=</span> <span class="n">avgMutFracSurvive</span><span class="p">([</span><span class="n">f1</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">f2</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">f3</span><span class="o">.</span><span class="n">name</span><span class="p">],</span>
+<span class="gp">... </span>            <span class="s1">&#39;mean&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">median</span> <span class="o">=</span> <span class="n">avgMutFracSurvive</span><span class="p">([</span><span class="n">f1</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">f2</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">f3</span><span class="o">.</span><span class="n">name</span><span class="p">],</span>
+<span class="gp">... </span>            <span class="s1">&#39;median&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">mean</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">156</span><span class="p">,</span> <span class="mi">157</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">median</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">156</span><span class="p">,</span> <span class="mi">157</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">mean</span><span class="p">[</span><span class="s1">&#39;wildtype&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">median</span><span class="p">[</span><span class="s1">&#39;wildtype&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">mean</span><span class="p">[</span><span class="s1">&#39;mutation&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">median</span><span class="p">[</span><span class="s1">&#39;mutation&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">mean</span><span class="p">[</span><span class="s1">&#39;mutfracsurvive&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">median</span><span class="p">[</span><span class="s1">&#39;mutfracsurvive&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">])</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.fracsurvive.computeMutFracSurvive">
+<code class="descclassname">dms_tools2.fracsurvive.</code><code class="descname">computeMutFracSurvive</code><span class="sig-paren">(</span><em>libfracsurvive</em>, <em>sel</em>, <em>mock</em>, <em>countcharacters</em>, <em>pseudocount</em>, <em>translate_to_aa</em>, <em>err=None</em>, <em>mincount=0</em>, <em>aboveavg=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/fracsurvive.html#computeMutFracSurvive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.fracsurvive.computeMutFracSurvive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute fraction surviving for each mutation.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>libfracsurvive</cite> (float)</dt>
+<dd>Overall fraction of selected library that survives
+relative to mock-selected. Should be &gt;= 0 and &lt;= 1.</dd>
+<dt><cite>sel</cite> (pandas.DataFrame)</dt>
+<dd>Counts for selected sample. Columns should be
+<cite>site</cite>, <cite>wildtype</cite>, and every character in
+<cite>countcharacters</cite>.</dd>
+<dt><cite>mock</cite> (pandas.DataFrame)</dt>
+<dd>Like <cite>sel</cite> but counts for mock-selected sample.</dd>
+<dt><cite>countcharacters</cite> (list)</dt>
+<dd>List of all characters (e.g., codons).</dd>
+<dt><cite>pseudocount</cite> (int or float &gt; 0)</dt>
+<dd>Pseudocount to add to counts.</dd>
+<dt><cite>translate_to_aa</cite> (bool)</dt>
+<dd>Should be <cite>True</cite> if counts are for codons and we are
+estimating mutfracsurvive for amino acids, <cite>False</cite> otherwise.</dd>
+<dt><cite>err</cite> (pandas.DataFrame or <cite>None</cite>)</dt>
+<dd>Optional error-control counts, in same format as <cite>sel</cite>.</dd>
+<dt><cite>mincount</cite> (int &gt;= 0)</dt>
+<dd>Report as <cite>NaN</cite> the mutfracsurvive for any mutation where 
+neither <cite>sel</cite> nor <cite>mock</cite> has at least this many counts.</dd>
+<dt><cite>aboveavg</cite> (bool)</dt>
+<dd>If <cite>True</cite>, compute the fraction suriviving 
+<strong>above the library average</strong> by subtracting off 
+<cite>libfracsurvive</cite> and then setting any negative values to 0.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A <cite>pandas.DataFrame</cite> with the fraction surviving for each mutation.
+Columns are <cite>site</cite>, <cite>wildtype</cite>, <cite>mutation</cite>, <cite>mutfracsurvive</cite>.</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">countchars</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">libfracsurvive</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pseudocount</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mock</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_records</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="mi">95</span><span class="p">,</span> <span class="mi">95</span><span class="p">,</span> <span class="mi">95</span><span class="p">,</span> <span class="mi">95</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="mi">195</span><span class="p">,</span> <span class="mi">195</span><span class="p">,</span> <span class="mi">95</span><span class="p">,</span> <span class="mi">95</span><span class="p">)],</span>
+<span class="gp">... </span>        <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sel</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_records</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="mi">390</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">190</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="mi">390</span><span class="p">,</span> <span class="mi">190</span><span class="p">,</span> <span class="mi">390</span><span class="p">,</span> <span class="mi">190</span><span class="p">)],</span>
+<span class="gp">... </span>        <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mutfracsurvive</span> <span class="o">=</span> <span class="n">computeMutFracSurvive</span><span class="p">(</span><span class="n">libfracsurvive</span><span class="p">,</span> <span class="n">sel</span><span class="p">,</span> <span class="n">mock</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">countchars</span><span class="p">,</span> <span class="n">pseudocount</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">{</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;mutation&#39;</span><span class="p">,</span> <span class="s1">&#39;mutfracsurvive&#39;</span><span class="p">}</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">mutfracsurvive</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mutfracsurvive</span> <span class="o">=</span> <span class="n">mutfracsurvive</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;mutation&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">mutfracsurvive</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">mutfracsurvive</span><span class="p">[</span><span class="s1">&#39;mutation&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">countchars</span> <span class="o">+</span> <span class="n">countchars</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">mutfracsurvive</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;site == 1&#39;</span><span class="p">)[</span><span class="s1">&#39;mutfracsurvive&#39;</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">mutfracsurvive</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;site == 2&#39;</span><span class="p">)[</span><span class="s1">&#39;mutfracsurvive&#39;</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mutfracsurvive_above</span> <span class="o">=</span> <span class="n">computeMutFracSurvive</span><span class="p">(</span><span class="n">libfracsurvive</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">sel</span><span class="p">,</span> <span class="n">mock</span><span class="p">,</span> <span class="n">countchars</span><span class="p">,</span> <span class="n">pseudocount</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">aboveavg</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">mutfracsurvive</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">mutfracsurvive_above</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">mutfracsurvive</span><span class="p">[</span><span class="s1">&#39;mutation&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">mutfracsurvive_above</span><span class="p">[</span><span class="s1">&#39;mutation&#39;</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">mutfracsurvive_above</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;site == 1&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="p">[</span><span class="s1">&#39;mutfracsurvive&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.fracsurvive.mutToSiteFracSurvive">
+<code class="descclassname">dms_tools2.fracsurvive.</code><code class="descname">mutToSiteFracSurvive</code><span class="sig-paren">(</span><em>mutfracsurvive</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/fracsurvive.html#mutToSiteFracSurvive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.fracsurvive.mutToSiteFracSurvive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes sitefracsurvive from mutfracsurvive.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>mutfracsurvive</cite> (pandas.DataFrame)</dt>
+<dd>Dataframe with mutfracsurvive as from <cite>computeMutFracSurvive</cite></dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first docutils">
+<dt>The dataframe <cite>sitefracsurvive</cite>, which has the following columns:</dt>
+<dd><ul class="first last simple">
+<li><cite>site</cite></li>
+<li><cite>avgfracsurvive</cite>: avg mutfracsurvive over non-wildtype chars</li>
+<li><cite>maxfracsurvive</cite>: maximum mutfracsurvive at site</li>
+</ul>
+</dd>
+</dl>
+<p class="last">Mutations for which mutfracsurvive is <cite>NaN</cite> are ignored,
+and the site values are also <cite>NaN</cite> if all mutation values
+are <cite>NaN</cite> for that site.</p>
+</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mutfracsurvive</span> <span class="o">=</span> <span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+<span class="gp">... </span>        <span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;wildtype&#39;</span><span class="p">:[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;A&#39;</span><span class="p">:[</span><span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;C&#39;</span><span class="p">:[</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;G&#39;</span><span class="p">:[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;T&#39;</span><span class="p">:[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="p">})</span>
+<span class="gp">... </span>        <span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">],</span>
+<span class="gp">... </span>              <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;mutation&#39;</span><span class="p">,</span> <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;mutfracsurvive&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sitefracsurvive</span> <span class="o">=</span> <span class="n">mutToSiteFracSurvive</span><span class="p">(</span><span class="n">mutfracsurvive</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">sitefracsurvive</span><span class="o">.</span><span class="n">columns</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;avgfracsurvive&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s1">&#39;maxfracsurvive&#39;</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">sitefracsurvive</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">sitefracsurvive</span><span class="p">[</span><span class="s1">&#39;avgfracsurvive&#39;</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="p">[</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">],</span> <span class="n">equal_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">sitefracsurvive</span><span class="p">[</span><span class="s1">&#39;maxfracsurvive&#39;</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">],</span> <span class="n">equal_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fracsurvive.html">Fraction surviving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="programs.html">Executable programs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">Python API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="dms_tools2.html">dms_tools2 package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="api.html">Python API</a><ul>
+  <li><a href="dms_tools2.html">dms_tools2 package</a><ul>
+      <li>Previous: <a href="dms_tools2.dssp.html" title="previous chapter">dssp</a></li>
+      <li>Next: <a href="dms_tools2.ipython_utils.html" title="next chapter">ipython_utils</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/dms_tools2.fracsurvive.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

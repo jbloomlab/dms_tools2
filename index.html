@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Documentation for dms_tools2 &#8212; dms_tools2 2.0.2 documentation</title>
+    <title>Documentation for dms_tools2 &#8212; dms_tools2 2.1.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '2.0.2',
+        VERSION:     '2.1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -49,6 +49,7 @@ It is tailored to analyze libraries created using <a class="reference external" 
 <li>Process deep-sequencing data from <a class="reference internal" href="bcsubamp.html#bcsubamp"><span class="std std-ref">Barcoded-subamplicon sequencing</span></a>.</li>
 <li>Estimate the <a class="reference internal" href="prefs.html#prefs"><span class="std std-ref">Amino-acid preferences</span></a> of a protein.</li>
 <li>Estimate <a class="reference internal" href="diffsel.html#diffsel"><span class="std std-ref">Differential selection</span></a> when imposing a pressure such as antibody selection.</li>
+<li>Estimate the <a class="reference internal" href="fracsurvive.html#fracsurvive"><span class="std std-ref">Fraction surviving</span></a> for each mutation when imposing a strong pressure such as antibody selection.</li>
 </ul>
 </div></blockquote>
 <p>The <a class="reference external" href="https://github.com/jbloomlab/dms_tools2">dms_tools2 source code</a> is freely available under a <a class="reference external" href="http://www.gnu.org/copyleft/gpl.html">GPLv3</a> license.
@@ -77,7 +78,7 @@ It is tailored to analyze libraries created using <a class="reference external" 
 <li class="toctree-l2"><a class="reference internal" href="bcsubamp.html#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="bcsubamp.html#how-does-barcoded-subamplicon-sequencing-work">How does barcoded-subamplicon sequencing work?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="bcsubamp.html#workflow">Workflow</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bcsubamp.html#programs-to-analyze-the-data-and-examples">Programs to analyze the data and examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bcsubamp.html#programs-and-examples">Programs and examples</a></li>
 <li class="toctree-l2"><a class="reference internal" href="bcsubamp.html#more-details-and-notes">More details and notes</a></li>
 </ul>
 </li>
@@ -85,7 +86,7 @@ It is tailored to analyze libraries created using <a class="reference external" 
 <li class="toctree-l2"><a class="reference internal" href="prefs.html#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="prefs.html#what-are-amino-acid-preferences">What are amino-acid preferences?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="prefs.html#should-you-use-the-bayesian-or-ratio-method">Should you use the <cite>bayesian</cite> or <cite>ratio</cite> method?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="prefs.html#programs-to-analyze-the-data-and-examples">Programs to analyze the data and examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prefs.html#programs-and-examples">Programs and examples</a></li>
 <li class="toctree-l2"><a class="reference internal" href="prefs.html#algorithm-to-infer-preferences-when-using-method-bayesian">Algorithm to infer preferences when using <code class="docutils literal"><span class="pre">--method</span> <span class="pre">bayesian</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="prefs.html#formula-to-calculate-preferences-with-method-ratio">Formula to calculate preferences with <code class="docutils literal"><span class="pre">--method</span> <span class="pre">ratio</span></code></a></li>
 </ul>
@@ -93,7 +94,13 @@ It is tailored to analyze libraries created using <a class="reference external" 
 <li class="toctree-l1"><a class="reference internal" href="diffsel.html">Differential selection</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="diffsel.html#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="diffsel.html#definition-of-differential-selection">Definition of differential selection</a></li>
-<li class="toctree-l2"><a class="reference internal" href="diffsel.html#programs-to-analyze-the-data-and-examples">Programs to analyze the data and examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="diffsel.html#programs-and-examples">Programs and examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fracsurvive.html">Fraction surviving</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fracsurvive.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fracsurvive.html#definition-of-fraction-surviving">Definition of fraction surviving</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fracsurvive.html#programs-and-examples">Programs and examples</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="programs.html">Executable programs</a><ul>
@@ -103,6 +110,8 @@ It is tailored to analyze libraries created using <a class="reference external" 
 <li class="toctree-l2"><a class="reference internal" href="dms2_batch_prefs.html"><code class="docutils literal"><span class="pre">dms2_batch_prefs</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="dms2_diffsel.html"><code class="docutils literal"><span class="pre">dms2_diffsel</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="dms2_batch_diffsel.html"><code class="docutils literal"><span class="pre">dms2_batch_diffsel</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms2_fracsurvive.html"><code class="docutils literal"><span class="pre">dms2_fracsurvive</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms2_batch_fracsurvive.html"><code class="docutils literal"><span class="pre">dms2_batch_fracsurvive</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="dms2_logoplot.html"><code class="docutils literal"><span class="pre">dms2_logoplot</span></code></a></li>
 </ul>
 </li>
@@ -174,6 +183,7 @@ It is tailored to analyze libraries created using <a class="reference external" 
 <li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="prefs.html">Amino-acid preferences</a></li>
 <li class="toctree-l1"><a class="reference internal" href="diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fracsurvive.html">Fraction surviving</a></li>
 <li class="toctree-l1"><a class="reference internal" href="programs.html">Executable programs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="citations.html">Citations</a></li>

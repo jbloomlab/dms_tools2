@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.diffsel &#8212; dms_tools2 2.1.0 documentation</title>
+    <title>dms_tools2.fracsurvive &#8212; dms_tools2 2.1.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -39,13 +39,14 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <h1>Source code for dms_tools2.diffsel</h1><div class="highlight"><pre>
+  <h1>Source code for dms_tools2.fracsurvive</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">===========</span>
-<span class="sd">diffsel</span>
+<span class="sd">fracsurvive</span>
 <span class="sd">===========</span>
 
-<span class="sd">Performs operations related to estimating differential selection.</span>
+<span class="sd">Performs operations related to estimating the fraction of each</span>
+<span class="sd">mutation that survives a selection.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
@@ -55,11 +56,15 @@
 <span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="k">import</span> <span class="n">CODONS</span><span class="p">,</span> <span class="n">CODON_TO_AA</span>
 
 
-<div class="viewcode-block" id="computeMutDiffSel"><a class="viewcode-back" href="../../dms_tools2.diffsel.html#dms_tools2.diffsel.computeMutDiffSel">[docs]</a><span class="k">def</span> <span class="nf">computeMutDiffSel</span><span class="p">(</span><span class="n">sel</span><span class="p">,</span> <span class="n">mock</span><span class="p">,</span> <span class="n">countcharacters</span><span class="p">,</span> <span class="n">pseudocount</span><span class="p">,</span> 
-        <span class="n">translate_to_aa</span><span class="p">,</span> <span class="n">err</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mincount</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Compute mutation differential selection.</span>
+<div class="viewcode-block" id="computeMutFracSurvive"><a class="viewcode-back" href="../../dms_tools2.fracsurvive.html#dms_tools2.fracsurvive.computeMutFracSurvive">[docs]</a><span class="k">def</span> <span class="nf">computeMutFracSurvive</span><span class="p">(</span><span class="n">libfracsurvive</span><span class="p">,</span> <span class="n">sel</span><span class="p">,</span> <span class="n">mock</span><span class="p">,</span> <span class="n">countcharacters</span><span class="p">,</span>
+        <span class="n">pseudocount</span><span class="p">,</span> <span class="n">translate_to_aa</span><span class="p">,</span> <span class="n">err</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mincount</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">aboveavg</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute fraction surviving for each mutation.</span>
 
 <span class="sd">    Args:</span>
+<span class="sd">        `libfracsurvive` (float)</span>
+<span class="sd">            Overall fraction of selected library that survives</span>
+<span class="sd">            relative to mock-selected. Should be &gt;= 0 and &lt;= 1.</span>
 <span class="sd">        `sel` (pandas.DataFrame)</span>
 <span class="sd">            Counts for selected sample. Columns should be</span>
 <span class="sd">            `site`, `wildtype`, and every character in</span>
@@ -72,18 +77,59 @@
 <span class="sd">            Pseudocount to add to counts.</span>
 <span class="sd">        `translate_to_aa` (bool)</span>
 <span class="sd">            Should be `True` if counts are for codons and we are</span>
-<span class="sd">            estimating diffsel for amino acids, `False` otherwise.</span>
+<span class="sd">            estimating mutfracsurvive for amino acids, `False` otherwise.</span>
 <span class="sd">        `err` (pandas.DataFrame or `None`)</span>
 <span class="sd">            Optional error-control counts, in same format as `sel`.</span>
 <span class="sd">        `mincount` (int &gt;= 0)</span>
-<span class="sd">            Report as `NaN` the mutdiffsel for any mutation in which</span>
+<span class="sd">            Report as `NaN` the mutfracsurvive for any mutation where </span>
 <span class="sd">            neither `sel` nor `mock` has at least this many counts.</span>
+<span class="sd">        `aboveavg` (bool)</span>
+<span class="sd">            If `True`, compute the fraction suriviving </span>
+<span class="sd">            **above the library average** by subtracting off </span>
+<span class="sd">            `libfracsurvive` and then setting any negative values to 0.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A `pandas.DataFrame` with the mutation differential selection.</span>
-<span class="sd">        Columns are `site`, `wildtype`, `mutation`, `mutdiffsel`.</span>
+<span class="sd">        A `pandas.DataFrame` with the fraction surviving for each mutation.</span>
+<span class="sd">        Columns are `site`, `wildtype`, `mutation`, `mutfracsurvive`.</span>
+
+<span class="sd">    &gt;&gt;&gt; countchars = [&#39;A&#39;, &#39;C&#39;, &#39;G&#39;, &#39;T&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; libfracsurvive = 0.1</span>
+<span class="sd">    &gt;&gt;&gt; pseudocount = 5</span>
+<span class="sd">    &gt;&gt;&gt; mock = pandas.DataFrame.from_records(</span>
+<span class="sd">    ...         [(1, &#39;A&#39;, 95, 95, 95, 95), (2, &#39;C&#39;, 195, 195, 95, 95)],</span>
+<span class="sd">    ...         columns=[&#39;site&#39;, &#39;wildtype&#39;, &#39;A&#39;, &#39;C&#39;, &#39;G&#39;, &#39;T&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; sel = pandas.DataFrame.from_records(</span>
+<span class="sd">    ...         [(1, &#39;A&#39;, 390, 90, 90, 190), (2, &#39;C&#39;, 390, 190, 390, 190)],</span>
+<span class="sd">    ...         columns=[&#39;site&#39;, &#39;wildtype&#39;, &#39;A&#39;, &#39;C&#39;, &#39;G&#39;, &#39;T&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; mutfracsurvive = computeMutFracSurvive(libfracsurvive, sel, mock,</span>
+<span class="sd">    ...         countchars, pseudocount, False)</span>
+<span class="sd">    &gt;&gt;&gt; {&#39;site&#39;, &#39;wildtype&#39;, &#39;mutation&#39;, &#39;mutfracsurvive&#39;} == set(</span>
+<span class="sd">    ...         mutfracsurvive.columns)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; mutfracsurvive = mutfracsurvive.sort_values([&#39;site&#39;, &#39;mutation&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; all(mutfracsurvive[&#39;site&#39;] == [1, 1, 1, 1, 2, 2, 2, 2])</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; all(mutfracsurvive[&#39;mutation&#39;] == countchars + countchars)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(mutfracsurvive.query(&#39;site == 1&#39;)[&#39;mutfracsurvive&#39;],</span>
+<span class="sd">    ...         [0.2, 0.05, 0.05, 0.1])</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(mutfracsurvive.query(&#39;site == 2&#39;)[&#39;mutfracsurvive&#39;],</span>
+<span class="sd">    ...         [0.1, 0.05, 0.2, 0.1])</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; mutfracsurvive_above = computeMutFracSurvive(libfracsurvive,</span>
+<span class="sd">    ...         sel, mock, countchars, pseudocount, False, aboveavg=True)</span>
+<span class="sd">    &gt;&gt;&gt; all(mutfracsurvive[&#39;site&#39;] == mutfracsurvive_above[&#39;site&#39;])</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; all(mutfracsurvive[&#39;mutation&#39;] == mutfracsurvive_above[&#39;mutation&#39;])</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(mutfracsurvive_above.query(&#39;site == 1&#39;)</span>
+<span class="sd">    ...         [&#39;mutfracsurvive&#39;], [0.1, 0, 0, 0])</span>
+<span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="n">pseudocount</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+    <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">libfracsurvive</span> <span class="o">&lt;=</span> <span class="mi">1</span>
 
     <span class="n">expectedcols</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">countcharacters</span><span class="p">)</span>
     <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">sel</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">==</span> <span class="n">expectedcols</span><span class="p">,</span> <span class="s2">&quot;Invalid columns for sel&quot;</span>
@@ -146,96 +192,96 @@
               <span class="p">)</span>
 
     <span class="c1"># add pseudocounts</span>
-    <span class="n">m</span><span class="p">[</span><span class="s1">&#39;nselP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;nsel&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">pseudocount</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">m</span><span class="p">[</span><span class="s1">&#39;Nsel&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;Nmock&#39;</span><span class="p">])</span>
-    <span class="n">m</span><span class="p">[</span><span class="s1">&#39;nmockP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;nmock&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">pseudocount</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">m</span><span class="p">[</span><span class="s1">&#39;Nmock&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;Nsel&#39;</span><span class="p">])</span>
+    <span class="n">m</span><span class="p">[</span><span class="s1">&#39;nselP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;nsel&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">pseudocount</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">m</span><span class="p">[</span><span class="s1">&#39;Nsel&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;Nmock&#39;</span><span class="p">]))</span>
+    <span class="n">m</span><span class="p">[</span><span class="s1">&#39;nmockP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;nmock&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">pseudocount</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">m</span><span class="p">[</span><span class="s1">&#39;Nmock&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;Nsel&#39;</span><span class="p">]))</span>
+    <span class="n">m</span><span class="p">[</span><span class="s1">&#39;NselP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;Nsel&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">pseudocount</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">m</span><span class="p">[</span><span class="s1">&#39;Nsel&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;Nmock&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">countcharacters</span><span class="p">))</span>
+    <span class="n">m</span><span class="p">[</span><span class="s1">&#39;NmockP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;Nmock&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">pseudocount</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">m</span><span class="p">[</span><span class="s1">&#39;Nmock&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;Nsel&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">countcharacters</span><span class="p">))</span>
 
-    <span class="c1"># create columns with wildtype counts</span>
-    <span class="n">m</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
-            <span class="n">m</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;mutation==wildtype&#39;</span><span class="p">)[[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;nselP&#39;</span><span class="p">,</span> <span class="s1">&#39;nmockP&#39;</span><span class="p">]],</span>
-            <span class="n">on</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">suffixes</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;wt&#39;</span><span class="p">))</span>
-
-    <span class="c1"># compute mutdiffsel</span>
-    <span class="n">m</span><span class="p">[</span><span class="s1">&#39;enrichment&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;nselP&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;nselPwt&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;nmockP&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;nmockPwt&#39;</span><span class="p">])</span>
-            <span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;mutation&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;wildtype&#39;</span><span class="p">])</span> <span class="o">&amp;</span>
-                    <span class="p">((</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;nsel&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">mincount</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;nmock&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">mincount</span><span class="p">)),</span>
+    <span class="c1"># compute mutfracsurvive</span>
+    <span class="n">m</span><span class="p">[</span><span class="s1">&#39;mutfracsurvive&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">libfracsurvive</span> <span class="o">*</span>
+            <span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;nselP&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;NselP&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;nmockP&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;NmockP&#39;</span><span class="p">])</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;nsel&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">mincount</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;nmock&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">mincount</span><span class="p">),</span>
                     <span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
-    <span class="n">m</span><span class="p">[</span><span class="s1">&#39;mutdiffsel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;enrichment&#39;</span><span class="p">])</span>
 
-    <span class="k">return</span> <span class="n">m</span><span class="p">[[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;mutation&#39;</span><span class="p">,</span> <span class="s1">&#39;mutdiffsel&#39;</span><span class="p">]]</span></div>
+    <span class="k">if</span> <span class="n">aboveavg</span><span class="p">:</span>
+        <span class="n">m</span><span class="p">[</span><span class="s1">&#39;mutfracsurvive&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;mutfracsurvive&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">libfracsurvive</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">m</span><span class="p">[[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;mutation&#39;</span><span class="p">,</span> <span class="s1">&#39;mutfracsurvive&#39;</span><span class="p">]]</span></div>
 
 
-<div class="viewcode-block" id="mutToSiteDiffSel"><a class="viewcode-back" href="../../dms_tools2.diffsel.html#dms_tools2.diffsel.mutToSiteDiffSel">[docs]</a><span class="k">def</span> <span class="nf">mutToSiteDiffSel</span><span class="p">(</span><span class="n">mutdiffsel</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Computes sitediffsel from mutdiffsel.</span>
+<div class="viewcode-block" id="mutToSiteFracSurvive"><a class="viewcode-back" href="../../dms_tools2.fracsurvive.html#dms_tools2.fracsurvive.mutToSiteFracSurvive">[docs]</a><span class="k">def</span> <span class="nf">mutToSiteFracSurvive</span><span class="p">(</span><span class="n">mutfracsurvive</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Computes sitefracsurvive from mutfracsurvive.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        `mutdiffsel` (pandas.DataFrame)</span>
-<span class="sd">            Dataframe with mutdiffsel as returned by `computeMutDiffSel`</span>
+<span class="sd">        `mutfracsurvive` (pandas.DataFrame)</span>
+<span class="sd">            Dataframe with mutfracsurvive as from `computeMutFracSurvive`</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        The dataframe `sitediffsel`, which has the following columns:</span>
+<span class="sd">        The dataframe `sitefracsurvive`, which has the following columns:</span>
 <span class="sd">            - `site`</span>
-<span class="sd">            - `abs_diffsel`: sum of absolute values of mutdiffsel at site</span>
-<span class="sd">            - `positive_diffsel`: sum of positive mutdiffsel at site</span>
-<span class="sd">            - `negative_diffsel`: sum of negative mutdiffsel at site</span>
-<span class="sd">            - `max_diffsel`: maximum mutdiffsel at site</span>
-<span class="sd">            - `min_diffsel`: minimum mutdiffsel at site</span>
+<span class="sd">            - `avgfracsurvive`: avg mutfracsurvive over non-wildtype chars </span>
+<span class="sd">            - `maxfracsurvive`: maximum mutfracsurvive at site</span>
 
-<span class="sd">    &gt;&gt;&gt; mutdiffsel = (pandas.DataFrame({</span>
+<span class="sd">        Mutations for which mutfracsurvive is `NaN` are ignored,</span>
+<span class="sd">        and the site values are also `NaN` if all mutation values</span>
+<span class="sd">        are `NaN` for that site.</span>
+
+<span class="sd">    &gt;&gt;&gt; mutfracsurvive = (pandas.DataFrame({</span>
 <span class="sd">    ...         &#39;site&#39;:[1, 2, 3, 4],</span>
-<span class="sd">    ...         &#39;wildtype&#39;:[&#39;A&#39;, &#39;C&#39;, &#39;C&#39;, &#39;A&#39;],</span>
-<span class="sd">    ...         &#39;A&#39;:[numpy.nan, 4.1, -0.1, numpy.nan],</span>
-<span class="sd">    ...         &#39;C&#39;:[-0.2, numpy.nan, numpy.nan, 0.3],</span>
-<span class="sd">    ...         &#39;G&#39;:[3.2, 0.1, -0.2, 0.1],</span>
-<span class="sd">    ...         &#39;T&#39;:[-0.2, 0.0, -0.1, 0.4],</span>
+<span class="sd">    ...         &#39;wildtype&#39;:[&#39;A&#39;, &#39;G&#39;, &#39;C&#39;, &#39;G&#39;],</span>
+<span class="sd">    ...         &#39;A&#39;:[numpy.nan, 0.6, 0.1, numpy.nan],</span>
+<span class="sd">    ...         &#39;C&#39;:[0.2, numpy.nan, numpy.nan, numpy.nan],</span>
+<span class="sd">    ...         &#39;G&#39;:[0.8, 0.9, 0.2, 0.1],</span>
+<span class="sd">    ...         &#39;T&#39;:[0.2, 0.0, 0.3, numpy.nan],</span>
 <span class="sd">    ...         })</span>
 <span class="sd">    ...         .melt(id_vars=[&#39;site&#39;, &#39;wildtype&#39;],</span>
-<span class="sd">    ...               var_name=&#39;mutation&#39;, value_name=&#39;mutdiffsel&#39;)</span>
+<span class="sd">    ...               var_name=&#39;mutation&#39;, value_name=&#39;mutfracsurvive&#39;)</span>
 <span class="sd">    ...         .reset_index(drop=True)</span>
 <span class="sd">    ...         )</span>
-<span class="sd">    &gt;&gt;&gt; sitediffsel = mutToSiteDiffSel(mutdiffsel)</span>
-<span class="sd">    &gt;&gt;&gt; all(sitediffsel.columns == [&#39;site&#39;, &#39;abs_diffsel&#39;, </span>
-<span class="sd">    ...         &#39;positive_diffsel&#39;, &#39;negative_diffsel&#39;, </span>
-<span class="sd">    ...         &#39;max_diffsel&#39;, &#39;min_diffsel&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; sitefracsurvive = mutToSiteFracSurvive(mutfracsurvive)</span>
+<span class="sd">    &gt;&gt;&gt; all(sitefracsurvive.columns == [&#39;site&#39;, &#39;avgfracsurvive&#39;,</span>
+<span class="sd">    ...         &#39;maxfracsurvive&#39;])</span>
 <span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; all(sitediffsel[&#39;site&#39;] == [1, 2, 3, 4])</span>
+<span class="sd">    &gt;&gt;&gt; all(sitefracsurvive[&#39;site&#39;] == [1, 2, 3, 4])</span>
 <span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; numpy.allclose(sitediffsel[&#39;abs_diffsel&#39;], [3.6, 4.2, 0.4, 0.8])</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(sitefracsurvive[&#39;avgfracsurvive&#39;],</span>
+<span class="sd">    ...         [0.4, 0.3, 0.2, numpy.nan], equal_nan=True)</span>
 <span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; numpy.allclose(sitediffsel[&#39;positive_diffsel&#39;], [3.2, 4.2, 0, 0.8])</span>
-<span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; numpy.allclose(sitediffsel[&#39;negative_diffsel&#39;], [-0.4, 0, -0.4, 0])</span>
-<span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; numpy.allclose(sitediffsel[&#39;max_diffsel&#39;], [3.2, 4.1, 0, 0.4])</span>
-<span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; numpy.allclose(sitediffsel[&#39;min_diffsel&#39;], [-0.2, 0, -0.2, 0])</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(sitefracsurvive[&#39;maxfracsurvive&#39;],</span>
+<span class="sd">    ...         [0.8, 0.6, 0.3, numpy.nan], equal_nan=True)</span>
 <span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">sitediffsel</span> <span class="o">=</span> <span class="p">(</span><span class="n">mutdiffsel</span>
-                   <span class="o">.</span><span class="n">pivot</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="s1">&#39;mutation&#39;</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="s1">&#39;mutdiffsel&#39;</span><span class="p">)</span>
-                   <span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-                   <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">abs_diffsel</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-                           <span class="n">positive_diffsel</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-                           <span class="n">negative_diffsel</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-                           <span class="n">max_diffsel</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-                           <span class="n">min_diffsel</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-                          <span class="p">)</span>
-                   <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
-                   <span class="p">[[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;abs_diffsel&#39;</span><span class="p">,</span> <span class="s1">&#39;positive_diffsel&#39;</span><span class="p">,</span> 
-                    <span class="s1">&#39;negative_diffsel&#39;</span><span class="p">,</span> <span class="s1">&#39;max_diffsel&#39;</span><span class="p">,</span> <span class="s1">&#39;min_diffsel&#39;</span><span class="p">]]</span>
-                   <span class="p">)</span>
-    <span class="k">return</span> <span class="n">sitediffsel</span></div>
+    <span class="n">sitefracsurvive</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">mutfracsurvive</span>
+            <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">mutfracsurvive</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;mutfracsurvive&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                    <span class="n">x</span><span class="p">[</span><span class="s1">&#39;mutation&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;wildtype&#39;</span><span class="p">],</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">pivot</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="s1">&#39;mutation&#39;</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="s1">&#39;mutfracsurvive&#39;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">avgfracsurvive</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">skipna</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                            <span class="o">/</span> <span class="n">x</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                    <span class="n">maxfracsurvive</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                    <span class="p">)</span>
+            <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+            <span class="p">[[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;avgfracsurvive&#39;</span><span class="p">,</span> <span class="s1">&#39;maxfracsurvive&#39;</span><span class="p">]]</span>
+            <span class="p">)</span>
+    <span class="k">return</span> <span class="n">sitefracsurvive</span></div>
 
 
-<div class="viewcode-block" id="avgMutDiffSel"><a class="viewcode-back" href="../../dms_tools2.diffsel.html#dms_tools2.diffsel.avgMutDiffSel">[docs]</a><span class="k">def</span> <span class="nf">avgMutDiffSel</span><span class="p">(</span><span class="n">mutdiffselfiles</span><span class="p">,</span> <span class="n">avgtype</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Gets mean or median mutation differential selection.</span>
+<div class="viewcode-block" id="avgMutFracSurvive"><a class="viewcode-back" href="../../dms_tools2.fracsurvive.html#dms_tools2.fracsurvive.avgMutFracSurvive">[docs]</a><span class="k">def</span> <span class="nf">avgMutFracSurvive</span><span class="p">(</span><span class="n">mutfracsurvivefiles</span><span class="p">,</span> <span class="n">avgtype</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Gets mean or median mutation fraction surviving.</span>
+
+<span class="sd">    Typically used to get an average across replicates.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        `mutdiffselfiles` (list)</span>
-<span class="sd">            List of CSV files with mutdiffsel as returned by</span>
-<span class="sd">            ``dms2_diffsel``.</span>
+<span class="sd">        `mutfracsurvivefiles` (list)</span>
+<span class="sd">            List of CSV files with mutfracsurvivesel as returned by</span>
+<span class="sd">            ``dms2_fracsurvive``.</span>
 <span class="sd">        `avgtype` (str)</span>
 <span class="sd">            Type of &quot;average&quot; to calculate. Possibilities:</span>
 <span class="sd">                - `mean`</span>
@@ -243,52 +289,56 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A `pandas.DataFrame` containing the mean or median</span>
-<span class="sd">        mutation differential selection.</span>
+<span class="sd">        mutation fraction survive (`mutfracsurvive`).</span>
 
 <span class="sd">    &gt;&gt;&gt; tf = tempfile.NamedTemporaryFile</span>
 <span class="sd">    &gt;&gt;&gt; with tf(mode=&#39;w&#39;) as f1, tf(mode=&#39;w&#39;) as f2, tf(mode=&#39;w&#39;) as f3:</span>
-<span class="sd">    ...     x = f1.write(&#39;site,wildtype,mutation,mutdiffsel\\n&#39;</span>
-<span class="sd">    ...                  &#39;157,K,D,8.3\\n&#39;</span>
-<span class="sd">    ...                  &#39;156,G,S,2.0&#39;)</span>
+<span class="sd">    ...     x = f1.write(&#39;site,wildtype,mutation,mutfracsurvive\\n&#39;</span>
+<span class="sd">    ...                  &#39;156,G,S,0.9\\n&#39;</span>
+<span class="sd">    ...                  &#39;157,K,D,0.1&#39;)</span>
 <span class="sd">    ...     f1.flush()</span>
-<span class="sd">    ...     x = f2.write(&#39;site,wildtype,mutation,mutdiffsel\\n&#39;</span>
-<span class="sd">    ...                  &#39;157,K,D,6.3\\n&#39;</span>
-<span class="sd">    ...                  &#39;156,G,S,-1.1&#39;)</span>
+<span class="sd">    ...     x = f2.write(&#39;site,wildtype,mutation,mutfracsurvive\\n&#39;</span>
+<span class="sd">    ...                  &#39;157,K,D,0.1\\n&#39;</span>
+<span class="sd">    ...                  &#39;156,G,S,1.0&#39;)</span>
 <span class="sd">    ...     f2.flush()</span>
-<span class="sd">    ...     x = f3.write(&#39;site,wildtype,mutation,mutdiffsel\\n&#39;</span>
-<span class="sd">    ...                  &#39;157,K,D,2.2\\n&#39;</span>
-<span class="sd">    ...                  &#39;156,G,S,0.0&#39;)</span>
+<span class="sd">    ...     x = f3.write(&#39;site,wildtype,mutation,mutfracsurvive\\n&#39;</span>
+<span class="sd">    ...                  &#39;157,K,D,0.4\\n&#39;</span>
+<span class="sd">    ...                  &#39;156,G,S,0.5&#39;)</span>
 <span class="sd">    ...     f3.flush()</span>
-<span class="sd">    ...     mean = avgMutDiffSel([f1.name, f2.name, f3.name], &#39;mean&#39;)</span>
-<span class="sd">    ...     median = avgMutDiffSel([f1.name, f2.name, f3.name], &#39;median&#39;)</span>
-<span class="sd">    &gt;&gt;&gt; (mean[&#39;site&#39;] == [157, 156]).all()</span>
+<span class="sd">    ...     mean = avgMutFracSurvive([f1.name, f2.name, f3.name],</span>
+<span class="sd">    ...             &#39;mean&#39;)</span>
+<span class="sd">    ...     median = avgMutFracSurvive([f1.name, f2.name, f3.name],</span>
+<span class="sd">    ...             &#39;median&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; (mean[&#39;site&#39;] == [156, 157]).all()</span>
 <span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; (median[&#39;site&#39;] == [157, 156]).all()</span>
+<span class="sd">    &gt;&gt;&gt; (median[&#39;site&#39;] == [156, 157]).all()</span>
 <span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; (mean[&#39;wildtype&#39;] == [&#39;K&#39;, &#39;G&#39;]).all()</span>
+<span class="sd">    &gt;&gt;&gt; (mean[&#39;wildtype&#39;] == [&#39;G&#39;, &#39;K&#39;]).all()</span>
 <span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; (median[&#39;wildtype&#39;] == [&#39;K&#39;, &#39;G&#39;]).all()</span>
+<span class="sd">    &gt;&gt;&gt; (median[&#39;wildtype&#39;] == [&#39;G&#39;, &#39;K&#39;]).all()</span>
 <span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; (mean[&#39;mutation&#39;] == [&#39;D&#39;, &#39;S&#39;]).all()</span>
+<span class="sd">    &gt;&gt;&gt; (mean[&#39;mutation&#39;] == [&#39;S&#39;, &#39;D&#39;]).all()</span>
 <span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; (median[&#39;mutation&#39;] == [&#39;D&#39;, &#39;S&#39;]).all()</span>
+<span class="sd">    &gt;&gt;&gt; (median[&#39;mutation&#39;] == [&#39;S&#39;, &#39;D&#39;]).all()</span>
 <span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; numpy.allclose(mean[&#39;mutdiffsel&#39;], [5.6, 0.3])</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(mean[&#39;mutfracsurvive&#39;], [0.8, 0.2])</span>
 <span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; numpy.allclose(median[&#39;mutdiffsel&#39;], [6.3, 0.0])</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(median[&#39;mutfracsurvive&#39;], [0.9, 0.1])</span>
 <span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">diffsels</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;mutation&#39;</span><span class="p">,</span> <span class="s1">&#39;mutdiffsel&#39;</span><span class="p">]</span>
-    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">mutdiffselfiles</span><span class="p">:</span>
-        <span class="n">diffsels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-                        <span class="p">[</span><span class="n">cols</span><span class="p">]</span>
-                        <span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;mutation&#39;</span><span class="p">])</span>
-                        <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
-                        <span class="p">)</span>
-        <span class="k">assert</span> <span class="nb">all</span><span class="p">([(</span><span class="n">diffsels</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">==</span> <span class="n">diffsels</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">c</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span>
-                <span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;mutation&#39;</span><span class="p">]]),</span> <span class="s2">&quot;files do not have same muts&quot;</span> 
-    <span class="n">avg</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">diffsels</span><span class="p">)</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">cols</span><span class="p">[</span> <span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">fracsurvives</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;mutation&#39;</span><span class="p">,</span> <span class="s1">&#39;mutfracsurvive&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">mutfracsurvivefiles</span><span class="p">:</span>
+        <span class="n">fracsurvives</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                <span class="p">[</span><span class="n">cols</span><span class="p">]</span>
+                <span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;mutation&#39;</span><span class="p">])</span>
+                <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+                <span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">([(</span><span class="n">fracsurvives</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">==</span> <span class="n">fracsurvives</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">c</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;mutation&#39;</span><span class="p">]]),</span>\
+                <span class="s2">&quot;files do not have same muts&quot;</span> 
+    <span class="n">avg</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">fracsurvives</span><span class="p">)</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">cols</span><span class="p">[</span> <span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
     <span class="k">if</span> <span class="n">avgtype</span> <span class="o">==</span> <span class="s1">&#39;mean&#39;</span><span class="p">:</span>
         <span class="n">avg</span> <span class="o">=</span> <span class="n">avg</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
     <span class="k">elif</span> <span class="n">avgtype</span> <span class="o">==</span> <span class="s1">&#39;median&#39;</span><span class="p">:</span>
@@ -296,7 +346,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;invalid avgtype </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">avgtype</span><span class="p">))</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">avg</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
-               <span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;mutdiffsel&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+               <span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;mutfracsurvive&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
                <span class="p">[</span><span class="n">cols</span><span class="p">]</span>
                <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                <span class="p">)</span></div>
