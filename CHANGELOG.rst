@@ -1,7 +1,7 @@
 Change Log
 ===========
 
-2.1a0
+2.1.0
 ------
 * Added programs and docs for `fracsurvive`.
 
