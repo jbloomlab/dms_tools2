@@ -28,7 +28,8 @@ def main():
     prog = parser.prog
 
     # what type of data are we plotting?
-    datatype = [x for x in ['prefs', 'diffsel'] if args[x]]
+    datatype = [x for x in ['prefs', 'diffsel', 'fracsurvive'] 
+            if args[x]]
     assert len(datatype) == 1
     datatype = datatype[0]
 
@@ -80,10 +81,13 @@ def main():
         sites = data['site'].unique()
         logger.info("Read data for {0} sites.\n".format(len(sites)))
         if args['sortsites'] == 'yes':
-            sites = natsort.natsorted(sites)
+            sites = natsort.natsorted(sites, signed=True)
         elif args['sortsites'] != 'no':
             raise ValueError("invalid --sortsites")
 
+        plotdatatype = datatype
+
+        scalebar = False
         if datatype == 'prefs':
             if args['stringency'] != 1:
                 logger.info("Re-scaling preferences by stringency "
@@ -92,9 +96,37 @@ def main():
                         args['stringency'])
             nosepline = True
             ylimits = None
+            assert not args['scalebar'], "can't use `scalebar` with `prefs`"
+
+        elif datatype == 'fracsurvive':
+            plotdatatype = 'diffsel'
+            data = (data.pivot_table(index='site', values='mutfracsurvive',
+                                columns='mutation')
+                        .fillna(0)
+                        .reindex_axis(sites)
+                        .reset_index()
+                        )
+            args['letterheight'] *= 2 # taller letter stacks for diffsel
+            nosepline = True
+            ymax = (data.drop('site', axis=1)
+                    .clip(0, None)
+                    .sum(axis=1)
+                    .max()
+                    )
+            ymin = -0.001
+            if args['fracsurvivemax']:
+                assert args['fracsurvivemax'] > 0, 'fracsurvivemax <= 0'
+                assert args['fracsurvivemax'] >= ymax, \
+                        "range of data exceed `--fracsurvivemax`"
+                ylimits = (ymin, args['fracsurvivemax'])
+            else:
+                assert ymax > 0, "no fracsurvive values > 0"
+                ylimits = (ymin, 1.02 * ymax)
+            if args['scalebar']:
+                scalebar = (float(args['scalebar'][0]),
+                        args['scalebar'][1])
 
         elif datatype == 'diffsel':
-            # logo plot of differential selection
             data = (data.pivot_table(index='site', values='mutdiffsel',
                                 columns='mutation')
                         .fillna(0)
@@ -130,6 +162,9 @@ def main():
                 ymax = diffselrange[1]
             dy = ymax - ymin
             ylimits = (ymin - 0.02 * dy, ymax + 0.02 * dy)
+            if args['scalebar']:
+                scalebar = (float(args['scalebar'][0]),
+                        args['scalebar'][1])
 
         else:
             raise ValueError("Invalid datatype {0}".format(datatype))
@@ -187,7 +222,7 @@ def main():
         logger.info("Making logo plot {0}...".format(files['logo']))
         phydmslib.weblogo.LogoPlot(
                     sites=sites, 
-                    datatype=datatype, 
+                    datatype=plotdatatype, 
                     data=data, 
                     plotfile=files['logo'],
                     nperline=args['nperline'],
@@ -204,6 +239,7 @@ def main():
                     map_metric=args['mapmetric'],
                     noseparator=nosepline,
                     underlay={'no':False, 'yes':True}[args['underlay']],
+                    scalebar=scalebar,
                     )
         logger.info("Successfully created logo plot.\n")
 

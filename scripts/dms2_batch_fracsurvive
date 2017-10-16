@@ -1,6 +1,6 @@
 #!python
 
-"""Runs a batch of ``dms2_diffsel`` programs, summarizes results."""
+"""Run batch of ``dms2_fracsurvive`` programs, summarize results."""
 
 
 import os
@@ -17,13 +17,13 @@ import pandas
 import dms_tools2.parseargs
 import dms_tools2.utils
 import dms_tools2.plot
-import dms_tools2.diffsel
+import dms_tools2.fracsurvive
 
 
 def main():
     """Main body of script."""
 
-    parser = dms_tools2.parseargs.batch_diffselParser()
+    parser = dms_tools2.parseargs.batch_fracsurviveParser()
     args = vars(parser.parse_args())
     prog = parser.prog
 
@@ -38,10 +38,10 @@ def main():
     filesuffixes = {
             'log':'.log',
             }
-    lineplottypes = ['positive', 'total', 'max', 'minmax']
+    lineplottypes = ['avg', 'max']
     for pt in lineplottypes:
-        filesuffixes['mean' + pt] = '_mean{0}diffsel.pdf'.format(pt)
-        filesuffixes['median' + pt] = '_median{0}diffsel.pdf'.format(pt)
+        filesuffixes['mean' + pt] = '_mean{0}fracsurvive.pdf'.format(pt)
+        filesuffixes['median' + pt] = '_median{0}fracsurvive.pdf'.format(pt)
     files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
             args['summaryprefix'], s))) for (f, s) in 
             filesuffixes.items()])
@@ -57,7 +57,7 @@ def main():
                 "no batchfile {0}".format(args['batchfile'])
         batchruns = pandas.read_csv(args['batchfile'], na_filter=False)
         batchruns.columns = batchruns.columns.str.strip()
-        colnames = set(['name', 'sel', 'mock'])
+        colnames = set(['name', 'sel', 'mock', 'libfracsurvive'])
         assert set(batchruns.columns) >= colnames, ("batchfile lacks "
                 "required column names: {0}".format(colnames))
         for c in batchruns.columns:
@@ -81,12 +81,12 @@ def main():
 
         # add more expected output files based on group
         for (g, gprefix) in zip(groups, groupprefixes):
-            for seltype in ['mutdiffsel', 'absolutesitediffsel', 
-                    'positivesitediffsel', 'maxmutdiffsel']:
+            for seltype in ['mutfracsurvive', 'avgfracsurvive',
+                    'maxfracsurvive']:
                 filesuffixes[g + seltype + 'corr'] = '_{0}{1}corr.pdf'.format(
                         gprefix, seltype)
             for avgtype in ['mean', 'median']:
-                for seltype in ['mutdiffsel', 'sitediffsel']:
+                for seltype in ['mutfracsurvive', 'sitefracsurvive']:
                     filesuffixes[g + avgtype + seltype] = \
                             '_{0}{1}{2}.csv'.format(
                             gprefix, avgtype, seltype)
@@ -116,13 +116,14 @@ def main():
             raise ValueError("--ncpus must be -1 or > 0")
         ncpus_per_run = max(1, ncpus // len(batchruns.index))
 
-        # run dms2_diffsel for each sample in batchfile
-        logger.info("Running dms2_diffsel on all samples...")
+        # run dms2_fracsurvive for each sample in batchfile
+        logger.info("Running dms2_fracsurvive on all samples...")
         argslist = []
         for (i, row) in batchruns.iterrows():
-            # define newargs to pass to dms2_diffsel
-            newargs = ['dms2_diffsel', '--name', row['outname'], 
+            # define newargs to pass to dms2_fracsurvive
+            newargs = ['dms2_fracsurvive', '--name', row['outname'], 
                     '--sel', row['sel'], '--mock', row['mock'],
+                    '--libfracsurvive', row['libfracsurvive'],
                     '--ncpus', str(ncpus_per_run)]
             if 'err' in batchruns.columns:
                 newargs += ['--err', row['err']]
@@ -141,12 +142,12 @@ def main():
                 stderr=subprocess.STDOUT), argslist)
         pool.close()
         pool.join()
-        logger.info("Completed runs of dms2_diffsel.\n")
+        logger.info("Completed runs of dms2_fracsurvive.\n")
 
-        # define dms2_diffsel output files and make sure they exist 
+        # define dms2_fracsurvive output files and make sure they exist 
         for (filename, filesuffix) in [
-                ('mutdiffsel', '_mutdiffsel.csv'),
-                ('sitediffsel', '_sitediffsel.csv'),
+                ('mutfracsurvive', '_mutfracsurvive.csv'),
+                ('sitefracsurvive', '_sitefracsurvive.csv'),
                 ]:
             batchruns[filename] = (args['outdir'] + '/' + batchruns['outname'] +
                     filesuffix)
@@ -164,63 +165,60 @@ def main():
         groupprefixes = ['{0}{1}'.format(g, {True:'', False:'-'}[g == ''])
                 for g in groups]
 
-        # process diffsel each group
-        avgsitediffsel = {'mean':[], 'median':[]}
+        # process mutfracsurvive each group
+        avgsitefracsurvive = {'mean':[], 'median':[]}
         for (g, gprefix) in zip(groups, groupprefixes):
 
             samples = batchruns.query('group == @g')
-            logger.info("Analyzing the diffsel values for the "
+            logger.info("Analyzing the fracsurvive values for the "
                     "{0} samples{1}.".format(len(samples),
                     {True:'', False:' in group {0}'.format(g)}[g == '']))
 
-            for seltype in ['mutdiffsel', 'absolutesitediffsel', 
-                    'positivesitediffsel', 'maxmutdiffsel']:
+            for datatype in ['mutfracsurvive', 'avgfracsurvive',
+                    'maxfracsurvive']:
                 if len(samples) <= 1:
                     continue
-                plotfile = files[g + seltype + 'corr']
+                plotfile = files[g + datatype + 'corr']
                 logger.info("Plotting {0} correlations to {1}".format(
                         seltype, plotfile))
-                if seltype == 'mutdiffsel':
-                    datatype = 'mutdiffsel'
-                    infiles = samples['mutdiffsel']
+                if datatype == 'mutfracsurvive':
+                    infiles = samples['mutfracsurvive']
                 else:
-                    datatype = {'absolutesitediffsel':'abs_diffsel',
-                                'positivesitediffsel':'positive_diffsel',
-                                'maxmutdiffsel':'max_diffsel'}[seltype]
-                    infiles = samples['sitediffsel']
+                    infiles = samples['sitefracsurvive']
                 dms_tools2.plot.plotCorrMatrix(samples['name'], 
                         infiles, plotfile, datatype=datatype, 
                         title=g.replace('-', ' '))
 
             for avgtype in ['mean', 'median']:
-                f = files[g + avgtype + 'mutdiffsel']
-                logger.info("Writing {0} mutdiffsel to {1}".format(avgtype, f))
-                avgmutdiffsel = dms_tools2.diffsel.avgMutDiffSel(
-                        samples['mutdiffsel'], avgtype)
-                avgmutdiffsel.to_csv(f, index=False)
-                f = files[g + avgtype + 'sitediffsel']
-                logger.info("Writing {0} sitediffsel to {1}".format(avgtype, f))
-                (dms_tools2.diffsel.mutToSiteDiffSel(avgmutdiffsel)
-                        .sort_values('abs_diffsel', ascending=False)
+                f = files[g + avgtype + 'mutfracsurvive']
+                logger.info("Writing {0} mutfracsurvive to {1}".format(avgtype, f))
+                avgmutfracsurvive = dms_tools2.fracsurvive.avgMutFracSurvive(
+                        samples['mutfracsurvive'], avgtype)
+                avgmutfracsurvive.to_csv(f, index=False)
+                f = files[g + avgtype + 'sitefracsurvive']
+                logger.info("Writing {0} sitefracsurvive to {1}"
+                        .format(avgtype, f))
+                (dms_tools2.fracsurvive.mutToSiteFracSurvive(avgmutfracsurvive)
+                        .sort_values('avgfracsurvive', ascending=False)
                         .to_csv(f, index=False)
                         )
-                avgsitediffsel[avgtype].append(f)
+                avgsitefracsurvive[avgtype].append(f)
 
-        # plots of diffsel for all groups
+        # plots of fracsurvive for all groups
         if 'grouplabel' in batchruns.columns:
             grouplabels = batchruns['grouplabel'].unique()
             assert (len(groups) == len(grouplabels) ==
                     len(batchruns.groupby(['group', 'grouplabel']))),\
-                     "not a unique pairing of `group` and `grouplabel`"
+                    "not a unique pairing of `group` and `grouplabel`"
         else:
             grouplabels = [g.replace('-', ' ') for g in groups]
         for avgtype in ['mean', 'median']:
             for pt in lineplottypes:
                 f = files[avgtype + pt]
-                logger.info("Plotting {0} {1} diffsel to {2}".format(
+                logger.info("Plotting {0} {1}fracsurvive to {2}".format(
                         avgtype, pt, f))
                 dms_tools2.plot.plotSiteDiffSel(grouplabels,
-                        avgsitediffsel[avgtype], f, pt)
+                        avgsitefracsurvive[avgtype], f, pt + 'fracsurvive')
 
     except SystemExit as e:
         if e.code != 0:

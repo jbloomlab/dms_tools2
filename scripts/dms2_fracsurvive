@@ -1,6 +1,6 @@
 #!python
 
-"""Computes differential selection.
+"""Computes fraction surviving for each mutation.
 
 Written by Jesse Bloom."""
 
@@ -15,14 +15,14 @@ import pandas
 import dms_tools2
 import dms_tools2.utils
 import dms_tools2.parseargs
-import dms_tools2.diffsel
+import dms_tools2.fracsurvive
 
 
 def main():
     """Main body of script."""
 
     # Parse command line arguments
-    parser = dms_tools2.parseargs.diffselParser()
+    parser = dms_tools2.parseargs.fracsurviveParser()
     args = vars(parser.parse_args())
     prog = parser.prog
 
@@ -34,8 +34,8 @@ def main():
         args['outdir'] = ''
     filesuffixes = {
             'log':'.log',
-            'mutdiffsel':'_mutdiffsel.csv',
-            'sitediffsel':'_sitediffsel.csv',            
+            'mutfracsurvive':'_mutfracsurvive.csv',
+            'sitefracsurvive':'_sitefracsurvive.csv',            
             }
     files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
             args['name'], s))) for (f, s) in filesuffixes.items()])
@@ -62,11 +62,14 @@ def main():
                 os.remove(f)
 
         if args['chartype'] == 'codon_to_aa':
-            countcharacters = dms_tools2.CODONS
+            countchars = dms_tools2.CODONS
             translate_to_aa = True
             countsuffix = '_codoncounts.csv'
         else:
             raise ValueError("Bad chartype {0}".format(args['chartype']))
+
+        libfracsurvive = args['libfracsurvive']
+        assert 0 <= libfracsurvive <= 1, "`libfracsurvive` not in 0 to 1"
 
         counts = {}
         if not args['indir']:
@@ -92,29 +95,41 @@ def main():
                             .format(desc, fname))
             counts[arg] = pandas.read_csv(fname)
 
-        logger.info("Computing mutdiffsel...")
-        mutdiffsel = dms_tools2.diffsel.computeMutDiffSel(
-                counts['sel'], counts['mock'], countcharacters,
+        logger.info("Computing fracsurvive for each mutation...")
+        if args['aboveavg'] == 'yes':
+            logger.info('These are the fracsurvive **above** the library '
+                    'average of {0}'.format(libfracsurvive))
+            aboveavg = True
+        elif args['aboveavg'] == 'no':
+            aboveavg = False
+        else:
+            raise ValueError("Invalid aboveavg {0}".format(args['aboveavg']))
+        mutfracsurvive = dms_tools2.fracsurvive.computeMutFracSurvive(
+                libfracsurvive, counts['sel'], counts['mock'], countchars,
                 args['pseudocount'], translate_to_aa, counts['err'],
-                args['mincount'])
+                args['mincount'], aboveavg=aboveavg)
         if args['excludestop'] == 'yes':
-            mutdiffsel = mutdiffsel.query(
+            mutfracsurvive = mutfracsurvive.query(
                     '(mutation != "*") & (wildtype != "*")')
-        mutdiffsel = mutdiffsel.sort_values('mutdiffsel', ascending=False)
-        logger.info("Mutations with largest mutdiffsel:\n{0}\n".format(
-                mutdiffsel.head(10).to_string(index=False, 
+        mutfracsurvive = mutfracsurvive.sort_values('mutfracsurvive',
+                ascending=False)
+        logger.info("Mutations with largest mutfracsurvive:\n{0}\n"
+                .format(mutfracsurvive.head(10).to_string(index=False, 
                 float_format='{:.2f}'.format)))
-        logger.info("Writing to {0}".format(files['mutdiffsel']))
-        mutdiffsel.to_csv(files['mutdiffsel'], index=False, na_rep='NaN')
+        logger.info("Writing to {0}".format(files['mutfracsurvive']))
+        mutfracsurvive.to_csv(files['mutfracsurvive'], index=False, 
+                na_rep='NaN')
 
-        logger.info("Computing sitediffsel...")
-        sitediffsel = (dms_tools2.diffsel.mutToSiteDiffSel(mutdiffsel)
-                       .sort_values('abs_diffsel', ascending=False))
-        logger.info("Sites with largest absolute sitediffsel:\n{0}\n"
-                .format(sitediffsel.head(10).to_string(index=False,
+        logger.info("Computing sitefracsurvive...")
+        sitefracsurvive = (dms_tools2.fracsurvive.mutToSiteFracSurvive(
+                                mutfracsurvive)
+                       .sort_values('avgfracsurvive', ascending=False))
+        logger.info("Sites with largest avgfracsurvive:\n{0}\n"
+                .format(sitefracsurvive.head(10).to_string(index=False,
                 float_format='{:.2f}'.format)))
-        logger.info("Writing to {0}".format(files['sitediffsel']))
-        sitediffsel.to_csv(files['sitediffsel'], index=False, na_rep='NaN')
+        logger.info("Writing to {0}".format(files['sitefracsurvive']))
+        sitefracsurvive.to_csv(files['sitefracsurvive'], index=False, 
+                na_rep='NaN')
 
     except:
         logger.exception('Terminating {0} with ERROR'.format(prog))

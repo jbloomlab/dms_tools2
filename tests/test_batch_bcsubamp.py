@@ -16,6 +16,7 @@ import pandas
 
 class test_batch_bcsubamp(unittest.TestCase):
     """Runs ``dms2_batch_bcsubamp`` on test data."""
+    SITEMASK = []
 
     def setUp(self):
         """Set up input data."""
@@ -39,6 +40,8 @@ class test_batch_bcsubamp(unittest.TestCase):
                            '850,1275,31,37', '1276,1698,46,45']
 
         self.summaryprefix = 'summary'
+        if self.SITEMASK:
+            self.summaryprefix += '-sitemask'
 
         # define output files
         files = ['.log', '_bcstats.pdf', '_codonmuttypes.pdf',
@@ -70,6 +73,11 @@ class test_batch_bcsubamp(unittest.TestCase):
                 '--fastqdir', self.indir,
                 '--alignspecs',
                ] + self.alignspecs
+        if self.SITEMASK:
+            sitemaskfile = os.path.join(self.testdir, 'sitemask.csv')
+            pandas.DataFrame({'site':self.SITEMASK, 
+                    'extracol':['a'] * len(self.SITEMASK)}).to_csv(sitemaskfile)
+            cmds += ['--sitemask', sitemaskfile]
         sys.stderr.write('\nRunning the following command:\n{0}\n'.format(
                 ' '.join(cmds)))
         subprocess.check_call(cmds)
@@ -77,12 +85,26 @@ class test_batch_bcsubamp(unittest.TestCase):
         for f in self.outfiles.values():
             self.assertTrue(os.path.isfile(f), "Failed to create {0}".format(f))
 
-        expected = pandas.read_csv(self.expectedcodonmuttypes, 
-                index_col='name')
-        actual = pandas.read_csv(self.outfiles['_codonmuttypes.csv'], 
-                index_col='name')
-        for c in expected.columns:
-            self.assertTrue(numpy.allclose(expected[c].values, actual[c].values))
+        if self.SITEMASK:
+            # just test right site columns 
+            for sample in samples:
+                counts = pandas.read_csv(os.path.join(self.testdir,
+                        sample + '_codoncounts.csv'))
+                self.assertTrue(all(counts['site'] == self.SITEMASK))
+
+        else:
+            # test for correct output
+            expected = pandas.read_csv(self.expectedcodonmuttypes, 
+                    index_col='name')
+            actual = pandas.read_csv(self.outfiles['_codonmuttypes.csv'], 
+                    index_col='name')
+            for c in expected.columns:
+                self.assertTrue(numpy.allclose(expected[c].values, actual[c].values))
+
+
+class test_batch_bcsubamp_sitemask(test_batch_bcsubamp):
+    """Runs ``dms2_batch_bcsubamp`` with ``--sitemask`` on test data."""
+    SITEMASK = list(range(2, 50))
 
 
 if __name__ == '__main__':

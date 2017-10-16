@@ -62,7 +62,7 @@ setup(
         'pystan>=2.16',
         'scipy>=0.18.1',
         'seaborn>=0.8',
-        'phydms>=2.1.2',
+        'phydms>=2.1.3',
         ],
     platforms = 'Linux and Mac OS X).',
     packages = ['dms_tools2'],
@@ -74,6 +74,8 @@ setup(
             'scripts/dms2_batch_prefs',
             'scripts/dms2_diffsel',
             'scripts/dms2_batch_diffsel',
+            'scripts/dms2_fracsurvive',
+            'scripts/dms2_batch_fracsurvive',
             'scripts/dms2_logoplot',
             ],
     ext_modules = [

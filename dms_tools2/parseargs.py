@@ -165,6 +165,10 @@ def bcsubampParentParser():
             help=('Only call consensus identity for barcode when >= '
             'this fraction of reads concur.'))
 
+    parser.add_argument('--sitemask', help='Use to only consider '
+            'mutations at a subset of sites. Should be a CSV file '
+            'with column named `site` listing all sites to include.')
+
     parser.add_argument('--purgeread', type=float, default=0,
             help=("Randomly purge read pairs with this probability "
             "to subsample data."))
@@ -374,15 +378,101 @@ def batch_diffselParser():
     parser.add_argument('--batchfile', required=True, help='CSV file '
             'specifying each ``dms2_diffsel`` run. Must have these '
             'columns: `name`, `sel`, `mock`. Can also have these: '
-            '`err`, `group`. If `group` is used, samples are grouped '
-            'in summary plots. Other columns are ignored, so other '
-            '``dms2_diffsel`` args should be passed as separate '
+            '`err`, `group`, `grouplabel`. If `group` is used, '
+            'samples are grouped in summary plots labeled by `group`, '
+            'or by `grouplabel` if specified. Other columns are ignored, '
+            'so other ``dms2_diffsel`` args should be passed as separate '
             'command line args rather than in ``--batchfile``.')
 
     parser.add_argument('--summaryprefix', required=True,
             help='Prefix of output summary files and plots.')
 
     return parser
+
+
+def fracsurviveParser():
+    """Returns `argparse.ArgumentParser` for ``dms2_fracsurvive``."""
+    parser = argparse.ArgumentParser(
+            description=parserDescription(
+                'Estimate fraction surviving for each mutation.'),
+            parents=[fracsurviveParentParser()],
+            conflict_handler='resolve',
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--name', required=True, 
+            help='Name used for output files.')
+
+    parser.add_argument('--sel', required=True, help="Post-selection "
+            "counts file or prefix used when creating this file.")
+
+    parser.add_argument('--mock', required=True, help="Like ``--sel``, "
+            "but for mock-selection counts.")
+
+    parser.add_argument('--libfracsurvive', required=True, type=float,
+            help='Overall fraction of total library surviving selection '
+            'versus mock condition. Should be between 0 and 1.')
+
+    parser.add_argument('--err', help="Like ``--sel`` but for "
+            "error-control to correct mutation counts.")
+
+    return parser
+
+
+def batch_fracsurviveParser():
+    """Returns `argparse.ArgumentParser` for ``dms2_batch_fracsurvive``"""
+    parser = argparse.ArgumentParser(
+            description=parserDescription(
+                'Perform runs of ``dms2_fracsurvive`` and summarize results.'),
+            parents=[fracsurviveParentParser()],
+            conflict_handler='resolve',
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--batchfile', required=True, help='CSV file '
+            'specifying each ``dms2_fracsurvive`` run. Must have these '
+            'columns: `name`, `sel`, `mock`, `libfracsurvive`. Can also ' 
+            'have these `err`, `group`, `grouplabel`. If `group` is used, '
+            'samples are grouped in summary plots labeled by `group`, or by '
+            '`grouplabel` if it is specified. Other columns are ignored, so '
+            'other ``dms2_fracsurvive`` args should be passed as separate '
+            'command line args rather than in ``--batchfile``.')
+
+    parser.add_argument('--summaryprefix', required=True,
+            help='Prefix of output summary files and plots.')
+
+    return parser
+
+
+def fracsurviveParentParser():
+    """Parent parser ``dms2_fracsurvive`` / ``dms2_batch_fracsurvive``"""
+    parser = argparse.ArgumentParser(
+            parents=[parentParser()],
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--indir', help="Input counts files in this "
+            "directory.")
+
+    parser.add_argument('--chartype', default='codon_to_aa',
+            choices=['codon_to_aa'], help="Characters for which "
+            "fraction surviving selection is estimated. `codon_to_aa` ="
+            " amino acids from codon counts.")
+
+    parser.add_argument('--aboveavg', default='no', choices=['yes', 'no'],
+            help="Report fracsurvive **above** the library average "
+            "rather than direct fracsurvive values.")
+
+    parser.add_argument('--excludestop', default='yes', choices=['yes', 'no'],
+            help="Exclude stop codons as a possible amino acid?")
+
+    parser.add_argument('--pseudocount', default=5, type=float,
+            help="Pseudocount added to each count for sample with smaller "
+            "depth; pseudocount for other sample scaled by relative depth.")
+
+    parser.add_argument('--mincount', default=0, type=float,
+            help="Report as `NaN` the fracsurvive of mutations for which "
+            "both selected and mock-selected samples have < this many counts.")
+
+    return parser
+
 
 
 def logoplotParser():
@@ -397,6 +487,8 @@ def logoplotParser():
     group.add_argument('--prefs', help='CSV file of amino-acid preferences.')
     group.add_argument('--diffsel', help='CSV file of amino-acid '
             'differential selection.')
+    group.add_argument('--fracsurvive', help='CSV file of amino-acid '
+            'fraction surviving.')
 
     parser.add_argument('--name', required=True, 
             help='Name used for output files.')
@@ -420,8 +512,12 @@ def logoplotParser():
 
     parser.add_argument('--diffselrange', nargs=2, type=float,
             metavar=('MINDIFFSEL', 'MAXDIFFSEL'), 
-            help='Specify a fixed range for diffsel. Otherwise '
+            help='Specify a fixed range for `diffsel`. Otherwise '
             'determined from data range.')
+
+    parser.add_argument('--fracsurvivemax', type=float,
+            help='Specify maximum value for `fracsurvive`. '
+            'Otherwise determined from data range.')
 
     parser.add_argument('--sortsites', choices=['yes', 'no'],
             default='yes', help='Sort sites from first to last '
@@ -456,6 +552,11 @@ def logoplotParser():
 
     parser.add_argument('--underlay', default='no', choices=['yes', 'no'],
             help='Plot underlay rather than overlay bars.')
+
+    parser.add_argument('--scalebar', default=None, nargs=2,
+            metavar=('BARHEIGHT', 'LABEL'), help='Plot a scale bar '
+            'indicating BARHEIGHT with LABEL. Only for `diffsel` and '
+            '`fracsurvive`.')
 
     parser.add_argument('--overlaycolormap', default='jet', help="`matplotlib "
             "color map <http://matplotlib.org/users/colormaps.html>`_ for"

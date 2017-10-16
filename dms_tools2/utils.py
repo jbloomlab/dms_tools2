@@ -37,6 +37,8 @@ def sessionInfo():
         try:
             v = importlib.import_module(modname).__version__
             s.append('\t{0} version: {1}'.format(modname, v))
+        except AttributeError:
+            s.append('\t{0} version unknown'.format(modname))
         except ImportError:
             raise ImportError("Cannot import {0}".format(modname))
     return '\n'.join(s)

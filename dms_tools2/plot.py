@@ -245,7 +245,7 @@ def plotReadsPerBC(names, readsperbcfiles, plotfile,
                     '$\geq {0}$'.format(maxreads)])
             + scale_y_continuous(labels=latexSciNot)
             + facet_wrap('~name', ncol=ncol)
-            + theme(figure_size=(1.5 * (0.8 + ncol), 1.2 * (0.4 + nrow)))
+            + theme(figure_size=(1.9 * (0.8 + ncol), 1.3 * (0.4 + nrow)))
             )
     p.save(plotfile, verbose=False)
     plt.close()
@@ -510,6 +510,7 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
                 - `abs_diffsel`: sitediffsel from ``dms2_diffsel``
                 - `positive_diffsel`: sitediffsel from ``dms2_diffsel``
                 - `max_diffsel`: sitediffsel from ``dms2_diffsel``
+                - `mutfracsurvive`: from ``dms2_fracsurvive``
         `trim_unshared` (bool)
             What if files in `infiles` don't have same sites / mutations?
             If `True`, trim unshared one and just analyze ones
@@ -555,44 +556,45 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
                     )
         df.columns = df.columns.get_level_values(1)
 
-    elif datatype == 'mutdiffsel':
-        mutdiffsel = [pandas.read_csv(f)
-                            .assign(name=name)
-                            .assign(mutname=lambda x: x.wildtype +
-                                    x.site.map(str) + x.mutation)
-                            .sort_values('mutname')
-                            [['name', 'mutname', 'mutdiffsel']]
-                      for (name, f) in zip(names, infiles)]
-        muts = set(mutdiffsel[0]['mutname'].values)
-        for m in mutdiffsel:
+    elif datatype in ['mutdiffsel', 'mutfracsurvive']:
+        mut_df = [pandas.read_csv(f)
+                        .assign(name=name)
+                        .assign(mutname=lambda x: x.wildtype +
+                                x.site.map(str) + x.mutation)
+                        .sort_values('mutname')
+                        [['name', 'mutname', datatype]]
+                    for (name, f) in zip(names, infiles)]
+        muts = set(mut_df[0]['mutname'].values)
+        for m in mut_df:
             unsharedmuts = muts.symmetric_difference(set(m['mutname']))
             if trim_unshared:
                 muts -= unsharedmuts
             elif unsharedmuts:
                 raise ValueError("infiles don't have same muts: {0}".
                         format(unsharedmuts))
-        df = (pandas.concat(mutdiffsel, ignore_index=True)
+        df = (pandas.concat(mut_df, ignore_index=True)
                     .query('mutname in @muts') # only keep shared muts
                     .pivot_table(index='mutname', columns='name')
                     .dropna()
                     )
         df.columns = df.columns.get_level_values(1)
 
-    elif datatype in ['abs_diffsel', 'positive_diffsel', 'max_diffsel']:
-        sitediffsel = [pandas.read_csv(f)
-                             .assign(name=name)
-                             .sort_values('site')
-                             [['name', 'site', datatype]]
-                        for (name, f) in zip(names, infiles)]
-        sites = set(sitediffsel[0]['site'].values)
-        for s in sitediffsel:
+    elif datatype in ['abs_diffsel', 'positive_diffsel', 'max_diffsel',
+            'avgfracsurvive', 'maxfracsurvive']:
+        site_df = [pandas.read_csv(f)
+                         .assign(name=name)
+                         .sort_values('site')
+                         [['name', 'site', datatype]]
+                    for (name, f) in zip(names, infiles)]
+        sites = set(site_df[0]['site'].values)
+        for s in site_df:
             unsharedsites = sites.symmetric_difference(set(s['site']))
             if trim_unshared:
                 sites -= unsharedsites
             elif unsharedsites:
                 raise ValueError("infiles don't have same sites: {0}".
                         format(unsharedsites))
-        df = (pandas.concat(sitediffsel, ignore_index=True)
+        df = (pandas.concat(site_df, ignore_index=True)
                     .query('site in @sites') # only keep shared sites
                     .pivot_table(index='site', columns='name')
                     .dropna()
@@ -622,8 +624,9 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
         for (i, j) in zip(*numpy.diag_indices_from(p.axes)):
             p.axes[i, j].set_visible(False)
 
-    elif datatype in ['mutdiffsel', 'abs_diffsel', 
-            'positive_diffsel', 'max_diffsel']:
+    elif datatype in ['mutdiffsel', 'abs_diffsel', 'positive_diffsel',
+            'max_diffsel', 'mutfracsurvive', 'avgfracsurvive',
+            'maxfracsurvive']:
 
         p.map_diag(seaborn.distplot, color='black', kde=True, hist=False)
 
@@ -650,22 +653,27 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
 
 def plotSiteDiffSel(names, diffselfiles, plotfile, 
         diffseltype, maxcol=2):
-    """Plot site differential selection along sequence.
+    """Plot site diffsel or fracsurvive along sequence.
+
+    Despite the function name, this function can be used to
+    plot either differential selection or fraction surviving.
 
     Args:
         `names` (list or series)
             Names of samples for which we plot statistics.
         `diffselfiles` (list or series)
-            ``*sitediffsel.csv`` files as created by ``dms2_diffsel``
-            or ``dms2_batch_diffsel``
+            ``*sitediffsel.csv`` files from ``dms2_diffsel`` or
+            ``*sitefracsurvive.csv`` files from ``dms2_fracsurvive``.
         `plotfile` (str)
             Name of created PDF plot file.
         `diffseltype` (str)
-            Type of differential selection to plot:
+            Type of diffsel or fracsurvive to plot:
                 - `positive`: positive sitediffsel
                 - `total`: positive and negative sitediffsel
                 - `max`: maximum mutdiffsel
                 - `minmax`: minimum and maximum mutdiffsel
+                - `avgfracsurvive`: total site fracsurvive
+                - `maxfracsurvive`: max mutfracsurvive at site
         `maxcol` (int)
             Number of columns in faceted plot.
     """
@@ -678,6 +686,7 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
             diffsels]), "diffselfiles not all for same sites"
     diffsel = pandas.concat(diffsels, ignore_index=True)
 
+    ylabel = 'differential selection'
     if diffseltype == 'positive':
         rename = {'positive_diffsel':'above'}
     elif diffseltype == 'total':
@@ -688,6 +697,9 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
     elif diffseltype == 'minmax':
         rename = {'max_diffsel':'above',
                   'min_diffsel':'below'}
+    elif diffseltype in ['avgfracsurvive', 'maxfracsurvive']:
+        ylabel = 'fraction surviving'
+        rename = {diffseltype:'above'}
     else:
         raise ValueError("invalid diffseltype {0}".format(diffseltype))
     diffsel = (diffsel.rename(columns=rename)
@@ -698,7 +710,8 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
                       )
     # natural sort by site: https://stackoverflow.com/a/29582718
     diffsel = diffsel.reindex(index=natsort.order_by_index(
-            diffsel.index, natsort.index_natsorted(diffsel.site)))
+            diffsel.index, natsort.index_natsorted(diffsel.site,
+            signed=True)))
     # now some manipulations to make site str while siteindex is int
     diffsel['site'] = diffsel['site'].apply(str)
     diffsel['siteindex'] = pandas.Categorical(diffsel['site'],
@@ -716,7 +729,7 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
     p = (ggplot(diffsel, aes(x='siteindex', y='diffsel', color='direction'))
             + geom_step(size=0.4)
             + xlab('site')
-            + ylab('differential selection')
+            + ylab(ylabel)
             + scale_x_continuous(breaks=xbreaks, labels=xlabels)
             + scale_color_manual(COLOR_BLIND_PALETTE)
             + guides(color=False)
