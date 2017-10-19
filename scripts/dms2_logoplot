@@ -114,7 +114,7 @@ def main():
                     .max()
                     )
             ymin = -0.001
-            if args['fracsurvivemax']:
+            if args['fracsurvivemax'] is not None:
                 assert args['fracsurvivemax'] > 0, 'fracsurvivemax <= 0'
                 assert args['fracsurvivemax'] >= ymax, \
                         "range of data exceed `--fracsurvivemax`"
