@@ -1,8 +1,10 @@
 Change Log
 ===========
 
-2.1.dev1
+2.2.dev0
 ---------
+* added `compareprefs` module
+
 * Fix bug with ``--fracsurvivemax 0`` to ``dms2_logoplot``
 
 2.1.0
