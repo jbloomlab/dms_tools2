@@ -5,11 +5,12 @@ dssp
 Process output from `dssp <http://swift.cmbi.ru.nl/gv/dssp/>`_.
 
 `dssp <http://swift.cmbi.ru.nl/gv/dssp/>`_ can be used to calculate
-secondary structure and solvent accessibility information from a 
+secondary structure and solvent accessibility information from a
 PDB structure. This module can process that output.
 """
 
 import os
+import re
 import pandas
 import Bio.PDB
 
@@ -36,7 +37,7 @@ def processDSSP(dsspfile, chain=None, max_asa=MAX_ASA_TIEN):
 
     It returns a `pandas.DataFrame` that gives the secondary
     structure and solvent accessibility for each residue in the
-    ``dssp`` output.    
+    ``dssp`` output.
 
     Args:
         `dsspfile` (str)
@@ -62,7 +63,7 @@ def processDSSP(dsspfile, chain=None, max_asa=MAX_ASA_TIEN):
             - `RSA`: relative solvent accessibility of the residue.
 
             - `SS`: ``dssp`` secondary structure code, one of:
-            
+
                 - *G*: 3-10 helix
 
                 - *H*: alpha helix
@@ -87,6 +88,7 @@ def processDSSP(dsspfile, chain=None, max_asa=MAX_ASA_TIEN):
 
                 - *loop*: any of the other `SS` values.
     """
+    dssp_cys = re.compile('[a-z]')
     d_dssp = Bio.PDB.make_dssp_dict(dsspfile)[0]
     chains = set([chainid for (chainid, r) in d_dssp.keys()])
     if chain is None:
@@ -103,7 +105,11 @@ def processDSSP(dsspfile, chain=None, max_asa=MAX_ASA_TIEN):
             }
     for ((chainid, r), tup) in d_dssp.items():
         if chainid == chain:
-            (aa, ss, acc) = tup[ : 3]
+            (tmp_aa, ss, acc) = tup[ : 3]
+            if dssp_cys.match(tmp_aa):
+                aa = 'C'
+            else:
+                aa = tmp_aa
             d_df['site'].append(r[1])
             d_df['amino_acid'].append(aa)
             d_df['ASA'].append(acc)
