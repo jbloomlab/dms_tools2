@@ -15,7 +15,7 @@ import distutils.version
 
 
 def fastqFromSRA(samples, fastq_dump, fastqdir, aspera=None,
-        overwrite=False, passonly=True):
+        overwrite=False, passonly=True, no_downloads=False):
     """Download data from SRA and extract FASTQ files.
 
     Currently only works for runs containing paired-end reads.
@@ -47,6 +47,9 @@ def fastqFromSRA(samples, fastq_dump, fastqdir, aspera=None,
             no longer even needs to be a valid path.
         `passonly` (bool)
             Keep only reads with a passing `READ_FILTER` value.
+        `no_downloads` (bool)
+            If `True`, do **not** actually download the files,
+            but instead just add the columns to `samples`.
 
     Result:
         Upon completion, the directory `fastqdir` contains
@@ -65,6 +68,9 @@ def fastqFromSRA(samples, fastq_dump, fastqdir, aspera=None,
             for r in ['R1', 'R2'] for f in samples[r]])
             and not overwrite):
         return # all files already present, nothing to do
+
+    if no_downloads:
+        return # don't do anything
 
     assert shutil.which(fastq_dump), ("fastq-dump not installed in a "
             "location accessible with command {0}".format(fastq_dump))
