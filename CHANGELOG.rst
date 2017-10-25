@@ -5,6 +5,8 @@ Change Log
 ---------
 * Fix bug with ``--fracsurvivemax 0`` to ``dms2_logoplot``
 
+* Fix bug with handling of disulfide-bonded cysteines in ``dssp`` output.
+
 2.1.0
 ------
 * Added programs and docs for `fracsurvive`.
