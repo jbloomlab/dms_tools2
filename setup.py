@@ -62,7 +62,7 @@ setup(
         'pystan>=2.16',
         'scipy>=0.18.1',
         'seaborn>=0.8',
-        'phydms>=2.1.3',
+        'phydms>=2.1.4',
         ],
     platforms = 'Linux and Mac OS X).',
     packages = ['dms_tools2'],

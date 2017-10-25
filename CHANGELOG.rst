@@ -5,6 +5,8 @@ Change Log
 ---------
 * added `compareprefs` module
 
+* Fix bug with ``dms2_logoplot`` when using wildtype sequence overlays
+
 * Fix bug with ``--fracsurvivemax 0`` to ``dms2_logoplot``
 
 2.1.0
