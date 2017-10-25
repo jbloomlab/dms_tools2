@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.1.dev1
+---------
+* Fix bug with ``--fracsurvivemax 0`` to ``dms2_logoplot``
+
 2.1.0
 ------
 * Added programs and docs for `fracsurvive`.
