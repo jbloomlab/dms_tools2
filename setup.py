@@ -56,7 +56,7 @@ setup(
         'numpy>=1.13',
         'IPython>=5.1',
         'jupyter>=1.0.0',
-        'matplotlib>=2.0.2',
+        'matplotlib>=2.0.2, !=2.1.0',
         'plotnine>=0.2.1',
         'natsort>=5.0.3',
         'pystan>=2.16',

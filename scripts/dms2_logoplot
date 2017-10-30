@@ -6,6 +6,7 @@ Written by Jesse Bloom."""
 
 
 import sys
+import math
 import os
 import re
 import time
@@ -17,6 +18,42 @@ import phydmslib.weblogo
 import dms_tools2.parseargs
 import dms_tools2.utils
 import dms_tools2.prefs
+
+
+def omegabysiteOverlay(omegabysitefile, minP=1e-4):
+    """Creates an omegabysite overlay.
+
+    Args:
+        `omegabysitefile` (str)
+            Name of ``*omegabysite.txt`` file created by ``phydms``.
+        `minP` (float)
+            Show all P values less than this as <= this.
+
+    Returns:
+        The 2-tuple `(overlaytup, fix_limits_val)` where
+        `overlaytup` is entry to be added to `overlay` list,
+        and `fix_limits_val` is value to be added to 
+        `fix_limits` under key `shortname`.
+    """
+    omegas = pandas.read_csv(omegabysitefile, comment='#',
+            sep='\t')
+    shortname = '$\omega_r$'
+    longname = ('{0} $<1 \; \longleftarrow$ $\log_{{10}} P$ '
+            '$\longrightarrow \;$ {0} $>1$'.format(shortname))
+    prop_d = {}
+    for r in omegas['site'].values:
+        omegar = float(omegas[omegas['site'] == r]['omega'])
+        p = float(omegas[omegas['site'] == r]['P'])
+        if omegar < 1:
+            prop_d[str(r)] = max(math.log10(minP), math.log10(p))
+        else:
+            prop_d[str(r)] = -max(math.log10(minP), math.log10(p))
+    overlaytup = (prop_d, shortname, longname)
+    ticklocs = [itick for itick in range(int(math.log10(minP)),
+            1 - int(math.log10(minP)))]
+    ticknames = [-abs(itick) for itick in ticklocs]
+    fix_limits_val = (ticklocs, ticknames)
+    return (overlaytup, fix_limits_val)
 
 
 def main():
@@ -187,6 +224,7 @@ def main():
 
         # read any overlays
         overlay = []
+        fix_limits = {}
         for i in range(3): # loop over possibly overlays
             overlayarg = 'overlay{0}'.format(i + 1)
             if not args[overlayarg]:
@@ -194,6 +232,12 @@ def main():
             (overlayfile, shortname, longname) = args[overlayarg]
             logger.info("Reading overlay for {0} from {1}...".format(
                     shortname, overlayfile))
+            if shortname == longname == 'omegabysite':
+                (overlaytup, fix_limits_val) = omegabysiteOverlay(
+                        overlayfile)
+                overlay.append(overlaytup)
+                fix_limits[shortname] = fix_limits_val
+                continue
             assert (len(shortname) < 6) or (shortname == 'wildtype'), \
                 "{0} SHORTNAME too long".format(overlayarg)
             overlaydf = pandas.read_csv(overlayfile)
@@ -212,8 +256,8 @@ def main():
                     shortname, longname))
             logger.info("Read overlay for {0} sites.\n".format(
                     len(overlaydf['site'])))
-            if args['underlay'] == 'yes':
-                overlay.reverse()
+        if args['underlay'] == 'yes':
+            overlay.reverse()
         shortnames = [tup[1] for tup in overlay]
         assert len(set(shortnames)) == len(shortnames), ("Duplicate "
                 "SHORTNAME in overlay arguments")
@@ -230,7 +274,7 @@ def main():
                     allowunsorted=True,
                     ydatamax=1.01, # no meaning for prefs or diffsel
                     overlay=overlay,
-                    fix_limits={},
+                    fix_limits=fix_limits,
                     fixlongname=False,
                     overlay_cmap=args['overlaycolormap'],
                     ylimits=ylimits,

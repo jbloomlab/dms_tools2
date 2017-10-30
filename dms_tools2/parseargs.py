@@ -540,7 +540,10 @@ def logoplotParser():
             "LONGNAME is longer name for legend. Sites not in FILE "
             "are colored white. To show wildtype identity, make "
             "SHORTNAME and LONGNAME both `wildtype` and have this "
-            "column in FILE give 1-letter wildtype amino-acid code.")
+            "column in FILE give 1-letter wildtype amino-acid code. "
+            "To show ``omegabysite.txt`` file from ``phydms``, "
+            "give that file and set both SHORTNAME and LONGNAME "
+            "to `omegabysite`.")
 
     parser.add_argument('--overlay2', default=None, nargs=3,
             metavar=('FILE', 'SHORTNAME', 'LONGNAME'),
