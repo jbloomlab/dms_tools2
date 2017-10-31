@@ -340,7 +340,7 @@ def plotMutFreq(names, countsfiles, plotfile, maxcol=4):
 
 
 def plotCumulMutCounts(names, countsfiles, plotfile, chartype,
-        nmax=15, maxcol=6):
+        nmax=15, maxcol=4):
     """Plot fraction of mutations seen <= some number of times.
 
     For each set of counts in `countsfiles`, plot the fraction
@@ -397,7 +397,6 @@ def plotCumulMutCounts(names, countsfiles, plotfile, chartype,
     # make name a category to preserve order
     df['name'] = df['name'].astype('category', categories=names)
 
-    maxcol = 4
     ncol = min(maxcol, len(names))
     nrow = math.ceil(len(names) / float(ncol))
     p = (ggplot(df, aes('counts', color='character', linestyle='character'))
