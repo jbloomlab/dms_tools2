@@ -236,7 +236,7 @@ def main():
                 (overlaytup, fix_limits_val) = omegabysiteOverlay(
                         overlayfile)
                 overlay.append(overlaytup)
-                fix_limits[shortname] = fix_limits_val
+                fix_limits[overlaytup[1]] = fix_limits_val
                 continue
             assert (len(shortname) < 6) or (shortname == 'wildtype'), \
                 "{0} SHORTNAME too long".format(overlayarg)
