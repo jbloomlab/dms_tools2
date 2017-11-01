@@ -13,6 +13,8 @@ Change Log
 
 * Fix bug with handling of disulfide-bonded cysteines in ``dssp`` output.
 
+* Added `colors` option to `plot.plotCorrMatrix`
+
 2.1.0
 ------
 * Added programs and docs for `fracsurvive`.

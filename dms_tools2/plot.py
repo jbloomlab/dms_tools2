@@ -493,7 +493,7 @@ def plotCodonMutTypes(names, countsfiles, plotfile,
 
 
 def plotCorrMatrix(names, infiles, plotfile, datatype,
-        trim_unshared=True, title=''):
+        trim_unshared=True, title='', colors='black'):
     """Plots correlations among replicates.
 
     Args:
@@ -517,17 +517,15 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
             shared among all files. If `False`, raise an error.
         `title` (str)
             Title to place above plot.
+        `colors` (str or list)
+            Color(s) to color scatter points. If a string, should
+            specify one color for all plots. Otherwise should be
+            list of length `len(names) * (len(names) - 1) // 2`
+            giving lists of colors for plots from top to bottom, 
+            left to right.
     """
     assert len(names) == len(infiles) == len(set(names)) > 1
     assert os.path.splitext(plotfile)[1].lower() == '.pdf'
-
-    # corr coefficients as here: https://stackoverflow.com/a/30942817
-    def corrfunc(x, y, **kws):
-        r, _ = scipy.stats.pearsonr(x, y)
-        ax = plt.gca()
-        ax.annotate('R = {0:.2f}'.format(r), xy=(0.05, 0.9), 
-                xycoords=ax.transAxes, fontsize=19, 
-                fontstyle='oblique')
 
     if datatype == 'prefs':
         # read prefs into dataframe, ensuring all have same characters
@@ -604,12 +602,26 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
     else:
         raise ValueError("Invalid datatype {0}".format(datatype))
 
+    ncolors = len(names) * (len(names) - 1) // 2
+    if isinstance(colors, str):
+        colors = [colors] * ncolors
+    else:
+        assert len(colors) == ncolors, "not {0} colors".format(ncolors)
+
+    def corrfunc(x, y, **kws):
+        r, _ = scipy.stats.pearsonr(x, y)
+        ax = plt.gca()
+        ax.annotate('R = {0:.2f}'.format(r), xy=(0.05, 0.9), 
+                xycoords=ax.transAxes, fontsize=19, 
+                fontstyle='oblique')
+        color = colors.pop(0)
+        plt.scatter(x, y, s=22, alpha=0.35, color=color,
+                marker='o', edgecolor='none', rasterized=True)
+
     # map lower / upper / diagonal as here:
     # https://stackoverflow.com/a/30942817 for plot
     p = seaborn.PairGrid(df)
-    p.map_lower(plt.scatter, s=22, alpha=0.35, color='black', 
-            marker='o', edgecolor='none', rasterized=True)
-    p.map_lower(corrfunc)
+    p.map_lower(corrfunc, colors=colors)
     if datatype == 'prefs':
         p.set(  xlim=(0, 1), 
                 ylim=(0, 1), 
