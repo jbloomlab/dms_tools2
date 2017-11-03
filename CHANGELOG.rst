@@ -3,7 +3,7 @@ Change Log
 
 2.1.dev1
 ---------
-* Fix bug with ``--fracsurvivemax 0`` to ``dms2_logoplot``
+* Some minor bug fixes.
 
 * Fix bug with handling of disulfide-bonded cysteines in ``dssp`` output.
 

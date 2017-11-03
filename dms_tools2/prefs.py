@@ -646,7 +646,7 @@ def inferSitePrefs(charlist, wtchar, error_model, counts,
                         "{0} with {1} iterations per chain.".format(
                         ntry, niter))
             else:
-                with open('_no_converge_prefs_debug.pickle', 'w') as f_debug:
+                with open('_no_converge_prefs_debug.pickle', 'wb') as f_debug:
                     pickle.dump((counts, init, fitsummary), f_debug)
                 logstring.append("\tMCMC FAILED to converge after "
                         "all attempts at {0}.".format(time.asctime()))
