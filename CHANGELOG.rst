@@ -3,6 +3,8 @@ Change Log
 
 2.1.dev1
 ---------
+* Scale pseudocounts when using ``dms2_prefs`` with ``--method ratio``, which should give more accurate values when depths differ across samples.
+
 * Some minor bug fixes.
 
 * Fix bug with handling of disulfide-bonded cysteines in ``dssp`` output.
