@@ -409,8 +409,8 @@ def inferPrefsByRatio(charlist, sites, wts, pre, post, errpre,
     mindepth = pandas.concat(depths, axis=1).min(axis=1)
 
     # calculate scaled pseudocounts
-    pseudocounts = dict([
-            (stype, pseudocount * dfs[stype]['Nr'] / mindepth)
+    pseudocounts = dict([(stype,
+            pseudocount * (dfs[stype]['Nr'] / mindepth).fillna(1.0))
             for stype in dfs.keys()])
 
     # calculate frequencies
