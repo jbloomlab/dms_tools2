@@ -20,6 +20,7 @@ import natsort
 import numpy
 import numpy.random
 import pandas
+import Bio.SeqIO
 import pystan
 import dms_tools2
 
@@ -899,6 +900,86 @@ def prefsEntropy(prefs, charlist):
         prefs_entropy['entropy'] -= numpy.log(p_char) * p_char
     prefs_entropy['neffective'] = numpy.exp(prefs_entropy['entropy'])
     return prefs_entropy
+
+
+def aafreqsFromAlignment(alignmentfile, codon_to_aa,
+        ignore_gaps=True, ignore_stop=True):
+    """Get amino-acid frequencies at each site in alignment.
+
+    Args:
+        `alignmentfile` (str)
+            FASTA file with alignment of proteins or coding sequences.
+        `codon_to_aa` (bool)
+            If `True`, translate codon alignment to amino acids.
+        `ignore_gaps` (bool)
+            Ignore gaps when calculating frequencies.
+        `ignore_stop` (bool)
+            Ignore stop codons when calculating frequencies.
+
+    Returns:
+        A `pandas.DataFrame` with columns being `site` (1, 2, ...
+        numbering) and other columns being amino acids and values
+        giving frequencies in alignment.
+
+    >>> with tempfile.NamedTemporaryFile(mode='w') as f:
+    ...     x = f.write('>seq1\\n'
+    ...                 'ATGGGGCAG\\n'
+    ...                 '>seq2\\n'
+    ...                 '---AGGCAG\\n'
+    ...                 '>seq3\\n'
+    ...                 'ATGTGACAG')
+    ...     f.flush()
+    ...     aafreqs = aafreqsFromAlignment(f.name, codon_to_aa=True)
+    >>> aas_counts = ['M', 'G', 'R', 'Q']
+    >>> aas_nocounts = [a for a in dms_tools2.AAS if a not in aas_counts]
+    >>> (0 == aafreqs[aas_nocounts].values).all()
+    True
+    >>> expected_counts = pandas.DataFrame.from_items([
+    ...         ('site', [1, 2, 3]), ('M', [1.0, 0.0, 0.0]),
+    ...         ('G', [0.0, 0.5, 0]), ('R', [0.0, 0.5, 0.0]),
+    ...         ('Q', [0.0, 0.0, 1.0])])
+    >>> expected_counts.equals(aafreqs[['site'] + aas_counts])
+    True
+    """
+    # read sequences
+    seqs = [s.seq for s in Bio.SeqIO.parse(alignmentfile, 'fasta')]
+    if codon_to_aa:
+        seqs = [s.translate(gap='-', stop_symbol='*') for s in seqs]
+    assert seqs, "No sequences"
+    seqlen = len(seqs[0])
+    assert seqlen, "sequences have no length"
+    assert all([seqlen == len(s) for s in seqs]), "seqs not same length"
+
+    # get character sets
+    aas = dms_tools2.AAS.copy()
+    skipchars = []
+    if ignore_gaps:
+        skipchars.append('-')
+    else:
+        aas.append('-')
+    if ignore_stop:
+        skipchars.append('*')
+    else:
+        aas.append('*')
+
+    # tally amino-acid frequencies
+    aafreqs = dict([(col, [0] * seqlen) for col in aas])
+    aafreqs['site'] = list(range(1, seqlen + 1))
+    for s in seqs:
+        for (r, aa) in enumerate(s):
+            if aa in skipchars:
+                continue
+            else:
+                aafreqs[aa][r] += 1
+
+    # convert to dataframe and change counts to freqs
+    aafreqs = pandas.DataFrame(aafreqs)
+    ncounts = aafreqs[aas].sum(axis=1).astype('float')
+    for aa in aas:
+        aafreqs[aa] = aafreqs[aa] / ncounts
+
+    return aafreqs[['site'] + aas].fillna(0)
+
 
 
 if __name__ == '__main__':
