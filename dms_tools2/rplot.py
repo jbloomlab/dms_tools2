@@ -13,16 +13,21 @@ package for making customized logo plots.
 
 This module uses ``R`` to make plots using these features. It
 requires `rpy2 <https://rpy2.readthedocs.io>`_ to be installed.
-Installation of `rpy2` is not automatic when you install 
-`dms_tools2`, so you may need to manually install `rpy2`.
+Installation of `rpy2 <https://rpy2.readthedocs.io>`_ is 
+**not** automatic when you install `dms_tools2`,
+so you may need to manually install it
 
 This module currently does **not** include checks on the 
-versions of `rpy2` and ``R`` that are installed. So if you
-get errors, one possibility is that these versions are too
-old and need to be updated.
+versions of `rpy2 <https://rpy2.readthedocs.io>`_ and ``R``.
+So if you get errors, one possibility is that the versions
+need to be updated.
 """
 
 import os
+import phydmslib.weblogo
+
+#: default color scheme for amino acid letters
+AA_COLORS = phydmslib.weblogo.FunctionalGroupColorMapping()[1]
 
 # import rpy2
 try:
@@ -54,7 +59,7 @@ def versionInfo():
 
 
 def facetedGGSeqLogo(logodata, letters, plotfile, width, height,
-        ncol=None):
+        ncol=None, letter_colors=AA_COLORS):
     """Creates faceted logo plot.
 
     Makes panel of logo plots faceted on `logodata['facetlabel']`,
@@ -77,6 +82,8 @@ def facetedGGSeqLogo(logodata, letters, plotfile, width, height,
         `ncol` (int or `None`)
             Number of columns in faceted plot. If `None`, use
             as many as needed to plot everything in one row.
+        `letter_colors` (dict)
+            Values give color for every letter in `letters`.
 
     Here is an example of a `logodata` dataframe that creates
     two facets each with two stacks for `letters = ['A', 'C']`::
@@ -118,26 +125,75 @@ def facetedGGSeqLogo(logodata, letters, plotfile, width, height,
         matrices.append(m)
     matrices = ListVector(TaggedList(matrices, tags=facets))
 
+    assert set(letters) <= set(letter_colors.keys()), \
+            "`letter_colors` not defined for all letters"
+
     # define the plotting function in a string
     rfuncstr = """
-        facetedGGSeqLogo <- function(matrices, plotfile, ncol,
-                width, height) 
+        facetedGGSeqLogo <- function(
+            matrices, plotfile,
+            ncol, width, height, 
+            xname, xlabels, xlabelsrotate, xline, yname,
+            letters, letter_colors
+            )
         {
-            p <- ggseqlogo(matrices, method='custom', ncol=ncol) +
-                scale_x_continuous('site') +
-                theme(axis.line.x=element_line(color='black'))
+            p <- ggseqlogo(matrices, method='custom', ncol=ncol,
+                    col_scheme=make_col_scheme(chars=letters,
+                        cols=letter_colors)
+                    ) +
+                scale_x_continuous(xname, breaks=1:length(xlabels),
+                    labels=xlabels) 
+
+            if (xlabelsrotate) {
+                axis.text.x = element_text(angle=90, hjust=1)
+            } else {
+                axis.text.x = element_text()
+            }
+
+            if (xline) {
+                axis.line.x <- element_line(color='black')
+            } else {
+                axis.line.x <- element_blank()
+            }
+
+            if (nchar(trimws(yname))) {
+                p <- p + scale_y_continuous(yname) +
+                axis.line.y = element_line(color='black')
+                axis.text.y = element_text()
+            } else {
+                axis.text.y <- element_blank()
+                axis.line.y <- element_blank()
+            }
+
+            p <- p + theme(axis.text.x=axis.text.x,
+                           axis.line.x=axis.line.x,
+                           axis.text.y=axis.text.y,
+                           axis.line.y=axis.line.y,
+                           axis.text=element_text(size=12),
+                           strip.text=element_text(size=13),
+                           axis.title=element_text(size=13),
+                           panel.spacing=unit(1.75, 'lines')
+                           )
 
             ggsave(plotfile, plot=p, width=width, height=height)
         }
         """
 
     rfuncs = SignatureTranslatedAnonymousPackage(rfuncstr, "rfuncstr")
-    rfuncs.facetedGGSeqLogo(matrices, plotfile, ncol, width, height)
-
-    # make plot
-    #p = ggseqlogo.ggseqlogo(matrices, method='custom', ncol=ncol) + \
-    #        ggplot2.scale_x_continuous('site') 
-            #ggplot2.theme(axis_line_x=ggplot2.element_line(color='black'))
+    rfuncs.facetedGGSeqLogo(
+            matrices=matrices,
+            plotfile=plotfile,
+            ncol=ncol,
+            width=width,
+            height=height,
+            xname='',
+            xlabels=stacks,
+            xlabelsrotate=True,
+            xline=True,
+            yname='',
+            letters=StrVector(letters),
+            letter_colors=StrVector([letter_colors[x] for x in letters])
+            )
 
     if not os.path.isfile(plotfile):
         raise RuntimeError("failed to create {0}".format(plotfile))

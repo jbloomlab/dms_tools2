@@ -50,3 +50,4 @@
 .. _`Bloom (2017)`: https://biologydirect.biomedcentral.com/track/pdf/10.1186/s13062-016-0172-z?site=biologydirect.biomedcentral.com
 .. _`Hilton et al (2017)`: https://peerj.com/articles/3657.pdf
 .. _`Doud, Lee, and Bloom (2017)`: https://www.biorxiv.org/content/early/2017/10/28/210468
+.. _`ggseqlogo`: https://omarwagih.github.io/ggseqlogo/

@@ -5,6 +5,8 @@ Change Log
 ---------
 * added `compareprefs` module
 
+* added `rplot` module to enable plotting with `ggseqlogo <https://omarwagih.github.io/ggseqlogo/>`_
+
 * Added `omega` overlay option to ``dms2_logoplot``
 
 * Fix bug with ``dms2_logoplot`` when using wildtype sequence overlays
