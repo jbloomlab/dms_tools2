@@ -110,7 +110,11 @@ def processDSSP(dsspfile, chain=None, max_asa=MAX_ASA_TIEN):
                 aa = 'C'
             else:
                 aa = tmp_aa
-            d_df['site'].append(r[1])
+            if r[2] and not r[2].isspace():
+                # site has letter suffix
+                d_df['site'].append(str(r[1]) + r[2].strip())
+            else:
+                d_df['site'].append(r[1])
             d_df['amino_acid'].append(aa)
             d_df['ASA'].append(acc)
             d_df['RSA'].append(acc / float(max_asa[aa]))
