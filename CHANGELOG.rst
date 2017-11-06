@@ -13,6 +13,10 @@ Change Log
 
 * Fix bug with ``--fracsurvivemax 0`` to ``dms2_logoplot``
 
+* Scale pseudocounts when using ``dms2_prefs`` with ``--method ratio``, which should give more accurate values when depths differ across samples.
+
+* Some minor bug fixes.
+
 * Fix bug with handling of disulfide-bonded cysteines in ``dssp`` output.
 
 * Added `colors` option to `plot.plotCorrMatrix`

@@ -16,6 +16,12 @@ class TestInferPrefsByRatio(unittest.TestCase):
     """Tests `dms_tools2.inferPrefsByRatio`.
     """
 
+    #: draw Nr from this range for different samples
+    Nr_RANGE = (4000, 4000)
+    # tolerance for comparisons is stringent for this case
+    ATOL = 1e-8
+    RTOL = 1e-5
+
     def setUp(self):
         """Set up for tests."""
         random.seed(1)
@@ -42,7 +48,8 @@ class TestInferPrefsByRatio(unittest.TestCase):
                     errpre, errpost, self.pseudocount)
             for c in self.charlist:
                 self.assertTrue(numpy.allclose(prefs[c].values,
-                        numpy.full(self.nsites, 1.0 / self.nchars)))
+                        numpy.full(self.nsites, 1.0 / self.nchars)),
+                        str(prefs))
 
     def test_inferPrefsByRatio_Simplecounts(self):
         """Some simple non-zero counts."""
@@ -54,7 +61,7 @@ class TestInferPrefsByRatio(unittest.TestCase):
         for ctype in ['pre', 'post', 'errpre', 'errpost']:
             rows = []
             for (r, wt) in zip(self.sites, self.wts):
-                Nr = random.uniform(200, 400)
+                Nr = random.uniform(*self.Nr_RANGE)
                 pconc = numpy.ones(self.nchars)
                 if 'err' in ctype:
                     pconc[self.charlist.index(wt)] = 25
@@ -112,13 +119,33 @@ class TestInferPrefsByRatio(unittest.TestCase):
             pi_noerr = phi_noerr / phi_noerr.sum()
             pi_err = phi_err / phi_err.sum()
             self.assertTrue(numpy.allclose(pi_noerr,
-                    prefs_noerr.query('site == @r')[self.charlist]))
+                    prefs_noerr.query('site == @r')[self.charlist],
+                    atol=self.ATOL, rtol=self.RTOL))
             self.assertFalse(numpy.allclose(pi_err,
-                    prefs_noerr.query('site == @r')[self.charlist]))
+                    prefs_noerr.query('site == @r')[self.charlist],
+                    atol=self.ATOL, rtol=self.RTOL))
             self.assertTrue(numpy.allclose(pi_err,
-                    prefs_err.query('site == @r')[self.charlist]))
+                    prefs_err.query('site == @r')[self.charlist],
+                    atol=self.ATOL, rtol=self.RTOL))
             self.assertFalse(numpy.allclose(pi_noerr,
-                    prefs_err.query('site == @r')[self.charlist]))
+                    prefs_err.query('site == @r')[self.charlist],
+                    atol=self.ATOL, rtol=self.RTOL))
+
+
+
+class TestInferPrefsByRatioDiffDepth(TestInferPrefsByRatio):
+    """Tests `dms_tools2.inferPrefsByRatio` with different depths.
+
+    There is pseudocount scaling in this case. We handle this by
+    calculating expected results without scaling and just relaxing
+    tolerance while keeping depth close among samples.
+    """
+
+    #: draw Nr from this range for different samples
+    Nr_RANGE = (300000, 400000)
+    # tolerance for comparisons is stringent for this case
+    ATOL = 1e-3
+    RTOL = 1e-3
 
 
 if __name__ == '__main__':

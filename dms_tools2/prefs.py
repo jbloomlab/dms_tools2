@@ -290,13 +290,30 @@ def inferPrefsByRatio(charlist, sites, wts, pre, post, errpre,
     character :math:`a`.
 
     Because some of the counts are low, we add a pseudocount 
-    :math:`P` to each observation. With this pseudocount, the 
+    :math:`P` to each observation. Importantly, we need to scale
+    this pseudocount by the total depth for that sample at that site
+    in order to avoid systematically estimating different frequencies
+    purely as a function of sequencing depth, which will bias
+    the preference estimates.
+    Therefore, given the pseudocount value :math:`P` defined via the
+    ``--pseudocount`` argument to :ref:`dms2_prefs`, we calculate the
+    scaled pseudocount for sample :math:`s` and site :math:`r` as
+
+    .. math::
+
+       P_r^s = P \\times \\frac{N_r^s}{\min\limits_{s'} N_r^{s'}}.
+
+    This equation makes the pseudocount :math:`P` for the lowest-depth
+    sample, and scales up the pseodocounts for all other samples
+    proportional to their depth.
+
+    With this pseudocount, the
     estimated frequency of character :math:`a` at site :math:`r`
     in sample :math:`s` is 
     
     .. math::
     
-        f_{r,a}^s = \\frac{n_{r,a}^s + P}{N_{r,a}^s + A \\times P}
+        f_{r,a}^s = \\frac{n_{r,a}^s + P_r^s}{N_{r}^s + A \\times P_r^s}
 
     where :math:`A` is the number of characters in the alphabet (e.g.,
     20 for amino acids without stop codons).
@@ -306,11 +323,11 @@ def inferPrefsByRatio(charlist, sites, wts, pre, post, errpre,
 
     .. math::
 
-        f_{r,a}^{before} &= \max\left(\\frac{P}{N_{r,a}^{pre} + A \\times P},
+        f_{r,a}^{before} &= \max\left(\\frac{P_r^{pre}}{N_{r}^{pre} + A \\times P_r^{pre}},
         \; f_{r,a}^{pre} + \delta_{a,\\rm{wt}\left(r\\right)}
         - f_{r,a}^{errpre}\\right)
 
-        f_{r,a}^{after} &= \max\left(\\frac{P}{N_{r,a}^{post} + A \\times P},
+        f_{r,a}^{after} &= \max\left(\\frac{P_r^{post}}{N_{r}^{post} + A \\times P_r^{post}},
         \; f_{r,a}^{post} + \delta_{a,\\rm{wt}\left(r\\right)}
         - f_{r,a}^{errpost}\\right)
 
@@ -376,20 +393,36 @@ def inferPrefsByRatio(charlist, sites, wts, pre, post, errpre,
         dfs['errpre'] = errpre.copy()
     if errpost is not None:
         dfs['errpost'] = errpost.copy()
-    for dfname in dfs.keys():
-        df = dfs[dfname]
+
+    # compute total depth for each sample and sort by sites
+    depths = []
+    for stype in dfs.keys():
+        df = dfs[stype]
         assert set(list(charlist) + ['site']) <= set(df.columns)
         assert set(sites) <= set(df['site'])
         df = df.query('site in @sites')
         assert len(df.index) == len(wts) == len(sites)
         df['site'] = pandas.Categorical(df['site'], sites)
-        df.sort_values('site')
+        df = df.sort_values('site').reset_index(drop=True)
         df['Nr'] = df[charlist].sum(axis=1).astype('float')
+        depths.append(df['Nr'])
+        dfs[stype] = df
+    mindepth = pandas.concat(depths, axis=1).min(axis=1)
+
+    # calculate scaled pseudocounts
+    pseudocounts = dict([(stype,
+            pseudocount * (dfs[stype]['Nr'] / mindepth).fillna(1.0))
+            for stype in dfs.keys()])
+
+    # calculate frequencies
+    for stype in dfs.keys():
+        df = dfs[stype]
         for c in charlist:
-            df['f{0}'.format(c)] = (df[c] + pseudocount) / (
-                    df['Nr'] + len(charlist) * pseudocount) 
+            df['f{0}'.format(c)] = (df[c] + pseudocounts[stype]) / (
+                    df['Nr'] + len(charlist) * pseudocounts[stype]) 
             df['delta{0}'.format(c)] = [int(wt == c) for wt in wts]
-        dfs[dfname] = df
+        dfs[stype] = df
+
     # fill values for errpre / errpost if they were None
     for stype in ['pre', 'post']:
         err = 'err{0}'.format(stype)
@@ -400,15 +433,14 @@ def inferPrefsByRatio(charlist, sites, wts, pre, post, errpre,
 
     # compute phi values
     fr = {}
-    for (key, f, ferr) in [
-            ('before', dfs['pre'], dfs['errpre']),
-            ('after', dfs['post'], dfs['errpost']),
+    for (key, f, ferr, p) in [
+            ('before', dfs['pre'], dfs['errpre'], pseudocounts['pre']),
+            ('after', dfs['post'], dfs['errpost'], pseudocounts['post']),
             ]:
         fr[key] = {'wt':numpy.zeros(len(sites))}
         for c in charlist:
             fr[key][c] = numpy.maximum(
-                    pseudocount / (f['Nr'].values 
-                        + len(charlist) * pseudocount),
+                    p / (f['Nr'].values + len(charlist) * p),
                     f['f{0}'.format(c)].values 
                         + f['delta{0}'.format(c)].values 
                         - ferr['f{0}'.format(c)].values
@@ -647,7 +679,7 @@ def inferSitePrefs(charlist, wtchar, error_model, counts,
                         "{0} with {1} iterations per chain.".format(
                         ntry, niter))
             else:
-                with open('_no_converge_prefs_debug.pickle', 'w') as f_debug:
+                with open('_no_converge_prefs_debug.pickle', 'wb') as f_debug:
                     pickle.dump((counts, init, fitsummary), f_debug)
                 logstring.append("\tMCMC FAILED to converge after "
                         "all attempts at {0}.".format(time.asctime()))
