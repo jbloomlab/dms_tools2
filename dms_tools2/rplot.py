@@ -5,25 +5,26 @@ rplot
 
 Plotting that uses ``R``.
 
-The `dms_tools2` code is written in Python, but there
-are certain useful plotting features that are only available
-in ``R``. For instance, these include the 
-`ggseqlogo <https://omarwagih.github.io/ggseqlogo/>`_
-package for making customized logo plots.
+The `dms_tools2` is written in Python, but there are
+useful plotting features that are only available in ``R``,
+such `ggseqlogo <https://omarwagih.github.io/ggseqlogo/>`_.
 
 This module uses ``R`` to make plots using these features. It
 requires `rpy2 <https://rpy2.readthedocs.io>`_ to be installed.
 Installation of `rpy2 <https://rpy2.readthedocs.io>`_ is 
-**not** automatic when you install `dms_tools2`,
-so you may need to manually install it
+**not** automatic when you install `dms_tools2` unless
+you have ``R`` and `rpy2 <https://rpy2.readthedocs.io>`_
+installed, or install `dms_tools2` using::
 
-This module currently does **not** include checks on the 
-versions of `rpy2 <https://rpy2.readthedocs.io>`_ and ``R``.
-So if you get errors, one possibility is that the versions
-need to be updated.
+    pip install dms_tools[rplot] --user
+
 """
 
 import os
+import io
+
+import pandas
+
 import phydmslib.weblogo
 
 #: default color scheme for amino acid letters
@@ -58,9 +59,56 @@ def versionInfo():
             rpy2.__version__, rinterface.R_VERSION_BUILD[1])
 
 
+def siteSubsetGGSeqLogo(logodata, letters, plotfile, width, height,
+        letter_colors=AA_COLORS):
+    """Creates one-row logo plot with subset of sites.
+
+    Designed to show logo plot for a subset of sites. This
+    is useful when you have data for many sites, but only
+    want to look at a few of them. 
+
+    Args:
+        `logodata` (pandas DataFrame)
+            Contains data to plot. Should have the columns
+            `site`, `show`, and a column giving the height
+            height of each letter in `letters`. Only sites
+            where `show` is `True` are shown. Sites are 
+            shown in the order they occur in this dataframe,
+            with spaces every time there is an interspersed
+            site with `show` being `False`. 
+        `letters` (list)
+            Letters for which we plot heights.
+        `plotfile` (str)
+            Name of created plot.
+        `width` (float)
+            Width of plot in inches.
+        `height` (float)
+            Height of plot in inches.
+        `letter_colors` (dict)
+            Values give color for every letter in `letters`.
+
+    Here is an example of a `logodata` dataframe that shows
+    some sites for `letters = ['A', 'C']`::
+
+        site show    A    C
+           1 True  0.8  0.2
+           2 True  0.7  0.3
+           3 False 0.1  0.9
+           4 True  0.8  0.2
+           5 True  0.5  0.5
+
+    """
+    if os.path.isfile(plotfile):
+        os.remove(plotfile)
+
+
+
 def facetedGGSeqLogo(logodata, letters, plotfile, width, height,
         ncol=None, letter_colors=AA_COLORS):
     """Creates faceted logo plot.
+
+    Designed to show several measurements on the same site
+    site-by-side, potentially for many sites.
 
     Makes panel of logo plots faceted on `logodata['facetlabel']`,
     where letter stacks are labeled by `logodata['stacklabel']`
@@ -88,11 +136,14 @@ def facetedGGSeqLogo(logodata, letters, plotfile, width, height,
     Here is an example of a `logodata` dataframe that creates
     two facets each with two stacks for `letters = ['A', 'C']`::
 
-        facetlabel stacklabel    A    C
-           site 1      BF520  0.8  0.2
-           site 1      BG505  0.9  0.1
-           site 2      BF520  0.4  0.6
-           site 2      BG505  0.5  0.5
+    >>> logodata = pandas.read_csv(io.StringIO(
+    ...      '''facetlabel stacklabel    A    C
+    ...             site 1      BF520  0.8  0.2
+    ...             site 1      BG505  0.9  0.1
+    ...             site 2      BF520  0.4  0.6
+    ...             site 2      BG505  0.5  0.5'''),
+    ...      delim_whitespace=True)
+    >>> logodata.head()
 
     """
     if os.path.isfile(plotfile):
