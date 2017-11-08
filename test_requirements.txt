@@ -12,3 +12,4 @@ pystan==2.16.0
 scipy==0.18.1
 seaborn==0.8
 phydms==2.1.2
+rpy2==2.9.1

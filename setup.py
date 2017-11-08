@@ -64,6 +64,9 @@ setup(
         'seaborn>=0.8',
         'phydms>=2.1.4',
         ],
+    extras_require = {
+        'rplot':['rpy2>=2.9.1']
+        },
     platforms = 'Linux and Mac OS X).',
     packages = ['dms_tools2'],
     package_dir = {'dms_tools2':'dms_tools2'},

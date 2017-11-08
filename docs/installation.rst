@@ -101,10 +101,17 @@ If you have already cloned the repository, you can update the source by::
 
 The ``rplot`` module
 ---------------------
-As described in the :ref:`api`, the `dms_tools2.rplot` module
-enables logo plot plotting with `ggseqlogo`_. Use of this
-module requires some additional steps as detailed in
-the :ref:`api` documentation for `dms_tools2.rplot`.
+As described in the :ref:`api`, there are some additional useful features
+in the `dms_tools2.rplot` module. In order for your installation to
+support this module, you need to install a recent version of 
+`R <https://www.r-project.org/about.html>`_ and then run your installation
+with::
+
+    pip install dms_tools2[rplot] --user
+
+or (if you are building from source)::
+
+    pip install -e .[rplot] --user
 
 .. _license:
 

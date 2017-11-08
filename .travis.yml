@@ -11,9 +11,16 @@ before_install:
   - sudo apt-get -qq install texlive-latex-extra
   - sudo apt-get -qq install texlive-fonts-recommended
 
+addons:
+  apt:
+    sources:
+      - r-packages-trusty
+    packages:
+      - r-base
+
 install:
   - pip install -r test_requirements.txt
-  - pip install -e .
+  - pip install -e .[rplot]
 
 script: 
   - pytest

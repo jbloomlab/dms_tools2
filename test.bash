@@ -1,5 +1,5 @@
 #!/bin/bash
 # 
 # Runs tests
-pip install -e . --user
+pip install -e .[rplot] --user
 pytest
