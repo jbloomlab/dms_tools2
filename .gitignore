@@ -16,3 +16,5 @@ dist/
 dms_tools2.egg-info/
 *(busy)
 __*
+_*.pdf
+_*.png

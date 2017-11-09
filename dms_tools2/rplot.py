@@ -27,8 +27,8 @@ import pandas
 
 import phydmslib.weblogo
 
-#: default color scheme for amino acid letters
-AA_COLORS = phydmslib.weblogo.FunctionalGroupColorMapping()[1]
+#: default colors for amino acid letters, by functional group
+AA_COLORS_FG = phydmslib.weblogo.FunctionalGroupColorMapping()[1]
 
 # import rpy2
 try:
@@ -60,7 +60,7 @@ def versionInfo():
 
 
 def siteSubsetGGSeqLogo(logodata, letters, plotfile, width, height,
-        letter_colors=AA_COLORS):
+        letter_colors=AA_COLORS_FG):
     """Creates one-row logo plot with subset of sites.
 
     Designed to show logo plot for a subset of sites. This
@@ -104,7 +104,7 @@ def siteSubsetGGSeqLogo(logodata, letters, plotfile, width, height,
 
 
 def facetedGGSeqLogo(logodata, letters, plotfile, width, height,
-        ncol=None, letter_colors=AA_COLORS):
+        ncol=None, letter_colors=AA_COLORS_FG):
     """Creates faceted logo plot.
 
     Designed to show several measurements on the same site
@@ -133,17 +133,30 @@ def facetedGGSeqLogo(logodata, letters, plotfile, width, height,
         `letter_colors` (dict)
             Values give color for every letter in `letters`.
 
-    Here is an example of a `logodata` dataframe that creates
-    two facets each with two stacks for `letters = ['A', 'C']`::
+    Here is an example that creates two facets each with
+    two stacks for the letters `A` and `C`:
 
     >>> logodata = pandas.read_csv(io.StringIO(
-    ...      '''facetlabel stacklabel    A    C
-    ...             site 1      BF520  0.8  0.2
-    ...             site 1      BG505  0.9  0.1
-    ...             site 2      BF520  0.4  0.6
-    ...             site 2      BG505  0.5  0.5'''),
-    ...      delim_whitespace=True)
-    >>> logodata.head()
+    ...     '''facetlabel  stacklabel   A   C
+    ...            site-1       BF520 0.8 0.2
+    ...            site-1       BG505 0.9 0.1
+    ...            site-2       BF520 0.4 0.6
+    ...            site-2       BG505 0.5 0.5'''),
+    ...     delim_whitespace=True, index_col=False)
+    >>> plotfile = '_facetedGGSeqLogo_test_plot.png'
+    >>> facetedGGSeqLogo(logodata,
+    ...         letters=['A', 'C'],
+    ...         plotfile=plotfile,
+    ...         width=3, height=2.5
+    ...         )
+    >>> os.path.isfile(plotfile)
+    True
+
+    Here is the plot created by the code block above:
+
+    .. image:: _static/_facetedGGSeqLogo_test_plot.png
+       :width: 40%
+       :align: center
 
     """
     if os.path.isfile(plotfile):
@@ -174,7 +187,8 @@ def facetedGGSeqLogo(logodata, letters, plotfile, width, height,
                 dimnames=[letters, stacks],
                 )
         matrices.append(m)
-    matrices = ListVector(TaggedList(matrices, tags=facets))
+    matrices = ListVector(TaggedList(matrices,
+            tags=facets.astype('str')))
 
     assert set(letters) <= set(letter_colors.keys()), \
             "`letter_colors` not defined for all letters"
