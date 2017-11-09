@@ -26,7 +26,6 @@ import io
 import pandas
 
 import phydmslib.weblogo
-
 #: default colors for amino acid chars, by functional group
 AA_COLORS_FG = phydmslib.weblogo.FunctionalGroupColorMapping()[1]
 
@@ -52,6 +51,13 @@ utils.install_packages(StrVector(_packages))
 for _package in _packages:
     importr(_package)
 
+# read the R code that defines the R functions we run
+_RCODEFILE = os.path.join(os.path.dirname(__file__), 'rplot_Rcode.R')
+assert os.path.isfile(_RCODEFILE)
+with open(_RCODEFILE) as f:
+    _RCODE = f.read()
+_RFUNCS = SignatureTranslatedAnonymousPackage(_RCODE, "_RFUNCS")
+
 
 def versionInfo():
     """Returns string giving `rpy2` and ``R`` version info."""
@@ -60,7 +66,7 @@ def versionInfo():
 
 
 def siteSubsetGGSeqLogo(logodata, chars, plotfile, width, height,
-        char_colors=AA_COLORS_FG):
+        yname='', char_colors=AA_COLORS_FG):
     """Creates one-row logo plot with subset of sites.
 
     Designed to show logo plot for a subset of sites. This
@@ -84,6 +90,9 @@ def siteSubsetGGSeqLogo(logodata, chars, plotfile, width, height,
             Width of plot in inches.
         `height` (float)
             Height of plot in inches.
+        `yname` (str)
+            If set to a non-empty string, is the y-axis label
+            and yticks are drawn.
         `char_colors` (dict)
             Values give color for every character in `chars`.
 
@@ -98,16 +107,23 @@ def siteSubsetGGSeqLogo(logodata, chars, plotfile, width, height,
     ...        L104 True  0.8  0.2
     ...        S105 True  0.5  0.5
     ...        T106 False 0.2  0.8
-    ...        L107 True  0.7  0.3'''),
+    ...        G107 False 0.4  0.6
+    ...        L108 True  0.7  0.3'''),
     ...     delim_whitespace=True, index_col=False)
     >>> plotfile = '_siteSubsetGGSeqLogo_test_plot.png'
     >>> siteSubsetGGSeqLogo(logodata,
     ...         chars=['A', 'C'],
     ...         plotfile=plotfile,
-    ...         width=3, height=2.5
+    ...         width=3.5, height=2
     ...         )
     >>> os.path.isfile(plotfile)
     True
+
+    Here is the plot created by the code block above:
+
+    .. image:: _static/_siteSubsetGGSeqLogo_test_plot.png
+       :width: 55%
+       :align: center
 
     """
     if os.path.isfile(plotfile):
@@ -120,33 +136,41 @@ def siteSubsetGGSeqLogo(logodata, chars, plotfile, width, height,
     assert set(logodata.columns) <= set(expectcol), \
             "`logodata` needs these column: {0}".format(expectcol)
 
-    # group consecutive rows into facets
+    # for each consecutive set of rows not to show, keep just one
     logodata = logodata[expectcol]
-    logodata['facet'] = (
-            (logodata['show'] != logodata['show'].shift(1))
-            .astype(int).cumsum()
+    logodata['keeprow'] = (
+            ((logodata['show']) | 
+                (logodata['show'] != logodata['show'].shift(1)))
             )
-    logodata = logodata.query('show')
+    logodata = logodata.query('keeprow').reset_index()
 
-    # generate list of matrices to facet
-    matrices = []
-    facets = logodata['facet'].unique()
-    for f in facets:
-        facetdata = (logodata.query('facet == @f')
-                     .set_index('site')
-                     [chars]
-                     )
-        m = r.matrix(
-                facetdata.values.ravel(),
-                ncol=len(facetdata),
-                dimnames=[chars, facetdata.index.tolist()]
-                )
-        matrices.append(m)
-    matrices = ListVector(TaggedList(matrices,
-            tags=facets.astype('str')))
+    # set site label to empty and data to zero for rows not to show
+    logodata.loc[~logodata['show'], 'site'] = ''
+    logodata.loc[~logodata['show'], chars] = 0
+    vertlines = logodata.query('~show').index.values + 1
 
-    print(matrices)
+    # generate matrix to plot
+    sites = logodata['site']
+    matrix = r.matrix(logodata.set_index('site')[chars].values.ravel(),
+            ncol=len(sites),
+            dimnames=[chars, sites]
+            )
 
+    # make the plot
+    _RFUNCS.siteSubsetGGSeqLogo(
+            mat=matrix,
+            plotfile=plotfile,
+            width=width,
+            height=height,
+            xlabels=list(map(str, sites)),
+            vertlines=vertlines,
+            yname=yname,
+            chars=StrVector(chars),
+            char_colors=StrVector([char_colors[x] for x in chars])
+            )
+
+    if not os.path.isfile(plotfile):
+        raise RuntimeError("failed to create {0}".format(plotfile))
 
 
 def facetedGGSeqLogo(logodata, chars, plotfile, width, height,
@@ -154,10 +178,11 @@ def facetedGGSeqLogo(logodata, chars, plotfile, width, height,
     """Creates faceted logo plot.
 
     Designed to show several measurements on the same site
-    site-by-side, potentially for many sites.
+    site-by-side, potentially for many sites. Each site
+    must have the same set of measurements.
 
     Makes panel of logo plots faceted on `logodata['facetlabel']`,
-    where charcter stacks are labeled by `logodata['stacklabel']`
+    where character stacks are labeled by `logodata['stacklabel']`
     and show the characters at the indicated heights.
 
     Args:
@@ -239,59 +264,8 @@ def facetedGGSeqLogo(logodata, chars, plotfile, width, height,
     matrices = ListVector(TaggedList(matrices,
             tags=facets.astype('str')))
 
-    # define the plotting function in a string
-    rfuncstr = """
-        facetedGGSeqLogo <- function(
-            matrices, plotfile,
-            ncol, width, height, 
-            xname, xlabels, xlabelsrotate, xline, yname,
-            chars, char_colors
-            )
-        {
-            p <- ggseqlogo(matrices, method='custom', ncol=ncol,
-                    col_scheme=make_col_scheme(chars=chars,
-                        cols=char_colors)
-                    ) +
-                scale_x_continuous(xname, breaks=1:length(xlabels),
-                    labels=xlabels) 
-
-            if (xlabelsrotate) {
-                axis.text.x = element_text(angle=90, hjust=1)
-            } else {
-                axis.text.x = element_text()
-            }
-
-            if (xline) {
-                axis.line.x <- element_line(color='black')
-            } else {
-                axis.line.x <- element_blank()
-            }
-
-            if (nchar(trimws(yname))) {
-                p <- p + scale_y_continuous(yname) +
-                axis.line.y = element_line(color='black')
-                axis.text.y = element_text()
-            } else {
-                axis.text.y <- element_blank()
-                axis.line.y <- element_blank()
-            }
-
-            p <- p + theme(axis.text.x=axis.text.x,
-                           axis.line.x=axis.line.x,
-                           axis.text.y=axis.text.y,
-                           axis.line.y=axis.line.y,
-                           axis.text=element_text(size=12),
-                           strip.text=element_text(size=13),
-                           axis.title=element_text(size=13),
-                           panel.spacing=unit(1.75, 'lines')
-                           )
-
-            ggsave(plotfile, plot=p, width=width, height=height)
-        }
-        """
-
-    rfuncs = SignatureTranslatedAnonymousPackage(rfuncstr, "rfuncstr")
-    rfuncs.facetedGGSeqLogo(
+    # make the plot
+    _RFUNCS.facetedGGSeqLogo(
             matrices=matrices,
             plotfile=plotfile,
             ncol=ncol,
