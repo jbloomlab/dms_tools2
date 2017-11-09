@@ -87,19 +87,65 @@ def siteSubsetGGSeqLogo(logodata, letters, plotfile, width, height,
         `letter_colors` (dict)
             Values give color for every letter in `letters`.
 
-    Here is an example of a `logodata` dataframe that shows
-    some sites for `letters = ['A', 'C']`::
+    Here is an example that creates a plot for a subset of
+    sites for two letters:
 
-        site show    A    C
-           1 True  0.8  0.2
-           2 True  0.7  0.3
-           3 False 0.1  0.9
-           4 True  0.8  0.2
-           5 True  0.5  0.5
+    >>> logodata = pandas.read_csv(io.StringIO(
+    ...     '''site show    A    C
+    ...        A101 True  0.8  0.2
+    ...        N102 True  0.7  0.3
+    ...        K103 False 0.1  0.9
+    ...        L104 True  0.8  0.2
+    ...        S105 True  0.5  0.5
+    ...        T106 False 0.2  0.8
+    ...        L107 True  0.7  0.3'''),
+    ...     delim_whitespace=True, index_col=False)
+    >>> plotfile = '_siteSubsetGGSeqLogo_test_plot.png'
+    >>> siteSubsetGGSeqLogo(logodata,
+    ...         letters=['A', 'C'],
+    ...         plotfile=plotfile,
+    ...         width=3, height=2.5
+    ...         )
+    >>> os.path.isfile(plotfile)
+    True
 
     """
     if os.path.isfile(plotfile):
         os.remove(plotfile)
+
+    assert set(letters) <= set(letter_colors.keys()), \
+            "`letter_colors` not defined for all letters"
+
+    expectcol = ['site', 'show'] + letters
+    assert set(logodata.columns) <= set(expectcol), \
+            "`logodata` needs these column: {0}".format(expectcol)
+
+    # group consecutive rows into facets
+    logodata = logodata[expectcol]
+    logodata['facet'] = (
+            (logodata['show'] != logodata['show'].shift(1))
+            .astype(int).cumsum()
+            )
+    logodata = logodata.query('show')
+
+    # generate list of matrices to facet
+    matrices = []
+    facets = logodata['facet'].unique()
+    for f in facets:
+        facetdata = (logodata.query('facet == @f')
+                     .set_index('site')
+                     [letters]
+                     )
+        m = r.matrix(
+                facetdata.values.ravel(),
+                ncol=len(facetdata),
+                dimnames=[letters, facetdata.index.tolist()]
+                )
+        matrices.append(m)
+    matrices = ListVector(TaggedList(matrices,
+            tags=facets.astype('str')))
+
+    print(matrices)
 
 
 
@@ -162,6 +208,9 @@ def facetedGGSeqLogo(logodata, letters, plotfile, width, height,
     if os.path.isfile(plotfile):
         os.remove(plotfile)
 
+    assert set(letters) <= set(letter_colors.keys()), \
+            "`letter_colors` not defined for all letters"
+
     # get and order data columns
     df_cols = ['facetlabel', 'stacklabel'] + letters
     assert set(logodata.columns) <= set(df_cols), "df lacks required columns"
@@ -184,14 +233,11 @@ def facetedGGSeqLogo(logodata, letters, plotfile, width, height,
         m = r.matrix(
                 facetdata.values.ravel(),
                 ncol=len(stacks),
-                dimnames=[letters, stacks],
+                dimnames=[letters, stacks]
                 )
         matrices.append(m)
     matrices = ListVector(TaggedList(matrices,
             tags=facets.astype('str')))
-
-    assert set(letters) <= set(letter_colors.keys()), \
-            "`letter_colors` not defined for all letters"
 
     # define the plotting function in a string
     rfuncstr = """
