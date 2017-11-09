@@ -27,7 +27,7 @@ import pandas
 
 import phydmslib.weblogo
 
-#: default colors for amino acid letters, by functional group
+#: default colors for amino acid chars, by functional group
 AA_COLORS_FG = phydmslib.weblogo.FunctionalGroupColorMapping()[1]
 
 # import rpy2
@@ -59,8 +59,8 @@ def versionInfo():
             rpy2.__version__, rinterface.R_VERSION_BUILD[1])
 
 
-def siteSubsetGGSeqLogo(logodata, letters, plotfile, width, height,
-        letter_colors=AA_COLORS_FG):
+def siteSubsetGGSeqLogo(logodata, chars, plotfile, width, height,
+        char_colors=AA_COLORS_FG):
     """Creates one-row logo plot with subset of sites.
 
     Designed to show logo plot for a subset of sites. This
@@ -71,12 +71,12 @@ def siteSubsetGGSeqLogo(logodata, letters, plotfile, width, height,
         `logodata` (pandas DataFrame)
             Contains data to plot. Should have the columns
             `site`, `show`, and a column giving the height
-            height of each letter in `letters`. Only sites
+            height of each char in `chars`. Only sites
             where `show` is `True` are shown. Sites are 
             shown in the order they occur in this dataframe,
             with spaces every time there is an interspersed
             site with `show` being `False`. 
-        `letters` (list)
+        `chars` (list)
             Letters for which we plot heights.
         `plotfile` (str)
             Name of created plot.
@@ -84,11 +84,11 @@ def siteSubsetGGSeqLogo(logodata, letters, plotfile, width, height,
             Width of plot in inches.
         `height` (float)
             Height of plot in inches.
-        `letter_colors` (dict)
-            Values give color for every letter in `letters`.
+        `char_colors` (dict)
+            Values give color for every character in `chars`.
 
     Here is an example that creates a plot for a subset of
-    sites for two letters:
+    sites for two characters:
 
     >>> logodata = pandas.read_csv(io.StringIO(
     ...     '''site show    A    C
@@ -102,7 +102,7 @@ def siteSubsetGGSeqLogo(logodata, letters, plotfile, width, height,
     ...     delim_whitespace=True, index_col=False)
     >>> plotfile = '_siteSubsetGGSeqLogo_test_plot.png'
     >>> siteSubsetGGSeqLogo(logodata,
-    ...         letters=['A', 'C'],
+    ...         chars=['A', 'C'],
     ...         plotfile=plotfile,
     ...         width=3, height=2.5
     ...         )
@@ -113,10 +113,10 @@ def siteSubsetGGSeqLogo(logodata, letters, plotfile, width, height,
     if os.path.isfile(plotfile):
         os.remove(plotfile)
 
-    assert set(letters) <= set(letter_colors.keys()), \
-            "`letter_colors` not defined for all letters"
+    assert set(chars) <= set(char_colors.keys()), \
+            "`char_colors` not defined for all chars"
 
-    expectcol = ['site', 'show'] + letters
+    expectcol = ['site', 'show'] + chars
     assert set(logodata.columns) <= set(expectcol), \
             "`logodata` needs these column: {0}".format(expectcol)
 
@@ -134,12 +134,12 @@ def siteSubsetGGSeqLogo(logodata, letters, plotfile, width, height,
     for f in facets:
         facetdata = (logodata.query('facet == @f')
                      .set_index('site')
-                     [letters]
+                     [chars]
                      )
         m = r.matrix(
                 facetdata.values.ravel(),
                 ncol=len(facetdata),
-                dimnames=[letters, facetdata.index.tolist()]
+                dimnames=[chars, facetdata.index.tolist()]
                 )
         matrices.append(m)
     matrices = ListVector(TaggedList(matrices,
@@ -149,23 +149,23 @@ def siteSubsetGGSeqLogo(logodata, letters, plotfile, width, height,
 
 
 
-def facetedGGSeqLogo(logodata, letters, plotfile, width, height,
-        ncol=None, letter_colors=AA_COLORS_FG):
+def facetedGGSeqLogo(logodata, chars, plotfile, width, height,
+        ncol=None, char_colors=AA_COLORS_FG):
     """Creates faceted logo plot.
 
     Designed to show several measurements on the same site
     site-by-side, potentially for many sites.
 
     Makes panel of logo plots faceted on `logodata['facetlabel']`,
-    where letter stacks are labeled by `logodata['stacklabel']`
-    and show the letters at the indicated heights.
+    where charcter stacks are labeled by `logodata['stacklabel']`
+    and show the characters at the indicated heights.
 
     Args:
         `logodata` (pandas DataFrame)
             Contains data to plot. Should have the columns
             `facetlabel`, `stacklabel`, and a column giving the
-            height of each letter in `letters`.
-        `letters` (list)
+            height of each character in `chars`.
+        `chars` (list)
             Letters for which we plot heights.
         `plotfile` (str)
             Name of created plot.
@@ -176,11 +176,11 @@ def facetedGGSeqLogo(logodata, letters, plotfile, width, height,
         `ncol` (int or `None`)
             Number of columns in faceted plot. If `None`, use
             as many as needed to plot everything in one row.
-        `letter_colors` (dict)
-            Values give color for every letter in `letters`.
+        `char_colors` (dict)
+            Values give color for every character in `chars`.
 
     Here is an example that creates two facets each with
-    two stacks for the letters `A` and `C`:
+    two stacks for the characters `A` and `C`:
 
     >>> logodata = pandas.read_csv(io.StringIO(
     ...     '''facetlabel  stacklabel   A   C
@@ -191,7 +191,7 @@ def facetedGGSeqLogo(logodata, letters, plotfile, width, height,
     ...     delim_whitespace=True, index_col=False)
     >>> plotfile = '_facetedGGSeqLogo_test_plot.png'
     >>> facetedGGSeqLogo(logodata,
-    ...         letters=['A', 'C'],
+    ...         chars=['A', 'C'],
     ...         plotfile=plotfile,
     ...         width=3, height=2.5
     ...         )
@@ -208,11 +208,11 @@ def facetedGGSeqLogo(logodata, letters, plotfile, width, height,
     if os.path.isfile(plotfile):
         os.remove(plotfile)
 
-    assert set(letters) <= set(letter_colors.keys()), \
-            "`letter_colors` not defined for all letters"
+    assert set(chars) <= set(char_colors.keys()), \
+            "`char_colors` not defined for all chars"
 
     # get and order data columns
-    df_cols = ['facetlabel', 'stacklabel'] + letters
+    df_cols = ['facetlabel', 'stacklabel'] + chars
     assert set(logodata.columns) <= set(df_cols), "df lacks required columns"
     logodata = logodata[df_cols] 
 
@@ -233,7 +233,7 @@ def facetedGGSeqLogo(logodata, letters, plotfile, width, height,
         m = r.matrix(
                 facetdata.values.ravel(),
                 ncol=len(stacks),
-                dimnames=[letters, stacks]
+                dimnames=[chars, stacks]
                 )
         matrices.append(m)
     matrices = ListVector(TaggedList(matrices,
@@ -245,12 +245,12 @@ def facetedGGSeqLogo(logodata, letters, plotfile, width, height,
             matrices, plotfile,
             ncol, width, height, 
             xname, xlabels, xlabelsrotate, xline, yname,
-            letters, letter_colors
+            chars, char_colors
             )
         {
             p <- ggseqlogo(matrices, method='custom', ncol=ncol,
-                    col_scheme=make_col_scheme(chars=letters,
-                        cols=letter_colors)
+                    col_scheme=make_col_scheme(chars=chars,
+                        cols=char_colors)
                     ) +
                 scale_x_continuous(xname, breaks=1:length(xlabels),
                     labels=xlabels) 
@@ -302,8 +302,8 @@ def facetedGGSeqLogo(logodata, letters, plotfile, width, height,
             xlabelsrotate=True,
             xline=True,
             yname='',
-            letters=StrVector(letters),
-            letter_colors=StrVector([letter_colors[x] for x in letters])
+            chars=StrVector(chars),
+            char_colors=StrVector([char_colors[x] for x in chars])
             )
 
     if not os.path.isfile(plotfile):
