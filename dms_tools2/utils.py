@@ -33,14 +33,14 @@ def sessionInfo():
             ]
     for modname in ['Bio', 'HTSeq', 'pandas', 'numpy', 'IPython',
             'matplotlib', 'plotnine', 'natsort', 'pystan', 'scipy',
-            'seaborn', 'phydmslib', 'jupyter']:
+            'seaborn', 'phydmslib', 'jupyter', 'rpy2']:
         try:
             v = importlib.import_module(modname).__version__
             s.append('\t{0} version: {1}'.format(modname, v))
         except AttributeError:
             s.append('\t{0} version unknown'.format(modname))
         except ImportError:
-            raise ImportError("Cannot import {0}".format(modname))
+            s.append("\t{0} cannot be imported".format(modname))
     return '\n'.join(s)
 
 
