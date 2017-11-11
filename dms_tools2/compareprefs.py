@@ -130,6 +130,19 @@ def comparePrefs(prefs1, prefs2, sites=None, distmetric='half_sum_abs_diff',
     at each site while correcting for experimental error as
     quantified by the replicate measurements.
 
+    The *distance* between each pair of replicates at each
+    site is computed using `prefDistance` with `distmetric`.
+    We then compute the RMS distance between all pairs
+    for the same homolog to get `RMSDwithin`, and all pairs
+    of different homologs to get `RMSDbetween`. We calculate
+    `RMSDcorrected` as `RMSDbetween - RMSDwithin`.
+
+    We also compute the mean (across replicates) preference
+    for homolog 1 minus the mean for homolog 2, scaled so
+    that the total height in each direction equals `RMSDcorrected`.
+    These values are an error-corrected estimate of the difference
+    in preference for each amino acid between homologs.
+
     Args:
         `prefs1` (list)
             Files giving replicate measurements of preferences for
@@ -148,8 +161,11 @@ def comparePrefs(prefs1, prefs2, sites=None, distmetric='half_sum_abs_diff',
             For instance, all 20 amino acids.
     
     Returns:
-        A `pandas.DataFrame` giving the distance for each amino-acid
-        at each site.
+        A `pandas.DataFrame` giving the distances at each site,
+        as well as the replicate mean difference between 
+        preferences for homolog 1 minus homolog 2 for each amino
+        acid at each site scaled to height of `RMSDcorrected`
+        in each direction.
 
     Example calculation for two character sequences and two
     replicates for each homolog:
@@ -165,8 +181,8 @@ def comparePrefs(prefs1, prefs2, sites=None, distmetric='half_sum_abs_diff',
     ...                          2,  0.4,  0.6'''.replace(' ', ''))
     ...     p1_2.flush()
     ...     n = p2_1.write('''site,    A,    C
-    ...                          1,  0.6,  0.4
-    ...                          2,  0.4,  0.6'''.replace(' ', ''))
+    ...                          2,  0.4,  0.6
+    ...                          1,  0.6,  0.4'''.replace(' ', ''))
     ...     p2_1.flush()
     ...     n = p2_2.write('''site,    A,    C
     ...                          1,  0.6,  0.4
@@ -177,9 +193,9 @@ def comparePrefs(prefs1, prefs2, sites=None, distmetric='half_sum_abs_diff',
     ...                          [p2_1.name, p2_2.name],
     ...                          chars=['A', 'C'])
     >>> print(diffs.to_string(float_format=lambda x: '{0:.2f}'.format(x)))
-      site  RMSDcorrected  RMSDbetween  RMSDwithin
-    0    1           0.20         0.20        0.00
-    1    2           0.02         0.12        0.10
+      site  RMSDcorrected  RMSDbetween  RMSDwithin     A     C
+    0    1           0.20         0.20        0.00  0.20 -0.20
+    1    2           0.02         0.12        0.10 -0.02  0.02
     """
 
     assert len(prefs1) > 1, "provide prefs for multiple replicates"
@@ -214,7 +230,7 @@ def comparePrefs(prefs1, prefs2, sites=None, distmetric='half_sum_abs_diff',
     prefs = prefs.sort_values('site').set_index('site')
 
     # compute RMSDs
-    dists = {'within':[], 'between':[]}    
+    dists = {'within':[], 'between':[]}
     for ((hi, repi), (hj, repj)) in itertools.combinations(
             [(h, rep) for h in [1, 2] for rep in
             prefs.query('homolog == @h')['replicate'].unique()], 2):
@@ -235,15 +251,25 @@ def comparePrefs(prefs1, prefs2, sites=None, distmetric='half_sum_abs_diff',
                       )
         prefs['RMSD' + disttype] = distseries
     prefs['RMSDcorrected'] = prefs['RMSDbetween'] - prefs['RMSDwithin']
+    rmsds = ['RMSDcorrected', 'RMSDbetween', 'RMSDwithin']
 
-    #
+    # compute RMSDcorrected-scaled diff between homologs for each pref
+    prefmeans = {}
+    for homolog in [1, 2]:
+        prefmeans[homolog] = (prefs.reset_index()
+                              .query('homolog == @homolog')
+                              .groupby('site')
+                              [chars]
+                              .mean()
+                              )
+    prefs = prefs[~prefs.index.duplicated(keep='first')][rmsds]
+    dprefs = prefmeans[1] - prefmeans[2]
+    # normalize so sums to one in each direction
+    dprefs = dprefs.div(dprefs.abs().sum(axis=1), axis=0).mul(2).fillna(0)
+    dprefs = dprefs.mul(prefs['RMSDcorrected'], axis=0)
+    prefs = prefs.join(dprefs)
 
-    # return dataframe
-    cols = ['RMSD' + d for d in ['corrected', 'between', 'within']] #+ chars
-    return (prefs[~prefs.index.duplicated(keep='first')]
-            [cols]
-            .reset_index()
-            )
+    return prefs[rmsds + chars].reset_index()
 
 
 if __name__ == '__main__':
