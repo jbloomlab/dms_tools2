@@ -19,7 +19,6 @@ addons:
       - r-base
 
 install:
-  - pip install -r test_requirements.txt
   - pip install -e .[rplot]
 
 script: 
