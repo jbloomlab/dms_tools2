@@ -22,6 +22,7 @@ installed, or install `dms_tools2` using::
 
 import os
 import io
+import warnings
 
 import pandas
 
@@ -43,11 +44,18 @@ from rpy2.robjects.vectors import StrVector, ListVector
 from rpy2.rlike.container import TaggedList
 from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
 
+#: Show warnings when running ``R`` code? Plausible values: `default`,
+#: `ignore`, and `always`. The `R` code gives many warnings, so
+#: `ignore` is good when not developing new code.
+SHOW_WARNINGS = 'ignore'
+
 # install necessary packages
-utils = importr('utils')
-utils.chooseCRANmirror(ind=1)
 _packages = ['ggplot2', 'ggseqlogo']
-utils.install_packages(StrVector(_packages))
+utils = importr('utils')
+with warnings.catch_warnings():
+    warnings.simplefilter(SHOW_WARNINGS)
+    utils.chooseCRANmirror(ind=1)
+    utils.install_packages(StrVector(_packages))
 for _package in _packages:
     importr(_package)
 
@@ -157,24 +165,26 @@ def siteSubsetGGSeqLogo(logodata, chars, plotfile, width, height,
             )
 
     # make the plot
-    _RFUNCS.siteSubsetGGSeqLogo(
-            mat=matrix,
-            plotfile=plotfile,
-            width=width,
-            height=height,
-            xlabels=list(map(str, sites)),
-            vertlines=vertlines,
-            yname=yname,
-            chars=StrVector(chars),
-            char_colors=StrVector([char_colors[x] for x in chars])
-            )
+    with warnings.catch_warnings():
+        warnings.simplefilter(SHOW_WARNINGS)
+        _RFUNCS.siteSubsetGGSeqLogo(
+                mat=matrix,
+                plotfile=plotfile,
+                width=width,
+                height=height,
+                xlabels=list(map(str, sites)),
+                vertlines=vertlines,
+                yname=yname,
+                chars=StrVector(chars),
+                char_colors=StrVector([char_colors[x] for x in chars])
+                )
 
     if not os.path.isfile(plotfile):
         raise RuntimeError("failed to create {0}".format(plotfile))
 
 
 def facetedGGSeqLogo(logodata, chars, plotfile, width, height,
-        ncol=None, char_colors=AA_COLORS_FG):
+        ncol=None, char_colors=AA_COLORS_FG, xlabelsrotate=True):
     """Creates faceted logo plot.
 
     Designed to show several measurements on the same site
@@ -203,6 +213,8 @@ def facetedGGSeqLogo(logodata, chars, plotfile, width, height,
             as many as needed to plot everything in one row.
         `char_colors` (dict)
             Values give color for every character in `chars`.
+        `xlabelsrotate` (bool)
+            Do we rotate the x-labels?
 
     Here is an example that creates two facets each with
     two stacks for the characters `A` and `C`:
@@ -265,20 +277,22 @@ def facetedGGSeqLogo(logodata, chars, plotfile, width, height,
             tags=facets.astype('str')))
 
     # make the plot
-    _RFUNCS.facetedGGSeqLogo(
-            matrices=matrices,
-            plotfile=plotfile,
-            ncol=ncol,
-            width=width,
-            height=height,
-            xname='',
-            xlabels=stacks,
-            xlabelsrotate=True,
-            xline=True,
-            yname='',
-            chars=StrVector(chars),
-            char_colors=StrVector([char_colors[x] for x in chars])
-            )
+    with warnings.catch_warnings():
+        warnings.simplefilter(SHOW_WARNINGS)
+        _RFUNCS.facetedGGSeqLogo(
+                matrices=matrices,
+                plotfile=plotfile,
+                ncol=ncol,
+                width=width,
+                height=height,
+                xname='',
+                xlabels=stacks,
+                xlabelsrotate=xlabelsrotate,
+                xline=True,
+                yname='',
+                chars=StrVector(chars),
+                char_colors=StrVector([char_colors[x] for x in chars])
+                )
 
     if not os.path.isfile(plotfile):
         raise RuntimeError("failed to create {0}".format(plotfile))
