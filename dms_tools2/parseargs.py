@@ -489,6 +489,8 @@ def logoplotParser():
             'differential selection.')
     group.add_argument('--fracsurvive', help='CSV file of amino-acid '
             'fraction surviving.')
+    group.add_argument('--diffprefs', help='CSV file of differences in '
+            'amino-acid preferences.')
 
     parser.add_argument('--name', required=True, 
             help='Name used for output files.')
@@ -567,6 +569,9 @@ def logoplotParser():
 
     parser.add_argument('--letterheight', type=int, default=1,
             help="Relative height of letter stacks in logo plot.")
+
+    parser.add_argument('--ignore_extracols', default='no',
+            choices=['yes', 'no'], help='Ignore extra columns in data')
 
     parser.add_argument('--sepline', default='yes', choices=['yes', 'no'],
             help="Separate positive and negative diffsel with black line?")

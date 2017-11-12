@@ -21,6 +21,8 @@ Change Log
 
 * Added `colors` option to `plot.plotCorrMatrix`
 
+* Added ``--diffprefs`` option to ``dms2_logoplot``
+
 2.1.0
 ------
 * Added programs and docs for `fracsurvive`.

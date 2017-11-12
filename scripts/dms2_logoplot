@@ -65,7 +65,7 @@ def main():
     prog = parser.prog
 
     # what type of data are we plotting?
-    datatype = [x for x in ['prefs', 'diffsel', 'fracsurvive'] 
+    datatype = [x for x in ['prefs', 'diffsel', 'fracsurvive', 'diffprefs']
             if args[x]]
     assert len(datatype) == 1
     datatype = datatype[0]
@@ -203,21 +203,26 @@ def main():
                 scalebar = (float(args['scalebar'][0]),
                         args['scalebar'][1])
 
+        elif datatype == 'diffprefs':
+            nosepline = {'no':True, 'yes':False}[args['sepline']]
+            ylimits = None
+            assert not args['scalebar'], "can't use `scalebar` with `diffprefs`"
+
         else:
             raise ValueError("Invalid datatype {0}".format(datatype))
 
+        # check columns
+        assert (args['ignore_extracols'] == 'yes') or (set(data.columns)
+                <= set(['site'] + dms_tools2.AAS_WITHSTOP)), 'extra columns'
         # exclude stop codons if specified
-        assert (set(['site'] + dms_tools2.AAS) <= set(data.columns) 
-                <= set(['site'] + dms_tools2.AAS_WITHSTOP)), (
-                "invalid columns")
-        if args['excludestop'] == 'yes':
-            data = data[['site'] + dms_tools2.AAS]
-            if datatype == 'prefs':
-                # re-norm after excludestop
-                data = dms_tools2.prefs.rescalePrefs(data, 
-                        args['stringency'])
-        elif args['excludestop'] != 'no':
-            raise ValueError("invalid excludestop")
+        cols = ['site'] + dms_tools2.AAS
+        assert set(cols) <= set(data.columns), 'missing amino-acids in data'
+        if '*' in data.columns and args['excludestop'] == 'no':
+            cols.append('*')
+        data = data[cols]
+        if datatype == 'prefs':
+            # re-norm after excludestop
+            data = dms_tools2.prefs.rescalePrefs(data, args['stringency'])
             
         # convert data from wide data frame to dict for logo plot
         data = data.set_index('site').to_dict('index')
