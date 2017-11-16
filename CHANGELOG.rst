@@ -1,7 +1,7 @@
 Change Log
 ===========
 
-2.2.dev0
+2.2.0
 ---------
 * added `compareprefs` module
 
