@@ -5,7 +5,7 @@ rplot
 
 Plotting that uses ``R``.
 
-The `dms_tools2` is written in Python, but there are
+The `dms_tools2` software is written in Python, but there are
 useful plotting features that are only available in ``R``,
 such `ggseqlogo <https://omarwagih.github.io/ggseqlogo/>`_.
 

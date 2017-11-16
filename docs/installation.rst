@@ -33,6 +33,7 @@ If your system already has the appropriate version of ``pip`` and appropriate pa
 
 If this command fails, then read the instructions below.
 
+
 Where to install
 +++++++++++++++++
 You need to figure out where you want to install `dms_tools2`_.
@@ -73,6 +74,17 @@ Using a virtual environment
 ++++++++++++++++++++++++++++++
 The other good option rather than ``--user`` is to use ``pip`` to install into a virtual environment `as described here <http://docs.python-guide.org/en/latest/dev/virtualenvs/>`_
 
+Installing the ``rplot`` module
+++++++++++++++++++++++++++++++++++
+As described in the :ref:`api`, there are some useful features
+in the `rplot module`_. In order for your installation to
+support this module, you need to install a recent version of 
+`R <https://www.r-project.org/about.html>`_ and then run your installation
+with::
+
+    pip install dms_tools2[rplot] --user
+
+
 Upgrading with ``pip``
 --------------------------------------------------
 If you have previously installed `dms_tools2`_ but are not sure that you have the latest version, you can upgrade using `pip`_. To do this for a local installation, use::
@@ -99,17 +111,7 @@ If you have already cloned the repository, you can update the source by::
     git pull
     pip install -e . --user
 
-The ``rplot`` module
----------------------
-As described in the :ref:`api`, there are some additional useful features
-in the `dms_tools2.rplot` module. In order for your installation to
-support this module, you need to install a recent version of 
-`R <https://www.r-project.org/about.html>`_ and then run your installation
-with::
-
-    pip install dms_tools2[rplot] --user
-
-or (if you are building from source)::
+If you want to install the `rplot module`_ from source, the command is::
 
     pip install -e .[rplot] --user
 

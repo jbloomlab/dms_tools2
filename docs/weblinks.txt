@@ -51,3 +51,5 @@
 .. _`Hilton et al (2017)`: https://peerj.com/articles/3657.pdf
 .. _`Doud, Lee, and Bloom (2017)`: https://www.biorxiv.org/content/early/2017/10/28/210468
 .. _`ggseqlogo`: https://omarwagih.github.io/ggseqlogo/
+.. _`reference for ggseqlogo`: https://doi.org/10.1093/bioinformatics/btx469
+.. _`rplot module`: https://jbloomlab.github.io/dms_tools2/dms_tools2.rplot.html
