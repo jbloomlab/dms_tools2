@@ -7,10 +7,73 @@ Performs operations related to estimating differential selection.
 """
 
 import os
+import io
 import tempfile
+
+import natsort
 import numpy
 import pandas
 from dms_tools2 import CODONS, CODON_TO_AA
+
+
+def tidyToWide(tidy_df, valuecol):
+    """Converts tidy `diffsel` data frame to wide form.
+
+    The `diffsel` data frames returned by ``dms2_diffsel`` (and
+    also other dataframes, such as the `fracsurvive` ones
+    from ``dms_fracsurvive`` are in tidy form. This function
+    converts them to wide form.
+
+    Args:
+        `tidy_df` (pandas DataFrame)
+            Data frame in tidy form. Should have columns named
+            `site`, `wildtype`, `mutation`, and something
+            with the name matching `valuecol`.
+        `valuecol` (string)
+            Name of value column in `df`, such `diffsel` or
+            `fracsurvive`.
+
+    Returns:
+        Wide form dataframe. Will have columns `site` (as string), 
+        `wildtype`, and all characters (e.g., amino acids)
+        for which values are given. Natural sorted by `site`.
+
+    >>> tidy_df = pandas.read_csv(io.StringIO(
+    ...     '''site wildtype mutation diffsel
+    ...           2        A        C    10.1
+    ...           1        C        D     9.5
+    ...           1        C        A     0.2
+    ...           2        A        D    -1.5'''),
+    ...     delim_whitespace=True, index_col=False)
+    >>> wide_df = tidyToWide(tidy_df, valuecol='diffsel')
+    >>> print(wide_df.to_string(float_format=lambda x: '{0:.1f}'.format(x)))
+      site   A    C    D wildtype
+    0    1 0.2  0.0  9.5        C
+    1    2 0.0 10.1 -1.5        A
+    """
+    assert isinstance(tidy_df, pandas.DataFrame)
+    cols = ['site', 'wildtype', 'mutation', valuecol]
+    assert set(cols) == set(tidy_df.columns), ('expected columns '
+            '{0}\nactual columns {1}'.format(cols, tidy_df.columns))
+
+    # make site a string
+    tidy_df['site'] = tidy_df['site'].astype(str)
+
+    # sort on site as here: https://stackoverflow.com/a/29582718
+    tidy_df = tidy_df.reindex(index=natsort.order_by_index(tidy_df.index,
+            natsort.index_natsorted(tidy_df.site, signed=True)))
+
+    # convert to wide form, keeping wildtype identities
+    tidy_df = tidy_df.set_index('site', drop=True)
+    wt = tidy_df['wildtype']
+    wide_df = (tidy_df.pivot(columns='mutation', values=valuecol)
+                      .fillna(0.0)
+                      .join(wt)
+                      .drop_duplicates()
+                      .reset_index()
+                      )
+
+    return wide_df
 
 
 def computeMutDiffSel(sel, mock, countcharacters, pseudocount, 
