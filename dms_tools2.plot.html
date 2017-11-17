@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>plot &#8212; dms_tools2 2.1.0 documentation</title>
+    <title>plot &#8212; dms_tools2 2.2.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '2.1.0',
+        VERSION:     '2.2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -175,7 +175,7 @@ the label for each break.</dd>
 
 <dl class="function">
 <dt id="dms_tools2.plot.plotCorrMatrix">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotCorrMatrix</code><span class="sig-paren">(</span><em>names</em>, <em>infiles</em>, <em>plotfile</em>, <em>datatype</em>, <em>trim_unshared=True</em>, <em>title=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotCorrMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotCorrMatrix" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotCorrMatrix</code><span class="sig-paren">(</span><em>names</em>, <em>infiles</em>, <em>plotfile</em>, <em>datatype</em>, <em>trim_unshared=True</em>, <em>title=''</em>, <em>colors='black'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotCorrMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotCorrMatrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots correlations among replicates.</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -206,6 +206,12 @@ If <cite>True</cite>, trim unshared one and just analyze ones
 shared among all files. If <cite>False</cite>, raise an error.</dd>
 <dt><cite>title</cite> (str)</dt>
 <dd>Title to place above plot.</dd>
+<dt><cite>colors</cite> (str or list)</dt>
+<dd>Color(s) to color scatter points. If a string, should
+specify one color for all plots. Otherwise should be
+list of length <cite>len(names) * (len(names) - 1) // 2</cite>
+giving lists of colors for plots from top to bottom, 
+left to right.</dd>
 </dl>
 </dd>
 </dl>
@@ -213,7 +219,7 @@ shared among all files. If <cite>False</cite>, raise an error.</dd>
 
 <dl class="function">
 <dt id="dms_tools2.plot.plotCumulMutCounts">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotCumulMutCounts</code><span class="sig-paren">(</span><em>names</em>, <em>countsfiles</em>, <em>plotfile</em>, <em>chartype</em>, <em>nmax=15</em>, <em>maxcol=6</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotCumulMutCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotCumulMutCounts" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotCumulMutCounts</code><span class="sig-paren">(</span><em>names</em>, <em>countsfiles</em>, <em>plotfile</em>, <em>chartype</em>, <em>nmax=15</em>, <em>maxcol=4</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotCumulMutCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotCumulMutCounts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot fraction of mutations seen &lt;= some number of times.</p>
 <p>For each set of counts in <cite>countsfiles</cite>, plot the fraction
 of mutations seen greater than or equal to some number of

@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>diffsel &#8212; dms_tools2 2.1.0 documentation</title>
+    <title>diffsel &#8212; dms_tools2 2.2.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '2.1.0',
+        VERSION:     '2.2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="dssp" href="dms_tools2.dssp.html" />
-    <link rel="prev" title="dms_tools2 package" href="dms_tools2.html" />
+    <link rel="prev" title="compareprefs" href="dms_tools2.compareprefs.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -198,6 +198,47 @@ Columns are <cite>site</cite>, <cite>wildtype</cite>, <cite>mutation</cite>, <ci
 </div>
 </dd></dl>
 
+<dl class="function">
+<dt id="dms_tools2.diffsel.tidyToWide">
+<code class="descclassname">dms_tools2.diffsel.</code><code class="descname">tidyToWide</code><span class="sig-paren">(</span><em>tidy_df</em>, <em>valuecol</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/diffsel.html#tidyToWide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.diffsel.tidyToWide" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts tidy <cite>diffsel</cite> data frame to wide form.</p>
+<p>The <cite>diffsel</cite> data frames returned by <code class="docutils literal"><span class="pre">dms2_diffsel</span></code> (and
+also other dataframes, such as the <cite>fracsurvive</cite> ones
+from <code class="docutils literal"><span class="pre">dms_fracsurvive</span></code> are in tidy form. This function
+converts them to wide form.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>tidy_df</cite> (pandas DataFrame)</dt>
+<dd>Data frame in tidy form. Should have columns named
+<cite>site</cite>, <cite>wildtype</cite>, <cite>mutation</cite>, and something
+with the name matching <cite>valuecol</cite>.</dd>
+<dt><cite>valuecol</cite> (string)</dt>
+<dd>Name of value column in <cite>df</cite>, such <cite>diffsel</cite> or
+<cite>fracsurvive</cite>.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>Wide form dataframe. Will have columns <cite>site</cite> (as string), 
+<cite>wildtype</cite>, and all characters (e.g., amino acids)
+for which values are given. Natural sorted by <cite>site</cite>.</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tidy_df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="sd">&#39;&#39;&#39;site wildtype mutation diffsel</span>
+<span class="gp">... </span><span class="sd">          2        A        C    10.1</span>
+<span class="gp">... </span><span class="sd">          1        C        D     9.5</span>
+<span class="gp">... </span><span class="sd">          1        C        A     0.2</span>
+<span class="gp">... </span><span class="sd">          2        A        D    -1.5&#39;&#39;&#39;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">delim_whitespace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wide_df</span> <span class="o">=</span> <span class="n">tidyToWide</span><span class="p">(</span><span class="n">tidy_df</span><span class="p">,</span> <span class="n">valuecol</span><span class="o">=</span><span class="s1">&#39;diffsel&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">wide_df</span><span class="o">.</span><span class="n">to_string</span><span class="p">(</span><span class="n">float_format</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">{0:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+<span class="go">  site   A    C    D wildtype</span>
+<span class="go">0    1 0.2  0.0  9.5        C</span>
+<span class="go">1    2 0.0 10.1 -1.5        A</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </div>
 
 
@@ -265,7 +306,7 @@ Columns are <cite>site</cite>, <cite>wildtype</cite>, <cite>mutation</cite>, <ci
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="api.html">Python API</a><ul>
   <li><a href="dms_tools2.html">dms_tools2 package</a><ul>
-      <li>Previous: <a href="dms_tools2.html" title="previous chapter">dms_tools2 package</a></li>
+      <li>Previous: <a href="dms_tools2.compareprefs.html" title="previous chapter">compareprefs</a></li>
       <li>Next: <a href="dms_tools2.dssp.html" title="next chapter">dssp</a></li>
   </ul></li>
   </ul></li>

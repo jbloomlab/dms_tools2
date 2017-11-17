@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.prefs &#8212; dms_tools2 2.1.0 documentation</title>
+    <title>dms_tools2.prefs &#8212; dms_tools2 2.2.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
+        VERSION:     '2.2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -62,6 +62,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">numpy.random</span>
 <span class="kn">import</span> <span class="nn">pandas</span>
+<span class="kn">import</span> <span class="nn">Bio.SeqIO</span>
 <span class="kn">import</span> <span class="nn">pystan</span>
 <span class="kn">import</span> <span class="nn">dms_tools2</span>
 
@@ -331,13 +332,30 @@
 <span class="sd">    character :math:`a`.</span>
 
 <span class="sd">    Because some of the counts are low, we add a pseudocount </span>
-<span class="sd">    :math:`P` to each observation. With this pseudocount, the </span>
+<span class="sd">    :math:`P` to each observation. Importantly, we need to scale</span>
+<span class="sd">    this pseudocount by the total depth for that sample at that site</span>
+<span class="sd">    in order to avoid systematically estimating different frequencies</span>
+<span class="sd">    purely as a function of sequencing depth, which will bias</span>
+<span class="sd">    the preference estimates.</span>
+<span class="sd">    Therefore, given the pseudocount value :math:`P` defined via the</span>
+<span class="sd">    ``--pseudocount`` argument to :ref:`dms2_prefs`, we calculate the</span>
+<span class="sd">    scaled pseudocount for sample :math:`s` and site :math:`r` as</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">       P_r^s = P \\times \\frac{N_r^s}{\min\limits_{s&#39;} N_r^{s&#39;}}.</span>
+
+<span class="sd">    This equation makes the pseudocount :math:`P` for the lowest-depth</span>
+<span class="sd">    sample, and scales up the pseodocounts for all other samples</span>
+<span class="sd">    proportional to their depth.</span>
+
+<span class="sd">    With this pseudocount, the</span>
 <span class="sd">    estimated frequency of character :math:`a` at site :math:`r`</span>
 <span class="sd">    in sample :math:`s` is </span>
 <span class="sd">    </span>
 <span class="sd">    .. math::</span>
 <span class="sd">    </span>
-<span class="sd">        f_{r,a}^s = \\frac{n_{r,a}^s + P}{N_{r,a}^s + A \\times P}</span>
+<span class="sd">        f_{r,a}^s = \\frac{n_{r,a}^s + P_r^s}{N_{r}^s + A \\times P_r^s}</span>
 
 <span class="sd">    where :math:`A` is the number of characters in the alphabet (e.g.,</span>
 <span class="sd">    20 for amino acids without stop codons).</span>
@@ -347,11 +365,11 @@
 
 <span class="sd">    .. math::</span>
 
-<span class="sd">        f_{r,a}^{before} &amp;= \max\left(\\frac{P}{N_{r,a}^{pre} + A \\times P},</span>
+<span class="sd">        f_{r,a}^{before} &amp;= \max\left(\\frac{P_r^{pre}}{N_{r}^{pre} + A \\times P_r^{pre}},</span>
 <span class="sd">        \; f_{r,a}^{pre} + \delta_{a,\\rm{wt}\left(r\\right)}</span>
 <span class="sd">        - f_{r,a}^{errpre}\\right)</span>
 
-<span class="sd">        f_{r,a}^{after} &amp;= \max\left(\\frac{P}{N_{r,a}^{post} + A \\times P},</span>
+<span class="sd">        f_{r,a}^{after} &amp;= \max\left(\\frac{P_r^{post}}{N_{r}^{post} + A \\times P_r^{post}},</span>
 <span class="sd">        \; f_{r,a}^{post} + \delta_{a,\\rm{wt}\left(r\\right)}</span>
 <span class="sd">        - f_{r,a}^{errpost}\\right)</span>
 
@@ -417,20 +435,36 @@
         <span class="n">dfs</span><span class="p">[</span><span class="s1">&#39;errpre&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">errpre</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">errpost</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">dfs</span><span class="p">[</span><span class="s1">&#39;errpost&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">errpost</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">dfname</span> <span class="ow">in</span> <span class="n">dfs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">dfs</span><span class="p">[</span><span class="n">dfname</span><span class="p">]</span>
+
+    <span class="c1"># compute total depth for each sample and sort by sites</span>
+    <span class="n">depths</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">stype</span> <span class="ow">in</span> <span class="n">dfs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">dfs</span><span class="p">[</span><span class="n">stype</span><span class="p">]</span>
         <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">charlist</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">])</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;site in @sites&#39;</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">wts</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span>
         <span class="n">df</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">],</span> <span class="n">sites</span><span class="p">)</span>
-        <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Nr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">charlist</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+        <span class="n">depths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Nr&#39;</span><span class="p">])</span>
+        <span class="n">dfs</span><span class="p">[</span><span class="n">stype</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span>
+    <span class="n">mindepth</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">depths</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># calculate scaled pseudocounts</span>
+    <span class="n">pseudocounts</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">stype</span><span class="p">,</span>
+            <span class="n">pseudocount</span> <span class="o">*</span> <span class="p">(</span><span class="n">dfs</span><span class="p">[</span><span class="n">stype</span><span class="p">][</span><span class="s1">&#39;Nr&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">mindepth</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">stype</span> <span class="ow">in</span> <span class="n">dfs</span><span class="o">.</span><span class="n">keys</span><span class="p">()])</span>
+
+    <span class="c1"># calculate frequencies</span>
+    <span class="k">for</span> <span class="n">stype</span> <span class="ow">in</span> <span class="n">dfs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">dfs</span><span class="p">[</span><span class="n">stype</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">:</span>
-            <span class="n">df</span><span class="p">[</span><span class="s1">&#39;f</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">+</span> <span class="n">pseudocount</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
-                    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Nr&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">charlist</span><span class="p">)</span> <span class="o">*</span> <span class="n">pseudocount</span><span class="p">)</span> 
+            <span class="n">df</span><span class="p">[</span><span class="s1">&#39;f</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">+</span> <span class="n">pseudocounts</span><span class="p">[</span><span class="n">stype</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span>
+                    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Nr&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">charlist</span><span class="p">)</span> <span class="o">*</span> <span class="n">pseudocounts</span><span class="p">[</span><span class="n">stype</span><span class="p">])</span> 
             <span class="n">df</span><span class="p">[</span><span class="s1">&#39;delta</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">wt</span> <span class="o">==</span> <span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">wt</span> <span class="ow">in</span> <span class="n">wts</span><span class="p">]</span>
-        <span class="n">dfs</span><span class="p">[</span><span class="n">dfname</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span>
+        <span class="n">dfs</span><span class="p">[</span><span class="n">stype</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span>
+
     <span class="c1"># fill values for errpre / errpost if they were None</span>
     <span class="k">for</span> <span class="n">stype</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;pre&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">]:</span>
         <span class="n">err</span> <span class="o">=</span> <span class="s1">&#39;err</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stype</span><span class="p">)</span>
@@ -441,15 +475,14 @@
 
     <span class="c1"># compute phi values</span>
     <span class="n">fr</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">ferr</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span>
-            <span class="p">(</span><span class="s1">&#39;before&#39;</span><span class="p">,</span> <span class="n">dfs</span><span class="p">[</span><span class="s1">&#39;pre&#39;</span><span class="p">],</span> <span class="n">dfs</span><span class="p">[</span><span class="s1">&#39;errpre&#39;</span><span class="p">]),</span>
-            <span class="p">(</span><span class="s1">&#39;after&#39;</span><span class="p">,</span> <span class="n">dfs</span><span class="p">[</span><span class="s1">&#39;post&#39;</span><span class="p">],</span> <span class="n">dfs</span><span class="p">[</span><span class="s1">&#39;errpost&#39;</span><span class="p">]),</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">ferr</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s1">&#39;before&#39;</span><span class="p">,</span> <span class="n">dfs</span><span class="p">[</span><span class="s1">&#39;pre&#39;</span><span class="p">],</span> <span class="n">dfs</span><span class="p">[</span><span class="s1">&#39;errpre&#39;</span><span class="p">],</span> <span class="n">pseudocounts</span><span class="p">[</span><span class="s1">&#39;pre&#39;</span><span class="p">]),</span>
+            <span class="p">(</span><span class="s1">&#39;after&#39;</span><span class="p">,</span> <span class="n">dfs</span><span class="p">[</span><span class="s1">&#39;post&#39;</span><span class="p">],</span> <span class="n">dfs</span><span class="p">[</span><span class="s1">&#39;errpost&#39;</span><span class="p">],</span> <span class="n">pseudocounts</span><span class="p">[</span><span class="s1">&#39;post&#39;</span><span class="p">]),</span>
             <span class="p">]:</span>
         <span class="n">fr</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;wt&#39;</span><span class="p">:</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sites</span><span class="p">))}</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">:</span>
             <span class="n">fr</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
-                    <span class="n">pseudocount</span> <span class="o">/</span> <span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;Nr&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> 
-                        <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">charlist</span><span class="p">)</span> <span class="o">*</span> <span class="n">pseudocount</span><span class="p">),</span>
+                    <span class="n">p</span> <span class="o">/</span> <span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;Nr&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">charlist</span><span class="p">)</span> <span class="o">*</span> <span class="n">p</span><span class="p">),</span>
                     <span class="n">f</span><span class="p">[</span><span class="s1">&#39;f</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span><span class="o">.</span><span class="n">values</span> 
                         <span class="o">+</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;delta</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span><span class="o">.</span><span class="n">values</span> 
                         <span class="o">-</span> <span class="n">ferr</span><span class="p">[</span><span class="s1">&#39;f</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span><span class="o">.</span><span class="n">values</span>
@@ -688,7 +721,7 @@
                         <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> with </span><span class="si">{1}</span><span class="s2"> iterations per chain.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                         <span class="n">ntry</span><span class="p">,</span> <span class="n">niter</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;_no_converge_prefs_debug.pickle&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_debug</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;_no_converge_prefs_debug.pickle&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_debug</span><span class="p">:</span>
                     <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">((</span><span class="n">counts</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">fitsummary</span><span class="p">),</span> <span class="n">f_debug</span><span class="p">)</span>
                 <span class="n">logstring</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">MCMC FAILED to converge after &quot;</span>
                         <span class="s2">&quot;all attempts at </span><span class="si">{0}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">()))</span>
@@ -941,6 +974,86 @@
         <span class="n">prefs_entropy</span><span class="p">[</span><span class="s1">&#39;entropy&#39;</span><span class="p">]</span> <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p_char</span><span class="p">)</span> <span class="o">*</span> <span class="n">p_char</span>
     <span class="n">prefs_entropy</span><span class="p">[</span><span class="s1">&#39;neffective&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">prefs_entropy</span><span class="p">[</span><span class="s1">&#39;entropy&#39;</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">prefs_entropy</span></div>
+
+
+<div class="viewcode-block" id="aafreqsFromAlignment"><a class="viewcode-back" href="../../dms_tools2.prefs.html#dms_tools2.prefs.aafreqsFromAlignment">[docs]</a><span class="k">def</span> <span class="nf">aafreqsFromAlignment</span><span class="p">(</span><span class="n">alignmentfile</span><span class="p">,</span> <span class="n">codon_to_aa</span><span class="p">,</span>
+        <span class="n">ignore_gaps</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ignore_stop</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get amino-acid frequencies at each site in alignment.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `alignmentfile` (str)</span>
+<span class="sd">            FASTA file with alignment of proteins or coding sequences.</span>
+<span class="sd">        `codon_to_aa` (bool)</span>
+<span class="sd">            If `True`, translate codon alignment to amino acids.</span>
+<span class="sd">        `ignore_gaps` (bool)</span>
+<span class="sd">            Ignore gaps when calculating frequencies.</span>
+<span class="sd">        `ignore_stop` (bool)</span>
+<span class="sd">            Ignore stop codons when calculating frequencies.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A `pandas.DataFrame` with columns being `site` (1, 2, ...</span>
+<span class="sd">        numbering) and other columns being amino acids and values</span>
+<span class="sd">        giving frequencies in alignment.</span>
+
+<span class="sd">    &gt;&gt;&gt; with tempfile.NamedTemporaryFile(mode=&#39;w&#39;) as f:</span>
+<span class="sd">    ...     x = f.write(&#39;&gt;seq1\\n&#39;</span>
+<span class="sd">    ...                 &#39;ATGGGGCAG\\n&#39;</span>
+<span class="sd">    ...                 &#39;&gt;seq2\\n&#39;</span>
+<span class="sd">    ...                 &#39;---AGGCAG\\n&#39;</span>
+<span class="sd">    ...                 &#39;&gt;seq3\\n&#39;</span>
+<span class="sd">    ...                 &#39;ATGTGACAG&#39;)</span>
+<span class="sd">    ...     f.flush()</span>
+<span class="sd">    ...     aafreqs = aafreqsFromAlignment(f.name, codon_to_aa=True)</span>
+<span class="sd">    &gt;&gt;&gt; aas_counts = [&#39;M&#39;, &#39;G&#39;, &#39;R&#39;, &#39;Q&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; aas_nocounts = [a for a in dms_tools2.AAS if a not in aas_counts]</span>
+<span class="sd">    &gt;&gt;&gt; (0 == aafreqs[aas_nocounts].values).all()</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; expected_counts = pandas.DataFrame.from_items([</span>
+<span class="sd">    ...         (&#39;site&#39;, [1, 2, 3]), (&#39;M&#39;, [1.0, 0.0, 0.0]),</span>
+<span class="sd">    ...         (&#39;G&#39;, [0.0, 0.5, 0]), (&#39;R&#39;, [0.0, 0.5, 0.0]),</span>
+<span class="sd">    ...         (&#39;Q&#39;, [0.0, 0.0, 1.0])])</span>
+<span class="sd">    &gt;&gt;&gt; expected_counts.equals(aafreqs[[&#39;site&#39;] + aas_counts])</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># read sequences</span>
+    <span class="n">seqs</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">seq</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">Bio</span><span class="o">.</span><span class="n">SeqIO</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">alignmentfile</span><span class="p">,</span> <span class="s1">&#39;fasta&#39;</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">codon_to_aa</span><span class="p">:</span>
+        <span class="n">seqs</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">gap</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">stop_symbol</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">seqs</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">seqs</span><span class="p">,</span> <span class="s2">&quot;No sequences&quot;</span>
+    <span class="n">seqlen</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">seqs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">seqlen</span><span class="p">,</span> <span class="s2">&quot;sequences have no length&quot;</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="n">seqlen</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">seqs</span><span class="p">]),</span> <span class="s2">&quot;seqs not same length&quot;</span>
+
+    <span class="c1"># get character sets</span>
+    <span class="n">aas</span> <span class="o">=</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">AAS</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">skipchars</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">ignore_gaps</span><span class="p">:</span>
+        <span class="n">skipchars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">aas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ignore_stop</span><span class="p">:</span>
+        <span class="n">skipchars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">aas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
+
+    <span class="c1"># tally amino-acid frequencies</span>
+    <span class="n">aafreqs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">col</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">seqlen</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">aas</span><span class="p">])</span>
+    <span class="n">aafreqs</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">seqlen</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">seqs</span><span class="p">:</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">aa</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">aa</span> <span class="ow">in</span> <span class="n">skipchars</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">aafreqs</span><span class="p">[</span><span class="n">aa</span><span class="p">][</span><span class="n">r</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="c1"># convert to dataframe and change counts to freqs</span>
+    <span class="n">aafreqs</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">aafreqs</span><span class="p">)</span>
+    <span class="n">ncounts</span> <span class="o">=</span> <span class="n">aafreqs</span><span class="p">[</span><span class="n">aas</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">aa</span> <span class="ow">in</span> <span class="n">aas</span><span class="p">:</span>
+        <span class="n">aafreqs</span><span class="p">[</span><span class="n">aa</span><span class="p">]</span> <span class="o">=</span> <span class="n">aafreqs</span><span class="p">[</span><span class="n">aa</span><span class="p">]</span> <span class="o">/</span> <span class="n">ncounts</span>
+
+    <span class="k">return</span> <span class="n">aafreqs</span><span class="p">[[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">aas</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
+
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>

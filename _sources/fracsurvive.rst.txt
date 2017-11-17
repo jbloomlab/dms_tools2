@@ -41,7 +41,9 @@ These programs create visualizations of the results, and you can also visualize 
 
 Definition of fraction surviving
 ---------------------------------------------
-We will use :math:`F_{r,x}` to denote the fraction of variants with character :math:`x` (e.g., an amino acid) at site :math:`r` that survive the selection.
+This definition of the fraction surviving was originally introduced in `Doud, Lee, and Bloom (2017)`_.
+
+We use :math:`F_{r,x}` to denote the fraction of variants with character :math:`x` (e.g., an amino acid) at site :math:`r` that survive the selection.
 
 In order to calculate :math:`F_{r,x}`, we need three pieces of information:
 

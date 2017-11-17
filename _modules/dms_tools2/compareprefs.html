@@ -1,0 +1,417 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>dms_tools2.compareprefs &#8212; dms_tools2 2.2.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dms_tools2.compareprefs</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">========================</span>
+<span class="sd">compareprefs</span>
+<span class="sd">========================</span>
+
+<span class="sd">Compare site-specific amino-acid preferences among homologs.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="kn">import</span> <span class="nn">natsort</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="kn">import</span> <span class="nn">dms_tools2</span>
+
+
+<div class="viewcode-block" id="divJensenShannon"><a class="viewcode-back" href="../../dms_tools2.compareprefs.html#dms_tools2.compareprefs.divJensenShannon">[docs]</a><span class="k">def</span> <span class="nf">divJensenShannon</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Jensen-Shannon divergence between two distributions.</span>
+
+<span class="sd">    The logarithms are taken to base 2, so the result will be</span>
+<span class="sd">    between 0 and 1.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `p1` and `p2` (array-like)</span>
+<span class="sd">            The two distributions for which we compute divergence.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The Jensen-Shannon divergence as a float.</span>
+
+<span class="sd">    &gt;&gt;&gt; p1 = [0.5, 0.2, 0.2, 0.1]</span>
+<span class="sd">    &gt;&gt;&gt; p2 = [0.4, 0.1, 0.3, 0.2]</span>
+<span class="sd">    &gt;&gt;&gt; p3 = [0.0, 0.2, 0.2, 0.6]</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(divJensenShannon(p1, p1), 0, atol=1e-5)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(divJensenShannon(p1, p2), 0.035789, atol=1e-5)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(divJensenShannon(p1, p3), 0.392914, atol=1e-5)</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">p1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">p1</span><span class="p">)</span>
+    <span class="n">p2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">p2</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_kldiv</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">numpy</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="nb">all</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">):</span>
+            <span class="n">kl</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">a</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">a</span> <span class="o">/</span> <span class="n">b</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">v</span><span class="p">)])</span>
+        <span class="k">return</span> <span class="n">kl</span>
+
+    <span class="n">m</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">p1</span> <span class="o">+</span> <span class="n">p2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">_kldiv</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span> <span class="o">+</span><span class="n">_kldiv</span><span class="p">(</span><span class="n">p2</span><span class="p">,</span> <span class="n">m</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="computeRMS"><a class="viewcode-back" href="../../dms_tools2.compareprefs.html#dms_tools2.compareprefs.computeRMS">[docs]</a><span class="k">def</span> <span class="nf">computeRMS</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The root mean square (RMS) of a list of values</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        `v` (array-like)</span>
+<span class="sd">            Values for which we compute the RMS.</span>
+<span class="sd">            </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        The RMS of the values.</span>
+
+<span class="sd">    &gt;&gt;&gt; v = [1.2, 3.5, 6.8, 1.1]</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(computeRMS(v), 3.9096, atol=1e-4)</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">v</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="prefDistance"><a class="viewcode-back" href="../../dms_tools2.compareprefs.html#dms_tools2.compareprefs.prefDistance">[docs]</a><span class="k">def</span> <span class="nf">prefDistance</span><span class="p">(</span><span class="n">pi1</span><span class="p">,</span> <span class="n">pi2</span><span class="p">,</span> <span class="n">distmetric</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Computes the distance between two arrays of preferences.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        `pi1` and `pi2` (array-like)</span>
+<span class="sd">            Two arrays of preferences.</span>
+<span class="sd">        `distmetric` (string)</span>
+<span class="sd">            Distance metric to use. Can be:</span>
+<span class="sd">                - `half_sum_abs_diff`: half sum absolute value of difference</span>
+<span class="sd">                - `JensenShannon`: square root of Jensen-Shannon divergence</span>
+<span class="sd">            </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        The distance between `pi1` and `pi2`.</span>
+<span class="sd">        </span>
+<span class="sd">    &gt;&gt;&gt; pi1 = [0.5, 0.2, 0.3]</span>
+<span class="sd">    &gt;&gt;&gt; pi2 = [0.2, 0.4, 0.4]</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(prefDistance(pi1, pi1, &#39;half_sum_abs_diff&#39;), 0)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(prefDistance(pi1, pi1, &#39;JensenShannon&#39;), 0)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(prefDistance(pi1, pi2, &#39;half_sum_abs_diff&#39;), 0.3)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(prefDistance(pi1, pi2, &#39;JensenShannon&#39;), 0.2785483)</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pi1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pi1</span><span class="p">)</span>
+    <span class="n">pi2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pi2</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">pi1</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">pi2</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">pi1</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.005</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">pi2</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.005</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">numpy</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">pi1</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">numpy</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">pi2</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">distmetric</span> <span class="o">==</span> <span class="s1">&#39;half_sum_abs_diff&#39;</span><span class="p">:</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">pi1</span> <span class="o">-</span> <span class="n">pi2</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+    <span class="k">elif</span> <span class="n">distmetric</span> <span class="o">==</span> <span class="s1">&#39;JensenShannon&#39;</span><span class="p">:</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">divJensenShannon</span><span class="p">(</span><span class="n">pi1</span><span class="p">,</span> <span class="n">pi2</span><span class="p">))</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid `distmetric` </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">distmetric</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">dist</span></div>
+
+
+<div class="viewcode-block" id="comparePrefs"><a class="viewcode-back" href="../../dms_tools2.compareprefs.html#dms_tools2.compareprefs.comparePrefs">[docs]</a><span class="k">def</span> <span class="nf">comparePrefs</span><span class="p">(</span><span class="n">prefs1</span><span class="p">,</span> <span class="n">prefs2</span><span class="p">,</span> <span class="n">sites</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">distmetric</span><span class="o">=</span><span class="s1">&#39;half_sum_abs_diff&#39;</span><span class="p">,</span>
+        <span class="n">chars</span><span class="o">=</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">AAS</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute error-corrected distance between two sets of preferences.</span>
+<span class="sd">  </span>
+<span class="sd">    Designed for the situation in which you have made replicate</span>
+<span class="sd">    measurements of the amino-acid preferences for two protein</span>
+<span class="sd">    homologs, and want to estimate the difference in preferences</span>
+<span class="sd">    at each site while correcting for experimental error as</span>
+<span class="sd">    quantified by the replicate measurements.</span>
+
+<span class="sd">    The *distance* between each pair of replicates at each</span>
+<span class="sd">    site is computed using `prefDistance` with `distmetric`.</span>
+<span class="sd">    We then compute the RMS distance between all pairs</span>
+<span class="sd">    for the same homolog to get `RMSDwithin`, and all pairs</span>
+<span class="sd">    of different homologs to get `RMSDbetween`. We calculate</span>
+<span class="sd">    `RMSDcorrected` as `RMSDbetween - RMSDwithin`.</span>
+
+<span class="sd">    We also compute the mean (across replicates) preference</span>
+<span class="sd">    for homolog 1 minus the mean for homolog 2, scaled so</span>
+<span class="sd">    that the total height in each direction equals `RMSDcorrected`.</span>
+<span class="sd">    These values are an error-corrected estimate of the difference</span>
+<span class="sd">    in preference for each amino acid between homologs.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `prefs1` (list)</span>
+<span class="sd">            Files giving replicate measurements of preferences for</span>
+<span class="sd">            homolog 1 in the CSV format returned by ``dms2_prefs``.</span>
+<span class="sd">        `prefs2` (list)</span>
+<span class="sd">            Files giving measurements for homolog 2.</span>
+<span class="sd">        `sites` (list or `None`)</span>
+<span class="sd">            If `None`, compare all sites shared between the two</span>
+<span class="sd">            homolog preference sites. Otherwise should be a list</span>
+<span class="sd">            of the sites to compare.</span>
+<span class="sd">        `distmetric` (string)</span>
+<span class="sd">            Distance metric to use. Can be any valid option for</span>
+<span class="sd">            the argument of the same name to `prefDistance`.</span>
+<span class="sd">        `chars` (list)</span>
+<span class="sd">            List of characters for which we analyze the preferences.</span>
+<span class="sd">            For instance, all 20 amino acids.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A `pandas.DataFrame` giving the distances at each site,</span>
+<span class="sd">        as well as the replicate mean difference between </span>
+<span class="sd">        preferences for homolog 1 minus homolog 2 for each amino</span>
+<span class="sd">        acid at each site scaled to height of `RMSDcorrected`</span>
+<span class="sd">        in each direction.</span>
+
+<span class="sd">    Example calculation for two character sequences and two</span>
+<span class="sd">    replicates for each homolog:</span>
+
+<span class="sd">    &gt;&gt;&gt; TF = functools.partial(tempfile.NamedTemporaryFile, mode=&#39;w&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; with TF() as p1_1, TF() as p1_2, TF() as p2_1, TF() as p2_2:</span>
+<span class="sd">    ...     n = p1_1.write(&#39;&#39;&#39;site,    A,    C</span>
+<span class="sd">    ...                          1,  0.8,  0.2</span>
+<span class="sd">    ...                          2,  0.3,  0.7&#39;&#39;&#39;.replace(&#39; &#39;, &#39;&#39;))</span>
+<span class="sd">    ...     p1_1.flush()</span>
+<span class="sd">    ...     n = p1_2.write(&#39;&#39;&#39;site,    A,    C</span>
+<span class="sd">    ...                          1,  0.8,  0.2</span>
+<span class="sd">    ...                          2,  0.4,  0.6&#39;&#39;&#39;.replace(&#39; &#39;, &#39;&#39;))</span>
+<span class="sd">    ...     p1_2.flush()</span>
+<span class="sd">    ...     n = p2_1.write(&#39;&#39;&#39;site,    A,    C</span>
+<span class="sd">    ...                          2,  0.4,  0.6</span>
+<span class="sd">    ...                          1,  0.6,  0.4&#39;&#39;&#39;.replace(&#39; &#39;, &#39;&#39;))</span>
+<span class="sd">    ...     p2_1.flush()</span>
+<span class="sd">    ...     n = p2_2.write(&#39;&#39;&#39;site,    A,    C</span>
+<span class="sd">    ...                          1,  0.6,  0.4</span>
+<span class="sd">    ...                         1a,  0.4,  0.6</span>
+<span class="sd">    ...                          2,  0.5,  0.5&#39;&#39;&#39;.replace(&#39; &#39;, &#39;&#39;))</span>
+<span class="sd">    ...     p2_2.flush()</span>
+<span class="sd">    ...     diffs = comparePrefs([p1_1.name, p1_2.name],</span>
+<span class="sd">    ...                          [p2_1.name, p2_2.name],</span>
+<span class="sd">    ...                          chars=[&#39;A&#39;, &#39;C&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; print(diffs.to_string(float_format=lambda x: &#39;{0:.2f}&#39;.format(x)))</span>
+<span class="sd">      site  RMSDcorrected  RMSDbetween  RMSDwithin     A     C</span>
+<span class="sd">    0    1           0.20         0.20        0.00  0.20 -0.20</span>
+<span class="sd">    1    2           0.02         0.12        0.10 -0.02  0.02</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">prefs1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;provide prefs for multiple replicates&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">prefs2</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;provide prefs for multiple replicates&quot;</span>
+  
+    <span class="c1"># read in all preferences</span>
+    <span class="n">prefs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">expectcols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">chars</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">homolog</span><span class="p">,</span> <span class="n">homologprefs</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="n">prefs1</span><span class="p">,</span> <span class="n">prefs2</span><span class="p">],</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">rep</span><span class="p">,</span> <span class="n">repprefs</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">homologprefs</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">iprefs</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">repprefs</span><span class="p">)</span>
+            <span class="n">iprefs</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">iprefs</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;str&#39;</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">iprefs</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">expectcols</span><span class="p">),</span> \
+                    <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> missing expected columns&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">repprefs</span><span class="p">)</span>
+            <span class="n">prefs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">iprefs</span><span class="p">[</span><span class="n">expectcols</span><span class="p">]</span>
+                               <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">homolog</span><span class="o">=</span><span class="n">homolog</span><span class="p">,</span> <span class="n">replicate</span><span class="o">=</span><span class="n">rep</span><span class="p">)</span>
+                               <span class="p">)</span>
+
+    <span class="c1"># get only desired sites</span>
+    <span class="k">if</span> <span class="n">sites</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># use sites shared among all preference sets</span>
+        <span class="n">sites</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">set</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">prefs</span><span class="p">]))</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">sites</span><span class="p">),</span> <span class="s2">&quot;no `sites` to analyze&quot;</span>
+    <span class="n">sites</span> <span class="o">=</span> <span class="n">natsort</span><span class="o">.</span><span class="n">natsorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">sites</span><span class="p">)),</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># merge preferences for desired sites</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="nb">set</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">prefs</span><span class="p">]),</span>\
+            <span class="s2">&quot;not all prefs have all sites&quot;</span>
+    <span class="n">prefs</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="p">[</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">sites</span><span class="p">)]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">prefs</span><span class="p">]</span>
+    <span class="n">prefs</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">prefs</span><span class="p">)</span>
+    <span class="n">prefs</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">prefs</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">],</span> <span class="n">sites</span><span class="p">)</span>
+    <span class="n">prefs</span> <span class="o">=</span> <span class="n">prefs</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+
+    <span class="c1"># compute RMSDs</span>
+    <span class="n">dists</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;within&#39;</span><span class="p">:[],</span> <span class="s1">&#39;between&#39;</span><span class="p">:[]}</span>
+    <span class="k">for</span> <span class="p">((</span><span class="n">hi</span><span class="p">,</span> <span class="n">repi</span><span class="p">),</span> <span class="p">(</span><span class="n">hj</span><span class="p">,</span> <span class="n">repj</span><span class="p">))</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span>
+            <span class="p">[(</span><span class="n">h</span><span class="p">,</span> <span class="n">rep</span><span class="p">)</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">rep</span> <span class="ow">in</span>
+            <span class="n">prefs</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;homolog == @h&#39;</span><span class="p">)[</span><span class="s1">&#39;replicate&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()],</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">prefsi</span> <span class="o">=</span> <span class="p">(</span><span class="n">prefs</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;homolog == @hi and replicate == @repi&#39;</span><span class="p">)</span>
+                  <span class="p">[</span><span class="n">chars</span><span class="p">])</span>
+        <span class="n">prefsj</span> <span class="o">=</span> <span class="p">(</span><span class="n">prefs</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;homolog == @hj and replicate == @repj&#39;</span><span class="p">)</span>
+                  <span class="p">[</span><span class="n">chars</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">prefsi</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">prefsj</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">disttype</span> <span class="o">=</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span><span class="s1">&#39;within&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">:</span><span class="s1">&#39;between&#39;</span><span class="p">}[</span><span class="n">hi</span> <span class="o">==</span> <span class="n">hj</span><span class="p">]</span>
+        <span class="n">dists</span><span class="p">[</span><span class="n">disttype</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">prefDistance</span><span class="p">(</span><span class="n">prefsi</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">r</span><span class="p">],</span> <span class="n">prefsj</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">r</span><span class="p">],</span> <span class="n">distmetric</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">sites</span><span class="p">]</span>
+                <span class="p">)</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">disttype</span><span class="p">,</span> <span class="n">dist</span><span class="p">)</span> <span class="ow">in</span> <span class="n">dists</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">distseries</span> <span class="o">=</span> <span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">sites</span><span class="p">)</span>
+                      <span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+                      <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">computeRMS</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                      <span class="p">)</span>
+        <span class="n">prefs</span><span class="p">[</span><span class="s1">&#39;RMSD&#39;</span> <span class="o">+</span> <span class="n">disttype</span><span class="p">]</span> <span class="o">=</span> <span class="n">distseries</span>
+    <span class="n">prefs</span><span class="p">[</span><span class="s1">&#39;RMSDcorrected&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prefs</span><span class="p">[</span><span class="s1">&#39;RMSDbetween&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">prefs</span><span class="p">[</span><span class="s1">&#39;RMSDwithin&#39;</span><span class="p">]</span>
+    <span class="n">rmsds</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;RMSDcorrected&#39;</span><span class="p">,</span> <span class="s1">&#39;RMSDbetween&#39;</span><span class="p">,</span> <span class="s1">&#39;RMSDwithin&#39;</span><span class="p">]</span>
+
+    <span class="c1"># compute RMSDcorrected-scaled diff between homologs for each pref</span>
+    <span class="n">prefmeans</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">homolog</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]:</span>
+        <span class="n">prefmeans</span><span class="p">[</span><span class="n">homolog</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">prefs</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+                              <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;homolog == @homolog&#39;</span><span class="p">)</span>
+                              <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+                              <span class="p">[</span><span class="n">chars</span><span class="p">]</span>
+                              <span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+                              <span class="p">)</span>
+    <span class="n">prefs</span> <span class="o">=</span> <span class="n">prefs</span><span class="p">[</span><span class="o">~</span><span class="n">prefs</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">duplicated</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">)][</span><span class="n">rmsds</span><span class="p">]</span>
+    <span class="n">dprefs</span> <span class="o">=</span> <span class="n">prefmeans</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">prefmeans</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="c1"># normalize so sums to one in each direction</span>
+    <span class="n">dprefs</span> <span class="o">=</span> <span class="n">dprefs</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">dprefs</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">dprefs</span> <span class="o">=</span> <span class="n">dprefs</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">prefs</span><span class="p">[</span><span class="s1">&#39;RMSDcorrected&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">prefs</span> <span class="o">=</span> <span class="n">prefs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dprefs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">prefs</span><span class="p">[</span><span class="n">rmsds</span> <span class="o">+</span> <span class="n">chars</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fracsurvive.html">Fraction surviving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../programs.html">Executable programs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

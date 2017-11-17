@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.plot &#8212; dms_tools2 2.1.0 documentation</title>
+    <title>dms_tools2.plot &#8212; dms_tools2 2.2.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
+        VERSION:     '2.2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -382,7 +382,7 @@
 
 
 <div class="viewcode-block" id="plotCumulMutCounts"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.plotCumulMutCounts">[docs]</a><span class="k">def</span> <span class="nf">plotCumulMutCounts</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">countsfiles</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span> <span class="n">chartype</span><span class="p">,</span>
-        <span class="n">nmax</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">maxcol</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
+        <span class="n">nmax</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">maxcol</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Plot fraction of mutations seen &lt;= some number of times.</span>
 
 <span class="sd">    For each set of counts in `countsfiles`, plot the fraction</span>
@@ -439,7 +439,6 @@
     <span class="c1"># make name a category to preserve order</span>
     <span class="n">df</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="n">names</span><span class="p">)</span>
 
-    <span class="n">maxcol</span> <span class="o">=</span> <span class="mi">4</span>
     <span class="n">ncol</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">maxcol</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">))</span>
     <span class="n">nrow</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">ncol</span><span class="p">))</span>
     <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="s1">&#39;counts&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;character&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;character&#39;</span><span class="p">))</span>
@@ -535,7 +534,7 @@
 
 
 <div class="viewcode-block" id="plotCorrMatrix"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.plotCorrMatrix">[docs]</a><span class="k">def</span> <span class="nf">plotCorrMatrix</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">infiles</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span>
-        <span class="n">trim_unshared</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="n">trim_unshared</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Plots correlations among replicates.</span>
 
 <span class="sd">    Args:</span>
@@ -559,17 +558,15 @@
 <span class="sd">            shared among all files. If `False`, raise an error.</span>
 <span class="sd">        `title` (str)</span>
 <span class="sd">            Title to place above plot.</span>
+<span class="sd">        `colors` (str or list)</span>
+<span class="sd">            Color(s) to color scatter points. If a string, should</span>
+<span class="sd">            specify one color for all plots. Otherwise should be</span>
+<span class="sd">            list of length `len(names) * (len(names) - 1) // 2`</span>
+<span class="sd">            giving lists of colors for plots from top to bottom, </span>
+<span class="sd">            left to right.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">infiles</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">names</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span>
     <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;.pdf&#39;</span>
-
-    <span class="c1"># corr coefficients as here: https://stackoverflow.com/a/30942817</span>
-    <span class="k">def</span> <span class="nf">corrfunc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">kws</span><span class="p">):</span>
-        <span class="n">r</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s1">&#39;R = </span><span class="si">{0:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">r</span><span class="p">),</span> <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">),</span> 
-                <span class="n">xycoords</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">19</span><span class="p">,</span> 
-                <span class="n">fontstyle</span><span class="o">=</span><span class="s1">&#39;oblique&#39;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;prefs&#39;</span><span class="p">:</span>
         <span class="c1"># read prefs into dataframe, ensuring all have same characters</span>
@@ -646,12 +643,26 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid datatype </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">datatype</span><span class="p">))</span>
 
+    <span class="n">ncolors</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">colors</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="n">colors</span><span class="p">]</span> <span class="o">*</span> <span class="n">ncolors</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">colors</span><span class="p">)</span> <span class="o">==</span> <span class="n">ncolors</span><span class="p">,</span> <span class="s2">&quot;not </span><span class="si">{0}</span><span class="s2"> colors&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ncolors</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">corrfunc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">kws</span><span class="p">):</span>
+        <span class="n">r</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s1">&#39;R = </span><span class="si">{0:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">r</span><span class="p">),</span> <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">),</span> 
+                <span class="n">xycoords</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">19</span><span class="p">,</span> 
+                <span class="n">fontstyle</span><span class="o">=</span><span class="s1">&#39;oblique&#39;</span><span class="p">)</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">22</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.35</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+                <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
     <span class="c1"># map lower / upper / diagonal as here:</span>
     <span class="c1"># https://stackoverflow.com/a/30942817 for plot</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">seaborn</span><span class="o">.</span><span class="n">PairGrid</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
-    <span class="n">p</span><span class="o">.</span><span class="n">map_lower</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">22</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.35</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> 
-            <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">p</span><span class="o">.</span><span class="n">map_lower</span><span class="p">(</span><span class="n">corrfunc</span><span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">map_lower</span><span class="p">(</span><span class="n">corrfunc</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="n">colors</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;prefs&#39;</span><span class="p">:</span>
         <span class="n">p</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>  <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> 
                 <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> 

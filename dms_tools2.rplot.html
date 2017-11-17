@@ -1,0 +1,309 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>rplot &#8212; dms_tools2 2.2.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="sra" href="dms_tools2.sra.html" />
+    <link rel="prev" title="prefs" href="dms_tools2.prefs.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="module-dms_tools2.rplot"></span><div class="section" id="rplot">
+<h1>rplot<a class="headerlink" href="#rplot" title="Permalink to this headline">¶</a></h1>
+<p>Plotting that uses <code class="docutils literal"><span class="pre">R</span></code>.</p>
+<p>The <cite>dms_tools2</cite> software is written in Python, but there are
+useful plotting features that are only available in <code class="docutils literal"><span class="pre">R</span></code>,
+such <a class="reference external" href="https://omarwagih.github.io/ggseqlogo/">ggseqlogo</a>.</p>
+<p>This module uses <code class="docutils literal"><span class="pre">R</span></code> to make plots using these features. It
+requires <a class="reference external" href="https://rpy2.readthedocs.io">rpy2</a> to be installed.
+Installation of <a class="reference external" href="https://rpy2.readthedocs.io">rpy2</a> is 
+<strong>not</strong> automatic when you install <cite>dms_tools2</cite> unless
+you have <code class="docutils literal"><span class="pre">R</span></code> and <a class="reference external" href="https://rpy2.readthedocs.io">rpy2</a>
+installed, or install <cite>dms_tools2</cite> using:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">dms_tools</span><span class="p">[</span><span class="n">rplot</span><span class="p">]</span> <span class="o">--</span><span class="n">user</span>
+</pre></div>
+</div>
+<dl class="data">
+<dt id="dms_tools2.rplot.AA_COLORS_FG">
+<code class="descclassname">dms_tools2.rplot.</code><code class="descname">AA_COLORS_FG</code><em class="property"> = {'H': '#e41a1c', 'P': '#12ab0d', 'E': '#3c58e5', '*': '#000000', 'Y': '#84380b', 'A': '#f76ab4', 'R': '#e41a1c', 'T': '#ff7f00', 'F': '#84380b', 'K': '#e41a1c', 'G': '#f76ab4', 'C': '#ff7f00', 'S': '#ff7f00', 'M': '#12ab0d', 'V': '#12ab0d', 'L': '#12ab0d', 'W': '#84380b', 'D': '#3c58e5', 'N': '#972aa8', 'Q': '#972aa8', 'I': '#12ab0d'}</em><a class="headerlink" href="#dms_tools2.rplot.AA_COLORS_FG" title="Permalink to this definition">¶</a></dt>
+<dd><p>default colors for amino acid chars, by functional group</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="dms_tools2.rplot.SHOW_WARNINGS">
+<code class="descclassname">dms_tools2.rplot.</code><code class="descname">SHOW_WARNINGS</code><em class="property"> = 'ignore'</em><a class="headerlink" href="#dms_tools2.rplot.SHOW_WARNINGS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show warnings when running <code class="docutils literal"><span class="pre">R</span></code> code? Plausible values: <cite>default</cite>,
+<cite>ignore</cite>, and <cite>always</cite>. The <cite>R</cite> code gives many warnings, so
+<cite>ignore</cite> is good when not developing new code.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.rplot.facetedGGSeqLogo">
+<code class="descclassname">dms_tools2.rplot.</code><code class="descname">facetedGGSeqLogo</code><span class="sig-paren">(</span><em>logodata</em>, <em>chars</em>, <em>plotfile</em>, <em>width</em>, <em>height</em>, <em>ncol=None</em>, <em>char_colors={'H': '#e41a1c'</em>, <em>'P': '#12ab0d'</em>, <em>'E': '#3c58e5'</em>, <em>'*': '#000000'</em>, <em>'Y': '#84380b'</em>, <em>'A': '#f76ab4'</em>, <em>'R': '#e41a1c'</em>, <em>'T': '#ff7f00'</em>, <em>'F': '#84380b'</em>, <em>'K': '#e41a1c'</em>, <em>'G': '#f76ab4'</em>, <em>'C': '#ff7f00'</em>, <em>'S': '#ff7f00'</em>, <em>'M': '#12ab0d'</em>, <em>'V': '#12ab0d'</em>, <em>'L': '#12ab0d'</em>, <em>'W': '#84380b'</em>, <em>'D': '#3c58e5'</em>, <em>'N': '#972aa8'</em>, <em>'Q': '#972aa8'</em>, <em>'I': '#12ab0d'}</em>, <em>xlabelsrotate=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/rplot.html#facetedGGSeqLogo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.rplot.facetedGGSeqLogo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates faceted logo plot.</p>
+<p>Designed to show several measurements on the same site
+site-by-side, potentially for many sites. Each site
+must have the same set of measurements.</p>
+<p>Makes panel of logo plots faceted on <cite>logodata[‘facetlabel’]</cite>,
+where character stacks are labeled by <cite>logodata[‘stacklabel’]</cite>
+and show the characters at the indicated heights.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>logodata</cite> (pandas DataFrame)</dt>
+<dd>Contains data to plot. Should have the columns
+<cite>facetlabel</cite>, <cite>stacklabel</cite>, and a column giving the
+height of each character in <cite>chars</cite>.</dd>
+<dt><cite>chars</cite> (list)</dt>
+<dd>Letters for which we plot heights.</dd>
+<dt><cite>plotfile</cite> (str)</dt>
+<dd>Name of created plot.</dd>
+<dt><cite>width</cite> (float)</dt>
+<dd>Width of plot in inches.</dd>
+<dt><cite>height</cite> (float)</dt>
+<dd>Height of plot in inches.</dd>
+<dt><cite>ncol</cite> (int or <cite>None</cite>)</dt>
+<dd>Number of columns in faceted plot. If <cite>None</cite>, use
+as many as needed to plot everything in one row.</dd>
+<dt><cite>char_colors</cite> (dict)</dt>
+<dd>Values give color for every character in <cite>chars</cite>.</dd>
+<dt><cite>xlabelsrotate</cite> (bool)</dt>
+<dd>Do we rotate the x-labels?</dd>
+</dl>
+</dd>
+</dl>
+<p>Here is an example that creates two facets each with
+two stacks for the characters <cite>A</cite> and <cite>C</cite>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">logodata</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="sd">&#39;&#39;&#39;facetlabel  stacklabel   A   C</span>
+<span class="gp">... </span><span class="sd">           site-1       BF520 0.8 0.2</span>
+<span class="gp">... </span><span class="sd">           site-1       BG505 0.9 0.1</span>
+<span class="gp">... </span><span class="sd">           site-2       BF520 0.4 0.6</span>
+<span class="gp">... </span><span class="sd">           site-2       BG505 0.5 0.5&#39;&#39;&#39;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">delim_whitespace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plotfile</span> <span class="o">=</span> <span class="s1">&#39;_facetedGGSeqLogo_test_plot.png&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">facetedGGSeqLogo</span><span class="p">(</span><span class="n">logodata</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">chars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="n">plotfile</span><span class="o">=</span><span class="n">plotfile</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">width</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mf">2.5</span>
+<span class="gp">... </span>        <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Here is the plot created by the code block above:</p>
+<a class="reference internal image-reference" href="_images/_facetedGGSeqLogo_test_plot.png"><img alt="_images/_facetedGGSeqLogo_test_plot.png" class="align-center" src="_images/_facetedGGSeqLogo_test_plot.png" style="width: 40%;" /></a>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.rplot.siteSubsetGGSeqLogo">
+<code class="descclassname">dms_tools2.rplot.</code><code class="descname">siteSubsetGGSeqLogo</code><span class="sig-paren">(</span><em>logodata</em>, <em>chars</em>, <em>plotfile</em>, <em>width</em>, <em>height</em>, <em>yname=''</em>, <em>char_colors={'H': '#e41a1c'</em>, <em>'P': '#12ab0d'</em>, <em>'E': '#3c58e5'</em>, <em>'*': '#000000'</em>, <em>'Y': '#84380b'</em>, <em>'A': '#f76ab4'</em>, <em>'R': '#e41a1c'</em>, <em>'T': '#ff7f00'</em>, <em>'F': '#84380b'</em>, <em>'K': '#e41a1c'</em>, <em>'G': '#f76ab4'</em>, <em>'C': '#ff7f00'</em>, <em>'S': '#ff7f00'</em>, <em>'M': '#12ab0d'</em>, <em>'V': '#12ab0d'</em>, <em>'L': '#12ab0d'</em>, <em>'W': '#84380b'</em>, <em>'D': '#3c58e5'</em>, <em>'N': '#972aa8'</em>, <em>'Q': '#972aa8'</em>, <em>'I': '#12ab0d'}</em>, <em>ylimits=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/rplot.html#siteSubsetGGSeqLogo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.rplot.siteSubsetGGSeqLogo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates one-row logo plot with subset of sites.</p>
+<p>Designed to show logo plot for a subset of sites. This
+is useful when you have data for many sites, but only
+want to look at a few of them.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>logodata</cite> (pandas DataFrame)</dt>
+<dd>Contains data to plot. Should have the columns
+<cite>site</cite>, <cite>show</cite>, and a column giving the height
+height of each char in <cite>chars</cite>. Only sites
+where <cite>show</cite> is <cite>True</cite> are shown. Sites are 
+shown in the order they occur in this dataframe,
+with spaces every time there is an interspersed
+site with <cite>show</cite> being <cite>False</cite>.</dd>
+<dt><cite>chars</cite> (list)</dt>
+<dd>Letters for which we plot heights.</dd>
+<dt><cite>plotfile</cite> (str)</dt>
+<dd>Name of created plot.</dd>
+<dt><cite>width</cite> (float)</dt>
+<dd>Width of plot in inches.</dd>
+<dt><cite>height</cite> (float)</dt>
+<dd>Height of plot in inches.</dd>
+<dt><cite>yname</cite> (str)</dt>
+<dd>If set to a non-empty string, is the y-axis label
+and yticks are drawn.</dd>
+<dt><cite>char_colors</cite> (dict)</dt>
+<dd>Values give color for every character in <cite>chars</cite>.</dd>
+<dt><cite>ylimits</cite> (<cite>None</cite> or 2-tuple)</dt>
+<dd>If not <cite>None</cite>, should give the ylimits for the plot
+as <cite>(ymin, ymax)</cite></dd>
+</dl>
+</dd>
+</dl>
+<p>Here is an example that creates a plot for a subset of
+sites for two characters:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">logodata</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="sd">&#39;&#39;&#39;site show    A    C</span>
+<span class="gp">... </span><span class="sd">       A101 True  0.8  0.2</span>
+<span class="gp">... </span><span class="sd">       N102 True  0.7  0.3</span>
+<span class="gp">... </span><span class="sd">       K103 False 0.1  0.9</span>
+<span class="gp">... </span><span class="sd">       L104 True  0.8  0.2</span>
+<span class="gp">... </span><span class="sd">       S105 True  0.5  0.5</span>
+<span class="gp">... </span><span class="sd">       T106 False 0.2  0.8</span>
+<span class="gp">... </span><span class="sd">       G107 False 0.4  0.6</span>
+<span class="gp">... </span><span class="sd">       L108 True  0.7  0.3&#39;&#39;&#39;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">delim_whitespace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plotfile</span> <span class="o">=</span> <span class="s1">&#39;_siteSubsetGGSeqLogo_test_plot.png&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">siteSubsetGGSeqLogo</span><span class="p">(</span><span class="n">logodata</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">chars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="n">plotfile</span><span class="o">=</span><span class="n">plotfile</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">width</span><span class="o">=</span><span class="mf">3.5</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">2</span>
+<span class="gp">... </span>        <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Here is the plot created by the code block above:</p>
+<a class="reference internal image-reference" href="_images/_siteSubsetGGSeqLogo_test_plot.png"><img alt="_images/_siteSubsetGGSeqLogo_test_plot.png" class="align-center" src="_images/_siteSubsetGGSeqLogo_test_plot.png" style="width: 55%;" /></a>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.rplot.versionInfo">
+<code class="descclassname">dms_tools2.rplot.</code><code class="descname">versionInfo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/rplot.html#versionInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.rplot.versionInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns string giving <cite>rpy2</cite> and <code class="docutils literal"><span class="pre">R</span></code> version info.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fracsurvive.html">Fraction surviving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="programs.html">Executable programs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">Python API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="dms_tools2.html">dms_tools2 package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="api.html">Python API</a><ul>
+  <li><a href="dms_tools2.html">dms_tools2 package</a><ul>
+      <li>Previous: <a href="dms_tools2.prefs.html" title="previous chapter">prefs</a></li>
+      <li>Next: <a href="dms_tools2.sra.html" title="next chapter">sra</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/dms_tools2.rplot.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

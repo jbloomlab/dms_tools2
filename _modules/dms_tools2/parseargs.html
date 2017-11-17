@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.parseargs &#8212; dms_tools2 2.1.0 documentation</title>
+    <title>dms_tools2.parseargs &#8212; dms_tools2 2.2.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
+        VERSION:     '2.2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -531,6 +531,8 @@
             <span class="s1">&#39;differential selection.&#39;</span><span class="p">)</span>
     <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--fracsurvive&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;CSV file of amino-acid &#39;</span>
             <span class="s1">&#39;fraction surviving.&#39;</span><span class="p">)</span>
+    <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--diffprefs&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;CSV file of differences in &#39;</span>
+            <span class="s1">&#39;amino-acid preferences.&#39;</span><span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--name&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
             <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Name used for output files.&#39;</span><span class="p">)</span>
@@ -582,7 +584,10 @@
             <span class="s2">&quot;LONGNAME is longer name for legend. Sites not in FILE &quot;</span>
             <span class="s2">&quot;are colored white. To show wildtype identity, make &quot;</span>
             <span class="s2">&quot;SHORTNAME and LONGNAME both `wildtype` and have this &quot;</span>
-            <span class="s2">&quot;column in FILE give 1-letter wildtype amino-acid code.&quot;</span><span class="p">)</span>
+            <span class="s2">&quot;column in FILE give 1-letter wildtype amino-acid code. &quot;</span>
+            <span class="s2">&quot;To show ``omegabysite.txt`` file from ``phydms``, &quot;</span>
+            <span class="s2">&quot;give that file and set both SHORTNAME and LONGNAME &quot;</span>
+            <span class="s2">&quot;to `omegabysite`.&quot;</span><span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--overlay2&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
             <span class="n">metavar</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;FILE&#39;</span><span class="p">,</span> <span class="s1">&#39;SHORTNAME&#39;</span><span class="p">,</span> <span class="s1">&#39;LONGNAME&#39;</span><span class="p">),</span>
@@ -606,6 +611,9 @@
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--letterheight&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Relative height of letter stacks in logo plot.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--ignore_extracols&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;no&#39;</span><span class="p">,</span>
+            <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">],</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Ignore extra columns in data&#39;</span><span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--sepline&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">],</span>
             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Separate positive and negative diffsel with black line?&quot;</span><span class="p">)</span>

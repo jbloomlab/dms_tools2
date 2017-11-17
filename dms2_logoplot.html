@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms2_logoplot &#8212; dms_tools2 2.1.0 documentation</title>
+    <title>dms2_logoplot &#8212; dms_tools2 2.2.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '2.1.0',
+        VERSION:     '2.2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -57,18 +57,17 @@
 <h2><a class="toc-backref" href="#id3">Overview</a><a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal"><span class="pre">dms2_logoplot</span></code> program makes logo-plot visualizations of the data.
 It uses a slightly modified version of <a class="reference external" href="https://code.google.com/p/weblogo/">weblogo</a> to make the logo plots themselves.</p>
-<p>If you run it using <code class="docutils literal"><span class="pre">--prefs</span></code> to specify the input file, then the plot will visualize <a class="reference internal" href="prefs.html#prefs"><span class="std std-ref">Amino-acid preferences</span></a>.
-An example of the type of plot created for <a class="reference internal" href="prefs.html#prefs"><span class="std std-ref">Amino-acid preferences</span></a> is shown in the <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2016/analysis_notebook.ipynb">Doud2016 example</a>.</p>
-<p>If you run it using <code class="docutils literal"><span class="pre">--diffsel</span></code> to specify the input file, then the plot will visualize <a class="reference internal" href="diffsel.html#diffsel"><span class="std std-ref">Differential selection</span></a>.
-An example of the type of plot created for <a class="reference internal" href="diffsel.html#diffsel"><span class="std std-ref">Differential selection</span></a> is shown in the <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2017/analysis_notebook.ipynb">Doud2017 example</a>.</p>
+<p>If you run it using <code class="docutils literal"><span class="pre">--prefs</span></code> to specify the input file, then the plot will visualize <a class="reference internal" href="prefs.html#prefs"><span class="std std-ref">Amino-acid preferences</span></a>.</p>
+<p>If you run it using <code class="docutils literal"><span class="pre">--diffsel</span></code> to specify the input file, then the plot will visualize <a class="reference internal" href="diffsel.html#diffsel"><span class="std std-ref">Differential selection</span></a>.</p>
 <p>If you run it using <code class="docutils literal"><span class="pre">--fracsurvive</span></code> to specify the input file, then the plot will visualize the <a class="reference internal" href="fracsurvive.html#fracsurvive"><span class="std std-ref">Fraction surviving</span></a> for each mutation.</p>
+<p>If you run it using <code class="docutils literal"><span class="pre">--diffprefs</span></code> to specify the input file, then the plot will show the difference between preferences, showing negative and positive values.</p>
 </div>
 <div class="section" id="command-line-usage">
 <span id="logoplot-commandlineusage"></span><h2><a class="toc-backref" href="#id4">Command-line usage</a><a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
-<p>Create logo plot visualization. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.1.0) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
+<p>Create logo plot visualization. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.2.0) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">dms2_logoplot</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">outdir</span> <span class="n">OUTDIR</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">ncpus</span> <span class="n">NCPUS</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">use_existing</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span>
-                     <span class="p">(</span><span class="o">--</span><span class="n">prefs</span> <span class="n">PREFS</span> <span class="o">|</span> <span class="o">--</span><span class="n">diffsel</span> <span class="n">DIFFSEL</span> <span class="o">|</span> <span class="o">--</span><span class="n">fracsurvive</span> <span class="n">FRACSURVIVE</span><span class="p">)</span>
+                     <span class="p">(</span><span class="o">--</span><span class="n">prefs</span> <span class="n">PREFS</span> <span class="o">|</span> <span class="o">--</span><span class="n">diffsel</span> <span class="n">DIFFSEL</span> <span class="o">|</span> <span class="o">--</span><span class="n">fracsurvive</span> <span class="n">FRACSURVIVE</span> <span class="o">|</span> <span class="o">--</span><span class="n">diffprefs</span> <span class="n">DIFFPREFS</span><span class="p">)</span>
                      <span class="o">--</span><span class="n">name</span> <span class="n">NAME</span> <span class="p">[</span><span class="o">--</span><span class="n">nperline</span> <span class="n">NPERLINE</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">numberevery</span> <span class="n">NUMBEREVERY</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">excludestop</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">stringency</span> <span class="n">STRINGENCY</span><span class="p">]</span>
@@ -82,7 +81,8 @@ An example of the type of plot created for <a class="reference internal" href="d
                      <span class="p">[</span><span class="o">--</span><span class="n">overlay3</span> <span class="n">FILE</span> <span class="n">SHORTNAME</span> <span class="n">LONGNAME</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">underlay</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span> <span class="p">[</span><span class="o">--</span><span class="n">scalebar</span> <span class="n">BARHEIGHT</span> <span class="n">LABEL</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">overlaycolormap</span> <span class="n">OVERLAYCOLORMAP</span><span class="p">]</span>
-                     <span class="p">[</span><span class="o">--</span><span class="n">letterheight</span> <span class="n">LETTERHEIGHT</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">sepline</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span>
+                     <span class="p">[</span><span class="o">--</span><span class="n">letterheight</span> <span class="n">LETTERHEIGHT</span><span class="p">]</span>
+                     <span class="p">[</span><span class="o">--</span><span class="n">ignore_extracols</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span> <span class="p">[</span><span class="o">--</span><span class="n">sepline</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span>
 </pre></div>
 </div>
 <div class="section" id="Named Arguments">
@@ -117,6 +117,9 @@ An example of the type of plot created for <a class="reference internal" href="d
 <tr><td class="option-group">
 <kbd>--fracsurvive</kbd></td>
 <td>CSV file of amino-acid fraction surviving.</td></tr>
+<tr><td class="option-group">
+<kbd>--diffprefs</kbd></td>
+<td>CSV file of differences in amino-acid preferences.</td></tr>
 <tr><td class="option-group">
 <kbd>--name</kbd></td>
 <td><p class="first">Name used for output files.</p>
@@ -177,7 +180,7 @@ Underscores are not allowed as they are a LaTex special character.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd>--overlay1</kbd></td>
-<td>Color bar above logo plot to denote per-residue property. FILE is CSV format with column names <cite>site</cite> and SHORTNAME. SHORTNAME is &lt;= 5 character property name. LONGNAME is longer name for legend. Sites not in FILE are colored white. To show wildtype identity, make SHORTNAME and LONGNAME both <cite>wildtype</cite> and have this column in FILE give 1-letter wildtype amino-acid code.</td></tr>
+<td>Color bar above logo plot to denote per-residue property. FILE is CSV format with column names <cite>site</cite> and SHORTNAME. SHORTNAME is &lt;= 5 character property name. LONGNAME is longer name for legend. Sites not in FILE are colored white. To show wildtype identity, make SHORTNAME and LONGNAME both <cite>wildtype</cite> and have this column in FILE give 1-letter wildtype amino-acid code. To show <code class="docutils literal"><span class="pre">omegabysite.txt</span></code> file from <code class="docutils literal"><span class="pre">phydms</span></code>, give that file and set both SHORTNAME and LONGNAME to <cite>omegabysite</cite>.</td></tr>
 <tr><td class="option-group">
 <kbd>--overlay2</kbd></td>
 <td>Second overlay color bar.</td></tr>
@@ -204,6 +207,13 @@ Underscores are not allowed as they are a LaTex special character.</p>
 <td><p class="first">Relative height of letter stacks in logo plot.</p>
 <p class="last">Default: 1</p>
 </td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd>--ignore_extracols</kbd></td>
+</tr>
+<tr><td>&#160;</td><td><p class="first">Possible choices: yes, no</p>
+<p>Ignore extra columns in data</p>
+<p class="last">Default: “no”</p>
+</td></tr>
 <tr><td class="option-group">
 <kbd>--sepline</kbd></td>
 <td><p class="first">Possible choices: yes, no</p>
@@ -223,6 +233,7 @@ An example of such a logo plot is in the <a class="reference external" href="htt
 <p>If you run with <code class="docutils literal"><span class="pre">--diffsel</span></code>, then the logo plot will be a file with the suffix <code class="docutils literal"><span class="pre">_diffsel.pdf</span></code>.
 An example of such a logo plot is in the <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2017/analysis_notebook.ipynb">Doud2017 example</a>.</p>
 <p>If you run with <code class="docutils literal"><span class="pre">--fracsurvive</span></code>, then the logo plot will be a file with the suffix <code class="docutils literal"><span class="pre">_fracsurvive.pdf</span></code>.</p>
+<p>If you run with <code class="docutils literal"><span class="pre">--diffprefs</span></code>, then the logo plot will be a file with the suffix <code class="docutils literal"><span class="pre">_diffprefs.pdf</span></code>.</p>
 </div>
 </div>
 

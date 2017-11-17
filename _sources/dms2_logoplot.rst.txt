@@ -13,12 +13,12 @@ The ``dms2_logoplot`` program makes logo-plot visualizations of the data.
 It uses a slightly modified version of `weblogo`_ to make the logo plots themselves.
 
 If you run it using ``--prefs`` to specify the input file, then the plot will visualize :ref:`prefs`.
-An example of the type of plot created for :ref:`prefs` is shown in the `Doud2016 example`_.
 
 If you run it using ``--diffsel`` to specify the input file, then the plot will visualize :ref:`diffsel`.
-An example of the type of plot created for :ref:`diffsel` is shown in the `Doud2017 example`_.
 
 If you run it using ``--fracsurvive`` to specify the input file, then the plot will visualize the :ref:`fracsurvive` for each mutation.
+
+If you run it using ``--diffprefs`` to specify the input file, then the plot will show the difference between preferences, showing negative and positive values.
 
 .. _logoplot_commandlineusage:
 
@@ -47,6 +47,8 @@ If you run with ``--diffsel``, then the logo plot will be a file with the suffix
 An example of such a logo plot is in the `Doud2017 example`_.
 
 If you run with ``--fracsurvive``, then the logo plot will be a file with the suffix ``_fracsurvive.pdf``.
+
+If you run with ``--diffprefs``, then the logo plot will be a file with the suffix ``_diffprefs.pdf``.
 
 
 .. include:: weblinks.txt

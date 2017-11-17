@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Amino-acid preferences &#8212; dms_tools2 2.1.0 documentation</title>
+    <title>Amino-acid preferences &#8212; dms_tools2 2.2.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '2.1.0',
+        VERSION:     '2.2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -370,19 +370,32 @@ site <span class="math">\(r\)</span>, and let <span class="math">\(n_{r,a}^{s}\)
 <span class="math">\(n_{r,a}^{pre}\)</span>) denote the counts at that site for
 character <span class="math">\(a\)</span>.</p>
 <p>Because some of the counts are low, we add a pseudocount
-<span class="math">\(P\)</span> to each observation. With this pseudocount, the
+<span class="math">\(P\)</span> to each observation.  Importantly, we need to scale
+this pseudocount by the total depth for that sample at that site
+in order to avoid systematically estimating different frequencies
+purely as a function of sequencing depth, which will bias
+the preference estimates.
+Therefore, given the pseudocount value <span class="math">\(P\)</span> defined via the
+<code class="docutils literal"><span class="pre">--pseudocount</span></code> argument to <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a>, we calculate the
+scaled pseudocount for sample <span class="math">\(s\)</span> and site <span class="math">\(r\)</span> as</p>
+<div class="math">
+\[P_r^s = P \times \frac{N_r^s}{\min\limits_{s'} N_r^{s'}}.\]</div>
+<p>This equation makes the pseudocount <span class="math">\(P\)</span> for the lowest-depth
+sample, and scales up the pseodocounts for all other samples
+proportional to their depth.</p>
+<p>With this pseudocount, the
 estimated frequency of character <span class="math">\(a\)</span> at site <span class="math">\(r\)</span>
 in sample <span class="math">\(s\)</span> is</p>
 <div class="math">
-\[f_{r,a}^s = \frac{n_{r,a}^s + P}{N_{r,a}^s + A \times P}\]</div>
+\[f_{r,a}^s = \frac{n_{r,a}^s + P_r^s}{N_{r}^s + A \times P_r^s}\]</div>
 <p>where <span class="math">\(A\)</span> is the number of characters in the alphabet (e.g.,
 20 for amino acids without stop codons).</p>
 <p>The <strong>error-corrected</strong> estimates of the frequency of character
 <span class="math">\(a\)</span> before and after selection are then</p>
 <div class="math">
-\[ \begin{align}\begin{aligned}f_{r,a}^{before} &amp;= \max\left(\frac{P}{N_{r,a}^{pre} + A \times P},
+\[ \begin{align}\begin{aligned}f_{r,a}^{before} &amp;= \max\left(\frac{P_r^{pre}}{N_{r}^{pre} + A \times P_r^{pre}},
 \; f_{r,a}^{pre} + \delta_{a,\rm{wt}\left(r\right)}
-- f_{r,a}^{errpre}\right)\\f_{r,a}^{after} &amp;= \max\left(\frac{P}{N_{r,a}^{post} + A \times P},
+- f_{r,a}^{errpre}\right)\\f_{r,a}^{after} &amp;= \max\left(\frac{P_r^{post}}{N_{r}^{post} + A \times P_r^{post}},
 \; f_{r,a}^{post} + \delta_{a,\rm{wt}\left(r\right)}
 - f_{r,a}^{errpost}\right)\end{aligned}\end{align} \]</div>
 <p>where <span class="math">\(\delta_{a,\rm{wt}\left(r\right)}\)</span> is the

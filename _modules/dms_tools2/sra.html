@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.sra &#8212; dms_tools2 2.1.0 documentation</title>
+    <title>dms_tools2.sra &#8212; dms_tools2 2.2.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
+        VERSION:     '2.2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -57,7 +57,7 @@
 
 
 <div class="viewcode-block" id="fastqFromSRA"><a class="viewcode-back" href="../../dms_tools2.sra.html#dms_tools2.sra.fastqFromSRA">[docs]</a><span class="k">def</span> <span class="nf">fastqFromSRA</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">fastq_dump</span><span class="p">,</span> <span class="n">fastqdir</span><span class="p">,</span> <span class="n">aspera</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">passonly</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">passonly</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">no_downloads</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Download data from SRA and extract FASTQ files.</span>
 
 <span class="sd">    Currently only works for runs containing paired-end reads.</span>
@@ -89,6 +89,9 @@
 <span class="sd">            no longer even needs to be a valid path.</span>
 <span class="sd">        `passonly` (bool)</span>
 <span class="sd">            Keep only reads with a passing `READ_FILTER` value.</span>
+<span class="sd">        `no_downloads` (bool)</span>
+<span class="sd">            If `True`, do **not** actually download the files,</span>
+<span class="sd">            but instead just add the columns to `samples`.</span>
 
 <span class="sd">    Result:</span>
 <span class="sd">        Upon completion, the directory `fastqdir` contains</span>
@@ -107,6 +110,9 @@
             <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;R1&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">[</span><span class="n">r</span><span class="p">]])</span>
             <span class="ow">and</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">):</span>
         <span class="k">return</span> <span class="c1"># all files already present, nothing to do</span>
+
+    <span class="k">if</span> <span class="n">no_downloads</span><span class="p">:</span>
+        <span class="k">return</span> <span class="c1"># don&#39;t do anything</span>
 
     <span class="k">assert</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">fastq_dump</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;fastq-dump not installed in a &quot;</span>
             <span class="s2">&quot;location accessible with command </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fastq_dump</span><span class="p">))</span>

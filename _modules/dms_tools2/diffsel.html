@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.diffsel &#8212; dms_tools2 2.1.0 documentation</title>
+    <title>dms_tools2.diffsel &#8212; dms_tools2 2.2.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
+        VERSION:     '2.2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -49,10 +49,73 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
+
+<span class="kn">import</span> <span class="nn">natsort</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">pandas</span>
 <span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="k">import</span> <span class="n">CODONS</span><span class="p">,</span> <span class="n">CODON_TO_AA</span>
+
+
+<div class="viewcode-block" id="tidyToWide"><a class="viewcode-back" href="../../dms_tools2.diffsel.html#dms_tools2.diffsel.tidyToWide">[docs]</a><span class="k">def</span> <span class="nf">tidyToWide</span><span class="p">(</span><span class="n">tidy_df</span><span class="p">,</span> <span class="n">valuecol</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Converts tidy `diffsel` data frame to wide form.</span>
+
+<span class="sd">    The `diffsel` data frames returned by ``dms2_diffsel`` (and</span>
+<span class="sd">    also other dataframes, such as the `fracsurvive` ones</span>
+<span class="sd">    from ``dms_fracsurvive`` are in tidy form. This function</span>
+<span class="sd">    converts them to wide form.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `tidy_df` (pandas DataFrame)</span>
+<span class="sd">            Data frame in tidy form. Should have columns named</span>
+<span class="sd">            `site`, `wildtype`, `mutation`, and something</span>
+<span class="sd">            with the name matching `valuecol`.</span>
+<span class="sd">        `valuecol` (string)</span>
+<span class="sd">            Name of value column in `df`, such `diffsel` or</span>
+<span class="sd">            `fracsurvive`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Wide form dataframe. Will have columns `site` (as string), </span>
+<span class="sd">        `wildtype`, and all characters (e.g., amino acids)</span>
+<span class="sd">        for which values are given. Natural sorted by `site`.</span>
+
+<span class="sd">    &gt;&gt;&gt; tidy_df = pandas.read_csv(io.StringIO(</span>
+<span class="sd">    ...     &#39;&#39;&#39;site wildtype mutation diffsel</span>
+<span class="sd">    ...           2        A        C    10.1</span>
+<span class="sd">    ...           1        C        D     9.5</span>
+<span class="sd">    ...           1        C        A     0.2</span>
+<span class="sd">    ...           2        A        D    -1.5&#39;&#39;&#39;),</span>
+<span class="sd">    ...     delim_whitespace=True, index_col=False)</span>
+<span class="sd">    &gt;&gt;&gt; wide_df = tidyToWide(tidy_df, valuecol=&#39;diffsel&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; print(wide_df.to_string(float_format=lambda x: &#39;{0:.1f}&#39;.format(x)))</span>
+<span class="sd">      site   A    C    D wildtype</span>
+<span class="sd">    0    1 0.2  0.0  9.5        C</span>
+<span class="sd">    1    2 0.0 10.1 -1.5        A</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tidy_df</span><span class="p">,</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;mutation&#39;</span><span class="p">,</span> <span class="n">valuecol</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">tidy_df</span><span class="o">.</span><span class="n">columns</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;expected columns &#39;</span>
+            <span class="s1">&#39;</span><span class="si">{0}</span><span class="se">\n</span><span class="s1">actual columns </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="n">tidy_df</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+
+    <span class="c1"># make site a string</span>
+    <span class="n">tidy_df</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tidy_df</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+
+    <span class="c1"># sort on site as here: https://stackoverflow.com/a/29582718</span>
+    <span class="n">tidy_df</span> <span class="o">=</span> <span class="n">tidy_df</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">natsort</span><span class="o">.</span><span class="n">order_by_index</span><span class="p">(</span><span class="n">tidy_df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+            <span class="n">natsort</span><span class="o">.</span><span class="n">index_natsorted</span><span class="p">(</span><span class="n">tidy_df</span><span class="o">.</span><span class="n">site</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span><span class="p">)))</span>
+
+    <span class="c1"># convert to wide form, keeping wildtype identities</span>
+    <span class="n">tidy_df</span> <span class="o">=</span> <span class="n">tidy_df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">wt</span> <span class="o">=</span> <span class="n">tidy_df</span><span class="p">[</span><span class="s1">&#39;wildtype&#39;</span><span class="p">]</span>
+    <span class="n">wide_df</span> <span class="o">=</span> <span class="p">(</span><span class="n">tidy_df</span><span class="o">.</span><span class="n">pivot</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s1">&#39;mutation&#39;</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">valuecol</span><span class="p">)</span>
+                      <span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+                      <span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">wt</span><span class="p">)</span>
+                      <span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
+                      <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+                      <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">wide_df</span></div>
 
 
 <div class="viewcode-block" id="computeMutDiffSel"><a class="viewcode-back" href="../../dms_tools2.diffsel.html#dms_tools2.diffsel.computeMutDiffSel">[docs]</a><span class="k">def</span> <span class="nf">computeMutDiffSel</span><span class="p">(</span><span class="n">sel</span><span class="p">,</span> <span class="n">mock</span><span class="p">,</span> <span class="n">countcharacters</span><span class="p">,</span> <span class="n">pseudocount</span><span class="p">,</span> 

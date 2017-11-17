@@ -1,0 +1,460 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>dms_tools2.rplot &#8212; dms_tools2 2.2.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dms_tools2.rplot</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">===================</span>
+<span class="sd">rplot</span>
+<span class="sd">===================</span>
+
+<span class="sd">Plotting that uses ``R``.</span>
+
+<span class="sd">The `dms_tools2` software is written in Python, but there are</span>
+<span class="sd">useful plotting features that are only available in ``R``,</span>
+<span class="sd">such `ggseqlogo &lt;https://omarwagih.github.io/ggseqlogo/&gt;`_.</span>
+
+<span class="sd">This module uses ``R`` to make plots using these features. It</span>
+<span class="sd">requires `rpy2 &lt;https://rpy2.readthedocs.io&gt;`_ to be installed.</span>
+<span class="sd">Installation of `rpy2 &lt;https://rpy2.readthedocs.io&gt;`_ is </span>
+<span class="sd">**not** automatic when you install `dms_tools2` unless</span>
+<span class="sd">you have ``R`` and `rpy2 &lt;https://rpy2.readthedocs.io&gt;`_</span>
+<span class="sd">installed, or install `dms_tools2` using::</span>
+
+<span class="sd">    pip install dms_tools[rplot] --user</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="kn">import</span> <span class="nn">phydmslib.weblogo</span>
+<span class="c1">#: default colors for amino acid chars, by functional group</span>
+<span class="n">AA_COLORS_FG</span> <span class="o">=</span> <span class="n">phydmslib</span><span class="o">.</span><span class="n">weblogo</span><span class="o">.</span><span class="n">FunctionalGroupColorMapping</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="c1"># import rpy2</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">rpy2</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;You must install `rpy2` to use `rplot`&quot;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">rpy2.rinterface</span> <span class="k">as</span> <span class="nn">rinterface</span>
+<span class="n">rinterface</span><span class="o">.</span><span class="n">initr</span><span class="p">()</span>
+<span class="kn">from</span> <span class="nn">rpy2.robjects</span> <span class="k">import</span> <span class="n">pandas2ri</span><span class="p">,</span> <span class="n">r</span>
+<span class="n">pandas2ri</span><span class="o">.</span><span class="n">activate</span><span class="p">()</span>
+<span class="kn">from</span> <span class="nn">rpy2.robjects.packages</span> <span class="k">import</span> <span class="n">importr</span>
+<span class="kn">from</span> <span class="nn">rpy2.robjects.vectors</span> <span class="k">import</span> <span class="n">StrVector</span><span class="p">,</span> <span class="n">ListVector</span><span class="p">,</span> <span class="n">FloatVector</span>
+<span class="kn">from</span> <span class="nn">rpy2.rlike.container</span> <span class="k">import</span> <span class="n">TaggedList</span>
+<span class="kn">from</span> <span class="nn">rpy2.robjects.packages</span> <span class="k">import</span> <span class="n">SignatureTranslatedAnonymousPackage</span>
+
+<span class="c1">#: Show warnings when running ``R`` code? Plausible values: `default`,</span>
+<span class="c1">#: `ignore`, and `always`. The `R` code gives many warnings, so</span>
+<span class="c1">#: `ignore` is good when not developing new code.</span>
+<span class="n">SHOW_WARNINGS</span> <span class="o">=</span> <span class="s1">&#39;ignore&#39;</span>
+
+<span class="c1"># install necessary packages</span>
+<span class="n">_packages</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ggplot2&#39;</span><span class="p">,</span> <span class="s1">&#39;ggseqlogo&#39;</span><span class="p">]</span>
+<span class="n">utils</span> <span class="o">=</span> <span class="n">importr</span><span class="p">(</span><span class="s1">&#39;utils&#39;</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="n">SHOW_WARNINGS</span><span class="p">)</span>
+    <span class="n">utils</span><span class="o">.</span><span class="n">chooseCRANmirror</span><span class="p">(</span><span class="n">ind</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">utils</span><span class="o">.</span><span class="n">install_packages</span><span class="p">(</span><span class="n">StrVector</span><span class="p">(</span><span class="n">_packages</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">_package</span> <span class="ow">in</span> <span class="n">_packages</span><span class="p">:</span>
+    <span class="n">importr</span><span class="p">(</span><span class="n">_package</span><span class="p">)</span>
+
+<span class="c1"># read the R code that defines the R functions we run</span>
+<span class="n">_RCODEFILE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s1">&#39;rplot_Rcode.R&#39;</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">_RCODEFILE</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">_RCODEFILE</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">_RCODE</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="n">_RFUNCS</span> <span class="o">=</span> <span class="n">SignatureTranslatedAnonymousPackage</span><span class="p">(</span><span class="n">_RCODE</span><span class="p">,</span> <span class="s2">&quot;_RFUNCS&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="versionInfo"><a class="viewcode-back" href="../../dms_tools2.rplot.html#dms_tools2.rplot.versionInfo">[docs]</a><span class="k">def</span> <span class="nf">versionInfo</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Returns string giving `rpy2` and ``R`` version info.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s2">&quot;Using `rpy2` </span><span class="si">{0}</span><span class="s2"> with ``R`` </span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">rpy2</span><span class="o">.</span><span class="n">__version__</span><span class="p">,</span> <span class="n">rinterface</span><span class="o">.</span><span class="n">R_VERSION_BUILD</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="siteSubsetGGSeqLogo"><a class="viewcode-back" href="../../dms_tools2.rplot.html#dms_tools2.rplot.siteSubsetGGSeqLogo">[docs]</a><span class="k">def</span> <span class="nf">siteSubsetGGSeqLogo</span><span class="p">(</span><span class="n">logodata</span><span class="p">,</span> <span class="n">chars</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span>
+        <span class="n">yname</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">char_colors</span><span class="o">=</span><span class="n">AA_COLORS_FG</span><span class="p">,</span> <span class="n">ylimits</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates one-row logo plot with subset of sites.</span>
+
+<span class="sd">    Designed to show logo plot for a subset of sites. This</span>
+<span class="sd">    is useful when you have data for many sites, but only</span>
+<span class="sd">    want to look at a few of them. </span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `logodata` (pandas DataFrame)</span>
+<span class="sd">            Contains data to plot. Should have the columns</span>
+<span class="sd">            `site`, `show`, and a column giving the height</span>
+<span class="sd">            height of each char in `chars`. Only sites</span>
+<span class="sd">            where `show` is `True` are shown. Sites are </span>
+<span class="sd">            shown in the order they occur in this dataframe,</span>
+<span class="sd">            with spaces every time there is an interspersed</span>
+<span class="sd">            site with `show` being `False`. </span>
+<span class="sd">        `chars` (list)</span>
+<span class="sd">            Letters for which we plot heights.</span>
+<span class="sd">        `plotfile` (str)</span>
+<span class="sd">            Name of created plot.</span>
+<span class="sd">        `width` (float)</span>
+<span class="sd">            Width of plot in inches.</span>
+<span class="sd">        `height` (float)</span>
+<span class="sd">            Height of plot in inches.</span>
+<span class="sd">        `yname` (str)</span>
+<span class="sd">            If set to a non-empty string, is the y-axis label</span>
+<span class="sd">            and yticks are drawn.</span>
+<span class="sd">        `char_colors` (dict)</span>
+<span class="sd">            Values give color for every character in `chars`.</span>
+<span class="sd">        `ylimits` (`None` or 2-tuple)</span>
+<span class="sd">            If not `None`, should give the ylimits for the plot</span>
+<span class="sd">            as `(ymin, ymax)`</span>
+
+<span class="sd">    Here is an example that creates a plot for a subset of</span>
+<span class="sd">    sites for two characters:</span>
+
+<span class="sd">    &gt;&gt;&gt; logodata = pandas.read_csv(io.StringIO(</span>
+<span class="sd">    ...     &#39;&#39;&#39;site show    A    C</span>
+<span class="sd">    ...        A101 True  0.8  0.2</span>
+<span class="sd">    ...        N102 True  0.7  0.3</span>
+<span class="sd">    ...        K103 False 0.1  0.9</span>
+<span class="sd">    ...        L104 True  0.8  0.2</span>
+<span class="sd">    ...        S105 True  0.5  0.5</span>
+<span class="sd">    ...        T106 False 0.2  0.8</span>
+<span class="sd">    ...        G107 False 0.4  0.6</span>
+<span class="sd">    ...        L108 True  0.7  0.3&#39;&#39;&#39;),</span>
+<span class="sd">    ...     delim_whitespace=True, index_col=False)</span>
+<span class="sd">    &gt;&gt;&gt; plotfile = &#39;_siteSubsetGGSeqLogo_test_plot.png&#39;</span>
+<span class="sd">    &gt;&gt;&gt; siteSubsetGGSeqLogo(logodata,</span>
+<span class="sd">    ...         chars=[&#39;A&#39;, &#39;C&#39;],</span>
+<span class="sd">    ...         plotfile=plotfile,</span>
+<span class="sd">    ...         width=3.5, height=2</span>
+<span class="sd">    ...         )</span>
+<span class="sd">    &gt;&gt;&gt; os.path.isfile(plotfile)</span>
+<span class="sd">    True</span>
+
+<span class="sd">    Here is the plot created by the code block above:</span>
+
+<span class="sd">    .. image:: _static/_siteSubsetGGSeqLogo_test_plot.png</span>
+<span class="sd">       :width: 55%</span>
+<span class="sd">       :align: center</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">plotfile</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">chars</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">char_colors</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> \
+            <span class="s2">&quot;`char_colors` not defined for all chars&quot;</span>
+
+    <span class="n">expectcol</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;show&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">chars</span>
+    <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">logodata</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">expectcol</span><span class="p">),</span> \
+            <span class="s2">&quot;`logodata` needs these column: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">expectcol</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">logodata</span><span class="p">[</span><span class="s1">&#39;show&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">any</span><span class="p">(),</span> <span class="s2">&quot;no sites to show&quot;</span>
+
+    <span class="c1"># for each consecutive set of rows not to show, keep just one</span>
+    <span class="n">logodata</span> <span class="o">=</span> <span class="n">logodata</span><span class="p">[</span><span class="n">expectcol</span><span class="p">]</span>
+    <span class="n">logodata</span><span class="p">[</span><span class="s1">&#39;keeprow&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">((</span><span class="n">logodata</span><span class="p">[</span><span class="s1">&#39;show&#39;</span><span class="p">])</span> <span class="o">|</span> 
+                <span class="p">(</span><span class="n">logodata</span><span class="p">[</span><span class="s1">&#39;show&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">logodata</span><span class="p">[</span><span class="s1">&#39;show&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span>
+            <span class="p">)</span>
+    <span class="n">logodata</span> <span class="o">=</span> <span class="n">logodata</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;keeprow&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+
+    <span class="c1"># trim first and last row if they are not to be shown</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">logodata</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;show&#39;</span><span class="p">]:</span>
+        <span class="n">logodata</span> <span class="o">=</span> <span class="n">logodata</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">1</span> <span class="p">:</span> <span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">logodata</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;show&#39;</span><span class="p">]:</span>
+        <span class="n">logodata</span> <span class="o">=</span> <span class="n">logodata</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span> <span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># set site label to empty and data to zero for rows not to show</span>
+    <span class="n">logodata</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">logodata</span><span class="p">[</span><span class="s1">&#39;show&#39;</span><span class="p">],</span> <span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">logodata</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">logodata</span><span class="p">[</span><span class="s1">&#39;show&#39;</span><span class="p">],</span> <span class="n">chars</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">vertlines</span> <span class="o">=</span> <span class="n">logodata</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;~show&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="c1"># generate matrix to plot</span>
+    <span class="n">sites</span> <span class="o">=</span> <span class="n">logodata</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">logodata</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)[</span><span class="n">chars</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
+            <span class="n">ncol</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">sites</span><span class="p">),</span>
+            <span class="n">dimnames</span><span class="o">=</span><span class="p">[</span><span class="n">chars</span><span class="p">,</span> <span class="n">sites</span><span class="p">]</span>
+            <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ylimits</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ylimits</span> <span class="o">=</span> <span class="n">rinterface</span><span class="o">.</span><span class="n">NULL</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ylimits</span> <span class="o">=</span> <span class="n">FloatVector</span><span class="p">(</span><span class="n">ylimits</span><span class="p">)</span>
+
+    <span class="c1"># make the plot</span>
+    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="n">SHOW_WARNINGS</span><span class="p">)</span>
+        <span class="n">_RFUNCS</span><span class="o">.</span><span class="n">siteSubsetGGSeqLogo</span><span class="p">(</span>
+                <span class="n">mat</span><span class="o">=</span><span class="n">matrix</span><span class="p">,</span>
+                <span class="n">plotfile</span><span class="o">=</span><span class="n">plotfile</span><span class="p">,</span>
+                <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+                <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
+                <span class="n">xlabels</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">sites</span><span class="p">)),</span>
+                <span class="n">vertlines</span><span class="o">=</span><span class="n">vertlines</span><span class="p">,</span>
+                <span class="n">yname</span><span class="o">=</span><span class="n">yname</span><span class="p">,</span>
+                <span class="n">chars</span><span class="o">=</span><span class="n">StrVector</span><span class="p">(</span><span class="n">chars</span><span class="p">),</span>
+                <span class="n">char_colors</span><span class="o">=</span><span class="n">StrVector</span><span class="p">([</span><span class="n">char_colors</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">chars</span><span class="p">]),</span>
+                <span class="n">ylimits</span><span class="o">=</span><span class="n">ylimits</span>
+                <span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">plotfile</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;failed to create </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">plotfile</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="facetedGGSeqLogo"><a class="viewcode-back" href="../../dms_tools2.rplot.html#dms_tools2.rplot.facetedGGSeqLogo">[docs]</a><span class="k">def</span> <span class="nf">facetedGGSeqLogo</span><span class="p">(</span><span class="n">logodata</span><span class="p">,</span> <span class="n">chars</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span>
+        <span class="n">ncol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">char_colors</span><span class="o">=</span><span class="n">AA_COLORS_FG</span><span class="p">,</span> <span class="n">xlabelsrotate</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates faceted logo plot.</span>
+
+<span class="sd">    Designed to show several measurements on the same site</span>
+<span class="sd">    site-by-side, potentially for many sites. Each site</span>
+<span class="sd">    must have the same set of measurements.</span>
+
+<span class="sd">    Makes panel of logo plots faceted on `logodata[&#39;facetlabel&#39;]`,</span>
+<span class="sd">    where character stacks are labeled by `logodata[&#39;stacklabel&#39;]`</span>
+<span class="sd">    and show the characters at the indicated heights.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `logodata` (pandas DataFrame)</span>
+<span class="sd">            Contains data to plot. Should have the columns</span>
+<span class="sd">            `facetlabel`, `stacklabel`, and a column giving the</span>
+<span class="sd">            height of each character in `chars`.</span>
+<span class="sd">        `chars` (list)</span>
+<span class="sd">            Letters for which we plot heights.</span>
+<span class="sd">        `plotfile` (str)</span>
+<span class="sd">            Name of created plot.</span>
+<span class="sd">        `width` (float)</span>
+<span class="sd">            Width of plot in inches.</span>
+<span class="sd">        `height` (float)</span>
+<span class="sd">            Height of plot in inches.</span>
+<span class="sd">        `ncol` (int or `None`)</span>
+<span class="sd">            Number of columns in faceted plot. If `None`, use</span>
+<span class="sd">            as many as needed to plot everything in one row.</span>
+<span class="sd">        `char_colors` (dict)</span>
+<span class="sd">            Values give color for every character in `chars`.</span>
+<span class="sd">        `xlabelsrotate` (bool)</span>
+<span class="sd">            Do we rotate the x-labels?</span>
+
+<span class="sd">    Here is an example that creates two facets each with</span>
+<span class="sd">    two stacks for the characters `A` and `C`:</span>
+
+<span class="sd">    &gt;&gt;&gt; logodata = pandas.read_csv(io.StringIO(</span>
+<span class="sd">    ...     &#39;&#39;&#39;facetlabel  stacklabel   A   C</span>
+<span class="sd">    ...            site-1       BF520 0.8 0.2</span>
+<span class="sd">    ...            site-1       BG505 0.9 0.1</span>
+<span class="sd">    ...            site-2       BF520 0.4 0.6</span>
+<span class="sd">    ...            site-2       BG505 0.5 0.5&#39;&#39;&#39;),</span>
+<span class="sd">    ...     delim_whitespace=True, index_col=False)</span>
+<span class="sd">    &gt;&gt;&gt; plotfile = &#39;_facetedGGSeqLogo_test_plot.png&#39;</span>
+<span class="sd">    &gt;&gt;&gt; facetedGGSeqLogo(logodata,</span>
+<span class="sd">    ...         chars=[&#39;A&#39;, &#39;C&#39;],</span>
+<span class="sd">    ...         plotfile=plotfile,</span>
+<span class="sd">    ...         width=3, height=2.5</span>
+<span class="sd">    ...         )</span>
+<span class="sd">    &gt;&gt;&gt; os.path.isfile(plotfile)</span>
+<span class="sd">    True</span>
+
+<span class="sd">    Here is the plot created by the code block above:</span>
+
+<span class="sd">    .. image:: _static/_facetedGGSeqLogo_test_plot.png</span>
+<span class="sd">       :width: 40%</span>
+<span class="sd">       :align: center</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">plotfile</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">chars</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">char_colors</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> \
+            <span class="s2">&quot;`char_colors` not defined for all chars&quot;</span>
+
+    <span class="c1"># get and order data columns</span>
+    <span class="n">df_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;facetlabel&#39;</span><span class="p">,</span> <span class="s1">&#39;stacklabel&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">chars</span>
+    <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">logodata</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">df_cols</span><span class="p">),</span> <span class="s2">&quot;df lacks required columns&quot;</span>
+    <span class="n">logodata</span> <span class="o">=</span> <span class="n">logodata</span><span class="p">[</span><span class="n">df_cols</span><span class="p">]</span> 
+
+    <span class="n">facets</span> <span class="o">=</span> <span class="n">logodata</span><span class="p">[</span><span class="s1">&#39;facetlabel&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+    <span class="n">stacks</span> <span class="o">=</span> <span class="n">logodata</span><span class="p">[</span><span class="s1">&#39;stacklabel&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">ncol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ncol</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">facets</span><span class="p">)</span>
+
+    <span class="c1"># generate list of matrices to facet</span>
+    <span class="n">matrices</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">facets</span><span class="p">:</span>
+        <span class="n">facetdata</span> <span class="o">=</span> <span class="p">(</span><span class="n">logodata</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;facetlabel == @f&#39;</span><span class="p">)</span>
+                     <span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;facetlabel&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                     <span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;stacklabel&#39;</span><span class="p">)</span>
+                     <span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">stacks</span><span class="p">)</span>
+                     <span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                     <span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+                <span class="n">facetdata</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
+                <span class="n">ncol</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">stacks</span><span class="p">),</span>
+                <span class="n">dimnames</span><span class="o">=</span><span class="p">[</span><span class="n">chars</span><span class="p">,</span> <span class="n">stacks</span><span class="p">]</span>
+                <span class="p">)</span>
+        <span class="n">matrices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+    <span class="n">matrices</span> <span class="o">=</span> <span class="n">ListVector</span><span class="p">(</span><span class="n">TaggedList</span><span class="p">(</span><span class="n">matrices</span><span class="p">,</span>
+            <span class="n">tags</span><span class="o">=</span><span class="n">facets</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;str&#39;</span><span class="p">)))</span>
+
+    <span class="c1"># make the plot</span>
+    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="n">SHOW_WARNINGS</span><span class="p">)</span>
+        <span class="n">_RFUNCS</span><span class="o">.</span><span class="n">facetedGGSeqLogo</span><span class="p">(</span>
+                <span class="n">matrices</span><span class="o">=</span><span class="n">matrices</span><span class="p">,</span>
+                <span class="n">plotfile</span><span class="o">=</span><span class="n">plotfile</span><span class="p">,</span>
+                <span class="n">ncol</span><span class="o">=</span><span class="n">ncol</span><span class="p">,</span>
+                <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+                <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
+                <span class="n">xname</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="n">xlabels</span><span class="o">=</span><span class="n">stacks</span><span class="p">,</span>
+                <span class="n">xlabelsrotate</span><span class="o">=</span><span class="n">xlabelsrotate</span><span class="p">,</span>
+                <span class="n">xline</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">yname</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="n">chars</span><span class="o">=</span><span class="n">StrVector</span><span class="p">(</span><span class="n">chars</span><span class="p">),</span>
+                <span class="n">char_colors</span><span class="o">=</span><span class="n">StrVector</span><span class="p">([</span><span class="n">char_colors</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">chars</span><span class="p">])</span>
+                <span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">plotfile</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;failed to create </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">plotfile</span><span class="p">))</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fracsurvive.html">Fraction surviving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../programs.html">Executable programs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

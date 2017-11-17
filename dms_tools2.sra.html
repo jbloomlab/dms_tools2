@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>sra &#8212; dms_tools2 2.1.0 documentation</title>
+    <title>sra &#8212; dms_tools2 2.2.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '2.1.0',
+        VERSION:     '2.2.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -25,7 +25,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="utils" href="dms_tools2.utils.html" />
-    <link rel="prev" title="prefs" href="dms_tools2.prefs.html" />
+    <link rel="prev" title="rplot" href="dms_tools2.rplot.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -47,7 +47,7 @@
 <a class="reference external" href="https://www.ncbi.nlm.nih.gov/sra">Sequence Read Archive</a> (SRA).</p>
 <dl class="function">
 <dt id="dms_tools2.sra.fastqFromSRA">
-<code class="descclassname">dms_tools2.sra.</code><code class="descname">fastqFromSRA</code><span class="sig-paren">(</span><em>samples</em>, <em>fastq_dump</em>, <em>fastqdir</em>, <em>aspera=None</em>, <em>overwrite=False</em>, <em>passonly=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/sra.html#fastqFromSRA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.sra.fastqFromSRA" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.sra.</code><code class="descname">fastqFromSRA</code><span class="sig-paren">(</span><em>samples</em>, <em>fastq_dump</em>, <em>fastqdir</em>, <em>aspera=None</em>, <em>overwrite=False</em>, <em>passonly=True</em>, <em>no_downloads=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/sra.html#fastqFromSRA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.sra.fastqFromSRA" title="Permalink to this definition">¶</a></dt>
 <dd><p>Download data from SRA and extract FASTQ files.</p>
 <p>Currently only works for runs containing paired-end reads.</p>
 <dl class="docutils">
@@ -79,6 +79,9 @@ already exist, then nothing is done and <cite>fastq_dump</cite>
 no longer even needs to be a valid path.</dd>
 <dt><cite>passonly</cite> (bool)</dt>
 <dd>Keep only reads with a passing <cite>READ_FILTER</cite> value.</dd>
+<dt><cite>no_downloads</cite> (bool)</dt>
+<dd>If <cite>True</cite>, do <strong>not</strong> actually download the files,
+but instead just add the columns to <cite>samples</cite>.</dd>
 </dl>
 </dd>
 <dt>Result:</dt>
@@ -158,7 +161,7 @@ These names have been added as the columns <cite>R1</cite> and
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="api.html">Python API</a><ul>
   <li><a href="dms_tools2.html">dms_tools2 package</a><ul>
-      <li>Previous: <a href="dms_tools2.prefs.html" title="previous chapter">prefs</a></li>
+      <li>Previous: <a href="dms_tools2.rplot.html" title="previous chapter">rplot</a></li>
       <li>Next: <a href="dms_tools2.utils.html" title="next chapter">utils</a></li>
   </ul></li>
   </ul></li>

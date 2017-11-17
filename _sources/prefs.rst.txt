@@ -429,13 +429,30 @@ site :math:`r`, and let :math:`n_{r,a}^{s}` (e.g.,
 character :math:`a`.
 
 Because some of the counts are low, we add a pseudocount 
-:math:`P` to each observation. With this pseudocount, the 
+:math:`P` to each observation.  Importantly, we need to scale
+this pseudocount by the total depth for that sample at that site
+in order to avoid systematically estimating different frequencies
+purely as a function of sequencing depth, which will bias
+the preference estimates.
+Therefore, given the pseudocount value :math:`P` defined via the 
+``--pseudocount`` argument to :ref:`dms2_prefs`, we calculate the
+scaled pseudocount for sample :math:`s` and site :math:`r` as 
+
+.. math::
+
+   P_r^s = P \times \frac{N_r^s}{\min\limits_{s'} N_r^{s'}}.
+
+This equation makes the pseudocount :math:`P` for the lowest-depth
+sample, and scales up the pseodocounts for all other samples 
+proportional to their depth.
+
+With this pseudocount, the 
 estimated frequency of character :math:`a` at site :math:`r`
 in sample :math:`s` is 
     
 .. math::
     
-	f_{r,a}^s = \frac{n_{r,a}^s + P}{N_{r,a}^s + A \times P}
+	f_{r,a}^s = \frac{n_{r,a}^s + P_r^s}{N_{r}^s + A \times P_r^s}
 
 where :math:`A` is the number of characters in the alphabet (e.g.,
 20 for amino acids without stop codons).
@@ -445,11 +462,11 @@ The **error-corrected** estimates of the frequency of character
 
 .. math::
 
-	f_{r,a}^{before} &= \max\left(\frac{P}{N_{r,a}^{pre} + A \times P},
+	f_{r,a}^{before} &= \max\left(\frac{P_r^{pre}}{N_{r}^{pre} + A \times P_r^{pre}},
 	\; f_{r,a}^{pre} + \delta_{a,\rm{wt}\left(r\right)}
 	- f_{r,a}^{errpre}\right)
 
-	f_{r,a}^{after} &= \max\left(\frac{P}{N_{r,a}^{post} + A \times P},
+	f_{r,a}^{after} &= \max\left(\frac{P_r^{post}}{N_{r}^{post} + A \times P_r^{post}},
 	\; f_{r,a}^{post} + \delta_{a,\rm{wt}\left(r\right)}
 	- f_{r,a}^{errpost}\right)
 
