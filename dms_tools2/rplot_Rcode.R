@@ -9,6 +9,7 @@
 #' @param yname y-axis label name
 #' @param chars vector of characters in logo
 #' @param char_colors vector of colors for each character
+#' @param ylimits vector giving y minimum and maximum
 siteSubsetGGSeqLogo <- function(mat,
                                 plotfile,
                                 width,
@@ -17,17 +18,19 @@ siteSubsetGGSeqLogo <- function(mat,
                                 vertlines,
                                 yname,
                                 chars,
-                                char_colors) {
+                                char_colors,
+                                ylimits=NULL) {
   p <- ggseqlogo(mat, method='custom', ncol=length(xlabels),
          col_scheme=make_col_scheme(chars=chars, cols=char_colors)) +
        scale_x_continuous('', breaks=1:length(xlabels),
          labels=xlabels)
 
   if (nchar(trimws(yname))) {
-    p <- p + scale_y_continuous(yname)
+    p <- p + scale_y_continuous(yname, limits=ylimits)
     axis.line.y = element_line(color='black')
     axis.text.y = element_text()
   } else {
+    p <- p + scale_y_continuous(limits=ylimits)
     axis.text.y <- element_blank()
     axis.line.y <- element_blank()
   }

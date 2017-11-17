@@ -40,7 +40,7 @@ rinterface.initr()
 from rpy2.robjects import pandas2ri, r
 pandas2ri.activate()
 from rpy2.robjects.packages import importr
-from rpy2.robjects.vectors import StrVector, ListVector
+from rpy2.robjects.vectors import StrVector, ListVector, FloatVector
 from rpy2.rlike.container import TaggedList
 from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
 
@@ -74,7 +74,7 @@ def versionInfo():
 
 
 def siteSubsetGGSeqLogo(logodata, chars, plotfile, width, height,
-        yname='', char_colors=AA_COLORS_FG):
+        yname='', char_colors=AA_COLORS_FG, ylimits=None):
     """Creates one-row logo plot with subset of sites.
 
     Designed to show logo plot for a subset of sites. This
@@ -103,6 +103,9 @@ def siteSubsetGGSeqLogo(logodata, chars, plotfile, width, height,
             and yticks are drawn.
         `char_colors` (dict)
             Values give color for every character in `chars`.
+        `ylimits` (`None` or 2-tuple)
+            If not `None`, should give the ylimits for the plot
+            as `(ymin, ymax)`
 
     Here is an example that creates a plot for a subset of
     sites for two characters:
@@ -141,8 +144,10 @@ def siteSubsetGGSeqLogo(logodata, chars, plotfile, width, height,
             "`char_colors` not defined for all chars"
 
     expectcol = ['site', 'show'] + chars
-    assert set(logodata.columns) <= set(expectcol), \
+    assert set(logodata.columns) >= set(expectcol), \
             "`logodata` needs these column: {0}".format(expectcol)
+
+    assert logodata['show'].any(), "no sites to show"
 
     # for each consecutive set of rows not to show, keep just one
     logodata = logodata[expectcol]
@@ -151,6 +156,12 @@ def siteSubsetGGSeqLogo(logodata, chars, plotfile, width, height,
                 (logodata['show'] != logodata['show'].shift(1)))
             )
     logodata = logodata.query('keeprow').reset_index()
+
+    # trim first and last row if they are not to be shown
+    if not logodata.iloc[0]['show']:
+        logodata = logodata.iloc[1 : ].reset_index()
+    if not logodata.iloc[-1]['show']:
+        logodata = logodata.iloc[ : -1]
 
     # set site label to empty and data to zero for rows not to show
     logodata.loc[~logodata['show'], 'site'] = ''
@@ -164,6 +175,11 @@ def siteSubsetGGSeqLogo(logodata, chars, plotfile, width, height,
             dimnames=[chars, sites]
             )
 
+    if ylimits is None:
+        ylimits = rinterface.NULL
+    else:
+        ylimits = FloatVector(ylimits)
+
     # make the plot
     with warnings.catch_warnings():
         warnings.simplefilter(SHOW_WARNINGS)
@@ -176,7 +192,8 @@ def siteSubsetGGSeqLogo(logodata, chars, plotfile, width, height,
                 vertlines=vertlines,
                 yname=yname,
                 chars=StrVector(chars),
-                char_colors=StrVector([char_colors[x] for x in chars])
+                char_colors=StrVector([char_colors[x] for x in chars]),
+                ylimits=ylimits
                 )
 
     if not os.path.isfile(plotfile):
@@ -250,7 +267,7 @@ def facetedGGSeqLogo(logodata, chars, plotfile, width, height,
 
     # get and order data columns
     df_cols = ['facetlabel', 'stacklabel'] + chars
-    assert set(logodata.columns) <= set(df_cols), "df lacks required columns"
+    assert set(logodata.columns) >= set(df_cols), "df lacks required columns"
     logodata = logodata[df_cols] 
 
     facets = logodata['facetlabel'].unique()
