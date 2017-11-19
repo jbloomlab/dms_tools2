@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.2.dev1
+---------
+* added `protstruct` module, and the `distMatrix` function within it
+
 2.2.0
 ---------
 * added `compareprefs` module
