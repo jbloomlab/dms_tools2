@@ -67,7 +67,7 @@ setup(
     extras_require = {
         'rplot':['rpy2>=2.9.1']
         },
-    platforms = 'Linux and Mac OS X).',
+    platforms = 'Linux and Mac OS X.',
     packages = ['dms_tools2'],
     package_dir = {'dms_tools2':'dms_tools2'},
     package_data = {'dms_tools2':['rplot_Rcode.R']},
