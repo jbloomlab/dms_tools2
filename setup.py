@@ -52,12 +52,12 @@ setup(
     install_requires = [
         'biopython>=1.68',
         'HTSeq>=0.9',
-        'pandas>=0.20.3',
+        'pandas>=0.21',
         'numpy>=1.13',
         'IPython>=5.1',
         'jupyter>=1.0.0',
-        'matplotlib>=2.0.2, !=2.1.0',
-        'plotnine==0.2.1', # restrict until matplotlib >2.1.0 available
+        'matplotlib>=2.1.1',
+        'plotnine>=0.3',
         'natsort>=5.0.3',
         'pystan>=2.16',
         'scipy>=0.18.1',
