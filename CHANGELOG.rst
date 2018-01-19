@@ -3,7 +3,11 @@ Change Log
 
 2.2.dev1
 ---------
-* added `protstruct` module, and the `distMatrix` function within it
+* added `protstruct` module for operations related to protein structurs
+
+* added `neutcurve` module to fit neutralization curves
+
+* updated required versions of some dependencies
 
 2.2.0
 ---------
