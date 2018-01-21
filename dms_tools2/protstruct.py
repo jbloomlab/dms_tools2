@@ -131,15 +131,15 @@ def distMatrix(pdbfile, chains, dist_type, equivchains={}, ignore_hetero=True):
     ...     (residues, equiv_dist) = distMatrix(f.name, ['A', 'X'], 'CA', {'X':['Y']})
     >>> residues
     ['505A', '518']
-    >>> print(numpy.array2string(ca_dist, precision=3))
-    [[  0.     35.639]
-     [ 35.639   0.   ]]
-    >>> print(numpy.array2string(any_dist, precision=3))
-    [[  0.     32.674]
-     [ 32.674   0.   ]]
-    >>> print(numpy.array2string(equiv_dist, precision=3))
-    [[ 0.     1.732]
-     [ 1.732  0.   ]]
+    >>> numpy.allclose(ca_dist, numpy.array(
+    ...    [[0, 35.639], [35.639, 0]]), atol=1e-3)
+    True
+    >>> numpy.allclose(any_dist, numpy.array(
+    ...    [[0, 32.674], [32.674, 0]]), atol=1e-3)
+    True
+    >>> numpy.allclose(equiv_dist, numpy.array(
+    ...    [[0, 1.732], [1.732, 0]]), atol=1e-3)
+    True
     """
     if isinstance(chains, str):
         chains = list(chains)
