@@ -30,7 +30,7 @@ def fit_fourParamLogistics(
     """Fits and plots set of neutralization curves.
 
     Fits a set of 4-parameter logistic neutralization curves
-    as defined by `fourParamLogistic`. Then makes a faceted
+    as defined by :class:`fourParamLogistic`. Then makes a faceted
     plot showing all these curves.
 
     Args:
@@ -43,9 +43,9 @@ def fit_fourParamLogistics(
             Name of created plot file showing the fitted
             curves (e.g., PDF or PNG)
         `fixbottom`
-            Same meaning as for `fourParamLogistic`
+            Same meaning as for :class:`fourParamLogistic`
         `fixtop`
-            Same meaning as for `fourParamLogistic`
+            Same meaning as for :class:`fourParamLogistic`
         `xlabel` (str)
             x-label on plot
         `ylabel` (str)
@@ -53,15 +53,15 @@ def fit_fourParamLogistics(
         `maxcol` (int)
             Max number of columns in faceted plot
         `ic50_in_name` (bool)
-            Same meaning as for `fourParamLogistic.plot`
+            Same meaning as for :meth:`fourParamLogistic.plot`
         `nfitpoints` (int)
-            Same meaning as for `fourParamLogistic.plot`
+            Same meaning as for :meth:`fourParamLogistic.plot`
         `cextend` (float)
-            Same meaning as for `fourParamLogistic.plot`
+            Same meaning as for :meth:`fourParamLogistic.plot`
 
     Returns:
         A dictionary keyed by each sample in `neutdata`,
-        and with the values being the `fourParamLogistic`
+        and with the values being the :class:`fourParamLogistic`
         fitted object for that sample. You can use these
         objects to get detailed information about the fits.
 
@@ -92,8 +92,8 @@ def fit_fourParamLogistics(
        :width: 6in
        :align: center
 
-    We can also access the IC50 values and other fitted parameters
-    via the returned `fourParamLogistic` fit objects. For instance:
+    We can access the IC50 values and other fitted parameters via
+    the returned :class:`fourParamLogistic` objects. For instance:
 
     >>> print('IC50 for K280A-1 is {0:.4f}'.format(
     ...         neutcurves['K280A-1'].ic50()))
@@ -188,6 +188,8 @@ class fourParamLogistic:
             corresponding to the entries in `cs`.
         `midpoint` (float)
             Midpoint of curve, :math:`m` in equation above.
+            Note that the midpoint may **not** be the same
+            as the :meth:`ic50`
         `slope` (float)
             Hill slope of curve, :math:`s` in equation above.
         `bottom` (float)
@@ -197,7 +199,7 @@ class fourParamLogistic:
             Top of curve (value as :math:`c` get small),
             :math:`t` in equation above.
 
-    You can use the `ic50` function to get the fitted IC50.
+    Use the :meth:`ic50` function to get the fitted IC50.
 
     As an example, we first simulate some data with known
     parameter values:
@@ -273,9 +275,9 @@ class fourParamLogistic:
     >>> neut3.ic50() is None
     True
 
-    However, we can still see a bound on the IC50
-    using the `ic50_str` function. As seen below, this
-    bound indicates that the IC50 exceeds the
+    However, we can still see a limit on the IC50
+    using the :meth:`ic50_str` method. As seen below,
+    this limit indicates that the IC50 exceeds the
     largest value in the concentrations used to fit
     the curve:
 
@@ -410,7 +412,7 @@ class fourParamLogistic:
     def ic50_str(self):
         """Returns string containing IC50.
 
-        Differs from `ic50` in that it provides a string.
+        Unlike :meth:`ic50`, it returns a string.
         This is useful because the string will indicate
         if the extrapolated IC50 is outside the 
         range of fitted data, such as by being: `> 0.5`.
@@ -448,8 +450,8 @@ class fourParamLogistic:
         """Gets data for plotting neutralization curve.
 
         Returns a `pandas.DataFrame` appropriate for passing
-        to `dms_tools2.plot.plotFacetedNeutCurves`. The calling
-        arguments have the meanings explained in `plot` method.
+        to :func:`dms_tools2.plot.plotFacetedNeutCurves`. The
+        arguments have the meanings explained in :meth:`plot`.
         """
         concentrations = scipy.concatenate(
                 [self.cs,
