@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>plot &#8212; dms_tools2 2.2.0 documentation</title>
+    <title>plot &#8212; dms_tools2 2.2.1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '2.2.0',
+        VERSION:     '2.2.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -270,6 +270,33 @@ for each character in <cite>charlist</cite>.</dd>
 <dt><cite>charlist</cite> (list)</dt>
 <dd>Characters contained in <cite>countsfiles</cite>. For instance,
 list of codons or amino acids.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.plot.plotFacetedNeutCurves">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotFacetedNeutCurves</code><span class="sig-paren">(</span><em>neutdata</em>, <em>plotfile</em>, <em>xlabel</em>, <em>ylabel</em>, <em>maxcol=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotFacetedNeutCurves"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotFacetedNeutCurves" title="Permalink to this definition">¶</a></dt>
+<dd><p>Faceted neutralization curves with points and fit line.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>neutdata</cite> (pandas DataFrame)</dt>
+<dd>Should have the following columns:
+<cite>concentration</cite>, <cite>sample</cite>, <cite>fit</cite>, <cite>points</cite>.
+The plot is faceted on <cite>sample</cite>. The line
+smoothly connects all points in column
+<cite>fit</cite>, and points are drawn anywhere
+that <cite>points</cite> is not <cite>NaN</cite>.</dd>
+<dt><cite>plotfile</cite> (str)</dt>
+<dd>Name of created plot.</dd>
+<dt><cite>xlabel</cite> (str)</dt>
+<dd>x-axis label</dd>
+<dt><cite>ylabel</cite> (str)</dt>
+<dd>y-axis label</dd>
+<dt><cite>maxcol</cite> (int)</dt>
+<dd>Number of columns in facets.</dd>
 </dl>
 </dd>
 </dl>

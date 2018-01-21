@@ -1,0 +1,290 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>protstruct &#8212; dms_tools2 2.2.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.2.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="rplot" href="dms_tools2.rplot.html" />
+    <link rel="prev" title="prefs" href="dms_tools2.prefs.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="module-dms_tools2.protstruct"></span><div class="section" id="protstruct">
+<h1>protstruct<a class="headerlink" href="#protstruct" title="Permalink to this headline">¶</a></h1>
+<p>Module for operations related to protein structures.</p>
+<dl class="function">
+<dt id="dms_tools2.protstruct.atomDist">
+<code class="descclassname">dms_tools2.protstruct.</code><code class="descname">atomDist</code><span class="sig-paren">(</span><em>a1</em>, <em>a2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/protstruct.html#atomDist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.protstruct.atomDist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates distance between two atoms.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>a1</cite>, <cite>a2</cite> (<cite>Bio.PDB.Atom.Atom</cite> objects)</dt>
+<dd>The two atoms.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>The distance between the two atoms.</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Atom</span> <span class="o">=</span> <span class="n">Bio</span><span class="o">.</span><span class="n">PDB</span><span class="o">.</span><span class="n">Atom</span><span class="o">.</span><span class="n">Atom</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a1</span> <span class="o">=</span> <span class="n">Atom</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;CA&#39;</span><span class="p">,</span> <span class="n">coord</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">),</span> <span class="n">bfactor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">occupancy</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>          <span class="n">altloc</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">fullname</span><span class="o">=</span><span class="s1">&#39;CA&#39;</span><span class="p">,</span> <span class="n">serial_number</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">element</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a2</span> <span class="o">=</span> <span class="n">Atom</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;CA&#39;</span><span class="p">,</span> <span class="n">coord</span><span class="o">=</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">),</span> <span class="n">bfactor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">occupancy</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>          <span class="n">altloc</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">fullname</span><span class="o">=</span><span class="s1">&#39;CA&#39;</span><span class="p">,</span> <span class="n">serial_number</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">element</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">round</span><span class="p">(</span><span class="n">atomDist</span><span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span>
+<span class="go">1.871</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.protstruct.distMatrix">
+<code class="descclassname">dms_tools2.protstruct.</code><code class="descname">distMatrix</code><span class="sig-paren">(</span><em>pdbfile</em>, <em>chains</em>, <em>dist_type</em>, <em>equivchains={}</em>, <em>ignore_hetero=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/protstruct.html#distMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.protstruct.distMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Residue-residue distance matrix for protein or homo-oligomer.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>pdbfile</cite> (str)</dt>
+<dd>Name of PDB file.</dd>
+<dt><cite>chains</cite> (str or list of str)</dt>
+<dd>Chain in <cite>pdbfile</cite> for which we compute residue distances,
+or list of chains if the residues span several chains 
+(as for proteins like HA which are cleaved to subunits).</dd>
+<dt><cite>dist_type</cite> (str)</dt>
+<dd>Distances to measure. Use <cite>CA</cite> for alpha carbon distances,
+and <cite>any</cite> for nearest distances of any atom in residues.</dd>
+<dt><cite>equivchains</cite> (dict)</dt>
+<dd>If the structure is a homo-oligomer, each chain may
+have other equivalent chains. In this case, for each
+<cite>chain</cite>, <cite>equivchains[chain]</cite> should be list of equivalent
+chains that we also include in the distance calculations.</dd>
+<dt><cite>ignorehetero</cite> (bool)</dt>
+<dd>Ignore hetero-residues, and only consider protein ones.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>The 2-tuple <cite>(residues, distmatrix)</cite> where <cite>residues</cite> is a
+list of the residue names (as strings) and <cite>distmatrix</cite> is a 
+<cite>numpy.ndarray</cite> with element <cite>distmatrix[i, j]</cite> giving
+the distance between residue <cite>residues[i]</cite> and <cite>residues[j]</cite>.</dd>
+</dl>
+<p>Here is an example computation of distances between two residues
+spanning two chains:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">n</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="gp">... </span>     <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+<span class="gp">... </span>     <span class="s1">&#39;ATOM   4633  N   VAL X 505A     57.621  44.297  43.089  1.00 96.43           N&#39;</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="s1">&#39;ATOM   4634  CA  VAL X 505A     58.278  45.594  43.147  1.00 84.49           C&#39;</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="s1">&#39;ATOM   4635  C   VAL X 505A     59.779  45.434  42.943  1.00 82.23           C&#39;</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="s1">&#39;ATOM   4636  O   VAL X 505A     60.339  44.372  43.218  1.00 91.07           O&#39;</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="s1">&#39;ATOM   4637  CB  VAL X 505A     58.010  46.304  44.493  1.00 98.34           C&#39;</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="s1">&#39;ATOM   4638  CG1 VAL X 505A     58.732  47.644  44.544  1.00 94.96           C&#39;</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="s1">&#39;ATOM   4639  CG2 VAL X 505A     56.511  46.483  44.713  1.00 92.78           C&#39;</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="s1">&#39;ATOM      1  N   VAL A 518      46.814  16.139  29.171  1.00 92.74           N&#39;</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="s1">&#39;ATOM      2  CA  VAL A 518      46.514  15.640  27.833  1.00 99.45           C&#39;</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="s1">&#39;ATOM      3  C   VAL A 518      47.047  16.605  26.764  1.00102.76           C&#39;</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="s1">&#39;ATOM      4  O   VAL A 518      47.281  17.785  27.034  1.00 86.02           O&#39;</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="s1">&#39;ATOM      5  CB  VAL A 518      44.993  15.424  27.640  1.00 95.35           C&#39;</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="s1">&#39;ATOM      6  CG1 VAL A 518      44.729  14.428  26.515  1.00 70.29           C&#39;</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="s1">&#39;ATOM      7  CG2 VAL A 518      44.357  14.931  28.935  1.00 97.65           C&#39;</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="s1">&#39;ATOM      8  CA  VAL Y 505A     47.514  16.640  28.833  1.00 99.45           C&#39;</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="p">]))</span>
+<span class="gp">... </span>    <span class="n">f</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="n">residues</span><span class="p">,</span> <span class="n">ca_dist</span><span class="p">)</span> <span class="o">=</span> <span class="n">distMatrix</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">],</span> <span class="s1">&#39;CA&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="n">residues</span><span class="p">,</span> <span class="n">any_dist</span><span class="p">)</span> <span class="o">=</span> <span class="n">distMatrix</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">],</span> <span class="s1">&#39;any&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="n">residues</span><span class="p">,</span> <span class="n">equiv_dist</span><span class="p">)</span> <span class="o">=</span> <span class="n">distMatrix</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">],</span> <span class="s1">&#39;CA&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;X&#39;</span><span class="p">:[</span><span class="s1">&#39;Y&#39;</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">residues</span>
+<span class="go">[&#39;505A&#39;, &#39;518&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">ca_dist</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+<span class="gp">... </span>   <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">35.639</span><span class="p">],</span> <span class="p">[</span><span class="mf">35.639</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]),</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">any_dist</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+<span class="gp">... </span>   <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">32.674</span><span class="p">],</span> <span class="p">[</span><span class="mf">32.674</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]),</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">equiv_dist</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+<span class="gp">... </span>   <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.732</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.732</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]),</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.protstruct.residueDist">
+<code class="descclassname">dms_tools2.protstruct.</code><code class="descname">residueDist</code><span class="sig-paren">(</span><em>r1</em>, <em>r2</em>, <em>atom=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/protstruct.html#residueDist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.protstruct.residueDist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates distance between closest atoms in two residues.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>r1</cite>, <cite>r2</cite> (<cite>Bio.PDB.Residue.Residue</cite> objects)</dt>
+<dd>The two residues.</dd>
+<dt><cite>atom</cite> (<cite>None</cite> or str)</dt>
+<dd>If <cite>None</cite>, computes closest distance between any atoms.
+If a string, only computes closest distance among atoms
+of this type (e.g., <cite>CA</cite> for alpha carbon distances).</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>Distance between closest atoms in the two residues.</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Residue</span> <span class="o">=</span> <span class="n">Bio</span><span class="o">.</span><span class="n">PDB</span><span class="o">.</span><span class="n">Residue</span><span class="o">.</span><span class="n">Residue</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Atom</span> <span class="o">=</span> <span class="n">Bio</span><span class="o">.</span><span class="n">PDB</span><span class="o">.</span><span class="n">Atom</span><span class="o">.</span><span class="n">Atom</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r1</span> <span class="o">=</span> <span class="n">Residue</span><span class="p">(</span><span class="s1">&#39;r1&#39;</span><span class="p">,</span> <span class="s1">&#39;r1&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a1</span> <span class="o">=</span> <span class="n">Atom</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;CA&#39;</span><span class="p">,</span> <span class="n">coord</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span> <span class="n">bfactor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">occupancy</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>          <span class="n">altloc</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">fullname</span><span class="o">=</span><span class="s1">&#39;CA&#39;</span><span class="p">,</span> <span class="n">serial_number</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">element</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a2</span> <span class="o">=</span> <span class="n">Atom</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="n">coord</span><span class="o">=</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">),</span> <span class="n">bfactor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">occupancy</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>          <span class="n">altloc</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">fullname</span><span class="o">=</span><span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="n">serial_number</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">element</span><span class="o">=</span><span class="s1">&#39;N&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r1</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">a1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r1</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">a2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r2</span> <span class="o">=</span> <span class="n">Residue</span><span class="p">(</span><span class="s1">&#39;r2&#39;</span><span class="p">,</span> <span class="s1">&#39;r2&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a3</span> <span class="o">=</span> <span class="n">Atom</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;CA&#39;</span><span class="p">,</span> <span class="n">coord</span><span class="o">=</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">),</span> <span class="n">bfactor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">occupancy</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>          <span class="n">altloc</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">fullname</span><span class="o">=</span><span class="s1">&#39;CA&#39;</span><span class="p">,</span> <span class="n">serial_number</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">element</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r2</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">a3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">round</span><span class="p">(</span><span class="n">residueDist</span><span class="p">(</span><span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span> <span class="o">==</span> <span class="mf">1.871</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">round</span><span class="p">(</span><span class="n">residueDist</span><span class="p">(</span><span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">atom</span><span class="o">=</span><span class="s1">&#39;CA&#39;</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span> <span class="o">==</span> <span class="mf">4.153</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fracsurvive.html">Fraction surviving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="programs.html">Executable programs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">Python API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="dms_tools2.html">dms_tools2 package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="api.html">Python API</a><ul>
+  <li><a href="dms_tools2.html">dms_tools2 package</a><ul>
+      <li>Previous: <a href="dms_tools2.prefs.html" title="previous chapter">prefs</a></li>
+      <li>Next: <a href="dms_tools2.rplot.html" title="next chapter">rplot</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/dms_tools2.protstruct.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

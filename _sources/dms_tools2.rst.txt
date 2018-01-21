@@ -16,9 +16,11 @@ Submodules
    dms_tools2.dssp
    dms_tools2.fracsurvive
    dms_tools2.ipython_utils
+   dms_tools2.neutcurve
    dms_tools2.parseargs
    dms_tools2.plot
    dms_tools2.prefs
+   dms_tools2.protstruct
    dms_tools2.rplot
    dms_tools2.sra
    dms_tools2.utils

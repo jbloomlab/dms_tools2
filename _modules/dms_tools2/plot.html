@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.plot &#8212; dms_tools2 2.2.0 documentation</title>
+    <title>dms_tools2.plot &#8212; dms_tools2 2.2.1 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.2.0',
+        VERSION:     '2.2.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -275,7 +275,8 @@
     <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dfs</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="c1"># make name a category to preserve order</span>
-    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="n">names</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+            <span class="n">pandas</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">CategoricalDtype</span><span class="p">(</span><span class="n">categories</span><span class="o">=</span><span class="n">names</span><span class="p">))</span>
 
     <span class="n">ncol</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">maxcol</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">))</span>
     <span class="n">nrow</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">ncol</span><span class="p">))</span>
@@ -790,6 +791,62 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">((</span><span class="ow">not</span> <span class="n">names</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">or</span> <span class="n">names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isspace</span><span class="p">())):</span>
         <span class="n">p</span> <span class="o">+=</span> <span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~name&#39;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="n">ncol</span><span class="p">)</span>
     <span class="n">p</span> <span class="o">+=</span> <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">4.6</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.3</span> <span class="o">+</span> <span class="n">ncol</span><span class="p">),</span> <span class="mf">1.9</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.2</span> <span class="o">+</span> <span class="n">nrow</span><span class="p">)))</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plotFacetedNeutCurves"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.plotFacetedNeutCurves">[docs]</a><span class="k">def</span> <span class="nf">plotFacetedNeutCurves</span><span class="p">(</span>
+        <span class="n">neutdata</span><span class="p">,</span>
+        <span class="n">plotfile</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="p">,</span>
+        <span class="n">ylabel</span><span class="p">,</span>
+        <span class="n">maxcol</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Faceted neutralization curves with points and fit line.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `neutdata` (pandas DataFrame)</span>
+<span class="sd">            Should have the following columns:</span>
+<span class="sd">            `concentration`, `sample`, `fit`, `points`.</span>
+<span class="sd">            The plot is faceted on `sample`. The line</span>
+<span class="sd">            smoothly connects all points in column</span>
+<span class="sd">            `fit`, and points are drawn anywhere</span>
+<span class="sd">            that `points` is not `NaN`.</span>
+<span class="sd">        `plotfile` (str)</span>
+<span class="sd">            Name of created plot.</span>
+<span class="sd">        `xlabel` (str)</span>
+<span class="sd">            x-axis label</span>
+<span class="sd">        `ylabel` (str)</span>
+<span class="sd">            y-axis label</span>
+<span class="sd">        `maxcol` (int)</span>
+<span class="sd">            Number of columns in facets.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;concentration&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;fit&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">}</span>
+    <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">neutdata</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">cols</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;missing cols:</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;required: </span><span class="si">{0}</span><span class="se">\n</span><span class="s2">actual: </span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="n">neutdata</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+
+    <span class="c1"># make sample a category to preserve order</span>
+    <span class="n">neutdata</span> <span class="o">=</span> <span class="n">neutdata</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">neutdata</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+    <span class="n">neutdata</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">neutdata</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+            <span class="n">pandas</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">CategoricalDtype</span><span class="p">(</span><span class="n">categories</span><span class="o">=</span><span class="n">samples</span><span class="p">))</span>
+
+    <span class="n">ncol</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">maxcol</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">))</span>
+    <span class="n">nrow</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">ncol</span><span class="p">))</span>
+
+    <span class="n">ymin</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">neutdata</span><span class="p">[</span><span class="s1">&#39;fit&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">neutdata</span><span class="p">[</span><span class="s1">&#39;points&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">ymax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">neutdata</span><span class="p">[</span><span class="s1">&#39;fit&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">neutdata</span><span class="p">[</span><span class="s1">&#39;points&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">neutdata</span><span class="p">)</span> <span class="o">+</span>
+            <span class="n">geom_point</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;concentration&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;points&#39;</span><span class="p">))</span> <span class="o">+</span>
+            <span class="n">geom_line</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;concentration&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;fit&#39;</span><span class="p">))</span> <span class="o">+</span>
+            <span class="n">scale_x_log10</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">latexSciNot</span><span class="p">)</span> <span class="o">+</span>
+            <span class="n">scale_y_continuous</span><span class="p">(</span><span class="n">limits</span><span class="o">=</span><span class="p">(</span><span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">))</span> <span class="o">+</span>
+            <span class="n">xlab</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span> <span class="o">+</span> 
+            <span class="n">ylab</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span> <span class="o">+</span>
+            <span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~sample&#39;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="n">ncol</span><span class="p">)</span> 
+            <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">2.4</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.25</span> <span class="o">+</span> <span class="n">ncol</span><span class="p">),</span>
+                                 <span class="mf">1.45</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.25</span> <span class="o">+</span> <span class="n">nrow</span><span class="p">)))</span>
+            <span class="p">)</span>
     <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 

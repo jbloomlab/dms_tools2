@@ -1,0 +1,336 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>dms_tools2.protstruct &#8212; dms_tools2 2.2.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.2.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dms_tools2.protstruct</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">===========</span>
+<span class="sd">protstruct</span>
+<span class="sd">===========</span>
+<span class="sd">Module for operations related to protein structures.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+
+<span class="kn">import</span> <span class="nn">natsort</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">Bio.PDB</span>
+
+
+<div class="viewcode-block" id="atomDist"><a class="viewcode-back" href="../../dms_tools2.protstruct.html#dms_tools2.protstruct.atomDist">[docs]</a><span class="k">def</span> <span class="nf">atomDist</span><span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculates distance between two atoms.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `a1`, `a2` (`Bio.PDB.Atom.Atom` objects)</span>
+<span class="sd">            The two atoms.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The distance between the two atoms.</span>
+
+<span class="sd">    &gt;&gt;&gt; Atom = Bio.PDB.Atom.Atom</span>
+<span class="sd">    &gt;&gt;&gt; a1 = Atom(name=&#39;CA&#39;, coord=(1.0, 2.0, 3.0), bfactor=1, occupancy=1,</span>
+<span class="sd">    ...           altloc=&#39;&#39;, fullname=&#39;CA&#39;, serial_number=1, element=&#39;C&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; a2 = Atom(name=&#39;CA&#39;, coord=(1.5, 3.0, 4.5), bfactor=1, occupancy=1,</span>
+<span class="sd">    ...           altloc=&#39;&#39;, fullname=&#39;CA&#39;, serial_number=2, element=&#39;C&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; round(atomDist(a1, a2), 3)</span>
+<span class="sd">    1.871</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">diff_vector</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">a1</span><span class="o">.</span><span class="n">coord</span><span class="p">)</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">a2</span><span class="o">.</span><span class="n">coord</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">diff_vector</span> <span class="o">*</span> <span class="n">diff_vector</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="residueDist"><a class="viewcode-back" href="../../dms_tools2.protstruct.html#dms_tools2.protstruct.residueDist">[docs]</a><span class="k">def</span> <span class="nf">residueDist</span><span class="p">(</span><span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">atom</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculates distance between closest atoms in two residues.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `r1`, `r2` (`Bio.PDB.Residue.Residue` objects)</span>
+<span class="sd">            The two residues.</span>
+<span class="sd">        `atom` (`None` or str)</span>
+<span class="sd">            If `None`, computes closest distance between any atoms.</span>
+<span class="sd">            If a string, only computes closest distance among atoms</span>
+<span class="sd">            of this type (e.g., `CA` for alpha carbon distances).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Distance between closest atoms in the two residues.</span>
+
+<span class="sd">    &gt;&gt;&gt; Residue = Bio.PDB.Residue.Residue</span>
+<span class="sd">    &gt;&gt;&gt; Atom = Bio.PDB.Atom.Atom</span>
+<span class="sd">    &gt;&gt;&gt; r1 = Residue(&#39;r1&#39;, &#39;r1&#39;, &#39;A&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; a1 = Atom(name=&#39;CA&#39;, coord=(1.0, 2.0, 2.5), bfactor=1, occupancy=1,</span>
+<span class="sd">    ...           altloc=&#39;&#39;, fullname=&#39;CA&#39;, serial_number=1, element=&#39;C&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; a2 = Atom(name=&#39;N&#39;, coord=(1.5, 3.0, 4.5), bfactor=1, occupancy=1,</span>
+<span class="sd">    ...           altloc=&#39;&#39;, fullname=&#39;N&#39;, serial_number=2, element=&#39;N&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; r1.add(a1)</span>
+<span class="sd">    &gt;&gt;&gt; r1.add(a2)</span>
+<span class="sd">    &gt;&gt;&gt; r2 = Residue(&#39;r2&#39;, &#39;r2&#39;, &#39;A&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; a3 = Atom(name=&#39;CA&#39;, coord=(2.0, 4.0, 6.0), bfactor=1, occupancy=1,</span>
+<span class="sd">    ...           altloc=&#39;&#39;, fullname=&#39;CA&#39;, serial_number=1, element=&#39;C&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; r2.add(a3)</span>
+<span class="sd">    &gt;&gt;&gt; round(residueDist(r1, r2), 3) == 1.871</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; round(residueDist(r1, r2, atom=&#39;CA&#39;), 3) == 4.153</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">atom</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">atomDist</span><span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">a1</span><span class="p">,</span> <span class="n">a2</span><span class="p">)</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">)])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">atomDist</span><span class="p">(</span><span class="n">r1</span><span class="p">[</span><span class="n">atom</span><span class="p">],</span> <span class="n">r2</span><span class="p">[</span><span class="n">atom</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">d</span></div>
+
+
+<div class="viewcode-block" id="distMatrix"><a class="viewcode-back" href="../../dms_tools2.protstruct.html#dms_tools2.protstruct.distMatrix">[docs]</a><span class="k">def</span> <span class="nf">distMatrix</span><span class="p">(</span><span class="n">pdbfile</span><span class="p">,</span> <span class="n">chains</span><span class="p">,</span> <span class="n">dist_type</span><span class="p">,</span> <span class="n">equivchains</span><span class="o">=</span><span class="p">{},</span> <span class="n">ignore_hetero</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Residue-residue distance matrix for protein or homo-oligomer.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `pdbfile` (str)</span>
+<span class="sd">            Name of PDB file.</span>
+<span class="sd">        `chains` (str or list of str)</span>
+<span class="sd">            Chain in `pdbfile` for which we compute residue distances,</span>
+<span class="sd">            or list of chains if the residues span several chains </span>
+<span class="sd">            (as for proteins like HA which are cleaved to subunits).</span>
+<span class="sd">        `dist_type` (str)</span>
+<span class="sd">            Distances to measure. Use `CA` for alpha carbon distances,</span>
+<span class="sd">            and `any` for nearest distances of any atom in residues.</span>
+<span class="sd">        `equivchains` (dict)</span>
+<span class="sd">            If the structure is a homo-oligomer, each chain may</span>
+<span class="sd">            have other equivalent chains. In this case, for each</span>
+<span class="sd">            `chain`, `equivchains[chain]` should be list of equivalent</span>
+<span class="sd">            chains that we also include in the distance calculations.</span>
+<span class="sd">        `ignorehetero` (bool)</span>
+<span class="sd">            Ignore hetero-residues, and only consider protein ones.    </span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The 2-tuple `(residues, distmatrix)` where `residues` is a</span>
+<span class="sd">        list of the residue names (as strings) and `distmatrix` is a </span>
+<span class="sd">        `numpy.ndarray` with element `distmatrix[i, j]` giving</span>
+<span class="sd">        the distance between residue `residues[i]` and `residues[j]`.</span>
+
+<span class="sd">    Here is an example computation of distances between two residues</span>
+<span class="sd">    spanning two chains:</span>
+
+<span class="sd">    &gt;&gt;&gt; with tempfile.NamedTemporaryFile(mode=&#39;w&#39;) as f:</span>
+<span class="sd">    ...     n = f.write(</span>
+<span class="sd">    ...      &#39;\\n&#39;.join([</span>
+<span class="sd">    ...      &#39;ATOM   4633  N   VAL X 505A     57.621  44.297  43.089  1.00 96.43           N&#39;,</span>
+<span class="sd">    ...      &#39;ATOM   4634  CA  VAL X 505A     58.278  45.594  43.147  1.00 84.49           C&#39;,</span>
+<span class="sd">    ...      &#39;ATOM   4635  C   VAL X 505A     59.779  45.434  42.943  1.00 82.23           C&#39;,</span>
+<span class="sd">    ...      &#39;ATOM   4636  O   VAL X 505A     60.339  44.372  43.218  1.00 91.07           O&#39;,</span>
+<span class="sd">    ...      &#39;ATOM   4637  CB  VAL X 505A     58.010  46.304  44.493  1.00 98.34           C&#39;,</span>
+<span class="sd">    ...      &#39;ATOM   4638  CG1 VAL X 505A     58.732  47.644  44.544  1.00 94.96           C&#39;,</span>
+<span class="sd">    ...      &#39;ATOM   4639  CG2 VAL X 505A     56.511  46.483  44.713  1.00 92.78           C&#39;,</span>
+<span class="sd">    ...      &#39;ATOM      1  N   VAL A 518      46.814  16.139  29.171  1.00 92.74           N&#39;,</span>
+<span class="sd">    ...      &#39;ATOM      2  CA  VAL A 518      46.514  15.640  27.833  1.00 99.45           C&#39;,</span>
+<span class="sd">    ...      &#39;ATOM      3  C   VAL A 518      47.047  16.605  26.764  1.00102.76           C&#39;,</span>
+<span class="sd">    ...      &#39;ATOM      4  O   VAL A 518      47.281  17.785  27.034  1.00 86.02           O&#39;,</span>
+<span class="sd">    ...      &#39;ATOM      5  CB  VAL A 518      44.993  15.424  27.640  1.00 95.35           C&#39;,</span>
+<span class="sd">    ...      &#39;ATOM      6  CG1 VAL A 518      44.729  14.428  26.515  1.00 70.29           C&#39;,</span>
+<span class="sd">    ...      &#39;ATOM      7  CG2 VAL A 518      44.357  14.931  28.935  1.00 97.65           C&#39;,</span>
+<span class="sd">    ...      &#39;ATOM      8  CA  VAL Y 505A     47.514  16.640  28.833  1.00 99.45           C&#39;,</span>
+<span class="sd">    ...      ]))</span>
+<span class="sd">    ...     f.flush()</span>
+<span class="sd">    ...     (residues, ca_dist) = distMatrix(f.name, [&#39;A&#39;, &#39;X&#39;], &#39;CA&#39;)</span>
+<span class="sd">    ...     (residues, any_dist) = distMatrix(f.name, [&#39;A&#39;, &#39;X&#39;], &#39;any&#39;)</span>
+<span class="sd">    ...     (residues, equiv_dist) = distMatrix(f.name, [&#39;A&#39;, &#39;X&#39;], &#39;CA&#39;, {&#39;X&#39;:[&#39;Y&#39;]})</span>
+<span class="sd">    &gt;&gt;&gt; residues</span>
+<span class="sd">    [&#39;505A&#39;, &#39;518&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(ca_dist, numpy.array(</span>
+<span class="sd">    ...    [[0, 35.639], [35.639, 0]]), atol=1e-3)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(any_dist, numpy.array(</span>
+<span class="sd">    ...    [[0, 32.674], [32.674, 0]]), atol=1e-3)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(equiv_dist, numpy.array(</span>
+<span class="sd">    ...    [[0, 1.732], [1.732, 0]]), atol=1e-3)</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chains</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">chains</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">chains</span><span class="p">)</span>
+
+    <span class="c1"># read PDB and take first model (typically there is only one unless NMR)</span>
+    <span class="n">structure</span> <span class="o">=</span> <span class="n">Bio</span><span class="o">.</span><span class="n">PDB</span><span class="o">.</span><span class="n">PDBParser</span><span class="p">()</span><span class="o">.</span><span class="n">get_structure</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">pdbfile</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">structure</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># lists residue objects </span>
+    <span class="n">res_objs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># keyed by residue objects, lists equivalents in other chains</span>
+    <span class="n">equiv_res_objs</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span> 
+    <span class="k">for</span> <span class="n">chain</span> <span class="ow">in</span> <span class="n">chains</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">model</span><span class="p">[</span><span class="n">chain</span><span class="p">]:</span>
+            <span class="n">res_id</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">get_id</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">res_id</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">and</span> <span class="n">ignore_hetero</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">res_objs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">equivchains</span> <span class="ow">and</span> <span class="n">chain</span> <span class="ow">in</span> <span class="n">equivchains</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">otherchain</span> <span class="ow">in</span> <span class="n">equivchains</span><span class="p">[</span><span class="n">chain</span><span class="p">]:</span>
+                    <span class="n">equiv_res_objs</span><span class="p">[</span><span class="n">res</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">res2</span> <span class="k">for</span> <span class="n">res2</span> <span class="ow">in</span>
+                            <span class="n">model</span><span class="p">[</span><span class="n">otherchain</span><span class="p">]</span> <span class="k">if</span> <span class="n">res2</span><span class="o">.</span><span class="n">get_id</span><span class="p">()</span> <span class="o">==</span> <span class="n">res_id</span><span class="p">]</span>
+
+    <span class="c1"># get residue names and sort </span>
+    <span class="n">residues</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">{0}{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="p">(</span><span class="n">het</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="ow">in</span>
+            <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">get_id</span><span class="p">(),</span> <span class="n">res_objs</span><span class="p">)]</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">residues</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">residues</span><span class="p">)),</span> <span class="s2">&quot;duplicate residue names&quot;</span>
+    <span class="n">sortindex</span> <span class="o">=</span> <span class="n">natsort</span><span class="o">.</span><span class="n">index_natsorted</span><span class="p">(</span><span class="n">residues</span><span class="p">)</span>
+    <span class="n">residues</span> <span class="o">=</span> <span class="n">natsort</span><span class="o">.</span><span class="n">order_by_index</span><span class="p">(</span><span class="n">residues</span><span class="p">,</span> <span class="n">sortindex</span><span class="p">)</span>
+    <span class="n">res_objs</span> <span class="o">=</span> <span class="n">natsort</span><span class="o">.</span><span class="n">order_by_index</span><span class="p">(</span><span class="n">res_objs</span><span class="p">,</span> <span class="n">sortindex</span><span class="p">)</span>
+
+    <span class="c1"># build up distance matrix</span>
+    <span class="k">if</span> <span class="n">dist_type</span> <span class="o">==</span> <span class="s1">&#39;any&#39;</span><span class="p">:</span>
+        <span class="n">atom</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">elif</span> <span class="n">dist_type</span> <span class="o">==</span> <span class="s1">&#39;CA&#39;</span><span class="p">:</span>
+        <span class="n">atom</span> <span class="o">=</span> <span class="s1">&#39;CA&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;invalid dist_type: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dist_type</span><span class="p">))</span>
+    <span class="n">distmatrix</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">residues</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">residues</span><span class="p">)))</span>
+    <span class="k">for</span> <span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">ri</span><span class="p">),</span> <span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">rj</span><span class="p">))</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">res_objs</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">residueDist</span><span class="p">(</span><span class="n">ri</span><span class="p">,</span> <span class="n">rj</span><span class="p">,</span> <span class="n">atom</span><span class="o">=</span><span class="n">atom</span><span class="p">)]</span> <span class="o">+</span>
+                <span class="p">[</span><span class="n">residueDist</span><span class="p">(</span><span class="n">ri</span><span class="p">,</span> <span class="n">rk</span><span class="p">,</span> <span class="n">atom</span><span class="o">=</span><span class="n">atom</span><span class="p">)</span> <span class="k">for</span> <span class="n">rk</span> <span class="ow">in</span> <span class="n">equiv_res_objs</span><span class="p">[</span><span class="n">rj</span><span class="p">]]</span> <span class="o">+</span>
+                <span class="p">[</span><span class="n">residueDist</span><span class="p">(</span><span class="n">rk</span><span class="p">,</span> <span class="n">rj</span><span class="p">,</span> <span class="n">atom</span><span class="o">=</span><span class="n">atom</span><span class="p">)</span> <span class="k">for</span> <span class="n">rk</span> <span class="ow">in</span> <span class="n">equiv_res_objs</span><span class="p">[</span><span class="n">ri</span><span class="p">]]</span>
+                <span class="p">)</span>
+        <span class="n">distmatrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">distmatrix</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">dist</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">residues</span><span class="p">,</span> <span class="n">distmatrix</span><span class="p">)</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fracsurvive.html">Fraction surviving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../programs.html">Executable programs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

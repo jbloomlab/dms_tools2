@@ -1,0 +1,4 @@
+.. automodule:: dms_tools2.neutcurve
+    :members:
+    :undoc-members:
+    :show-inheritance:

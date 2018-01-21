@@ -1,0 +1,660 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>dms_tools2.neutcurve &#8212; dms_tools2 2.2.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.2.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dms_tools2.neutcurve</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">=============</span>
+<span class="sd">neutcurve</span>
+<span class="sd">=============</span>
+<span class="sd">Module for fitting neutralization curves.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">io</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span>
+<span class="kn">import</span> <span class="nn">scipy</span>
+<span class="kn">import</span> <span class="nn">scipy.optimize</span>
+
+<span class="kn">import</span> <span class="nn">dms_tools2.plot</span>
+
+
+<div class="viewcode-block" id="fit_fourParamLogistics"><a class="viewcode-back" href="../../dms_tools2.neutcurve.html#dms_tools2.neutcurve.fit_fourParamLogistics">[docs]</a><span class="k">def</span> <span class="nf">fit_fourParamLogistics</span><span class="p">(</span>
+        <span class="n">neutdata</span><span class="p">,</span>
+        <span class="n">plotfile</span><span class="p">,</span>
+        <span class="n">fixbottom</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">fixtop</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;antibody concentration&#39;</span><span class="p">,</span>
+        <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;fraction surviving&#39;</span><span class="p">,</span>
+        <span class="n">maxcol</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">ic50_in_name</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">nfitpoints</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+        <span class="n">cextend</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Fits and plots set of neutralization curves.</span>
+
+<span class="sd">    Fits a set of 4-parameter logistic neutralization curves</span>
+<span class="sd">    as defined by :class:`fourParamLogistic`. Then makes a faceted</span>
+<span class="sd">    plot showing all these curves.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `neutdata` (panda DataFrame)</span>
+<span class="sd">            Data to fit. There should be a column</span>
+<span class="sd">            named `concentration` and every other column</span>
+<span class="sd">            should be named by the sample and give the </span>
+<span class="sd">            fraction surviving at each concentration.</span>
+<span class="sd">        `plotfile` (str)</span>
+<span class="sd">            Name of created plot file showing the fitted</span>
+<span class="sd">            curves (e.g., PDF or PNG)</span>
+<span class="sd">        `fixbottom`</span>
+<span class="sd">            Same meaning as for :class:`fourParamLogistic`</span>
+<span class="sd">        `fixtop`</span>
+<span class="sd">            Same meaning as for :class:`fourParamLogistic`</span>
+<span class="sd">        `xlabel` (str)</span>
+<span class="sd">            x-label on plot</span>
+<span class="sd">        `ylabel` (str)</span>
+<span class="sd">            y-label on plot</span>
+<span class="sd">        `maxcol` (int)</span>
+<span class="sd">            Max number of columns in faceted plot</span>
+<span class="sd">        `ic50_in_name` (bool)</span>
+<span class="sd">            Same meaning as for :meth:`fourParamLogistic.plot`</span>
+<span class="sd">        `nfitpoints` (int)</span>
+<span class="sd">            Same meaning as for :meth:`fourParamLogistic.plot`</span>
+<span class="sd">        `cextend` (float)</span>
+<span class="sd">            Same meaning as for :meth:`fourParamLogistic.plot`</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A dictionary keyed by each sample in `neutdata`,</span>
+<span class="sd">        and with the values being the :class:`fourParamLogistic`</span>
+<span class="sd">        fitted object for that sample. You can use these</span>
+<span class="sd">        objects to get detailed information about the fits.</span>
+
+<span class="sd">    Here is an example of plotting three curves in a </span>
+<span class="sd">    single row (we keep the default `maxcol=3`):</span>
+
+<span class="sd">    &gt;&gt;&gt; neutdata = pandas.read_csv(io.StringIO(</span>
+<span class="sd">    ... &#39;&#39;&#39;concentration K280A-1 K280A-2 wildtype</span>
+<span class="sd">    ...           0.0002  1.2049  1.2140  1.0549</span>
+<span class="sd">    ...           0.0005  1.0026  1.0107  0.9337</span>
+<span class="sd">    ...           0.0011  1.1422  1.1173  0.8025</span>
+<span class="sd">    ...           0.0026  0.9066  0.8368  0.4267</span>
+<span class="sd">    ...           0.0061  0.6952  0.8242  0.1769</span>
+<span class="sd">    ...           0.0142  0.3907  0.4503  0.0234</span>
+<span class="sd">    ...           0.0331  0.0714  0.0660  0.0001</span>
+<span class="sd">    ...           0.0771 -0.0119 -0.0157 -0.0146</span>
+<span class="sd">    ...           0.1800 -0.0311 -0.0333 -0.0377</span>
+<span class="sd">    ...           0.4199 -0.0344 -0.0320 -0.0367</span>
+<span class="sd">    ...           0.9797 -0.0365 -0.0382 -0.0346</span>
+<span class="sd">    ...           2.2861 -0.0291 -0.0345 -0.0362&#39;&#39;&#39;),</span>
+<span class="sd">    ...         delim_whitespace=True, index_col=False)</span>
+<span class="sd">    &gt;&gt;&gt; plotfile = &#39;_fit_fourParamLogistics_neutplot.png&#39;</span>
+<span class="sd">    &gt;&gt;&gt; neutcurves = fit_fourParamLogistics(neutdata, plotfile)</span>
+
+<span class="sd">    The plot looks like this: </span>
+
+<span class="sd">    .. image:: _static/_fit_fourParamLogistics_neutplot.png</span>
+<span class="sd">       :width: 6in</span>
+<span class="sd">       :align: center</span>
+
+<span class="sd">    We can access the IC50 values and other fitted parameters via</span>
+<span class="sd">    the returned :class:`fourParamLogistic` objects. For instance:</span>
+
+<span class="sd">    &gt;&gt;&gt; print(&#39;IC50 for K280A-1 is {0:.4f}&#39;.format(</span>
+<span class="sd">    ...         neutcurves[&#39;K280A-1&#39;].ic50()))</span>
+<span class="sd">    IC50 for K280A-1 is 0.0105</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">neutdata</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">neutdata</span><span class="o">.</span><span class="n">columns</span><span class="p">)),</span>\
+            <span class="s2">&quot;columns in `neutdata` not unique&quot;</span>
+    <span class="k">assert</span> <span class="s1">&#39;concentration&#39;</span> <span class="ow">in</span> <span class="n">neutdata</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> \
+            <span class="s2">&quot;`neutdata` does not have column named `concentration`&quot;</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">neutdata</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">col</span> <span class="o">!=</span> <span class="s1">&#39;concentration&#39;</span><span class="p">]</span>
+    <span class="n">cs</span> <span class="o">=</span> <span class="n">neutdata</span><span class="p">[</span><span class="s1">&#39;concentration&#39;</span><span class="p">]</span>
+
+    <span class="n">neutcurves</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">neut_dfs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">neutcurves</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">fourParamLogistic</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">neutdata</span><span class="p">[</span><span class="n">s</span><span class="p">],</span>
+                    <span class="n">fixbottom</span><span class="o">=</span><span class="n">fixbottom</span><span class="p">,</span> <span class="n">fixtop</span><span class="o">=</span><span class="n">fixtop</span><span class="p">)</span>
+            <span class="n">neut_dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">neutcurves</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">_neutdata</span><span class="p">(</span><span class="n">s</span><span class="p">,</span>
+                    <span class="n">ic50_in_name</span><span class="p">,</span> <span class="n">nfitpoints</span><span class="p">,</span> <span class="n">cextend</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Error fitting curve for &quot;</span>
+                    <span class="s2">&quot;sample </span><span class="si">{0}</span><span class="s2">.</span><span class="se">\n\n</span><span class="s2">Error:</span><span class="se">\n</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">s</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+
+    <span class="n">dms_tools2</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plotFacetedNeutCurves</span><span class="p">(</span>
+            <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">neut_dfs</span><span class="p">),</span>
+            <span class="n">plotfile</span><span class="p">,</span>
+            <span class="n">xlabel</span><span class="p">,</span>
+            <span class="n">ylabel</span><span class="p">,</span>
+            <span class="n">maxcol</span><span class="o">=</span><span class="n">maxcol</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">neutcurves</span></div>
+
+
+
+<div class="viewcode-block" id="fourParamLogistic"><a class="viewcode-back" href="../../dms_tools2.neutcurve.html#dms_tools2.neutcurve.fourParamLogistic">[docs]</a><span class="k">class</span> <span class="nc">fourParamLogistic</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A fitted 4-parameter logistic neutralization curve.</span>
+
+<span class="sd">    Fits :math:`f(c) = b + \\frac{t - b}{1 + (c/m)^s}`</span>
+<span class="sd">    where :math:`f(c)` is the fraction surviving at</span>
+<span class="sd">    concentration :math:`c`, :math:`m` is the midpoint</span>
+<span class="sd">    of the neutralization curve, :math:`t` is the top</span>
+<span class="sd">    value (e.g., 1), :math:`b` is the bottom value (e.g., 0),</span>
+<span class="sd">    and :math:`s` is the slope of the curve.</span>
+
+<span class="sd">    This documentation is written for the case when </span>
+<span class="sd">    :math:`f(c)` is the fraction **surviving**, meaning that</span>
+<span class="sd">    :math:`f(c)` gets smaller as :math:`c` gets larger.</span>
+<span class="sd">    This should lead you to fit :math:`s &gt; 0`.</span>
+<span class="sd">    If you instead use :math:`f(c)` as the fraction neutralized,</span>
+<span class="sd">    you will fit :math:`s &lt; 1`. In this case, the interpretation</span>
+<span class="sd">    of `top` and `bottom` will be reversed. However, this class</span>
+<span class="sd">    has **not** been extensively tested in that scenario, and</span>
+<span class="sd">    so may not work completely correctly if you have</span>
+<span class="sd">    :math:`f(c)` represent the fraction neutralized.</span>
+
+<span class="sd">    To initialize and fit an object, provide the following:</span>
+<span class="sd">        `cs` (array-like)</span>
+<span class="sd">            Concentrations for which we have measurements</span>
+<span class="sd">            to fit.</span>
+<span class="sd">        `fs` (array-like)</span>
+<span class="sd">            Same length as `cs`, with `fs[i]` giving</span>
+<span class="sd">            fraction surviving at `cs[i]`.</span>
+<span class="sd">        `fixbottom` (bool)</span>
+<span class="sd">            If `False`, we fit the bottom value of the</span>
+<span class="sd">            curve. If you instead want to fix it,</span>
+<span class="sd">            provide the number to fix it to (typically 0).</span>
+<span class="sd">            Fix this number if you think that the neutralization</span>
+<span class="sd">            goes to completion at high enough antibody.</span>
+<span class="sd">            concentration. For some viruses (such as HIV),</span>
+<span class="sd">            the neutralization never goes to completion as </span>
+<span class="sd">            there are some resistant viruses (such as due</span>
+<span class="sd">            to glycan heterogeneity) -- if that is the case,</span>
+<span class="sd">            you want to fit the bottom rather than fix it to 0.</span>
+<span class="sd">        `fixtop` (`False` or a float)</span>
+<span class="sd">            If `False`, we fit the top value of the</span>
+<span class="sd">            curve. If you instead want to fix it,</span>
+<span class="sd">            provide the number to fix it to (typically 1).</span>
+<span class="sd">            Usually you do **not** want to fit this value,</span>
+<span class="sd">            as the fraction surviving should always be one</span>
+<span class="sd">            at sufficiently low antibody concentration.</span>
+
+<span class="sd">    After initialization, you can access the following</span>
+<span class="sd">    attributes:</span>
+<span class="sd">        `cs` (numpy array)</span>
+<span class="sd">            Array of the concentration measurements we have</span>
+<span class="sd">            fitted, sorted from lowest to highest. </span>
+<span class="sd">        `fs` (numpy array)</span>
+<span class="sd">            Array of the fraction surviving measurements</span>
+<span class="sd">            corresponding to the entries in `cs`.</span>
+<span class="sd">        `midpoint` (float)</span>
+<span class="sd">            Midpoint of curve, :math:`m` in equation above.</span>
+<span class="sd">            Note that the midpoint may **not** be the same</span>
+<span class="sd">            as the :meth:`ic50`</span>
+<span class="sd">        `slope` (float)</span>
+<span class="sd">            Hill slope of curve, :math:`s` in equation above.</span>
+<span class="sd">        `bottom` (float)</span>
+<span class="sd">            Bottom of curve (value as :math:`c` gets large),</span>
+<span class="sd">            :math:`b` in equation above.</span>
+<span class="sd">        `top` (float)</span>
+<span class="sd">            Top of curve (value as :math:`c` get small),</span>
+<span class="sd">            :math:`t` in equation above.</span>
+
+<span class="sd">    Use the :meth:`ic50` function to get the fitted IC50.</span>
+
+<span class="sd">    As an example, we first simulate some data with known</span>
+<span class="sd">    parameter values:</span>
+
+<span class="sd">    &gt;&gt;&gt; m = 0.03</span>
+<span class="sd">    &gt;&gt;&gt; s = 1.9</span>
+<span class="sd">    &gt;&gt;&gt; b = 0.1</span>
+<span class="sd">    &gt;&gt;&gt; t = 1.0</span>
+<span class="sd">    &gt;&gt;&gt; cs = [0.002 * 2**x for x in range(9)]</span>
+<span class="sd">    &gt;&gt;&gt; fs = [fourParamLogistic.evaluate(c, m, s, b, t) for c in cs]</span>
+
+<span class="sd">    Now we fit to these data, and then confirm that the</span>
+<span class="sd">    fitted values are close to the ones used for the</span>
+<span class="sd">    simulation:</span>
+
+<span class="sd">    &gt;&gt;&gt; neut = fourParamLogistic(cs, fs)</span>
+<span class="sd">    &gt;&gt;&gt; scipy.allclose(neut.midpoint, m)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; scipy.allclose(neut.slope, s)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; scipy.allclose(neut.top, t)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; scipy.allclose(neut.bottom, b)</span>
+<span class="sd">    True</span>
+
+<span class="sd">    Note how since we fit the curve to simulated data where</span>
+<span class="sd">    the bottom was 0.1 rather than 0, the midpoint and IC50</span>
+<span class="sd">    are different. Specifically, the IC50 is larger than the</span>
+<span class="sd">    midpoint, as you have to go past the midpoint to get</span>
+<span class="sd">    down to value of 0.5 fraction surviving.</span>
+
+<span class="sd">    &gt;&gt;&gt; neut.ic50() &gt; neut.midpoint</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; scipy.allclose(neut.ic50(), 0.0337385586)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; scipy.allclose(0.5, neut.fracsurvive(neut.ic50()))</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; neut.fracsurvive(neut.midpoint) &gt; 0.5</span>
+<span class="sd">    True</span>
+
+<span class="sd">    Here is a plot of the curve and data points:</span>
+
+<span class="sd">    &gt;&gt;&gt; neut.plot(&#39;_fourParamLogistic_neutplot.png&#39;, &#39;example&#39;)</span>
+
+<span class="sd">    .. image:: _static/_fourParamLogistic_neutplot.png</span>
+<span class="sd">       :width: 2.4in</span>
+<span class="sd">       :align: center</span>
+
+<span class="sd">    Now here is an example where we constrain both the top</span>
+<span class="sd">    and the bottom (to 1 and 0, respectively) and fit</span>
+<span class="sd">    the curve. Now the midpoint and IC50 are the same:</span>
+
+<span class="sd">    &gt;&gt;&gt; b2 = 0</span>
+<span class="sd">    &gt;&gt;&gt; t2 = 1</span>
+<span class="sd">    &gt;&gt;&gt; fs2 = [fourParamLogistic.evaluate(c, m, s, b2, t2) for c in cs]</span>
+<span class="sd">    &gt;&gt;&gt; neut2 = fourParamLogistic(cs, fs2, fixbottom=b2)</span>
+<span class="sd">    &gt;&gt;&gt; scipy.allclose(neut2.midpoint, m)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; scipy.allclose(neut2.ic50(), m)</span>
+<span class="sd">    True</span>
+
+<span class="sd">    Now let&#39;s fit to concentrations that are all **less**</span>
+<span class="sd">    than the midpoint, so that we never get anywhere</span>
+<span class="sd">    close to complete neutralization. In this case,</span>
+<span class="sd">    the estimated IC50 is unreliable, and so will be</span>
+<span class="sd">    returned as `None`:</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; cs3 = [1e-5 * 2**x for x in range(7)]</span>
+<span class="sd">    &gt;&gt;&gt; (cs3[-1] &lt; m)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; fs3 = [fourParamLogistic.evaluate(c, m, s, b2, t2) for c in cs3]</span>
+<span class="sd">    &gt;&gt;&gt; neut3 = fourParamLogistic(cs3, fs3, fixbottom=b2)</span>
+<span class="sd">    &gt;&gt;&gt; neut3.ic50() is None</span>
+<span class="sd">    True</span>
+
+<span class="sd">    However, we can still see a limit on the IC50</span>
+<span class="sd">    using the :meth:`ic50_str` method. As seen below,</span>
+<span class="sd">    this limit indicates that the IC50 exceeds the</span>
+<span class="sd">    largest value in the concentrations used to fit</span>
+<span class="sd">    the curve:</span>
+
+<span class="sd">    &gt;&gt;&gt; cs3[-1]</span>
+<span class="sd">    0.00064</span>
+<span class="sd">    &gt;&gt;&gt; neut3.ic50_str()</span>
+<span class="sd">    &#39;$&gt;0.00064$&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cs</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">fixbottom</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fixtop</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;See main class docstring.&quot;&quot;&quot;</span>
+        <span class="c1"># get data into arrays sorted by concentration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cs</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">fs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="o">.</span><span class="n">argsort</span><span class="p">()]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="o">.</span><span class="n">argsort</span><span class="p">()]</span>
+
+        <span class="c1"># make initial guess for slope to have the right sign</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">slope</span> <span class="o">=</span> <span class="mf">1.5</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">slope</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.5</span>
+
+        <span class="c1"># make initial guess for top and bottom</span>
+        <span class="k">if</span> <span class="n">fixtop</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">top</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">top</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fixtop</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">top</span> <span class="o">=</span> <span class="n">fixtop</span>
+        <span class="k">if</span> <span class="n">fixbottom</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bottom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bottom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fixbottom</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bottom</span> <span class="o">=</span> <span class="n">fixbottom</span>
+
+        <span class="c1"># make initial guess for midpoint</span>
+        <span class="n">midval</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">top</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottom</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">&gt;</span> <span class="n">midval</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">midpoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">midpoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">&lt;=</span> <span class="n">midval</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">midpoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">midpoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># get first index where f crosses midpoint</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">argmax</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">&gt;</span> <span class="n">midval</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span>
+                    <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">&gt;</span> <span class="n">midval</span><span class="p">)[</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">midval</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">midval</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">midpoint</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+        <span class="c1"># set up function and initial guesses</span>
+        <span class="k">if</span> <span class="n">fixtop</span> <span class="ow">is</span> <span class="kc">False</span> <span class="ow">and</span> <span class="n">fixbottom</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">initguess</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">midpoint</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottom</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="p">]</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span>
+        <span class="k">elif</span> <span class="n">fixtop</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">initguess</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">midpoint</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="p">]</span>
+            <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottom</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">fixbottom</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">initguess</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">midpoint</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottom</span><span class="p">]</span>
+            <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">initguess</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">midpoint</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="p">]</span>
+            <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottom</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="p">)</span>
+
+        <span class="p">(</span><span class="n">popt</span><span class="p">,</span> <span class="n">pcov</span><span class="p">)</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">curve_fit</span><span class="p">(</span>
+                <span class="n">func</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+                <span class="n">initguess</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">fixtop</span> <span class="ow">is</span> <span class="kc">False</span> <span class="ow">and</span> <span class="n">fixbottom</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">midpoint</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottom</span><span class="p">)</span> <span class="o">=</span> <span class="n">popt</span>
+        <span class="k">elif</span> <span class="n">fixtop</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">midpoint</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="p">)</span> <span class="o">=</span> <span class="n">popt</span>
+        <span class="k">elif</span> <span class="n">fixbottom</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">midpoint</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottom</span><span class="p">)</span> <span class="o">=</span> <span class="n">popt</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">midpoint</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="p">)</span> <span class="o">=</span> <span class="n">popt</span>
+
+
+<div class="viewcode-block" id="fourParamLogistic.ic50"><a class="viewcode-back" href="../../dms_tools2.neutcurve.html#dms_tools2.neutcurve.fourParamLogistic.ic50">[docs]</a>    <span class="k">def</span> <span class="nf">ic50</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extrapolate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;IC50 value.</span>
+<span class="sd">        </span>
+<span class="sd">        Concentration where `fracsurvive` is 0.5. Equals</span>
+<span class="sd">        `midpoint` if and only if `top = 1` and `bottom = 0`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            `extrapolate` (bool)</span>
+<span class="sd">                Do we extrapolate IC50 outside of range</span>
+<span class="sd">                of data we fit? (Generally a bad idea.)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A number giving the IC50 if the fitted value</span>
+<span class="sd">            is in the range of concentrations used</span>
+<span class="sd">            to fit the curve. Otherwise returns `None`</span>
+<span class="sd">            unless `extrapolate` is `True`. Will still</span>
+<span class="sd">            return `None` even if `extrapolate` is `True`</span>
+<span class="sd">            if the fit parameters are such that the</span>
+<span class="sd">            extrapolated curve never reaches 0.5.</span>
+
+<span class="sd">        Calculated from:</span>
+<span class="sd">        :math:`0.5 = b + \\frac{t - b}{1 + (ic50/m)^s}`,</span>
+<span class="sd">        which solves to </span>
+<span class="sd">        :math:`ic50 = m \\times \left(\\frac{t - 0.5}{0.5 - b}\\right)^{1/s}`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">slope</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">top</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottom</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">top</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bottom</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">))):</span>
+            <span class="k">return</span> <span class="kc">None</span> <span class="c1"># extrapolated curve never hits 0.5</span>
+        <span class="n">ic50</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">midpoint</span> <span class="o">*</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">top</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> 
+                <span class="p">(</span><span class="mf">0.5</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottom</span><span class="p">))</span><span class="o">**</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="p">))</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">ic50</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="ow">or</span> <span class="n">extrapolate</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ic50</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="fourParamLogistic.ic50_str"><a class="viewcode-back" href="../../dms_tools2.neutcurve.html#dms_tools2.neutcurve.fourParamLogistic.ic50_str">[docs]</a>    <span class="k">def</span> <span class="nf">ic50_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns string containing IC50.</span>
+
+<span class="sd">        Unlike :meth:`ic50`, it returns a string.</span>
+<span class="sd">        This is useful because the string will indicate</span>
+<span class="sd">        if the extrapolated IC50 is outside the </span>
+<span class="sd">        range of fitted data, such as by being: `&gt; 0.5`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">_sciNot</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Get number in LaTex scientific notation.&quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">latexSciNot</span><span class="p">([</span><span class="n">x</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">ic50</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ic50</span><span class="p">(</span><span class="n">extrapolate</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ic50</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;NA&#39;</span>
+        <span class="k">elif</span> <span class="n">ic50</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="s1">&#39;$&gt;</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_sciNot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])[</span><span class="mi">1</span> <span class="p">:</span> <span class="p">])</span>
+        <span class="k">elif</span> <span class="n">ic50</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="s1">&#39;$&lt;</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_sciNot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">1</span> <span class="p">:</span> <span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_sciNot</span><span class="p">(</span><span class="n">ic50</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="fourParamLogistic.fracsurvive"><a class="viewcode-back" href="../../dms_tools2.neutcurve.html#dms_tools2.neutcurve.fourParamLogistic.fracsurvive">[docs]</a>    <span class="k">def</span> <span class="nf">fracsurvive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fraction surviving at `c` for fitted parameters.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">midpoint</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bottom</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="fourParamLogistic.evaluate"><a class="viewcode-back" href="../../dms_tools2.neutcurve.html#dms_tools2.neutcurve.fourParamLogistic.evaluate">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns :math:`f(c) = b + \\frac{t - b}{1 + (c/m)^s}`.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">b</span> <span class="o">+</span> <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">c</span> <span class="o">/</span> <span class="n">m</span><span class="p">)</span><span class="o">**</span><span class="n">s</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_neutdata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">samplename</span><span class="p">,</span> <span class="n">ic50_in_name</span><span class="p">,</span>
+            <span class="n">nfitpoints</span><span class="p">,</span> <span class="n">cextend</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets data for plotting neutralization curve.</span>
+
+<span class="sd">        Returns a `pandas.DataFrame` appropriate for passing</span>
+<span class="sd">        to :func:`dms_tools2.plot.plotFacetedNeutCurves`. The</span>
+<span class="sd">        arguments have the meanings explained in :meth:`plot`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">concentrations</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+                <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">,</span>
+                 <span class="n">scipy</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">/</span> <span class="n">cextend</span><span class="p">),</span>
+                                <span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">*</span> <span class="n">cextend</span><span class="p">),</span>
+                                <span class="n">num</span><span class="o">=</span><span class="n">nfitpoints</span><span class="p">)</span>
+                <span class="p">])</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">concentrations</span><span class="p">)</span>
+
+        <span class="n">points</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+                <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+                 <span class="n">scipy</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">),</span> <span class="n">scipy</span><span class="o">.</span><span class="n">nan</span><span class="p">)])</span>
+
+        <span class="n">fit</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">fracsurvive</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">concentrations</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">ic50_in_name</span><span class="p">:</span>
+            <span class="n">samplename</span> <span class="o">+=</span> <span class="s1">&#39; (IC50 = </span><span class="si">{0}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ic50_str</span><span class="p">())</span>
+
+        <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_items</span><span class="p">([</span>
+                <span class="p">(</span><span class="s1">&#39;concentration&#39;</span><span class="p">,</span> <span class="n">concentrations</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">samplename</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;points&#39;</span><span class="p">,</span> <span class="n">points</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;fit&#39;</span><span class="p">,</span> <span class="n">fit</span><span class="p">),</span>
+                <span class="p">])</span>
+
+
+<div class="viewcode-block" id="fourParamLogistic.plot"><a class="viewcode-back" href="../../dms_tools2.neutcurve.html#dms_tools2.neutcurve.fourParamLogistic.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span> <span class="n">samplename</span><span class="p">,</span>
+            <span class="n">ic50_in_name</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;antibody concentration&#39;</span><span class="p">,</span>
+            <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;fraction surviving&#39;</span><span class="p">,</span>
+            <span class="n">nfitpoints</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">cextend</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plots neutralization points and fitted curve.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            `plotfile` (str)</span>
+<span class="sd">                Name of plot to create (e.g., PDF or PNG).</span>
+<span class="sd">            `samplename` (str)</span>
+<span class="sd">                Sample name (put at top of plot)</span>
+<span class="sd">            `ic50_in_name` (bool)</span>
+<span class="sd">                Include IC50 at top of plot with sample name?</span>
+<span class="sd">            `xlabel` (str)</span>
+<span class="sd">                x-axis label</span>
+<span class="sd">            `ylabel` (str)</span>
+<span class="sd">                y-axis label</span>
+<span class="sd">            `nfitpoints` (int)</span>
+<span class="sd">                Number of points used to draw fit line.</span>
+<span class="sd">            `cextend` (float)</span>
+<span class="sd">                Concentrations extend this much fold</span>
+<span class="sd">                below / above the min / max values used</span>
+<span class="sd">                for fitting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dms_tools2</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plotFacetedNeutCurves</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_neutdata</span><span class="p">(</span>
+                        <span class="n">samplename</span><span class="p">,</span>
+                        <span class="n">ic50_in_name</span><span class="p">,</span>
+                        <span class="n">nfitpoints</span><span class="p">,</span>
+                        <span class="n">cextend</span><span class="p">),</span>
+                <span class="n">plotfile</span><span class="p">,</span>
+                <span class="n">xlabel</span><span class="p">,</span>
+                <span class="n">ylabel</span><span class="p">)</span></div></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fracsurvive.html">Fraction surviving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../programs.html">Executable programs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>
