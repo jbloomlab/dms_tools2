@@ -802,7 +802,8 @@ def plotFacetedNeutCurves(
             xlab(xlabel) + 
             ylab(ylabel) +
             facet_wrap('~sample', ncol=ncol) 
-            + theme(figure_size=(1.8 * (0.6 + ncol), 1.3 * (0.4 + nrow)))
+            + theme(figure_size=(2.3 * (0.25 + ncol),
+                                 1.45 * (0.25 + nrow)))
             )
     p.save(plotfile, verbose=False)
     plt.close()

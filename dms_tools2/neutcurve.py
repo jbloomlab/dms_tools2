@@ -16,7 +16,7 @@ import scipy.optimize
 import dms_tools2.plot
 
 
-def fit_plot_fourParamLogistics(
+def fit_fourParamLogistics(
         neutdata,
         plotfile,
         fixbottom=False,
@@ -65,6 +65,9 @@ def fit_plot_fourParamLogistics(
         fitted object for that sample. You can use these
         objects to get detailed information about the fits.
 
+    Here is an example of plotting three curves in a 
+    single row (we keep the default `maxcol=3`):
+
     >>> neutdata = pandas.read_csv(io.StringIO(
     ... '''concentration K280A-1 K280A-2 wildtype
     ...           0.0002  1.2049  1.2140  1.0549
@@ -80,8 +83,22 @@ def fit_plot_fourParamLogistics(
     ...           0.9797 -0.0365 -0.0382 -0.0346
     ...           2.2861 -0.0291 -0.0345 -0.0362'''),
     ...         delim_whitespace=True, index_col=False)
-    >>> plotfile = '_fit_plot_fourParamLogistics_neutplot.png'
-    >>> neutcurves = fit_plot_fourParamLogistics(neutdata, plotfile)
+    >>> plotfile = '_fit_fourParamLogistics_neutplot.png'
+    >>> neutcurves = fit_fourParamLogistics(neutdata, plotfile)
+
+    The plot looks like this: 
+
+    .. image:: _static/_fit_fourParamLogistics_neutplot.png
+       :width: 6in
+       :align: center
+
+    We can also access the IC50 values and other fitted parameters
+    via the returned `fourParamLogistic` fit objects. For instance:
+
+    >>> print('IC50 for K280A-1 is {0:.4f}'.format(
+    ...         neutcurves['K280A-1'].ic50()))
+    IC50 for K280A-1 is 0.0105
+
     """
     assert len(neutdata.columns) == len(set(neutdata.columns)),\
             "columns in `neutdata` not unique"
@@ -91,15 +108,24 @@ def fit_plot_fourParamLogistics(
     cs = neutdata['concentration']
 
     neutcurves = {}
+    neut_dfs = []
     for s in samples:
-        fs = neutdata[s]
         try:
-            neutcurves[s] = fourParamLogistic(cs, fs,
+            neutcurves[s] = fourParamLogistic(cs, neutdata[s],
                     fixbottom=fixbottom, fixtop=fixtop)
+            neut_dfs.append(neutcurves[s]._neutdata(s,
+                    ic50_in_name, nfitpoints, cextend))
         except Exception as e:
             raise RuntimeError("Error fitting curve for "
                     "sample {0}.\n\nError:\n{1}".format(
                     s, str(e)))
+
+    dms_tools2.plot.plotFacetedNeutCurves(
+            pandas.concat(neut_dfs),
+            plotfile,
+            xlabel,
+            ylabel,
+            maxcol=maxcol)
 
     return neutcurves
 
@@ -442,12 +468,12 @@ class fourParamLogistic:
         if ic50_in_name:
             samplename += ' (IC50 = {0})'.format(self.ic50_str())
 
-        return pandas.DataFrame({
-                'concentration':concentrations,
-                'sample':[samplename] * n,
-                'points':points,
-                'fit':fit,
-                })
+        return pandas.DataFrame.from_items([
+                ('concentration', concentrations),
+                ('sample', [samplename] * n),
+                ('points', points),
+                ('fit', fit),
+                ])
 
 
     def plot(self, plotfile, samplename,
