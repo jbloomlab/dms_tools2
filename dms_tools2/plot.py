@@ -233,7 +233,8 @@ def plotReadsPerBC(names, readsperbcfiles, plotfile,
     df = pandas.concat(dfs, ignore_index=True)
 
     # make name a category to preserve order
-    df['name'] = df['name'].astype('category', categories=names)
+    df['name'] = df['name'].astype(
+            pandas.api.types.CategoricalDtype(categories=names))
 
     ncol = min(maxcol, len(names))
     nrow = math.ceil(len(names) / float(ncol))
@@ -784,8 +785,8 @@ def plotFacetedNeutCurves(
     # make sample a category to preserve order
     neutdata = neutdata.copy()
     samples = neutdata['sample'].unique()
-    neutdata['sample'] = neutdata['sample'].astype('category',
-            categories=samples)
+    neutdata['sample'] = neutdata['sample'].astype(
+            pandas.api.types.CategoricalDtype(categories=samples))
 
     ncol = min(maxcol, len(samples))
     nrow = math.ceil(len(samples) / float(ncol))

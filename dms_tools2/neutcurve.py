@@ -7,6 +7,7 @@ Module for fitting neutralization curves.
 
 
 import math
+import io
 
 import pandas
 import scipy
@@ -15,8 +16,97 @@ import scipy.optimize
 import dms_tools2.plot
 
 
+def fit_plot_fourParamLogistics(
+        neutdata,
+        plotfile,
+        fixbottom=False,
+        fixtop=1,
+        xlabel='antibody concentration',
+        ylabel='fraction surviving',
+        maxcol=3,
+        ic50_in_name=True,
+        nfitpoints=100,
+        cextend=2):
+    """Fits and plots set of neutralization curves.
+
+    Fits a set of 4-parameter logistic neutralization curves
+    as defined by `fourParamLogistic`. Then makes a faceted
+    plot showing all these curves.
+
+    Args:
+        `neutdata` (panda DataFrame)
+            Data to fit. There should be a column
+            named `concentration` and every other column
+            should be named by the sample and give the 
+            fraction surviving at each concentration.
+        `plotfile` (str)
+            Name of created plot file showing the fitted
+            curves (e.g., PDF or PNG)
+        `fixbottom`
+            Same meaning as for `fourParamLogistic`
+        `fixtop`
+            Same meaning as for `fourParamLogistic`
+        `xlabel` (str)
+            x-label on plot
+        `ylabel` (str)
+            y-label on plot
+        `maxcol` (int)
+            Max number of columns in faceted plot
+        `ic50_in_name` (bool)
+            Same meaning as for `fourParamLogistic.plot`
+        `nfitpoints` (int)
+            Same meaning as for `fourParamLogistic.plot`
+        `cextend` (float)
+            Same meaning as for `fourParamLogistic.plot`
+
+    Returns:
+        A dictionary keyed by each sample in `neutdata`,
+        and with the values being the `fourParamLogistic`
+        fitted object for that sample. You can use these
+        objects to get detailed information about the fits.
+
+    >>> neutdata = pandas.read_csv(io.StringIO(
+    ... '''concentration K280A-1 K280A-2 wildtype
+    ...           0.0002  1.2049  1.2140  1.0549
+    ...           0.0005  1.0026  1.0107  0.9337
+    ...           0.0011  1.1422  1.1173  0.8025
+    ...           0.0026  0.9066  0.8368  0.4267
+    ...           0.0061  0.6952  0.8242  0.1769
+    ...           0.0142  0.3907  0.4503  0.0234
+    ...           0.0331  0.0714  0.0660  0.0001
+    ...           0.0771 -0.0119 -0.0157 -0.0146
+    ...           0.1800 -0.0311 -0.0333 -0.0377
+    ...           0.4199 -0.0344 -0.0320 -0.0367
+    ...           0.9797 -0.0365 -0.0382 -0.0346
+    ...           2.2861 -0.0291 -0.0345 -0.0362'''),
+    ...         delim_whitespace=True, index_col=False)
+    >>> plotfile = '_fit_plot_fourParamLogistics_neutplot.png'
+    >>> neutcurves = fit_plot_fourParamLogistics(neutdata, plotfile)
+    """
+    assert len(neutdata.columns) == len(set(neutdata.columns)),\
+            "columns in `neutdata` not unique"
+    assert 'concentration' in neutdata.columns, \
+            "`neutdata` does not have column named `concentration`"
+    samples = [col for col in neutdata.columns if col != 'concentration']
+    cs = neutdata['concentration']
+
+    neutcurves = {}
+    for s in samples:
+        fs = neutdata[s]
+        try:
+            neutcurves[s] = fourParamLogistic(cs, fs,
+                    fixbottom=fixbottom, fixtop=fixtop)
+        except Exception as e:
+            raise RuntimeError("Error fitting curve for "
+                    "sample {0}.\n\nError:\n{1}".format(
+                    s, str(e)))
+
+    return neutcurves
+
+
+
 class fourParamLogistic:
-    """Fit a 4-parameter logistic neutralization curve.
+    """A fitted 4-parameter logistic neutralization curve.
 
     Fits :math:`f(c) = b + \\frac{t - b}{1 + (c/m)^s}`
     where :math:`f(c)` is the fraction surviving at
@@ -327,11 +417,44 @@ class fourParamLogistic:
         return b + (t - b) / (1 + (c / m)**s)
 
 
+    def _neutdata(self, samplename, ic50_in_name,
+            nfitpoints, cextend):
+        """Gets data for plotting neutralization curve.
+
+        Returns a `pandas.DataFrame` appropriate for passing
+        to `dms_tools2.plot.plotFacetedNeutCurves`. The calling
+        arguments have the meanings explained in `plot` method.
+        """
+        concentrations = scipy.concatenate(
+                [self.cs,
+                 scipy.logspace(math.log10(self.cs.min() / cextend),
+                                math.log10(self.cs.max() * cextend),
+                                num=nfitpoints)
+                ])
+        n = len(concentrations)
+
+        points = scipy.concatenate(
+                [self.fs,
+                 scipy.full(n - len(self.fs), scipy.nan)])
+
+        fit = scipy.array([self.fracsurvive(c) for c in concentrations])
+
+        if ic50_in_name:
+            samplename += ' (IC50 = {0})'.format(self.ic50_str())
+
+        return pandas.DataFrame({
+                'concentration':concentrations,
+                'sample':[samplename] * n,
+                'points':points,
+                'fit':fit,
+                })
+
+
     def plot(self, plotfile, samplename,
             ic50_in_name=True,
             xlabel='antibody concentration',
             ylabel='fraction surviving',
-            fitpoints=100, cextend=2):
+            nfitpoints=100, cextend=2):
         """Plots neutralization points and fitted curve.
 
         Args:
@@ -345,38 +468,19 @@ class fourParamLogistic:
                 x-axis label
             `ylabel` (str)
                 y-axis label
-            `fitpoints` (int)
+            `nfitpoints` (int)
                 Number of points used to draw fit line.
             `cextend` (float)
                 Concentrations extend this much fold
                 below / above the min / max values used
                 for fitting.
         """
-        concentrations = scipy.concatenate(
-                [self.cs,
-                 scipy.logspace(math.log10(self.cs.min() / cextend),
-                                math.log10(self.cs.max() * cextend),
-                                num=fitpoints)
-                ])
-        n = len(concentrations)
-
-        points = scipy.concatenate(
-                [self.fs,
-                 scipy.full(n - len(self.fs), scipy.nan)])
-
-        fit = scipy.array([self.fracsurvive(c) for c in concentrations])
-
-        if ic50_in_name:
-            samplename += ' (IC50 = {0})'.format(self.ic50_str())
-
-        neutdata = pandas.DataFrame({
-                'concentration':concentrations,
-                'sample':[samplename] * n,
-                'points':points,
-                'fit':fit,
-                })
         dms_tools2.plot.plotFacetedNeutCurves(
-                neutdata,
+                self._neutdata(
+                        samplename,
+                        ic50_in_name,
+                        nfitpoints,
+                        cextend),
                 plotfile,
                 xlabel,
                 ylabel)
