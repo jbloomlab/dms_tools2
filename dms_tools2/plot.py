@@ -752,6 +752,61 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
     plt.close()
 
 
+def plotFacetedNeutCurves(
+        neutdata,
+        plotfile,
+        xlabel,
+        ylabel,
+        maxcol=3):
+    """Faceted neutralization curves with points and fit line.
+
+    Args:
+        `neutdata` (pandas DataFrame)
+            Should have the following columns:
+            `concentration`, `sample`, `fit`, `points`.
+            The plot is faceted on `sample`. The line
+            smoothly connects all points in column
+            `fit`, and points are drawn anywhere
+            that `points` is not `NaN`.
+        `plotfile` (str)
+            Name of created plot.
+        `xlabel` (str)
+            x-axis label
+        `ylabel` (str)
+            y-axis label
+        `maxcol` (int)
+            Number of columns in facets.
+    """
+    cols = {'concentration', 'sample', 'fit', 'points'}
+    assert set(neutdata.columns) >= cols, ("missing cols:\n"
+            "required: {0}\nactual: {1}".format(cols, neutdata.columns))
+
+    # make sample a category to preserve order
+    neutdata = neutdata.copy()
+    samples = neutdata['sample'].unique()
+    neutdata['sample'] = neutdata['sample'].astype('category',
+            categories=samples)
+
+    ncol = min(maxcol, len(samples))
+    nrow = math.ceil(len(samples) / float(ncol))
+
+    ymin = min(neutdata['fit'].min(), neutdata['points'].min(), 0)
+    ymax = max(neutdata['fit'].max(), neutdata['points'].max(), 0)
+
+    p = (ggplot(neutdata) +
+            geom_point(aes(x='concentration', y='points')) +
+            geom_line(aes(x='concentration', y='fit')) +
+            scale_x_log10(labels=latexSciNot) +
+            scale_y_continuous(limits=(ymin, ymax)) +
+            xlab(xlabel) + 
+            ylab(ylabel) +
+            facet_wrap('~sample', ncol=ncol) 
+            + theme(figure_size=(1.8 * (0.6 + ncol), 1.3 * (0.4 + nrow)))
+            )
+    p.save(plotfile, verbose=False)
+    plt.close()
+
+
 
 if __name__ == '__main__':
     import doctest

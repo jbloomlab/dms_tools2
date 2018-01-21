@@ -2,12 +2,17 @@
 =============
 neutcurve
 =============
-Module for fitting and analyzing neutralization curves.
+Module for fitting neutralization curves.
 """
 
 
+import math
+
+import pandas
 import scipy
 import scipy.optimize
+
+import dms_tools2.plot
 
 
 class fourParamLogistic:
@@ -27,7 +32,9 @@ class fourParamLogistic:
     If you instead use :math:`f(c)` as the fraction neutralized,
     you will fit :math:`s < 1`. In this case, the interpretation
     of `top` and `bottom` will be reversed. However, this class
-    has not been extensively tested in that scenario.
+    has **not** been extensively tested in that scenario, and
+    so may not work completely correctly if you have
+    :math:`f(c)` represent the fraction neutralized.
 
     To initialize and fit an object, provide the following:
         `cs` (array-like)
@@ -73,10 +80,8 @@ class fourParamLogistic:
         `top` (float)
             Top of curve (value as :math:`c` get small),
             :math:`t` in equation above.
-        `ic50` (float)
-            Concentration :math:`c` where :math:`f(c) = 0.5`,
-            or `None` if this value is outside the range
-            of fitted concentrations in `cs`.
+
+    You can use the `ic50` function to get the fitted IC50.
 
     As an example, we first simulate some data with known
     parameter values:
@@ -108,14 +113,22 @@ class fourParamLogistic:
     midpoint, as you have to go past the midpoint to get
     down to value of 0.5 fraction surviving.
 
-    >>> neut.ic50 > neut.midpoint
+    >>> neut.ic50() > neut.midpoint
     True
-    >>> scipy.allclose(neut.ic50, 0.0337385586)
+    >>> scipy.allclose(neut.ic50(), 0.0337385586)
     True
-    >>> scipy.allclose(0.5, neut.fracsurvive(neut.ic50))
+    >>> scipy.allclose(0.5, neut.fracsurvive(neut.ic50()))
     True
     >>> neut.fracsurvive(neut.midpoint) > 0.5
     True
+
+    Here is a plot of the curve and data points:
+
+    >>> neut.plot('_fourParamLogistic_neutplot.png', 'example')
+
+    .. image:: _static/_fourParamLogistic_neutplot.png
+       :width: 2.4in
+       :align: center
 
     Now here is an example where we constrain both the top
     and the bottom (to 1 and 0, respectively) and fit
@@ -127,7 +140,7 @@ class fourParamLogistic:
     >>> neut2 = fourParamLogistic(cs, fs2, fixbottom=b2)
     >>> scipy.allclose(neut2.midpoint, m)
     True
-    >>> scipy.allclose(neut2.ic50, m)
+    >>> scipy.allclose(neut2.ic50(), m)
     True
 
     Now let's fit to concentrations that are all **less**
@@ -140,9 +153,20 @@ class fourParamLogistic:
     >>> (cs3[-1] < m)
     True
     >>> fs3 = [fourParamLogistic.evaluate(c, m, s, b2, t2) for c in cs3]
-    >>> neut2 = fourParamLogistic(cs3, fs3, fixbottom=b2)
-    >>> neut2.ic50 is None
+    >>> neut3 = fourParamLogistic(cs3, fs3, fixbottom=b2)
+    >>> neut3.ic50() is None
     True
+
+    However, we can still see a bound on the IC50
+    using the `ic50_str` function. As seen below, this
+    bound indicates that the IC50 exceeds the
+    largest value in the concentrations used to fit
+    the curve:
+
+    >>> cs3[-1]
+    0.00064
+    >>> neut3.ic50_str()
+    '$>0.00064$'
 
     """
 
@@ -231,29 +255,64 @@ class fourParamLogistic:
             (self.midpoint, self.slope) = popt
 
 
-    @property
-    def ic50(self):
+    def ic50(self, extrapolate=False):
         """IC50 value.
         
-        Concentration where `fracsurvive` is 0.5.
-        Equals `midpoint` if `top = 1` and `bottom = 0`.
+        Concentration where `fracsurvive` is 0.5. Equals
+        `midpoint` if and only if `top = 1` and `bottom = 0`.
 
-        Is `None` if IC50 is outside range of concentrations
-        `cs` used for the fitting.
+        Args:
+            `extrapolate` (bool)
+                Do we extrapolate IC50 outside of range
+                of data we fit? (Generally a bad idea.)
+
+        Returns:
+            A number giving the IC50 if the fitted value
+            is in the range of concentrations used
+            to fit the curve. Otherwise returns `None`
+            unless `extrapolate` is `True`. Will still
+            return `None` even if `extrapolate` is `True`
+            if the fit parameters are such that the
+            extrapolated curve never reaches 0.5.
 
         Calculated from:
         :math:`0.5 = b + \\frac{t - b}{1 + (ic50/m)^s}`,
         which solves to 
         :math:`ic50 = m \\times \left(\\frac{t - 0.5}{0.5 - b}\\right)^{1/s}`
         """
-        if (self.fs > 0.5).all() or (self.fs < 0.5).all():
-            return None
+        if ((self.slope == 0) or (self.top == self.bottom) or
+                ((self.top > 0.5) == (self.bottom > 0.5))):
+            return None # extrapolated curve never hits 0.5
         ic50 = (self.midpoint * ((self.top - 0.5) / 
                 (0.5 - self.bottom))**(1.0 / self.slope))
-        if ic50 > self.cs[-1] or ic50 < self.cs[0]:
-            return None
-        else:
+        if (self.cs[0] <= ic50 <= self.cs[-1]) or extrapolate:
             return ic50
+        else:
+            return None
+
+
+    def ic50_str(self):
+        """Returns string containing IC50.
+
+        Differs from `ic50` in that it provides a string.
+        This is useful because the string will indicate
+        if the extrapolated IC50 is outside the 
+        range of fitted data, such as by being: `> 0.5`.
+        """
+
+        def _sciNot(x):
+            """Get number in LaTex scientific notation."""
+            return dms_tools2.plot.latexSciNot([x])[0]
+
+        ic50 = self.ic50(extrapolate=True)
+        if ic50 is None:
+            return 'NA'
+        elif ic50 > self.cs[-1]:
+            return '$>{0}'.format(_sciNot(self.cs[-1])[1 : ])
+        elif ic50 < self.cs[0]:
+            return '$<{0}'.format(_sciNot(self.cs[0])[1 : ])
+        else:
+            return _sciNot(ic50)
 
 
     def fracsurvive(self, c):
@@ -266,6 +325,61 @@ class fourParamLogistic:
     def evaluate(c, m, s, b, t):
         """Returns :math:`f(c) = b + \\frac{t - b}{1 + (c/m)^s}`."""
         return b + (t - b) / (1 + (c / m)**s)
+
+
+    def plot(self, plotfile, samplename,
+            ic50_in_name=True,
+            xlabel='antibody concentration',
+            ylabel='fraction surviving',
+            fitpoints=100, cextend=2):
+        """Plots neutralization points and fitted curve.
+
+        Args:
+            `plotfile` (str)
+                Name of plot to create (e.g., PDF or PNG).
+            `samplename` (str)
+                Sample name (put at top of plot)
+            `ic50_in_name` (bool)
+                Include IC50 at top of plot with sample name?
+            `xlabel` (str)
+                x-axis label
+            `ylabel` (str)
+                y-axis label
+            `fitpoints` (int)
+                Number of points used to draw fit line.
+            `cextend` (float)
+                Concentrations extend this much fold
+                below / above the min / max values used
+                for fitting.
+        """
+        concentrations = scipy.concatenate(
+                [self.cs,
+                 scipy.logspace(math.log10(self.cs.min() / cextend),
+                                math.log10(self.cs.max() * cextend),
+                                num=fitpoints)
+                ])
+        n = len(concentrations)
+
+        points = scipy.concatenate(
+                [self.fs,
+                 scipy.full(n - len(self.fs), scipy.nan)])
+
+        fit = scipy.array([self.fracsurvive(c) for c in concentrations])
+
+        if ic50_in_name:
+            samplename += ' (IC50 = {0})'.format(self.ic50_str())
+
+        neutdata = pandas.DataFrame({
+                'concentration':concentrations,
+                'sample':[samplename] * n,
+                'points':points,
+                'fit':fit,
+                })
+        dms_tools2.plot.plotFacetedNeutCurves(
+                neutdata,
+                plotfile,
+                xlabel,
+                ylabel)
 
 
 
