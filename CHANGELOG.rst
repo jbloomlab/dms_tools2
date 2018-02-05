@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.2.dev2
+----------
+* added `--bclen2` option to ``dms2_bcsubamp``
+
 2.2.1
 ---------
 * added `protstruct` module for operations related to protein structurs

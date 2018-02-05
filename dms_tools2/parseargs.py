@@ -126,7 +126,9 @@ def bcsubampParentParser():
             "in R2 aligns.'"))
 
     parser.add_argument('--bclen', type=int, default=8,
-            help='Length of NNN... barcode at start of each read.')
+            help='Length of NNN... barcode at start of each read. '
+                 'Assumed to be same for R1 and R2, use `--bclen2` '
+                 'if this is not the case.')
 
     parser.add_argument('--fastqdir',
             help='R1 and R2 files in this directory.')
@@ -142,6 +144,10 @@ def bcsubampParentParser():
 
     parser.add_argument('--R2trim', type=int, nargs='+',
         help="Like '--R1trim', but for R2.")
+
+    parser.add_argument('--bclen2', type=int, help='If R1 and R2 have '
+            'different length barcodes, use `--bclen` for R1 length '
+            'and `--bclen2` for R2 length.')
 
     parser.add_argument('--chartype', default='codon', choices=['codon'],
             help='Character type for which we count mutations.')

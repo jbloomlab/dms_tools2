@@ -111,8 +111,13 @@ def main():
         else:
             raise ValueError("Invalid chartype")
 
-        bclen = args['bclen']
-        assert bclen > 0, 'bclen not > 0'
+        bclen1 = args['bclen']
+        assert bclen1 >= 0, 'bclen not > 0'
+        if args['bclen2'] is None:
+            bclen2 = bclen1
+        else:
+            bclen2 = args['bclen2']
+            assert bclen2 >= 0, 'bclen2 not > 0'
 
         assert 1 >= args['minconcur'] > 0.5
         assert args['minreads'] > 0
@@ -123,24 +128,24 @@ def main():
         alignspecs = []
         for s in args['alignspecs']:
             (refseqstart, refseqend, r1start, r2start) = map(int, s.split(','))
-            for (rstart, rname) in [(r1start, 'R1START'), (r2start, 'R2START')]:
-                if (bclen > rstart):
-                    raise ValueError("alignspecs has {0} of {1}, which "
-                            "doesn't fully trim barcode of bclen {2}".format(
-                            rname, rstart, bclen))
-                assert rstart >= 1, "{0} must be >= 1".format(rname)
+            assert r1start >= 1, "R1START must be >= 1"
+            assert r1start >= bclen1, ("alignspecs has R1START {0}, which "
+                    "doen't trim barcode of length {1}".format(r1start, bclen1))
+            assert r2start >= 1, "R2START must be >= 1"
+            assert r2start >= bclen2, ("alignspecs has R2START {0}, which "
+                    "doen't trim barcode of length {1}".format(r2start, bclen2))
             assert refseqend > refseqstart, "REFSEQEND <= REFSEQSTART"
             assert refseqstart >= 0, "REFSEQSTART < 1"
             assert refseqend <= len(refseq), "REFSEQEND > len(refseq)"
             maxN = (refseqend - refseqstart + 1) * (1 - args['minfraccall'])
             # subtract bclen because barcode trimmed before aligning
             alignspecs.append((refseqstart, refseqend, 
-                    r1start - bclen, r2start - bclen, maxN))
+                    r1start - bclen1, r2start - bclen2, maxN))
 
         # set up R1 and R2 trims based on alignspecs
         trims_d = {}
         maxtrim = {}
-        for r in ['R1', 'R2']:
+        for (r, bclenr) in [('R1', bclen1), ('R2', bclen2)]:
             trimarg = args['{0}trim'.format(r)]
             if trimarg is None:
                 trimarg = [None]
@@ -152,15 +157,15 @@ def main():
                 trims_d[r] = trimarg
             assert len(trims_d[r]) == len(alignspecs), ("--{0}trim must be "
                     "one value or same length as --alignspecs".format(r))
-            assert all([(t is None) or (t > bclen) for t in trims_d[r]]), \
-                    ("--{0}trim must all be greater than --bclen of {1}"
-                    .format(r, bclen))
+            assert all([(t is None) or (t > bclenr) for t in trims_d[r]]), \
+                    ("--{0}trim must all be greater than bclen of {1}"
+                    .format(r, bclenr))
             if all([t is None for t in trims_d[r]]):
                 maxtrim[r] = None
             else:
                 maxtrim[r] = max(trims_d[r])
                 # we remove barcodes from reads below, so adjust trims
-                trims_d[r] = [t - bclen for t in trims_d[r]]
+                trims_d[r] = [t - bclenr for t in trims_d[r]]
         trims = [(trims_d['R1'][i], trims_d['R2'][i]) for i in 
                 range(len(alignspecs))]
 
@@ -225,17 +230,17 @@ def main():
             r1 = dms_tools2.utils.lowQtoN(r1, q1, minqchar)
             r2 = dms_tools2.utils.lowQtoN(r2, q2, minqchar)
 
-            barcode = r1[ : bclen] + r2[ : bclen]
+            barcode = r1[ : bclen1] + r2[ : bclen2]
             if 'N' in barcode:
                 nreads['low Q barcode'] += 1
                 continue
 
             if barcode in barcodes:
-                barcodes[barcode]['R1'].append(r1[bclen : ])
-                barcodes[barcode]['R2'].append(r2[bclen : ])
+                barcodes[barcode]['R1'].append(r1[bclen1 : ])
+                barcodes[barcode]['R2'].append(r2[bclen2 : ])
             else:
-                barcodes[barcode] = {'R1':[r1[bclen : ]], 
-                                     'R2':[r2[bclen : ]]}
+                barcodes[barcode] = {'R1':[r1[bclen1 : ]], 
+                                     'R2':[r2[bclen2 : ]]}
 
         logger.info('Parsed {0} reads, found {1} unique barcodes.'.format(
                 nreads['total'], len(barcodes)))

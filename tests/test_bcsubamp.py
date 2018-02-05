@@ -123,6 +123,7 @@ class test_bcsubamp(unittest.TestCase):
     MINFRACCALL = 0.9
     MINCONCUR = 0.75
     NAME = 'test'
+    BCLEN2 = None
 
     def setUp(self):
         """Set up input data."""
@@ -137,6 +138,10 @@ class test_bcsubamp(unittest.TestCase):
         random.seed(1)
         self.alignspecs = ['1,30,15,14', '31,66,12,14']
         self.bclen = 8
+        if self.BCLEN2 is None:
+            self.bclen2 = self.bclen
+        else:
+            self.bclen2 = self.BCLEN2
         totrefseqlen = max([int(a.split(',')[1]) for a in self.alignspecs])
         refseq = ''.join([random.choice(dms_tools2.NTS) for
                 i in range(totrefseqlen)])
@@ -155,29 +160,31 @@ class test_bcsubamp(unittest.TestCase):
             r2fail = not r1fail
             reads.append(generateReadPair(refseq, 
                     random.choice(self.alignspecs),
-                    randSeq(self.bclen), randSeq(self.bclen),
+                    randSeq(self.bclen), randSeq(self.bclen2),
                     r1fail=r1fail, r2fail=r2fail))
 
         # some reads with low quality barcodes
-        self.lowQbc = 4
+        self.lowQbc = 2
         reads.append(generateReadPair(refseq,
                 random.choice(self.alignspecs),
                 randSeq(self.bclen, num_N=1),
-                randSeq(self.bclen)))
+                randSeq(self.bclen2)))
         reads.append(generateReadPair(refseq,
                 random.choice(self.alignspecs),
                 randSeq(self.bclen),
-                randSeq(self.bclen, num_N=1)))
-        reads.append(generateReadPair(refseq,
-                random.choice(self.alignspecs),
-                randSeq(self.bclen),
-                randSeq(self.bclen),
+                randSeq(self.bclen2),
                 r1bclowq=1))
-        reads.append(generateReadPair(refseq,
-                random.choice(self.alignspecs),
-                randSeq(self.bclen),
-                randSeq(self.bclen),
-                r2bclowq=1))
+        if self.bclen2 > 0:
+            self.lowQbc += 2
+            reads.append(generateReadPair(refseq,
+                    random.choice(self.alignspecs),
+                    randSeq(self.bclen),
+                    randSeq(self.bclen2, num_N=1)))
+            reads.append(generateReadPair(refseq,
+                    random.choice(self.alignspecs),
+                    randSeq(self.bclen),
+                    randSeq(self.bclen2),
+                    r2bclowq=1))
 
         self.nbarcodes = 0
         self.nbarcodesaligned = 0
@@ -194,7 +201,7 @@ class test_bcsubamp(unittest.TestCase):
             else:
                 self.barcodes_with_nreads[nperbc] += 1
             bc1 = randSeq(self.bclen)
-            bc2 = randSeq(self.bclen)
+            bc2 = randSeq(self.bclen2)
             alignspec = random.choice(self.alignspecs)
             for i in range(nperbc):
                 r1ext = random.randint(0, 2)
@@ -211,7 +218,7 @@ class test_bcsubamp(unittest.TestCase):
         else:
             self.nbarcodesunaligned += 1
         bc1 = randSeq(self.bclen)
-        bc2 = randSeq(self.bclen)
+        bc2 = randSeq(self.bclen2)
         alignspec = random.choice(self.alignspecs)
         (refseqstart, refseqend, r1start, r2start) = map(
                 int, alignspec.split(','))
@@ -230,7 +237,7 @@ class test_bcsubamp(unittest.TestCase):
         else:
             self.nbarcodesaligned += 1
         bc1 = randSeq(self.bclen)
-        bc2 = randSeq(self.bclen)
+        bc2 = randSeq(self.bclen2)
         alignspec = random.choice(self.alignspecs)
         readtup = generateReadPair(refseq, alignspec, bc1, bc2,
                 r1mut=1, r2mut=1)
@@ -245,7 +252,7 @@ class test_bcsubamp(unittest.TestCase):
         else:
             self.nbarcodesaligned += 1
         bc1 = randSeq(self.bclen)
-        bc2 = randSeq(self.bclen)
+        bc2 = randSeq(self.bclen2)
         reads += [generateReadPair(refseq, alignspec, bc1, bc2),
                   generateReadPair(refseq, alignspec, bc1, bc2, r1mut=1)]
 
@@ -258,7 +265,7 @@ class test_bcsubamp(unittest.TestCase):
         else:
             self.nbarcodesaligned += 1
         bc1 = randSeq(self.bclen)
-        bc2 = randSeq(self.bclen)
+        bc2 = randSeq(self.bclen2)
         reads += [generateReadPair(refseq, alignspec, bc1, bc2),
                   generateReadPair(refseq, alignspec, bc1, bc2, r1lowq=1)]
 
@@ -301,11 +308,14 @@ class test_bcsubamp(unittest.TestCase):
                 '--outdir', self.testdir,
                 '--R1', os.path.basename(self.r1file),
                 '--fastqdir', self.testdir,
+                '--bclen', str(self.bclen),
                 '--maxmuts', str(self.MAXMUTS),
                 '--minfraccall', str(self.MINFRACCALL),
                 '--minconcur', str(self.MINCONCUR),
                 '--bcinfo',
-               ] 
+               ]
+        if self.BCLEN2 is not None:
+            cmds += ['--bclen2', str(self.bclen2)]
         sys.stderr.write('\nRunning the following command:\n{0}\n'.format(
                 ' '.join(cmds)))
         subprocess.check_call(cmds)
@@ -341,6 +351,18 @@ class test_bcsubamp_strictconcur(test_bcsubamp):
     """Tests ``dms2_bcsubamp`` with stricter ``--minconcur``."""
     MINCONCUR = 0.9
     NAME = 'test-minconcur'
+
+
+class test_bcsubamp_bclen2_4(test_bcsubamp):
+    """Tests ``dms2_bcsubamp`` with ``--bclen2 4``."""
+    NAME = 'test-bclen2-4'
+    BCLEN2 = 4
+
+
+class test_bcsubamp_bclen2_0(test_bcsubamp):
+    """Tests ``dms2_bcsubamp`` with ``--bclen2 0``."""
+    NAME = 'test-bclen2-0'
+    BCLEN2 = 0
 
 
 class test_bcsubamp_strictmaxmuts(test_bcsubamp):
