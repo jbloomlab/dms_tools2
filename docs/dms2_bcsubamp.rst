@@ -25,7 +25,7 @@ The algorithm implemented by ``dms2_bcsubamp`` is as follows:
 
 3) We discard any read pairs for which there are any ``N`` nucleotides in the barcode.
 
-4) We then collect all remaining read pairs for each barcode (concatenating the barcodes on the paired reads for a total barcode length that is twice ``--bclen``) and perform all subsequent operations on these barcodes.
+4) We then collect all remaining read pairs for each barcode (concatenating the barcodes on the paired reads for a total barcode length that is twice ``--bclen``) and perform all subsequent operations on these barcodes. Note that if you have different length barcodes on the two reads (or all the barcode on one read), you can use the ``--bclen2`` option below.
 
 5) Any barcode with less than ``--minreads`` read pairs is discarded.
 

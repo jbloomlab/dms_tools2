@@ -1,7 +1,7 @@
 Change Log
 ===========
 
-2.2.dev2
+2.2.2
 ----------
 * added `--bclen2` option to ``dms2_bcsubamp``
 
