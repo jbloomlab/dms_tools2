@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.parseargs &#8212; dms_tools2 2.2.1 documentation</title>
+    <title>dms_tools2.parseargs &#8212; dms_tools2 2.2.2 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '2.2.1',
+        VERSION:     '2.2.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -168,7 +168,9 @@
             <span class="s2">&quot;in R2 aligns.&#39;&quot;</span><span class="p">))</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--bclen&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Length of NNN... barcode at start of each read.&#39;</span><span class="p">)</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Length of NNN... barcode at start of each read. &#39;</span>
+                 <span class="s1">&#39;Assumed to be same for R1 and R2, use `--bclen2` &#39;</span>
+                 <span class="s1">&#39;if this is not the case.&#39;</span><span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--fastqdir&#39;</span><span class="p">,</span>
             <span class="n">help</span><span class="o">=</span><span class="s1">&#39;R1 and R2 files in this directory.&#39;</span><span class="p">)</span>
@@ -184,6 +186,10 @@
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--R2trim&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Like &#39;--R1trim&#39;, but for R2.&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--bclen2&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;If R1 and R2 have &#39;</span>
+            <span class="s1">&#39;different length barcodes, use `--bclen` for R1 length &#39;</span>
+            <span class="s1">&#39;and `--bclen2` for R2 length.&#39;</span><span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--chartype&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;codon&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;codon&#39;</span><span class="p">],</span>
             <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Character type for which we count mutations.&#39;</span><span class="p">)</span>

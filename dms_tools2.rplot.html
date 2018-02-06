@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>rplot &#8212; dms_tools2 2.2.1 documentation</title>
+    <title>rplot &#8212; dms_tools2 2.2.2 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '2.2.1',
+        VERSION:     '2.2.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -58,7 +58,7 @@ installed, or install <cite>dms_tools2</cite> using:</p>
 </div>
 <dl class="data">
 <dt id="dms_tools2.rplot.AA_COLORS_FG">
-<code class="descclassname">dms_tools2.rplot.</code><code class="descname">AA_COLORS_FG</code><em class="property"> = {'G': '#f76ab4', 'Y': '#84380b', 'W': '#84380b', 'T': '#ff7f00', 'D': '#3c58e5', 'R': '#e41a1c', 'L': '#12ab0d', 'H': '#e41a1c', 'P': '#12ab0d', 'A': '#f76ab4', 'I': '#12ab0d', 'K': '#e41a1c', 'F': '#84380b', 'Q': '#972aa8', '*': '#000000', 'M': '#12ab0d', 'V': '#12ab0d', 'C': '#ff7f00', 'N': '#972aa8', 'E': '#3c58e5', 'S': '#ff7f00'}</em><a class="headerlink" href="#dms_tools2.rplot.AA_COLORS_FG" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.rplot.</code><code class="descname">AA_COLORS_FG</code><em class="property"> = {'I': '#12ab0d', 'M': '#12ab0d', 'D': '#3c58e5', 'F': '#84380b', 'A': '#f76ab4', 'K': '#e41a1c', 'E': '#3c58e5', 'R': '#e41a1c', 'P': '#12ab0d', 'N': '#972aa8', 'Q': '#972aa8', 'S': '#ff7f00', 'V': '#12ab0d', 'T': '#ff7f00', 'C': '#ff7f00', 'W': '#84380b', 'H': '#e41a1c', 'G': '#f76ab4', 'Y': '#84380b', '*': '#000000', 'L': '#12ab0d'}</em><a class="headerlink" href="#dms_tools2.rplot.AA_COLORS_FG" title="Permalink to this definition">¶</a></dt>
 <dd><p>default colors for amino acid chars, by functional group</p>
 </dd></dl>
 
@@ -72,7 +72,7 @@ installed, or install <cite>dms_tools2</cite> using:</p>
 
 <dl class="function">
 <dt id="dms_tools2.rplot.facetedGGSeqLogo">
-<code class="descclassname">dms_tools2.rplot.</code><code class="descname">facetedGGSeqLogo</code><span class="sig-paren">(</span><em>logodata</em>, <em>chars</em>, <em>plotfile</em>, <em>width</em>, <em>height</em>, <em>ncol=None</em>, <em>char_colors={'G': '#f76ab4'</em>, <em>'Y': '#84380b'</em>, <em>'W': '#84380b'</em>, <em>'T': '#ff7f00'</em>, <em>'D': '#3c58e5'</em>, <em>'R': '#e41a1c'</em>, <em>'L': '#12ab0d'</em>, <em>'H': '#e41a1c'</em>, <em>'P': '#12ab0d'</em>, <em>'A': '#f76ab4'</em>, <em>'I': '#12ab0d'</em>, <em>'K': '#e41a1c'</em>, <em>'F': '#84380b'</em>, <em>'Q': '#972aa8'</em>, <em>'*': '#000000'</em>, <em>'M': '#12ab0d'</em>, <em>'V': '#12ab0d'</em>, <em>'C': '#ff7f00'</em>, <em>'N': '#972aa8'</em>, <em>'E': '#3c58e5'</em>, <em>'S': '#ff7f00'}</em>, <em>xlabelsrotate=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/rplot.html#facetedGGSeqLogo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.rplot.facetedGGSeqLogo" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.rplot.</code><code class="descname">facetedGGSeqLogo</code><span class="sig-paren">(</span><em>logodata</em>, <em>chars</em>, <em>plotfile</em>, <em>width</em>, <em>height</em>, <em>ncol=None</em>, <em>char_colors={'I': '#12ab0d'</em>, <em>'M': '#12ab0d'</em>, <em>'D': '#3c58e5'</em>, <em>'F': '#84380b'</em>, <em>'A': '#f76ab4'</em>, <em>'K': '#e41a1c'</em>, <em>'E': '#3c58e5'</em>, <em>'R': '#e41a1c'</em>, <em>'P': '#12ab0d'</em>, <em>'N': '#972aa8'</em>, <em>'Q': '#972aa8'</em>, <em>'S': '#ff7f00'</em>, <em>'V': '#12ab0d'</em>, <em>'T': '#ff7f00'</em>, <em>'C': '#ff7f00'</em>, <em>'W': '#84380b'</em>, <em>'H': '#e41a1c'</em>, <em>'G': '#f76ab4'</em>, <em>'Y': '#84380b'</em>, <em>'*': '#000000'</em>, <em>'L': '#12ab0d'}</em>, <em>xlabelsrotate=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/rplot.html#facetedGGSeqLogo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.rplot.facetedGGSeqLogo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates faceted logo plot.</p>
 <p>Designed to show several measurements on the same site
 site-by-side, potentially for many sites. Each site
@@ -130,7 +130,7 @@ two stacks for the characters <cite>A</cite> and <cite>C</cite>:</p>
 
 <dl class="function">
 <dt id="dms_tools2.rplot.siteSubsetGGSeqLogo">
-<code class="descclassname">dms_tools2.rplot.</code><code class="descname">siteSubsetGGSeqLogo</code><span class="sig-paren">(</span><em>logodata</em>, <em>chars</em>, <em>plotfile</em>, <em>width</em>, <em>height</em>, <em>yname=''</em>, <em>char_colors={'G': '#f76ab4'</em>, <em>'Y': '#84380b'</em>, <em>'W': '#84380b'</em>, <em>'T': '#ff7f00'</em>, <em>'D': '#3c58e5'</em>, <em>'R': '#e41a1c'</em>, <em>'L': '#12ab0d'</em>, <em>'H': '#e41a1c'</em>, <em>'P': '#12ab0d'</em>, <em>'A': '#f76ab4'</em>, <em>'I': '#12ab0d'</em>, <em>'K': '#e41a1c'</em>, <em>'F': '#84380b'</em>, <em>'Q': '#972aa8'</em>, <em>'*': '#000000'</em>, <em>'M': '#12ab0d'</em>, <em>'V': '#12ab0d'</em>, <em>'C': '#ff7f00'</em>, <em>'N': '#972aa8'</em>, <em>'E': '#3c58e5'</em>, <em>'S': '#ff7f00'}</em>, <em>ylimits=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/rplot.html#siteSubsetGGSeqLogo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.rplot.siteSubsetGGSeqLogo" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.rplot.</code><code class="descname">siteSubsetGGSeqLogo</code><span class="sig-paren">(</span><em>logodata</em>, <em>chars</em>, <em>plotfile</em>, <em>width</em>, <em>height</em>, <em>yname=''</em>, <em>char_colors={'I': '#12ab0d'</em>, <em>'M': '#12ab0d'</em>, <em>'D': '#3c58e5'</em>, <em>'F': '#84380b'</em>, <em>'A': '#f76ab4'</em>, <em>'K': '#e41a1c'</em>, <em>'E': '#3c58e5'</em>, <em>'R': '#e41a1c'</em>, <em>'P': '#12ab0d'</em>, <em>'N': '#972aa8'</em>, <em>'Q': '#972aa8'</em>, <em>'S': '#ff7f00'</em>, <em>'V': '#12ab0d'</em>, <em>'T': '#ff7f00'</em>, <em>'C': '#ff7f00'</em>, <em>'W': '#84380b'</em>, <em>'H': '#e41a1c'</em>, <em>'G': '#f76ab4'</em>, <em>'Y': '#84380b'</em>, <em>'*': '#000000'</em>, <em>'L': '#12ab0d'}</em>, <em>ylimits=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/rplot.html#siteSubsetGGSeqLogo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.rplot.siteSubsetGGSeqLogo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates one-row logo plot with subset of sites.</p>
 <p>Designed to show logo plot for a subset of sites. This
 is useful when you have data for many sites, but only
