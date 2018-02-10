@@ -60,9 +60,10 @@ setup(
         'plotnine>=0.3',
         'natsort>=5.0.3',
         'pystan==2.16', # fails with 2.17
-        'scipy>=0.18.1',
+        'scipy>=1.0',
         'seaborn>=0.8',
         'phydms>=2.1.4',
+        'statsmodels>=0.8',
         ],
     extras_require = {
         'rplot':['rpy2>=2.9.1']

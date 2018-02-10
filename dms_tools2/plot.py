@@ -3,7 +3,7 @@
 plot
 ===================
 
-Plotting functions for ``dms_tools2``.
+Plotting related functions for ``dms_tools2``.
 
 Uses `plotnine <https://plotnine.readthedocs.io/en/stable>`_
 and `seaborn <https://seaborn.pydata.org/index.html>`_.
@@ -13,10 +13,14 @@ and `seaborn <https://seaborn.pydata.org/index.html>`_.
 import re
 import os
 import math
+
 import natsort
 import pandas
 import numpy
 import scipy.stats
+import scipy.optimize
+from statsmodels.sandbox.stats.multicomp import multipletests
+
 import matplotlib
 matplotlib.use('pdf')
 import matplotlib.pyplot as plt
@@ -807,6 +811,210 @@ def plotFacetedNeutCurves(
             )
     p.save(plotfile, verbose=False)
     plt.close()
+
+
+def findSigSel(df, valcol, plotfile, fdr=0.05, title=None):
+    """Finds "significant" selection at sites / mutations.
+
+    Designed for the case where most sites / mutations are not
+    under selection, but a few may be. It tries to find those
+    few that are under selection. 
+
+    It does not use a mechanistic statistical model, but rather uses
+    `robust regression <http://scipy-cookbook.readthedocs.io/items/robust_regression.html>`_
+    (soft L1 loss) to fit a gamma distribution. The rationale for
+    a gamma distribution is that it is negative binomial's continuous
+    `analog <http://www.nehalemlabs.net/prototype/blog/2013/12/01/gamma-distribution-approximation-to-the-negative-binomial-distribution/>`_.
+    It then identifies sites that clearly have **larger** values than
+    expected under this distribution. It currently does not
+    identify sites with **smaller** (or more negative) than expected
+    values.
+
+    Args:
+        `df` (pandas DataFrame)
+            Contains data to analyze
+        `valcol` (string)
+            Column in `df` with values (e.g., `fracsurvive`)
+        `plotfile` (string)
+            Name of file to which we plot fit.
+        `fdr` (float)
+            Find sites that are significant at this `fdr`
+            given fitted distribution.
+        `title` (string or `None`)
+            Title for plot.
+
+    Returns:
+        Creates the plot in `plotfile`. Also returns
+        the 3-tuple `(df_sigsel, cutoff, gamma_fit)` where:
+        
+            - `df_sigsel` is copy of `df` with new columns
+              `P`, `Q`, and `sig`. These give P value, Q
+              value, and whether site meets `fdr` cutoff
+              for significance.
+
+            - `cutoff` is the maximum value that is **not**
+              called significant. Because FDR is a property
+              of a distribution, this value cannot be 
+              interpreted as meaning a new data point would
+              be called based on this cutoff, as the cutoff
+              would change. But `cutoff` is useful for 
+              plotting to see significant / non-significant.
+
+            - `gamma_params` is a `numpy.ndarray` that of 
+              length 3 that gives the shape, scale, and location
+              parameter of the fit gamma distribution.
+
+    An example: First, simulate points from a gamma distribution:
+
+    >>> shape_sim = 1.5
+    >>> scale_sim = 0.005
+    >>> loc_sim = 0.0
+    >>> gamma_sim = scipy.stats.gamma(shape_sim, scale=scale_sim,
+    ...         loc=loc_sim)
+    >>> nsites = 1000
+    >>> scipy.random.seed(0)
+    >>> df = pandas.DataFrame.from_dict({
+    ...         'site':[r for r in range(nsites)],
+    ...         'fracsurvive':gamma_sim.rvs(nsites)})
+
+    Now make two sites have "significantly" higher values:
+
+    >>> sigsites = [100, 200]
+    >>> df.loc[sigsites, 'fracsurvive'] = 0.08
+
+    Now plot and find the significant sites:
+
+    >>> plotfile = '_findSigSel.png'
+    >>> (df_sigsel, cutoff, gamma_params) = findSigSel(
+    ...         df, 'fracsurvive', plotfile, title='example')
+
+    Here is the resulting plot:
+
+    .. image:: _static/_findSigSel.png
+       :width: 4in
+       :align: center
+
+    Make sure the fitted params are close to the ones used to
+    simulate the data:
+
+    >>> numpy.allclose(shape_sim, gamma_params[0], rtol=0.1, atol=1e-3)
+    True
+    >>> numpy.allclose(scale_sim, gamma_params[1], rtol=0.1, atol=1e-3)
+    True
+    >>> numpy.allclose(loc_sim, gamma_params[2], rtol=0.1, atol=1e-3)
+    True
+
+    Check that we find the correct significant sites:
+
+    >>> set(sigsites) == set(df_sigsel.query('sig').site)
+    True
+
+    Make sure that sites above cutoff are significant:
+
+    >>> df_sigsel.query('sig').equals(df_sigsel.query('fracsurvive > @cutoff'))
+    True
+    """
+    assert valcol in df.columns, "no `valcol` {0}".format(valcol)
+
+    newcols = {'P', 'Q', 'sig'}
+    assert not (newcols & set(df.columns)), \
+            "`df` already has {0}".format(newcols)
+
+    def _f(x, bins, heights):
+        """Gamma distribution least squares fitting function.
+
+        Zero when distribution perfectly fits histogram.
+        `x` is `(shape, scale, loc)`.
+        """
+        return (scipy.stats.gamma.pdf(bins, x[0], scale=x[1],
+                loc=x[2]) - heights)
+
+    # We fit curves to histogram. First we need to get bins.
+    try:
+        # try with Freedman Diaconis Estimator
+        binedges = numpy.histogram(df[valcol], bins='fd')[1]
+    except ValueError:
+        # fd will fail of lots of identical points
+        binedges = numpy.histogram(df[valcol], bins='doane')[1]
+
+    # get bin centers
+    bins = (binedges[ : -1] + binedges[1 : ]) / 2
+
+    # plot the histogram
+    plt.figure(figsize=(5.5, 4))
+    (heights, binedges, patches) = plt.hist(df[valcol],
+            bins=binedges, normed=True,
+            color=COLOR_BLIND_PALETTE[2])
+
+    # initial guess gives correct mean and variance for
+    # gamma distribution with loc of 0
+    scale = df[valcol].var() / df[valcol].mean()
+    shape = df[valcol].mean() / scale
+    x0 = numpy.array([shape, scale, 0.0])
+
+    # fit using soft L1 loss for robust regression
+    # http://scipy-cookbook.readthedocs.io/items/robust_regression.html
+    fit = scipy.optimize.least_squares(_f, x0, args=(bins, heights),
+            loss='soft_l1')
+    gamma_params = fit.x
+    gamma_fit = scipy.stats.gamma(fit.x[0], scale=fit.x[1],
+            loc=fit.x[2])
+
+    # add fit gamma distribution to plot
+    nfitbins = 500
+    if nfitbins > len(bins):
+        fitbins = numpy.linspace(bins[0], bins[-1], nfitbins)
+    else:
+        fitbins = bins
+    plt.plot(fitbins, gamma_fit.pdf(fitbins),
+            color=COLOR_BLIND_PALETTE[1])
+
+    # compute P and Q values
+    df_sigsel = (df.assign(P=lambda x: gamma_fit.sf(x[valcol]))
+                   .assign(Q=lambda x: multipletests(x.P, fdr, 'fdr_bh')[1])
+                   .assign(sig=lambda x: multipletests(x.P, fdr, 'fdr_bh')[0])
+                   )
+
+    # compute cutoff 
+    cutoff = df_sigsel.query('not sig')[valcol].max()
+
+    # plot cutoff
+    # find first bin boundary greater than cutoff
+    if (binedges > cutoff).any():
+        bincutoff = binedges[binedges > cutoff][0]
+    else:
+        bincutoff = binedges[-1]
+    # now annotate plot
+    plt.axvline(bincutoff, color=COLOR_BLIND_PALETTE[3], ls='--', lw=0.75)
+    text_y = 0.95 * plt.ylim()[1]
+    (xmin, xmax) = plt.xlim()
+    if (bincutoff - xmin) < 0.75 * (xmax - xmin):
+        text_x = bincutoff + 0.01 * (xmax - xmin)
+        ha = 'left'
+    else:
+        text_x = bincutoff - 0.01 * (xmax - xmin)
+        ha = 'right'
+    if len(df_sigsel.query('sig')):
+        text = '{0} values\nsignificant\n($>${1})'.format(
+                len(df_sigsel.query('sig')), latexSciNot([cutoff])[0])
+    else:
+        text = 'no values\nsignificant'
+    plt.text(text_x, text_y, text,
+            horizontalalignment=ha, verticalalignment='top',
+            color=COLOR_BLIND_PALETTE[3], size='small')
+
+    # put labels on plot
+    plt.xlabel(valcol.replace('_', ' '))
+    plt.ylabel('density')
+    if title:
+        plt.title(title.replace('_', ' '))
+
+    # save plot
+    plt.tight_layout()
+    plt.savefig(plotfile)
+    plt.close()
+
+    return (df_sigsel, cutoff, gamma_params)
 
 
 

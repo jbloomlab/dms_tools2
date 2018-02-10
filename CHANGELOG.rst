@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.2.3
+------------
+* added `plot.findSigSel`
+
 2.2.2
 ----------
 * added `--bclen2` option to ``dms2_bcsubamp``
