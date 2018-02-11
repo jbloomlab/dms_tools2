@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>plot &#8212; dms_tools2 2.2.2 documentation</title>
+    <title>plot &#8212; dms_tools2 2.2.3 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '2.2.2',
+        VERSION:     '2.2.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -43,7 +43,7 @@
             
   <span class="target" id="module-dms_tools2.plot"></span><div class="section" id="plot">
 <h1>plot<a class="headerlink" href="#plot" title="Permalink to this headline">¶</a></h1>
-<p>Plotting functions for <code class="docutils literal"><span class="pre">dms_tools2</span></code>.</p>
+<p>Plotting related functions for <code class="docutils literal"><span class="pre">dms_tools2</span></code>.</p>
 <p>Uses <a class="reference external" href="https://plotnine.readthedocs.io/en/stable">plotnine</a>
 and <a class="reference external" href="https://seaborn.pydata.org/index.html">seaborn</a>.</p>
 <dl class="data">
@@ -85,6 +85,109 @@ the label for each break.</dd>
 <span class="go">[0, 50, 100, 150, 200]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span>
 <span class="go">[&#39;1&#39;, &#39;51&#39;, &#39;101&#39;, &#39;151&#39;, &#39;201&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.plot.findSigSel">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">findSigSel</code><span class="sig-paren">(</span><em>df</em>, <em>valcol</em>, <em>plotfile</em>, <em>fdr=0.05</em>, <em>title=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#findSigSel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.findSigSel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds “significant” selection at sites / mutations.</p>
+<p>Designed for the case where most sites / mutations are not
+under selection, but a few may be. It tries to find those
+few that are under selection.</p>
+<p>It does not use a mechanistic statistical model, but rather uses
+<a class="reference external" href="http://scipy-cookbook.readthedocs.io/items/robust_regression.html">robust regression</a>
+(soft L1 loss) to fit a gamma distribution. The rationale for
+a gamma distribution is that it is negative binomial’s continuous
+<a class="reference external" href="http://www.nehalemlabs.net/prototype/blog/2013/12/01/gamma-distribution-approximation-to-the-negative-binomial-distribution/">analog</a>.
+It then identifies sites that clearly have <strong>larger</strong> values than
+expected under this distribution. It currently does not
+identify sites with <strong>smaller</strong> (or more negative) than expected
+values.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>df</cite> (pandas DataFrame)</dt>
+<dd>Contains data to analyze</dd>
+<dt><cite>valcol</cite> (string)</dt>
+<dd>Column in <cite>df</cite> with values (e.g., <cite>fracsurvive</cite>)</dd>
+<dt><cite>plotfile</cite> (string)</dt>
+<dd>Name of file to which we plot fit.</dd>
+<dt><cite>fdr</cite> (float)</dt>
+<dd>Find sites that are significant at this <cite>fdr</cite>
+given fitted distribution.</dd>
+<dt><cite>title</cite> (string or <cite>None</cite>)</dt>
+<dd>Title for plot.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><p class="first">Creates the plot in <cite>plotfile</cite>. Also returns
+the 3-tuple <cite>(df_sigsel, cutoff, gamma_fit)</cite> where:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li><cite>df_sigsel</cite> is copy of <cite>df</cite> with new columns
+<cite>P</cite>, <cite>Q</cite>, and <cite>sig</cite>. These give P value, Q
+value, and whether site meets <cite>fdr</cite> cutoff
+for significance.</li>
+<li><cite>cutoff</cite> is the maximum value that is <strong>not</strong>
+called significant. Because FDR is a property
+of a distribution, this value cannot be 
+interpreted as meaning a new data point would
+be called based on this cutoff, as the cutoff
+would change. But <cite>cutoff</cite> is useful for 
+plotting to see significant / non-significant.</li>
+<li><cite>gamma_params</cite> is a <cite>numpy.ndarray</cite> that of 
+length 3 that gives the shape, scale, and location
+parameter of the fit gamma distribution.</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+<p>An example: First, simulate points from a gamma distribution:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">shape_sim</span> <span class="o">=</span> <span class="mf">1.5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scale_sim</span> <span class="o">=</span> <span class="mf">0.005</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loc_sim</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gamma_sim</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="n">shape_sim</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale_sim</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">loc</span><span class="o">=</span><span class="n">loc_sim</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nsites</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">({</span>
+<span class="gp">... </span>        <span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nsites</span><span class="p">)],</span>
+<span class="gp">... </span>        <span class="s1">&#39;fracsurvive&#39;</span><span class="p">:</span><span class="n">gamma_sim</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">nsites</span><span class="p">)})</span>
+</pre></div>
+</div>
+<p>Now make two sites have “significantly” higher values:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sigsites</span> <span class="o">=</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">sigsites</span><span class="p">,</span> <span class="s1">&#39;fracsurvive&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.08</span>
+</pre></div>
+</div>
+<p>Now plot and find the significant sites:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">plotfile</span> <span class="o">=</span> <span class="s1">&#39;_findSigSel.png&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">df_sigsel</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">gamma_params</span><span class="p">)</span> <span class="o">=</span> <span class="n">findSigSel</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">df</span><span class="p">,</span> <span class="s1">&#39;fracsurvive&#39;</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;example&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here is the resulting plot:</p>
+<a class="reference internal image-reference" href="_images/_findSigSel.png"><img alt="_images/_findSigSel.png" class="align-center" src="_images/_findSigSel.png" style="width: 4in;" /></a>
+<p>Make sure the fitted params are close to the ones used to
+simulate the data:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">shape_sim</span><span class="p">,</span> <span class="n">gamma_params</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">scale_sim</span><span class="p">,</span> <span class="n">gamma_params</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">loc_sim</span><span class="p">,</span> <span class="n">gamma_params</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Check that we find the correct significant sites:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">set</span><span class="p">(</span><span class="n">sigsites</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">df_sigsel</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;sig&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">site</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Make sure that sites above cutoff are significant:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df_sigsel</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;sig&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">df_sigsel</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;fracsurvive &gt; @cutoff&#39;</span><span class="p">))</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </dd></dl>
