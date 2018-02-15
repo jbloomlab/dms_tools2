@@ -498,7 +498,7 @@ def plotCodonMutTypes(names, countsfiles, plotfile,
 
 def plotCorrMatrix(names, infiles, plotfile, datatype,
         trim_unshared=True, title='', colors='black',
-        contour=False):
+        contour=False, ncontours=10):
     """Plots correlations among replicates.
 
     Args:
@@ -530,6 +530,8 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
             left to right.
         `contour` (bool)
             Show contour lines from KDE rather than points.
+        `ncontours` (int)
+            Number of contour lines if using `contour`.
     """
     assert len(names) == len(infiles) == len(set(names)) > 1
     assert os.path.splitext(plotfile)[1].lower() == '.pdf'
@@ -623,7 +625,7 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
                 fontstyle='oblique')
         color = colors.pop(0)
         if contour:
-            raise RuntimeError('not yet implemented')
+            seaborn.kdeplot(x, y, shade=True, n_levels=ncontours)
         else:
             plt.scatter(x, y, s=22, alpha=0.35, color=color,
                     marker='o', edgecolor='none', rasterized=True)
@@ -631,7 +633,7 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
     # map lower / upper / diagonal as here:
     # https://stackoverflow.com/a/30942817 for plot
     p = seaborn.PairGrid(df)
-    p.map_lower(corrfunc, colors=colors)
+    p.map_lower(corrfunc, colors=colors, contour=contour)
     if datatype == 'prefs':
         p.set(  xlim=(0, 1), 
                 ylim=(0, 1), 
