@@ -5,6 +5,8 @@ Change Log
 ----------
 * added `contour` option to `plot.plotCorrMatrix`
 
+* added `white_bg` to `plot.plotSiteDiffSel`
+
 2.2.3
 ------------
 * added `plot.findSigSel`
