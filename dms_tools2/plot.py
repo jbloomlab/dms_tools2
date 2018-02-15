@@ -668,7 +668,7 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
 
 
 def plotSiteDiffSel(names, diffselfiles, plotfile, 
-        diffseltype, maxcol=2):
+        diffseltype, maxcol=2, white_bg=False):
     """Plot site diffsel or fracsurvive along sequence.
 
     Despite the function name, this function can be used to
@@ -692,6 +692,9 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
                 - `maxfracsurvive`: max mutfracsurvive at site
         `maxcol` (int)
             Number of columns in faceted plot.
+        `white_bg` (bool)
+            Plots will have a white background with limited other formatting.
+
     """
     assert len(names) == len(diffselfiles) == len(set(names)) > 0
     assert os.path.splitext(plotfile)[1].lower() == '.pdf'
@@ -724,6 +727,8 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
                             value_name='diffsel',
                             var_name='direction')
                       )
+
+
     # natural sort by site: https://stackoverflow.com/a/29582718
     diffsel = diffsel.reindex(index=natsort.order_by_index(
             diffsel.index, natsort.index_natsorted(diffsel.site,
@@ -742,7 +747,24 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
 
     (xbreaks, xlabels) = breaksAndLabels(diffsel['siteindex'].unique(), 
             diffsel['site'].unique(), n=6)
-    p = (ggplot(diffsel, aes(x='siteindex', y='diffsel', color='direction'))
+    if white_bg:
+        p = (ggplot(diffsel, aes(x='siteindex', y='diffsel', color='direction', fill='direction'))
+            + geom_step(size=.3, )
+            + xlab('site')
+            + ylab(ylabel)
+            + scale_x_continuous(breaks=xbreaks, labels=xlabels)
+            + scale_color_manual(COLOR_BLIND_PALETTE)
+            + scale_fill_manual(COLOR_BLIND_PALETTE)
+            + guides(color=False)
+            + theme(panel_background=element_rect(fill='white'),               # new
+         axis_line_x=element_line(color='black'),
+         axis_line_y=element_line(color='black'),
+         panel_grid=element_blank(),
+         panel_border=element_blank(),
+         strip_background=element_blank())
+            )
+    else:
+        p = (ggplot(diffsel, aes(x='siteindex', y='diffsel', color='direction'))
             + geom_step(size=0.4)
             + xlab('site')
             + ylab(ylabel)
