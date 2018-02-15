@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.2.dev4
+----------
+* added `contour` option to `plot.plotCorrMatrix`
+
 2.2.3
 ------------
 * added `plot.findSigSel`

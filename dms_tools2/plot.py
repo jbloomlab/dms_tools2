@@ -497,7 +497,8 @@ def plotCodonMutTypes(names, countsfiles, plotfile,
 
 
 def plotCorrMatrix(names, infiles, plotfile, datatype,
-        trim_unshared=True, title='', colors='black'):
+        trim_unshared=True, title='', colors='black',
+        contour=False):
     """Plots correlations among replicates.
 
     Args:
@@ -527,6 +528,8 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
             list of length `len(names) * (len(names) - 1) // 2`
             giving lists of colors for plots from top to bottom, 
             left to right.
+        `contour` (bool)
+            Show contour lines from KDE rather than points.
     """
     assert len(names) == len(infiles) == len(set(names)) > 1
     assert os.path.splitext(plotfile)[1].lower() == '.pdf'
@@ -612,15 +615,18 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
     else:
         assert len(colors) == ncolors, "not {0} colors".format(ncolors)
 
-    def corrfunc(x, y, **kws):
+    def corrfunc(x, y, contour, **kws):
         r, _ = scipy.stats.pearsonr(x, y)
         ax = plt.gca()
         ax.annotate('R = {0:.2f}'.format(r), xy=(0.05, 0.9), 
                 xycoords=ax.transAxes, fontsize=19, 
                 fontstyle='oblique')
         color = colors.pop(0)
-        plt.scatter(x, y, s=22, alpha=0.35, color=color,
-                marker='o', edgecolor='none', rasterized=True)
+        if contour:
+            raise RuntimeError('not yet implemented')
+        else:
+            plt.scatter(x, y, s=22, alpha=0.35, color=color,
+                    marker='o', edgecolor='none', rasterized=True)
 
     # map lower / upper / diagonal as here:
     # https://stackoverflow.com/a/30942817 for plot
