@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>plot &#8212; dms_tools2 2.2.3 documentation</title>
+    <title>plot &#8212; dms_tools2 2.2.4 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '2.2.3',
+        VERSION:     '2.2.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -278,7 +278,7 @@ simulate the data:</p>
 
 <dl class="function">
 <dt id="dms_tools2.plot.plotCorrMatrix">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotCorrMatrix</code><span class="sig-paren">(</span><em>names</em>, <em>infiles</em>, <em>plotfile</em>, <em>datatype</em>, <em>trim_unshared=True</em>, <em>title=''</em>, <em>colors='black'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotCorrMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotCorrMatrix" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotCorrMatrix</code><span class="sig-paren">(</span><em>names</em>, <em>infiles</em>, <em>plotfile</em>, <em>datatype</em>, <em>trim_unshared=True</em>, <em>title=''</em>, <em>colors='black'</em>, <em>contour=False</em>, <em>ncontours=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotCorrMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotCorrMatrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots correlations among replicates.</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -315,6 +315,10 @@ specify one color for all plots. Otherwise should be
 list of length <cite>len(names) * (len(names) - 1) // 2</cite>
 giving lists of colors for plots from top to bottom, 
 left to right.</dd>
+<dt><cite>contour</cite> (bool)</dt>
+<dd>Show contour lines from KDE rather than points.</dd>
+<dt><cite>ncontours</cite> (int)</dt>
+<dd>Number of contour lines if using <cite>contour</cite>.</dd>
 </dl>
 </dd>
 </dl>
@@ -468,7 +472,7 @@ of &gt;= this.</dd>
 
 <dl class="function">
 <dt id="dms_tools2.plot.plotSiteDiffSel">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotSiteDiffSel</code><span class="sig-paren">(</span><em>names</em>, <em>diffselfiles</em>, <em>plotfile</em>, <em>diffseltype</em>, <em>maxcol=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotSiteDiffSel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotSiteDiffSel" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotSiteDiffSel</code><span class="sig-paren">(</span><em>names</em>, <em>diffselfiles</em>, <em>plotfile</em>, <em>diffseltype</em>, <em>maxcol=2</em>, <em>white_bg=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotSiteDiffSel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotSiteDiffSel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot site diffsel or fracsurvive along sequence.</p>
 <p>Despite the function name, this function can be used to
 plot either differential selection or fraction surviving.</p>
@@ -498,6 +502,8 @@ plot either differential selection or fraction surviving.</p>
 </dd>
 <dt><cite>maxcol</cite> (int)</dt>
 <dd>Number of columns in faceted plot.</dd>
+<dt><cite>white_bg</cite> (bool)</dt>
+<dd>Plots will have a white background with limited other formatting.</dd>
 </dl>
 </dd>
 </dl>
