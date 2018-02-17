@@ -1,7 +1,7 @@
 Change Log
 ===========
 
-2.2.dev4
+2.2.4
 ----------
 * added `contour` option to `plot.plotCorrMatrix`
 
