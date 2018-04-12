@@ -406,7 +406,7 @@ def plotCumulMutCounts(names, countsfiles, plotfile, chartype,
     nrow = math.ceil(len(names) / float(ncol))
     p = (ggplot(df, aes('counts', color='character', linestyle='character'))
             + stat_ecdf(geom='step', size=1)
-            + scale_x_continuous(limits=(0, nmax))
+            + coord_cartesian(xlim=(0, nmax))
             + facet_wrap('~name', ncol=ncol) 
             + theme(figure_size=(2.25 * (0.6 + ncol), 1.3 * (0.5 + nrow)),
                     legend_position='top', legend_direction='horizontal')

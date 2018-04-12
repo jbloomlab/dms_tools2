@@ -5,6 +5,8 @@ Change Log
 -------
 * fix bug in stringency re-scaling by ``dms2_logoplot``
 
+* fix bug in axis scaling in `plot.plotCumulMutCounts`
+
 2.2.4
 ----------
 * added `contour` option to `plot.plotCorrMatrix`
