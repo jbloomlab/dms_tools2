@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.2.dev5
+-------
+* fix bug in stringency re-scaling by ``dms2_logoplot``
+
 2.2.4
 ----------
 * added `contour` option to `plot.plotCorrMatrix`

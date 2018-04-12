@@ -221,8 +221,10 @@ def main():
             cols.append('*')
         data = data[cols]
         if datatype == 'prefs':
-            # re-norm after excludestop
-            data = dms_tools2.prefs.rescalePrefs(data, args['stringency'])
+            # re-norm after excludestop, we pass stringency of 1
+            # because we have already re-scaled and are just using
+            # function to re-normalize
+            data = dms_tools2.prefs.rescalePrefs(data, 1)
             
         # convert data from wide data frame to dict for logo plot
         data = data.set_index('site').to_dict('index')
