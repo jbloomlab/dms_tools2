@@ -7,6 +7,8 @@ Change Log
 
 * fix bug in axis scaling in `plot.plotCumulMutCounts`
 
+* added `Haddox2018` and `Doud2018` examples and doc links
+
 2.2.4
 ----------
 * added `contour` option to `plot.plotCorrMatrix`
