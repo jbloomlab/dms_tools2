@@ -66,7 +66,10 @@ setup(
         'statsmodels>=0.8',
         ],
     extras_require = {
-        'rplot':['rpy2>=2.9.1']
+        'rplot':[
+                'rpy2>=2.9.1',
+                'tzlocal', # required by rpy2 but not auto installed in 2.9.3
+                ]
         },
     platforms = 'Linux and Mac OS X.',
     packages = ['dms_tools2'],
