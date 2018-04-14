@@ -1,7 +1,7 @@
 Change Log
 ===========
 
-2.2.dev5
+2.2.5
 -------
 * fix bug in stringency re-scaling by ``dms2_logoplot``
 
