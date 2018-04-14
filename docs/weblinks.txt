@@ -29,9 +29,13 @@
 .. _`Crooks et al, Genome Research, 14:1188-1190`: http://genome.cshlp.org/content/14/6/1188
 .. _`full list of contributors`: https://github.com/jbloomlab/dms_tools2/contributors
 .. _`Doud and Bloom (2016)`: http://www.mdpi.com/1999-4915/8/6/155
+.. _`Doud et al (2018)`: https://www.nature.com/articles/s41467-018-03665-3
+.. _`Haddox et al (2018)`: https://elifesciences.org/articles/34420
 .. _`Doud2016 example`: https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2016/analysis_notebook.ipynb
 .. _`Doud2017 example`: https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2017/analysis_notebook.ipynb
 .. _`Dingens2017 example`: https://github.com/jbloomlab/dms_tools2/blob/master/examples/Dingens2017/analysis_notebook.ipynb
+.. _`Doud2018 example`: https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2018/analysis_notebook.ipynb
+.. _`Haddox2018 example`: https://github.com/jbloomlab/dms_tools2/tree/master/examples/Haddox2018
 .. _`Jupyter notebook`: https://ipython.org/notebook.html
 .. _`fastq-dump`: https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?view=toolkit_doc&f=fastq-dump
 .. _`Sequence Read Archive`: https://www.ncbi.nlm.nih.gov/sra
@@ -49,7 +53,6 @@
 .. _`Bloom (2014)`: http://mbe.oxfordjournals.org/content/31/8/1956
 .. _`Bloom (2017)`: https://biologydirect.biomedcentral.com/track/pdf/10.1186/s13062-016-0172-z?site=biologydirect.biomedcentral.com
 .. _`Hilton et al (2017)`: https://peerj.com/articles/3657.pdf
-.. _`Doud, Lee, and Bloom (2017)`: https://www.biorxiv.org/content/early/2017/10/28/210468
 .. _`ggseqlogo`: https://omarwagih.github.io/ggseqlogo/
 .. _`reference for ggseqlogo`: https://doi.org/10.1093/bioinformatics/btx469
 .. _`rplot module`: https://jbloomlab.github.io/dms_tools2/dms_tools2.rplot.html

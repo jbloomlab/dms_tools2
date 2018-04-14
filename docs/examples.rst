@@ -27,6 +27,17 @@ Mutational antigenic profiling of the BF520 HIV Env against PGT151 by Dingens et
 `Dingens et al (2017)`_ performed mutational antigenic profiling of HIV Env (BF520 strain) against the PGT151 broadly neutralizing antibody, using :ref:`bcsubamp` to obtain high sequencing accuracy, and then estimating the :ref:`diffsel` from PGT151 on each mutation.
 You can see a `Jupyter notebook`_ that analyzes their data by clicking here: `Dingens2017 example`_.
 
+Mutational antigenic profiling of broad and narrow antibodies to influenza hemagglutinin by Doud et al (2018)
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+`Doud et al (2018)`_ performed mutational antigenic profiling of influenza hemagglutinin using broadly neutralizing and strain-specific antibodies, using :ref:`bcsubamp` to obtain high sequencing accuracy, and then estimating the :ref:`fracsurvive` for each mutation.
+You can see a `Jupyter notebook`_ that analyzes their data by clicking here: `Doud2018 example`_.
+
+Deep mutational scanning of two HIV Envs by Haddox et al (2018)
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+`Haddox et al (2018)`_ performed deep mutational scanning of two HIV Envs, and then compared the :ref:`prefs` between Envs.
+They used :ref:`bcsubamp` to achieve high sequencing accuracy.
+You can see a `Jupyter notebook`_ that analyzes their data by clicking here: `Haddox2018 example`_.
+
 Downloading and running the example notebooks
 -------------------------------------------------
 Each example analysis is available on the GitHub repository that hosts the `dms_tools2 source code`_. 
