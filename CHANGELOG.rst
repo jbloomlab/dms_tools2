@@ -1,7 +1,7 @@
 Change Log
 ===========
 
-2.2.dev5
+2.2.dev6
 -------
 * fix bug in `diffsel.tidyToWide` such that sites with matching values (i.e. all 0 values) are not dropped during de-duplication.
 

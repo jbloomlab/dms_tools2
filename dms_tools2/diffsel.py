@@ -40,6 +40,8 @@ def tidyToWide(tidy_df, valuecol):
 
     >>> tidy_df = pandas.read_csv(io.StringIO(
     ...     '''site wildtype mutation diffsel
+    ...           3        A        D    -1.5 
+    ...           3        A        C    10.1
     ...           2        A        C    10.1
     ...           1        C        D     9.5
     ...           1        C        A     0.2
@@ -50,6 +52,7 @@ def tidyToWide(tidy_df, valuecol):
       site   A    C    D wildtype
     0    1 0.2  0.0  9.5        C
     1    2 0.0 10.1 -1.5        A
+    2    3 0.0 10.1 -1.5        A
     """
     assert isinstance(tidy_df, pandas.DataFrame)
     cols = ['site', 'wildtype', 'mutation', valuecol]
@@ -69,10 +72,9 @@ def tidyToWide(tidy_df, valuecol):
     wide_df = (tidy_df.pivot(columns='mutation', values=valuecol)
                       .fillna(0.0)
                       .join(wt)
-                      #.drop_duplicates()
                       .reset_index()
                       )
-    wide_df = wide_df.drop_duplicates()
+    wide_df = wide_df.drop_duplicates().reset_index(drop=True)
 
     return wide_df
 
