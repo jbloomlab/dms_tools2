@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2 package &#8212; dms_tools2 2.2.4 documentation</title>
+    <title>dms_tools2 package &#8212; dms_tools2 2.2.5 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '2.2.4',
+        VERSION:     '2.2.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -61,7 +61,7 @@
 
 <dl class="data">
 <dt id="dms_tools2.AA_TO_CODONS">
-<code class="descclassname">dms_tools2.</code><code class="descname">AA_TO_CODONS</code><em class="property"> = {'V': ['GTA', 'GTC', 'GTG', 'GTT'], 'Y': ['TAC', 'TAT'], 'F': ['TTC', 'TTT'], 'N': ['AAC', 'AAT'], 'C': ['TGC', 'TGT'], 'L': ['CTA', 'CTC', 'CTG', 'CTT', 'TTA', 'TTG'], 'E': ['GAA', 'GAG'], 'G': ['GGA', 'GGC', 'GGG', 'GGT'], 'I': ['ATA', 'ATC', 'ATT'], 'K': ['AAA', 'AAG'], 'Q': ['CAA', 'CAG'], '*': ['TAA', 'TAG', 'TGA'], 'A': ['GCA', 'GCC', 'GCG', 'GCT'], 'H': ['CAC', 'CAT'], 'W': ['TGG'], 'T': ['ACA', 'ACC', 'ACG', 'ACT'], 'R': ['AGA', 'AGG', 'CGA', 'CGC', 'CGG', 'CGT'], 'M': ['ATG'], 'P': ['CCA', 'CCC', 'CCG', 'CCT'], 'S': ['AGC', 'AGT', 'TCA', 'TCC', 'TCG', 'TCT'], 'D': ['GAC', 'GAT']}</em><a class="headerlink" href="#dms_tools2.AA_TO_CODONS" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.</code><code class="descname">AA_TO_CODONS</code><em class="property"> = {'*': ['TAA', 'TAG', 'TGA'], 'A': ['GCA', 'GCC', 'GCG', 'GCT'], 'C': ['TGC', 'TGT'], 'D': ['GAC', 'GAT'], 'E': ['GAA', 'GAG'], 'F': ['TTC', 'TTT'], 'G': ['GGA', 'GGC', 'GGG', 'GGT'], 'H': ['CAC', 'CAT'], 'I': ['ATA', 'ATC', 'ATT'], 'K': ['AAA', 'AAG'], 'L': ['CTA', 'CTC', 'CTG', 'CTT', 'TTA', 'TTG'], 'M': ['ATG'], 'N': ['AAC', 'AAT'], 'P': ['CCA', 'CCC', 'CCG', 'CCT'], 'Q': ['CAA', 'CAG'], 'R': ['AGA', 'AGG', 'CGA', 'CGC', 'CGG', 'CGT'], 'S': ['AGC', 'AGT', 'TCA', 'TCC', 'TCG', 'TCT'], 'T': ['ACA', 'ACC', 'ACG', 'ACT'], 'V': ['GTA', 'GTC', 'GTG', 'GTT'], 'W': ['TGG'], 'Y': ['TAC', 'TAT']}</em><a class="headerlink" href="#dms_tools2.AA_TO_CODONS" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict back-translating amino acid to list of codons.</p>
 </dd></dl>
 
@@ -73,13 +73,13 @@
 
 <dl class="data">
 <dt id="dms_tools2.CODON_TO_AA">
-<code class="descclassname">dms_tools2.</code><code class="descname">CODON_TO_AA</code><em class="property"> = {'AAA': 'K', 'CTG': 'L', 'ACC': 'T', 'TGT': 'C', 'AGC': 'S', 'GTT': 'V', 'CGT': 'R', 'GCG': 'A', 'TAA': '*', 'AAC': 'N', 'AGG': 'R', 'CGG': 'R', 'GAC': 'D', 'TAT': 'Y', 'TAC': 'Y', 'CCA': 'P', 'CTC': 'L', 'CAT': 'H', 'TTG': 'L', 'GCC': 'A', 'GTA': 'V', 'GAT': 'D', 'GGA': 'G', 'TGA': '*', 'TAG': '*', 'TTC': 'F', 'CTT': 'L', 'ATA': 'I', 'TCG': 'S', 'GAG': 'E', 'ATC': 'I', 'TCT': 'S', 'CTA': 'L', 'CAA': 'Q', 'TCA': 'S', 'GGT': 'G', 'GTC': 'V', 'TCC': 'S', 'TGG': 'W', 'GCT': 'A', 'ACG': 'T', 'ATG': 'M', 'ACT': 'T', 'GGC': 'G', 'CCG': 'P', 'CCT': 'P', 'TGC': 'C', 'AAT': 'N', 'TTT': 'F', 'CAC': 'H', 'CGA': 'R', 'GAA': 'E', 'GGG': 'G', 'AAG': 'K', 'ATT': 'I', 'GCA': 'A', 'TTA': 'L', 'AGT': 'S', 'GTG': 'V', 'CCC': 'P', 'ACA': 'T', 'CGC': 'R', 'CAG': 'Q', 'AGA': 'R'}</em><a class="headerlink" href="#dms_tools2.CODON_TO_AA" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.</code><code class="descname">CODON_TO_AA</code><em class="property"> = {'AAA': 'K', 'AAC': 'N', 'AAG': 'K', 'AAT': 'N', 'ACA': 'T', 'ACC': 'T', 'ACG': 'T', 'ACT': 'T', 'AGA': 'R', 'AGC': 'S', 'AGG': 'R', 'AGT': 'S', 'ATA': 'I', 'ATC': 'I', 'ATG': 'M', 'ATT': 'I', 'CAA': 'Q', 'CAC': 'H', 'CAG': 'Q', 'CAT': 'H', 'CCA': 'P', 'CCC': 'P', 'CCG': 'P', 'CCT': 'P', 'CGA': 'R', 'CGC': 'R', 'CGG': 'R', 'CGT': 'R', 'CTA': 'L', 'CTC': 'L', 'CTG': 'L', 'CTT': 'L', 'GAA': 'E', 'GAC': 'D', 'GAG': 'E', 'GAT': 'D', 'GCA': 'A', 'GCC': 'A', 'GCG': 'A', 'GCT': 'A', 'GGA': 'G', 'GGC': 'G', 'GGG': 'G', 'GGT': 'G', 'GTA': 'V', 'GTC': 'V', 'GTG': 'V', 'GTT': 'V', 'TAA': '*', 'TAC': 'Y', 'TAG': '*', 'TAT': 'Y', 'TCA': 'S', 'TCC': 'S', 'TCG': 'S', 'TCT': 'S', 'TGA': '*', 'TGC': 'C', 'TGG': 'W', 'TGT': 'C', 'TTA': 'L', 'TTC': 'F', 'TTG': 'L', 'TTT': 'F'}</em><a class="headerlink" href="#dms_tools2.CODON_TO_AA" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict translating codons to amino acids</p>
 </dd></dl>
 
 <dl class="data">
 <dt id="dms_tools2.NTCOMPLEMENT">
-<code class="descclassname">dms_tools2.</code><code class="descname">NTCOMPLEMENT</code><em class="property"> = {'A': 'T', 'G': 'C', 'N': 'N', 'T': 'A', 'C': 'G'}</em><a class="headerlink" href="#dms_tools2.NTCOMPLEMENT" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.</code><code class="descname">NTCOMPLEMENT</code><em class="property"> = {'A': 'T', 'C': 'G', 'G': 'C', 'N': 'N', 'T': 'A'}</em><a class="headerlink" href="#dms_tools2.NTCOMPLEMENT" title="Permalink to this definition">¶</a></dt>
 <dd><p>dict mapping each nucleotide to its complement.</p>
 </dd></dl>
 
@@ -200,7 +200,7 @@
       &copy;2017, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

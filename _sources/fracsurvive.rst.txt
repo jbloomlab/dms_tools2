@@ -41,7 +41,7 @@ These programs create visualizations of the results, and you can also visualize 
 
 Definition of fraction surviving
 ---------------------------------------------
-This definition of the fraction surviving was originally introduced in `Doud, Lee, and Bloom (2017)`_.
+This definition of the fraction surviving was originally introduced in `Doud et al (2018)`_.
 
 We use :math:`F_{r,x}` to denote the fraction of variants with character :math:`x` (e.g., an amino acid) at site :math:`r` that survive the selection.
 
@@ -153,5 +153,8 @@ The `dms_tools2`_ software contains programs to calculate the fraction of each m
 
     * :ref:`dms2_logoplot` can be used to create logo plots that visualize the fraction surviving.
 
+Here are some example analyses:
+
+    * `Doud2018 example`_
 
 .. include:: weblinks.txt

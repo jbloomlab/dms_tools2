@@ -112,6 +112,10 @@ Here are some example analyses:
 
     * `Dingens2017 example`_
 
+    * `Doud2018 example`_
+
+    * `Haddox2018 example`_
+
 More details and notes
 ------------------------
 The `Bloom lab`_ has now published a number of papers using this deep sequencing strategy.
@@ -125,6 +129,10 @@ For instance, see:
     * `Doud et al (2017)`_
 
     * `Dingens et al (2017)`_
+
+    * `Doud et al (2018)`_
+
+    * `Haddox et al (2018)`_
 
 If you want **really detailed** information, you can look at some lab notes. Here are `Jesse Bloom's lab notes <_static/BarcodedSubampliconNotes_Jesse.pdf>`_ from an early iteration of this strategy on influenza HA, and here are `Mike Doud's lab notes <_static/BarcodedSubampliconNotes_Mike.pdf>`_ from an experiment similar to that described in `Doud et al (2017)`_.
 
