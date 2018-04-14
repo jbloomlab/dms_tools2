@@ -69,9 +69,10 @@ def tidyToWide(tidy_df, valuecol):
     wide_df = (tidy_df.pivot(columns='mutation', values=valuecol)
                       .fillna(0.0)
                       .join(wt)
-                      .drop_duplicates()
+                      #.drop_duplicates()
                       .reset_index()
                       )
+    wide_df = wide_df.drop_duplicates()
 
     return wide_df
 
