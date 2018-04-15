@@ -32,7 +32,7 @@ def sessionInfo():
             '\tdms_tools2 version: {0}'.format(dms_tools2.__version__),
             ]
     for modname in ['Bio', 'HTSeq', 'pandas', 'numpy', 'IPython',
-            'jupyter', 'matplotlib', 'plotnine', 'natsort', 'pystan'
+            'jupyter', 'matplotlib', 'plotnine', 'natsort', 'pystan',
             'scipy', 'seaborn', 'phydmslib', 'statsmodels', 'rpy2']:
         try:
             v = importlib.import_module(modname).__version__
