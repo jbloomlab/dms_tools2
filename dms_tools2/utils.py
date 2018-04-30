@@ -14,10 +14,15 @@ import platform
 import importlib
 import logging
 import tempfile
+import itertools
+import collections
+
 import numpy
 import pandas
 import HTSeq
+
 import dms_tools2
+from dms_tools2 import CODONS, CODON_TO_AA, AAS_WITHSTOP, AA_TO_CODONS
 import dms_tools2._cutils
 
 
@@ -487,7 +492,7 @@ def incrementCounts(refseqstart, subamplicon, chartype, counts):
 
     >>> codonlen = 10
     >>> counts = dict([(codon, [0] * codonlen) for codon 
-    ...         in dms_tools2.CODONS])
+    ...         in CODONS])
     >>> subamplicon1 = 'ATGGACTTTC'
     >>> incrementCounts(1, subamplicon1, 'codon', counts)
     >>> subamplicon2 = 'GGTCTTTCCCGGN'
@@ -531,19 +536,19 @@ def codonToAACounts(counts):
     Args:
         `counts` (`pandas.DataFrame`)
             Columns are the string `site` `wildtype` and all codons
-            in `dms_tools2.CODONS`. Additional columns are allowed
+            in `CODONS`. Additional columns are allowed
             but ignored.
 
     Returns:
         `aacounts` (`pandas.DataFrame`)
             Columns are the string `site` and all amino acids
-            in `dms_tools.AAS_WITHSTOP` with counts for each
+            in `AAS_WITHSTOP` with counts for each
             amino acid made by summing counts for encoding codons.
 
     >>> d = {'site':[1, 2], 'othercol':[0, 0], 'ATG':[105, 1],
     ...         'GGG':[3, 117], 'GGA':[2, 20], 'TGA':[0, 1],
     ...         'wildtype':['ATG', 'GGG']}
-    >>> for codon in dms_tools2.CODONS:
+    >>> for codon in CODONS:
     ...     if codon not in d:
     ...         d[codon] = [0, 0]
     >>> counts = pandas.DataFrame(d)
@@ -564,14 +569,14 @@ def codonToAACounts(counts):
     True
     """
     d = dict([(key, []) for key in ['site', 'wildtype'] + 
-            dms_tools2.AAS_WITHSTOP])
+            AAS_WITHSTOP])
     for (i, row) in counts.iterrows():
         d['site'].append(row['site'])
-        d['wildtype'].append(dms_tools2.CODON_TO_AA[row['wildtype']])
-        for aa in dms_tools2.AAS_WITHSTOP:
+        d['wildtype'].append(CODON_TO_AA[row['wildtype']])
+        for aa in AAS_WITHSTOP:
             d[aa].append(0)
-        for c in dms_tools2.CODONS:
-            d[dms_tools2.CODON_TO_AA[c]][-1] += (row[c])
+        for c in CODONS:
+            d[CODON_TO_AA[c]][-1] += (row[c])
     return pandas.DataFrame(d)
 
 
@@ -620,7 +625,7 @@ def annotateCodonCounts(counts):
 
     >>> d = {'site':[1, 2], 'wildtype':['ATG', 'GGG'], 'ATG':[105, 1],
     ...         'GGG':[3, 117], 'GGA':[2, 20], 'TGA':[0, 1]}
-    >>> for codon in dms_tools2.CODONS:
+    >>> for codon in CODONS:
     ...     if codon not in d:
     ...         d[codon] = [0, 0]
     >>> counts = pandas.DataFrame(d)
@@ -661,10 +666,10 @@ def annotateCodonCounts(counts):
         df = counts.copy()
     else:
         raise ValueError("invalid counts")
-    assert set(dms_tools2.CODONS) <= set(df.columns), \
+    assert set(CODONS) <= set(df.columns), \
             "Did not find counts for all codons".format(counts)
 
-    df['ncounts'] = df[dms_tools2.CODONS].sum(axis=1)
+    df['ncounts'] = df[CODONS].sum(axis=1)
 
     df['mutfreq'] = (((df['ncounts'] - df.lookup(df['wildtype'].index,
             df['wildtype'].values)) / df['ncounts'].astype('float'))
@@ -683,11 +688,11 @@ def annotateCodonCounts(counts):
         nXnt = dict([(n + 1, 0) for n in range(3)])
         nntchanges = dict([(ntchange, 0) for ntchange in ntchanges])
         wt = row['wildtype']
-        wtaa = dms_tools2.CODON_TO_AA[wt]
-        for c in dms_tools2.CODONS:
+        wtaa = CODON_TO_AA[wt]
+        for c in CODONS:
             if c == wt:
                 continue
-            aa = dms_tools2.CODON_TO_AA[c]
+            aa = CODON_TO_AA[c]
             if aa == '*':
                 nstop += row[c]
             elif aa == wtaa:
@@ -792,7 +797,7 @@ def convertCountsFormat(oldfile, newfile, charlist):
             https://jbloomlab.github.io/dms_tools2/dms2_bcsubamp.html
         `charlist` (list)
             List of characters that we expect in the counts files.
-            For instance, could be `dms_tools2.CODONS`.
+            For instance, could be `CODONS`.
     """
     with open(oldfile) as f:
         header = f.readline()
@@ -919,6 +924,94 @@ def renumberSites(renumbfile, infiles, missing='error',
                       )
 
         df_in.to_csv(fout, index=False)
+
+
+def codonEvolAccessibility(seqs):
+    """Accessibility of amino acids by nucleotide mutations.
+
+    Args:
+        `seqs` (str or list)
+            A single coding sequence or a list of such sequences.
+
+    Returns:
+        A pandas DataFrame listing all sites in the sequence(s)
+        numbered 1, 2, ..., with columns giving the accessibility
+        of each amino acid by single nucleotide mutations.
+
+    The accessibility of codon :math:`c` to amino-acid :math:`a`
+    by single-nucleotide mutations is defined as the minimum
+    number of nucleotide mutations needed to generate that
+    amino-acid. 
+
+    For a collection of sequences, we calculate the 
+    accessibility as the weighted average of the accessibilities
+    of all codons observed at that site in the collection of
+    sequences.
+
+    As an example, compute accessibility for one sequence:
+
+    >>> s = "ATGGGA"
+    >>> acc = codonEvolAccessibility(s)
+
+    The returned pandas DataFrame `acc` is has a column named
+    `site` plus columns for all amino acids:
+
+    >>> all(acc.columns == ['site'] + AAS_WITHSTOP)
+    True
+
+    We look at entries for a few amino acids. At the first 
+    site, the wildtype entry in the sequence `s` is the codon
+    for *M* (``ATG``). So at this site, the distance to *M*
+    is 0. The distance to *I* (which has codon ``ATA`` as a
+    codon) is 1, and the distance to *W* (which has only ``TGG``
+    as a codon) is 2.
+
+    >>> acc[['site', 'G', 'I', 'M', 'W']]
+       site    G    I    M    W
+    0     1  2.0  1.0  0.0  2.0
+    1     2  0.0  2.0  3.0  2.0
+
+    If we pass the function a list of multiple sequences,
+    then the accessibilities are averaged over the sequences:
+
+    >>> acc2 = codonEvolAccessibility(['ATGGGA', 'ATAGGA'])
+    >>> acc2[['site', 'G', 'I', 'M', 'W']]
+       site    G    I    M    W
+    0     1  2.0  0.5  0.5  2.5
+    1     2  0.0  2.0  3.0  2.0
+    """
+    # get number of nucleotide diffs between all pairs of codons
+    nt_diffs = dict([
+            ((c1, c2), sum(1 for x1, x2 in zip(c1, c2) if x1 != x2))
+            for c1, c2 in itertools.product(CODONS, repeat=2)])
+
+    # get number of nucleotide diffs to nearest codon for amino acid
+    aa_nt_diffs = {}
+    for c in CODONS:
+        for aa, othercs in AA_TO_CODONS.items():
+            aa_nt_diffs[(c, aa)] = min([nt_diffs[(c, c2)] 
+                    for c2 in othercs])
+
+    # make sure seqs are of same valid length
+    if isinstance(seqs, str):
+        seqs = [seqs]
+    assert len(seqs[0]) % 3 == 0, "seqs not of length divisible by 3"
+    assert all([len(seqs[0]) == len(s) for s in seqs[1 : ]]), \
+            "seqs not all of same length"
+
+    # get nucleotide distances, summing for all sequences
+    dists = collections.defaultdict(lambda: collections.defaultdict(float))
+    for s in seqs:
+        for r in range(len(s) // 3):
+            c = s[3 * r : 3 * r + 3]
+            assert c in CODONS, "invalid codon {0}".format(c)
+            for aa in AAS_WITHSTOP:
+                dists[r + 1][aa] += aa_nt_diffs[(c, aa)]
+
+    return (pandas.DataFrame.from_dict(dists, orient='index')
+            .rename_axis('site')
+            [AAS_WITHSTOP]
+            / len(seqs)).reset_index()
 
 
 if __name__ == '__main__':

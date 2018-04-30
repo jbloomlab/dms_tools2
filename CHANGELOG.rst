@@ -1,9 +1,11 @@
 Change Log
 ===========
 
-2.2.dev6
+2.2.6
 -------
 * fix bug in `diffsel.tidyToWide` such that sites with matching values (i.e. all 0 values) are not dropped during de-duplication.
+
+* added `utils.codonEvolAccessibility` function
 
 
 2.2.5
