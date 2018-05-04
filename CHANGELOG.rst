@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.3.dev0
+--------
+* added `pacbio` module
+
 2.2.6
 -------
 * fix bug in `diffsel.tidyToWide` such that sites with matching values (i.e. all 0 values) are not dropped during de-duplication.
