@@ -1,6 +1,4 @@
 """Tests `dms_tools2.pacbio.CCS` class and related functions.
-
-Requires ``samtools`` to be installed.
 """
 
 import os
@@ -10,6 +8,7 @@ import copy
 import numpy
 import pandas
 from pandas.testing import assert_frame_equal
+import pysam
 
 import dms_tools2.pacbio
 
@@ -33,12 +32,6 @@ class test_pacbio_CCS(unittest.TestCase):
         self.ccs = dms_tools2.pacbio.CCS('test', bamfile, reportfile)
 
 
-    def test_samfile(self):
-        """Test creation of `CCS.samfile`."""
-        samfile = self.ccs.samfile
-        self.assertTrue(os.path.isfile(samfile))
-
-
     def test_zmw_report(self):
         """Test creation of `CCS.zmw_report`."""
         self.assertAlmostEqual(
@@ -46,10 +39,10 @@ class test_pacbio_CCS(unittest.TestCase):
                 1,
                 places=3)
 
-        with open(self.ccs.samfile) as f:
-            samlines = len(f.readlines())
+        bamlines = sum(1 for _ in pysam.AlignmentFile(self.ccs.bamfile,
+                'rb', check_sq=False))
         self.assertEqual(
-                samlines,
+                bamlines,
                 (self.ccs.zmw_report
                  .query('status == "Success -- CCS generated"')
                  .number.values[0]
@@ -75,14 +68,6 @@ class test_pacbio_CCS(unittest.TestCase):
                 df.query('sample == "test"').number.sort_values()))
 
         self.assertEqual(len(df), 2 * len(ccs2.zmw_report))
-
-
-    def tearDown(self):
-        """Remove created files."""
-        try:
-            os.remove(self.ccs.samfile)
-        except:
-            pass
 
 
 

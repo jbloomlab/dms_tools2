@@ -52,6 +52,7 @@ setup(
     install_requires = [
         'biopython>=1.68',
         'HTSeq>=0.9',
+        'pysam==0.13', # got an error with later versions
         'pandas>=0.21',
         'numpy>=1.13',
         'IPython>=5.1',

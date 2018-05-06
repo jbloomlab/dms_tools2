@@ -4,9 +4,6 @@ pacbio
 ===================
 
 Tools for processing PacBio sequencing data.
-
-Some functionality of this module requires you to
-have `samtools <http://www.htslib.org/>`_ installed.
 """
 
 
@@ -32,17 +29,25 @@ class CCS:
     Has been tested on output of ``ccs`` version 3.0.0.
 
     Args:
-        `name` (str): sample or sequencing run
-        `bamfile` (str): ``*_ccs.bam`` file created by ``ccs``
-        `reportfile` (str): ``*_report.txt`` created by ``ccs``
+        `name` (str)
+            Sample or sequencing run name
+        `bamfile` (str)
+            BAM file created by ``ccs``
+        `reportfile` (str)
+            Report file created by ``ccs``
 
     Attributes:
         `name` (str)
+            Name set at initialization
         `bamfile` (str)
+            ``ccs`` BAM file set at initialization
         `reportfile` (str)
-        `zmw_report` (pandas.DataFrame): ZMW stats in `reportfile`.
+            ``ccs`` report file set at initialization
+        `zmw_report` (pandas.DataFrame): 
+            ZMW stats in `reportfile`.
             Columns are *status*, *number*, *percent*, and *fraction*.
-        `subread_report`: Like `zmw_report` but for subreads.
+        `subread_report` (pandas.DataFrame)
+            Like `zmw_report` but for subreads.
     """
 
     def __init__(self, name, bamfile, reportfile):
@@ -55,32 +60,8 @@ class CCS:
         assert os.path.isfile(reportfile), "can't find {0}".format(reportfile)
         self.reportfile = reportfile
 
-        self._samfile = None
-
         # set `zmw_report` and `subread_report`
         self._parse_report()
-
-
-    @property
-    def samfile(self):
-        """Create and return SAM version of `bamfile`."""
-        if (self._samfile is None) or (not os.path.isfile(self._samfile)):
-            try:
-                subprocess.check_output(['samtools', '--version'])
-            except:
-                raise RuntimeError("`samtools` must be installed")
-            self._samfile = os.path.splitext(self.bamfile)[0] + '.sam'
-            try:
-                subprocess.check_call(['samtools', 'view', 
-                        '-o', self._samfile, self.bamfile])
-            except:
-                if os.path.isfile(samfile):
-                    os.remove(samfile) # avoid incomplete files
-                raise
-            assert os.path.isfile(self._samfile), \
-                    "Failed to create {0}".format(self._samfile)
-
-        return self._samfile
 
 
     def _parse_report(self):
@@ -113,12 +94,15 @@ def summarizeCCSreports(ccslist, report_type, plotfile,
     """Summarize and plot `CCS` reports.
 
     Args:
-        `ccslist`: a `CCS` object or a list of them
-        `report_type` (str): "zmw" or "subread" indicating
-            which type of report to summarize
-        `plotfile` (str): name of created bar plot
-        `plotminfrac` (float): only plot status categories
-            wth >= this fraction in at least one `CCS`
+        `ccslist` (`CCS` object or list of them)
+            `CCS` objects to summarize
+        `report_type` (str "zmw" or "subread")
+            Which type of report to summarize
+        `plotfile` (str)
+            Name of created bar plot
+        `plotminfrac` (float)
+            Only plot status categories with >=
+            this fraction in at least one `CCS`
 
     Returns:
         Returns a pandas DataFrame aggregating the reports,
