@@ -1,0 +1,23 @@
+ZMW Yield
+Success -- CCS generated,1000,31.13%
+Failed -- Below SNR threshold,24052,22.35%
+Failed -- No usable subreads,6810,6.33%
+Failed -- Insert size too long,15,0.01%
+Failed -- Insert size too small,8,0.01%
+Failed -- Not enough full passes,36289,33.71%
+Failed -- Too many unusable subreads,350,0.33%
+Failed -- CCS did not converge,2,0.00%
+Failed -- CCS below minimum predicted accuracy,6619,6.15%
+Failed -- Unknown error during processing,0,0.00%
+
+
+Subread Yield
+Success - Used for CCS,639347,50.62%
+Failed -- Below SNR threshold,400546,31.71%
+Failed -- Alpha/Beta mismatch,50,0.00%
+Failed -- Below minimum quality,28750,2.28%
+Failed -- Filtered by size,51838,4.10%
+Failed -- Identity too low,354541,28.07%
+Failed -- Z-Score too low,57342,4.54%
+Failed -- From ZMW with too few passes,38211,3.03%
+Failed -- Other,46969,3.72%

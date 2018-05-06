@@ -10,6 +10,7 @@ before_install:
   - sudo apt-get -qq install dvipng
   - sudo apt-get -qq install texlive-latex-extra
   - sudo apt-get -qq install texlive-fonts-recommended
+  - sudo apt-get -qq install samtools
 
 addons:
   apt:
