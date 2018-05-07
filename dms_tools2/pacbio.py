@@ -10,6 +10,7 @@ Tools for processing PacBio sequencing data.
 import os
 import re
 import io
+import math
 import subprocess
 import collections
 
@@ -78,7 +79,8 @@ class CCS:
 
 
     def plotResults(self, plotfile,
-            cols=['passes', 'accuracy', 'length']):
+            cols=['passes', 'accuracy', 'length'],
+            title=True):
         """Plots the CCS results in `df`.
 
         The plot shows the distribution of each variable
@@ -90,21 +92,40 @@ class CCS:
             `cols` (list)
                 List of variables to plot. There must be a
                 column for each in `df`.
+            `title` (bool or str)
+                If `False`, no title. If `True`, make
+                `name` the title. If a string, make
+                that the title.
         """
         assert set(cols) <= set(self.df.columns)
 
+        def hist1d(x, color, **kwargs):
+            """1D histogram for diagonal elements."""
+            plt.hist(x, color=color,
+                    bins=dms_tools2.plot.hist_bins_intsafe(x),
+                    **kwargs)
+
         def hist2d(x, y, color, **kwargs):
             """2D histogram for off-diagonal elements."""
-            cmap = seaborn.light_palette(color, as_cmap=True)
-            bins = [numpy.histogram(a, bins='doane')[0].size
-                    for a in [x, y]]
-            plt.hist2d(x, y, bins=bins, cmap=cmap, **kwargs)
+            plt.hist2d(x, y, 
+                    bins=[dms_tools2.plot.hist_bins_intsafe(a)
+                          for a in [x, y]],
+                    cmap=dms_tools2.plot.from_white_cmap(color),
+                    **kwargs)
 
-        g = (seaborn.PairGrid(self.df, vars=cols)
-             .map_diag(plt.hist, bins='doane')
-        #     .map_upper(plt.scatter)
-             .map_lower(hist2d)
+        color = COLOR_BLIND_PALETTE[0]
+        g = (dms_tools2.plot.AugmentedPairGrid(self.df, vars=cols,
+                diag_sharey=False, size=3)
+             .map_diag(hist1d, color=color)
+             .map_upper(hist2d, color=color)
+             .map_lower(hist2d, color=color)
+             .ax_lims_clip_outliers()
              )
+
+        if title:
+            if not isinstance(title, str):
+                title = self.name
+            g.fig.suptitle(title, va='bottom')
 
         g.savefig(plotfile)
         plt.close()

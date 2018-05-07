@@ -1049,6 +1049,106 @@ def findSigSel(df, valcol, plotfile, fdr=0.05, title=None):
     return (df_sigsel, cutoff, gamma_params)
 
 
+def hist_bins_intsafe(x, method='fd'):
+    """Histogram bins that work for integer data.
+
+    You can auto-choose bins using `numpy.histogram`.
+    However, if the data are integer, these bins
+    may be non-integer and so some bins will capture
+    more integers. This function fixes that.
+
+    Args:
+        `x` (numpy array)
+            The data to bin.
+        `method` (str)
+            The binning method. Can be anything
+            acceptable to `numpy.histogram` as
+            a `bins` argument.
+
+    Returns:
+        The bin edges as returned in the second
+        element of `numpy.histogram`, but adjusted
+        to be of integer width if the data are all
+        integers.
+
+    Just like `numpy.histogram` for non-int data:
+
+    >>> numpy.random.seed(1)
+    >>> x = 100 * numpy.random.random(500)
+    >>> bin_edges = numpy.histogram(x, bins='fd')[1]
+    >>> bin_edges_intsafe = hist_bins_intsafe(x)
+    >>> (bin_edges == bin_edges_intsafe).all()
+    True
+    >>> (bin_edges == bin_edges.astype('int')).all()
+    False
+
+    But gives integer bins for int data:
+    >>> x = x.astype('int')
+    >>> bin_edges = numpy.histogram(x, bins='fd')[1]
+    >>> bin_edges_intsafe = hist_bins_intsafe(x)
+    >>> (bin_edges == bin_edges_intsafe).all()
+    False
+    >>> (bin_edges == bin_edges.astype('int')).all()
+    False
+    >>> (bin_edges_intsafe == bin_edges_intsafe.astype('int')).all()
+    True
+    """
+    bin_edges = numpy.histogram(x, bins='fd')[1]
+    if (x.astype('int') == x).all():
+        binwidth = math.ceil(bin_edges[1] - bin_edges[0])
+        bin_edges = numpy.arange(math.floor(x.min()),
+                math.ceil(x.max() + binwidth), binwidth) 
+    return bin_edges
+
+
+def from_white_cmap(color):
+    """Get matplotlib color map from white to `color`."""
+    light = seaborn.set_hls_values(color, l=1)
+    return seaborn.blend_palette([light, color], None, True)
+
+
+class AugmentedPairGrid(seaborn.PairGrid):
+    """Augmented version of `seaborn.PairGrid`."""
+
+    def ax_lims_clip_outliers(self, frac_clip=0.001, extend=0.03):
+        """Sets axis limits to clip outliers in data.
+
+        Useful if there are a few data points far outside the range
+        of most of the data.
+
+        Args:
+            `frac_clip` (float)
+                Set upper and lower limits so that this fraction of
+                data is outside limits at both ends. Done **before**
+                adding `extend`.
+            `extend` (float)
+                Extend the limits determined by `frac_clip` by this
+                fraction of the data range.
+        """
+        assert 0 <= frac_clip < 0.5
+
+        def _get_lims(s):
+            """Gets limits for data in pandas.Series `s`."""
+            s_range = s.max() - s.min()
+            if s_range == 0:
+                s_extend = max(extend, extend * s.max())
+            else:
+                s_extend = s_range * extend
+            s_min = s.quantile(frac_clip) - s_extend
+            s_max = s.quantile(1 - frac_clip) + s_extend
+            return (s_min, s_max)
+
+        xlims = [_get_lims(self.data[x]) for x in self.x_vars]
+        ylims = [_get_lims(self.data[y]) for y in self.y_vars]
+
+        for icol, xlim in enumerate(xlims):
+            for irow, ylim in enumerate(ylims):
+                self.axes[irow, icol].set_xlim(*xlim)
+                if icol != irow:
+                    self.axes[irow, icol].set_ylim(*ylim)
+
+        return self
+
 
 if __name__ == '__main__':
     import doctest

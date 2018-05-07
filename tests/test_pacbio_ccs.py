@@ -57,6 +57,14 @@ class test_pacbio_CCS(unittest.TestCase):
         self.assertEqual(set(self.ccs.df.columns),
                 {'name', 'CCS', 'accuracy', 'qvals', 'length', 'passes'})
 
+    def test_plotResults(self):
+        """Test `CCS.plotResults`."""
+        plotfile = os.path.join(self.testdir, 'CCSresults.pdf')
+        if os.path.isfile(plotfile):
+            os.remove(plotfile)
+        self.ccs.plotResults(plotfile)
+        self.assertTrue(os.path.isfile(plotfile))
+
     def test_summarizeCCSreports(self):
         """Test `summarizeCCSreports`."""
         plotfile = os.path.join(self.testdir, 'zmw_plot.pdf')
