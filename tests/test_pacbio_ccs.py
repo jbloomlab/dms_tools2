@@ -25,6 +25,10 @@ class test_pacbio_CCS(unittest.TestCase):
         reportfile = os.path.join(indir, 'test_report.txt')
         bamfile = os.path.join(indir, 'test_ccs.bam')
 
+
+        self.bamlines = sum(1 for _ in pysam.AlignmentFile(bamfile,
+                'rb', check_sq=False))
+
         self.testdir = os.path.join(cwd, 'test_pacbio_ccs_files')
         if not os.path.isdir(self.testdir):
             os.mkdir(self.testdir)
@@ -39,15 +43,19 @@ class test_pacbio_CCS(unittest.TestCase):
                 1,
                 places=3)
 
-        bamlines = sum(1 for _ in pysam.AlignmentFile(self.ccs.bamfile,
-                'rb', check_sq=False))
         self.assertEqual(
-                bamlines,
+                self.bamlines,
                 (self.ccs.zmw_report
                  .query('status == "Success -- CCS generated"')
                  .number.values[0]
                  )
                 )
+
+    def test_df(self):
+        """Test creation of `CCS.df`."""
+        self.assertEqual(self.bamlines, self.ccs.df.shape[0])
+        self.assertEqual(set(self.ccs.df.columns),
+                {'name', 'CCS', 'accuracy', 'qvals', 'length', 'passes'})
 
     def test_summarizeCCSreports(self):
         """Test `summarizeCCSreports`."""

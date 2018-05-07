@@ -11,8 +11,11 @@ import os
 import re
 import io
 import subprocess
+import collections
 
+import numpy
 import pandas
+import pysam
 
 # import dms_tools2.plot to set plotting contexts / themes
 import dms_tools2.plot
@@ -27,6 +30,9 @@ class CCS:
 
     Reads and manipulate results of PacBio ``ccs``.
     Has been tested on output of ``ccs`` version 3.0.0.
+
+    This class reads all data into memory, and so you
+    may need a lot of RAM if `bamfile` is large.
 
     Args:
         `name` (str)
@@ -48,6 +54,11 @@ class CCS:
             Columns are *status*, *number*, *percent*, and *fraction*.
         `subread_report` (pandas.DataFrame)
             Like `zmw_report` but for subreads.
+        `df` (pandas.DataFrame)
+            The CCSs in `bamfile`. Each row is a different CCS
+            On creation, there will be the following columns (you
+            can modify to add more): *CCS*, *qvals*, *name*,
+            *passes*, *accuracy*, *length*.
     """
 
     def __init__(self, name, bamfile, reportfile):
@@ -62,6 +73,41 @@ class CCS:
 
         # set `zmw_report` and `subread_report`
         self._parse_report()
+
+        self._build_df_from_bamfile()
+
+
+    def plotResults(self, plotfile,
+            cols=['passes', 'accuracy', 'length']):
+        """Plots the CCS results in `df`.
+
+        The plot shows the distribution of each variable
+        as well as all pairwise correlations.
+
+        Args:
+            `plotfile` (str)
+                Name of created plot.
+            `cols` (list)
+                List of variables to plot. There must be a
+                column for each in `df`.
+        """
+        assert set(cols) <= set(self.df.columns)
+
+        def hist2d(x, y, color, **kwargs):
+            """2D histogram for off-diagonal elements."""
+            cmap = seaborn.light_palette(color, as_cmap=True)
+            bins = [numpy.histogram(a, bins='doane')[0].size
+                    for a in [x, y]]
+            plt.hist2d(x, y, bins=bins, cmap=cmap, **kwargs)
+
+        g = (seaborn.PairGrid(self.df, vars=cols)
+             .map_diag(plt.hist, bins='doane')
+        #     .map_upper(plt.scatter)
+             .map_lower(hist2d)
+             )
+
+        g.savefig(plotfile)
+        plt.close()
 
 
     def _parse_report(self):
@@ -86,6 +132,31 @@ class CCS:
                         .astype('float') / 100)
                   )
             setattr(self, read_type + '_report', df)
+
+
+    def _build_df_from_bamfile(self):
+        """Builds `df` from `bamfile`."""
+        # read into dictionary
+        d = collections.defaultdict(list)
+        for s in pysam.AlignmentFile(self.bamfile, 'rb',
+                check_sq=False):
+            d['CCS'].append(s.query_sequence)
+            d['qvals'].append(s.query_qualities)
+            d['name'].append(s.query_name)
+            d['passes'].append(s.get_tag('np'))
+            d['accuracy'].append(s.get_tag('rq'))
+            d['length'].append(s.query_length)
+
+        # create data frame
+        self.df = pandas.DataFrame(d)
+
+        # some checks on `df`
+        assert self.df.name.size == self.df.name.unique().size,\
+                "non-unique names for {0}".format(self.name)
+        assert (self.df.length == self.df.CCS.apply(len)).all(),\
+                "CCS not correct length"
+        assert (self.df.length == self.df.qvals.apply(len)).all(),\
+                "qvals not correct length"
 
 
 
@@ -142,8 +213,9 @@ def summarizeCCSreports(ccslist, report_type, plotfile,
                 COLOR_BLIND_PALETTE[ : nstatus])))
     p.save(plotfile, 
            height=3,
-           width=(2.5 + 0.3 * len(ccslist)),
+           width=(2 + 0.3 * len(ccslist)),
            verbose=False)
+    plt.close()
 
     return df
 
