@@ -42,13 +42,12 @@ CODON_TO_AA = dict([(_codon, str(Bio.Seq.Seq(_codon).translate()))
         for _codon in CODONS])
 
 #: dict back-translating amino acid to list of codons.
-AA_TO_CODONS = {}
-for _aa in AAS_WITHSTOP:
-    AA_TO_CODONS[_aa] = [_codon for _codon in CODONS if 
-            CODON_TO_AA[_codon] == _aa]
+AA_TO_CODONS = {
+        _aa:[_c for _c in CODONS if CODON_TO_AA[_c] == _aa]
+        for _aa in AAS_WITHSTOP}
 
-# following lines needed because list comprehension variables remain
-# in Python2 but not Python3, and we want to be compatible with both
-for var in ['_aa', '_nt', '_nt1', '_nt2', '_nt3', '_codon']:
-    if var in locals():
-        del locals()[var]
+#: dict keyed by nucleotide code, values `re` matches for code.
+NT_TO_REGEXP = dict(
+        map(lambda tup: (tup[0], tup[1]) if len(tup[1]) == 1 else
+                        (tup[0], '[' + tup[1] + ']'), 
+        Bio.Seq.IUPAC.IUPACData.ambiguous_dna_values.items()))
