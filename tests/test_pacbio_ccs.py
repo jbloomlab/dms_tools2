@@ -36,6 +36,14 @@ class test_pacbio_CCS(unittest.TestCase):
         self.ccs = dms_tools2.pacbio.CCS('test', bamfile, reportfile)
 
 
+    def test_qvalsToAccuracy(self):
+        """Test `qvalsToAccuracy`."""
+        for i, row in self.ccs.df.iterrows():
+            acc = dms_tools2.pacbio.qvalsToAccuracy(row['CCS_qvals'])
+            numpy.testing.assert_allclose(acc, row['CCS_accuracy'],
+                    atol=1e-5, rtol=1e-5)
+
+
     def test_zmw_report(self):
         """Test creation of `CCS.zmw_report`."""
         self.assertAlmostEqual(
@@ -55,7 +63,8 @@ class test_pacbio_CCS(unittest.TestCase):
         """Test creation of `CCS.df`."""
         self.assertEqual(self.bamlines, self.ccs.df.shape[0])
         self.assertEqual(set(self.ccs.df.columns),
-                {'name', 'CCS', 'accuracy', 'qvals', 'length', 'passes'})
+                {'name', 'CCS', 'CCS_accuracy', 'CCS_qvals',
+                 'CCS_length', 'passes'})
 
     def test_plotResults(self):
         """Test `CCS.plotResults`."""

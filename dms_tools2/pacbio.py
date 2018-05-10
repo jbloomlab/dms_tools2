@@ -18,6 +18,8 @@ import numpy
 import pandas
 import pysam
 
+from dms_tools2 import NT_TO_REGEXP
+
 # import dms_tools2.plot to set plotting contexts / themes
 import dms_tools2.plot
 from dms_tools2.plot import COLOR_BLIND_PALETTE
@@ -58,8 +60,8 @@ class CCS:
         `df` (pandas.DataFrame)
             The CCSs in `bamfile`. Each row is a different CCS
             On creation, there will be the following columns (you
-            can modify to add more): *CCS*, *qvals*, *name*,
-            *passes*, *accuracy*, *length*.
+            can modify to add more): *CCS*, *CCS_qvals*, *name*,
+            *passes*, *CCS_accuracy*, *CCS_length*.
     """
 
     def __init__(self, name, bamfile, reportfile):
@@ -79,7 +81,7 @@ class CCS:
 
 
     def plotResults(self, plotfile,
-            cols=['passes', 'accuracy', 'length'],
+            cols=['passes', 'CCS_accuracy', 'CCS_length'],
             title=True):
         """Plots the CCS results in `df`.
 
@@ -131,6 +133,101 @@ class CCS:
         plt.close()
 
 
+    def filterSeqs(self, match_str, filter_colname='pass_filter',
+                   expandIUPAC=True):
+        """Identify CCSs that match a specific pattern.
+
+        This filtering is useful if the CCS sequences in `df`
+        should have specific subsequences.
+
+        Args:
+            `match_str` (str)
+                A string that can be passed to `re.compile` that
+                gives the pattern that we are looking for, with
+                target subsequences as named groups. See also
+                the `expandIUPAC` parameter.
+            `filter_colname` (str)
+                Name of a new column added to `df`. Every row
+                in `df` that has a CCS column that matches
+                `match_str` gets this column set to `True`,
+                and all other rows get it set to `False`.
+            `expandIUPAC` (bool)
+                Use `IUPAC code <https://en.wikipedia.org/wiki/Nucleic_acid_notation>`_
+                to expand ambiguous nucleotides (e.g., "N") in
+                `match_str`. This can simplify the writing of
+                `match_str`. If you use this option, ensure that
+                none of the named groups in `match_str` have upper-
+                case letters that are nucleotide codes.
+
+        After calling this function, `df` has been updated by
+        adding the column specified by `colname`. In addition,
+        columns are added with the name of each group in 
+        `match_str`. The column is an empty string if there
+        is no match for the CCS in that row; otherwise it
+        is the string that matches that group in CCS.
+        For each group, we also add a column suffixed with 
+        "_qvals" that has the Q-values, and a column suffixed
+        with "_accuracy" that gives the accuracy as calculated
+        from the Q-values. The "_qvals" column is an empty
+        numpy array if no match, and the "_accuracy" is 0
+        if no match.
+        """
+        assert filter_colname not in self.df.columns,\
+                "`df` already has column {0}".format(filter_colname)
+
+        if expandIUPAC:
+            all_nts = ''.join(NT_TO_REGEXP.keys())
+            assert not re.search('<[^>]*[ACGT]+[^>]*>', match_str),\
+                    "`match_str` group name has nucleotide code"
+            match_str = match_str.translate(str.maketrans(NT_TO_REGEXP))
+
+        matcher = re.compile(match_str)
+        groupnames = set(matcher.groupindex.keys())
+        groupqvals = {g + '_qvals' for g in groupnames}
+        groupaccuracies = {g + '_accuracy' for g in groupnames}
+
+        # make sure created columns don't already exist
+        assert groupnames.isdisjoint(self.df.columns), \
+                "`df` has columns with `match_str` group names"
+        assert groupqvals.isdisjoint(self.df.columns), \
+                "`df` has columns with `match_str` group qvals"
+        assert groupaccuracies.isdisjoint(self.df.columns), \
+                "`df` has columns with `match_str` group accuracies"
+
+        # look for matches for each row
+        match_d = {c:[] for c in set.union(*[groupnames, groupqvals,
+                groupaccuracies])}
+        for tup in self.df.itertuples():
+            s = getattr(tup, 'CCS')
+            qs = getattr(tup, 'CCS_qvals')
+            m = matcher.search(s)
+            if m:
+                match_d[filter_colname] = True
+                for g in groupnames:
+                    match_d[g] = m.group(g)
+                    match_d[g + '_qvals'] = qs[m.start(g) : m.end(g)]
+                    match_d[g + '_accuracy'] = qvalsToAccuracy(
+                            match_d[g + '_qvals'])
+            else:
+                match_d[filter_colname] = False
+                for c in groupnames:
+                    match_d[c] = ''
+                for c in groupqvals:
+                    match_d[c] = numpy.array([], dtype='int')
+                for c in groupaccuracies:
+                    match_d[c] = 0
+
+        # set index to make sure matches `df`
+        indexname = df.index.name
+        assert indexname not in match_d
+        match_d[indexname] = df.index.tolist()
+        assert set(match_d.keys()).isdisjoint(df.columns)
+        self.df = pandas.concat([
+                [self.df,
+                 pandas.DataFrame(match_d).set_index(indexname)],
+                axis=1)
+
+
     def _parse_report(self):
         """Set `zmw_report` and `subread_report` using `reportfile`."""
         # match reports made by ccs 3.0.0
@@ -162,11 +259,12 @@ class CCS:
         for s in pysam.AlignmentFile(self.bamfile, 'rb',
                 check_sq=False):
             d['CCS'].append(s.query_sequence)
-            d['qvals'].append(s.query_qualities)
+            d['CCS_qvals'].append(numpy.asarray(s.query_qualities,
+                                                dtype='int'))
             d['name'].append(s.query_name)
             d['passes'].append(s.get_tag('np'))
-            d['accuracy'].append(s.get_tag('rq'))
-            d['length'].append(s.query_length)
+            d['CCS_accuracy'].append(s.get_tag('rq'))
+            d['CCS_length'].append(s.query_length)
 
         # create data frame
         self.df = pandas.DataFrame(d)
@@ -174,11 +272,39 @@ class CCS:
         # some checks on `df`
         assert self.df.name.size == self.df.name.unique().size,\
                 "non-unique names for {0}".format(self.name)
-        assert (self.df.length == self.df.CCS.apply(len)).all(),\
+        assert (self.df.CCS_length == self.df.CCS.apply(len)).all(),\
                 "CCS not correct length"
-        assert (self.df.length == self.df.qvals.apply(len)).all(),\
+        assert (self.df.CCS_length == self.df.CCS_qvals.apply(len)).all(),\
                 "qvals not correct length"
 
+
+def qvalsToAccuracy(qvals):
+    """Converts set of quality scores into average accuracy.
+
+    Args:
+        `qvals` (numpy array)
+            List of Q-values, assumed Sanger encoding.
+
+    Returns:
+        A number giving the average accuracy, or 
+        `nan` if `qvals` is empty.
+
+    Note that the probability :math:`p` of an error at a
+    given site is related to the Q-value :math:`Q` by
+    :math:`Q = -10 \log_{10} p`.
+
+    >>> qvals = numpy.array([13, 77, 93])
+    >>> round(qvalsToAccuracy(qvals), 3)
+    0.983
+    >>> round(qvalsToAccuracy(qvals[1 : ]), 3)
+    1.0
+    >>> qvalsToAccuracy(numpy.array([]))
+    nan
+    """
+    if len(qvals) == 0:
+        return numpy.nan
+    else:
+        return (1 - 10**(qvals / -10)).sum() / len(qvals)
 
 
 def summarizeCCSreports(ccslist, report_type, plotfile,
