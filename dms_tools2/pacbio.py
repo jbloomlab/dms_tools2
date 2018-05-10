@@ -42,26 +42,120 @@ class CCS:
             Sample or sequencing run name
         `bamfile` (str)
             BAM file created by ``ccs``
-        `reportfile` (str)
-            Report file created by ``ccs``
+        `reportfile` (str or `None`)
+            Report file created by ``ccs``, or
+            `None` if you have no reports.
 
     Attributes:
         `name` (str)
             Name set at initialization
         `bamfile` (str)
             ``ccs`` BAM file set at initialization
-        `reportfile` (str)
+        `reportfile` (str or `None`)
             ``ccs`` report file set at initialization
-        `zmw_report` (pandas.DataFrame): 
-            ZMW stats in `reportfile`.
-            Columns are *status*, *number*, *percent*, and *fraction*.
-        `subread_report` (pandas.DataFrame)
+        `zmw_report` (pandas.DataFrame or `None`):
+            ZMW stats in `reportfile`, or `None` if no
+            `reportfile`. Columns are *status*, *number*,
+            *percent*, and *fraction*.
+        `subread_report` (pandas.DataFrame or `None`)
             Like `zmw_report` but for subreads.
         `df` (pandas.DataFrame)
             The CCSs in `bamfile`. Each row is a different CCS
             On creation, there will be the following columns (you
             can modify to add more): *CCS*, *CCS_qvals*, *name*,
             *passes*, *CCS_accuracy*, *CCS_length*.
+
+    Here is an example.
+
+    First, define the sequences, quality scores,
+    and names for 3 example sequences.
+    Two of the sequences have the desired termini and
+    a barcode. The other does not. Note that the second
+    sequence has an extra nucleotide at the 5' end, this
+    will turn out to be fine with the `match_str` we write:
+
+    >>> termini5 = 'ACG'
+    >>> termini3 = 'CTT'
+    >>> ccs_seqs = [
+    ...         {'name':'barcoded_TTC',
+    ...          'seq':termini5 + 'TTC' + 'ACG' + termini3,
+    ...          'qvals':'?' * 12,
+    ...         },
+    ...         {'name':'barcoded_AGA',
+    ...          'seq':'T' + termini5 + 'AGA' + 'GCA' + termini3,
+    ...          'qvals':'?' * 13,
+    ...         },
+    ...         {'name':'invalid',
+    ...          'seq':'GGG' + 'CAT' + 'GCA' + termini3,
+    ...          'qvals':'?' * 12,
+    ...         }
+    ...         ]
+
+    Now place these in a block of text that meets the
+    `CCS SAM specification <https://github.com/PacificBiosciences/unanimity/blob/develop/doc/PBCCS.md>`_:
+
+    >>> sam_template = '\\t'.join([
+    ...        '{0[name]}',
+    ...        '4', '*', '0', '255', '*', '*', '0', '0',
+    ...        '{0[seq]}',
+    ...        '{0[qvals]}',
+    ...        'np:i:6', 'rq:f:0.999',
+    ...        ])
+    >>> samtext = '\\n'.join([sam_template.format(iccs) for
+    ...                      iccs in ccs_seqs])
+
+    Create small SAM file with these sequences, then
+    convert to BAM file used to initialize a `CCS` object
+    (note this requires ``samtools`` to be installed):
+
+    >>> samfile = '_temp.sam'
+    >>> bamfile = '_temp.bam'
+    >>> with open(samfile, 'w') as f:
+    ...     _ = f.write(samtext)
+    >>> _ = subprocess.check_call(['samtools', 'view',
+    ...         '-b', '-o', bamfile, samfile])
+    >>> ccs = CCS('test', bamfile, None)
+    >>> os.remove(samfile)
+    >>> os.remove(bamfile)
+
+    Check `ccs.df` has correct names, CCS sequences,
+    and columns:
+
+    >>> set(ccs.df.name) == {s['name'] for s in ccs_seqs}
+    True
+    >>> set(ccs.df.CCS) == {s['seq'] for s in ccs_seqs}
+    True
+    >>> set(ccs.df.columns) == {'CCS', 'CCS_qvals', 'name',
+    ...         'passes', 'CCS_accuracy', 'CCS_length'}
+    True
+
+    Apply filter for sequences that have expected termini
+    and define barcode and read in these:
+
+    >>> match_str = (termini5 + '(?P<barcode>N{3})' +
+    ...         '(?P<read>N+)' + termini3)
+    >>> ccs.filterSeqs(match_str, filter_colname='barcoded')
+
+    This filtering add new columns to `ccs.df`:
+
+    >>> set(ccs.df.columns) >= {'barcode', 'barcode_qvals',
+    ...         'barcode_accuracy', 'read', 'read_qvals',
+    ...         'read_accuracy'}
+    True
+
+    Now make sure `df` indicates that the correct sequence
+    are barcoded, and that they have the correct barcodes:
+
+    >>> bc_names = [s['name'] for s in ccs_seqs if
+    ...         'barcoded' in s['name']]
+    >>> set(ccs.df.query('barcoded').name) == set(bc_names)
+    True
+    >>> barcodes = [x.split('_')[1] for x in bc_names]
+    >>> set(ccs.df.query('barcoded').barcode) == set(barcodes)
+    True
+    >>> set(ccs.df.query('not barcoded').barcode) == {''}
+    True
+
     """
 
     def __init__(self, name, bamfile, reportfile):
@@ -71,11 +165,15 @@ class CCS:
         assert os.path.isfile(bamfile), "can't find {0}".format(bamfile)
         self.bamfile = bamfile
 
-        assert os.path.isfile(reportfile), "can't find {0}".format(reportfile)
         self.reportfile = reportfile
-
-        # set `zmw_report` and `subread_report`
-        self._parse_report()
+        if self.reportfile is None:
+            self.zmw_report = None
+            self.subread_report = None
+        else:
+            assert os.path.isfile(reportfile), \
+                    "can't find {0}".format(reportfile)
+            # set `zmw_report` and `subread_report`
+            self._parse_report()
 
         self._build_df_from_bamfile()
 
@@ -196,35 +294,37 @@ class CCS:
 
         # look for matches for each row
         match_d = {c:[] for c in set.union(*[groupnames, groupqvals,
-                groupaccuracies])}
+                groupaccuracies, {filter_colname}])}
         for tup in self.df.itertuples():
             s = getattr(tup, 'CCS')
             qs = getattr(tup, 'CCS_qvals')
             m = matcher.search(s)
             if m:
-                match_d[filter_colname] = True
+                match_d[filter_colname].append(True)
                 for g in groupnames:
-                    match_d[g] = m.group(g)
-                    match_d[g + '_qvals'] = qs[m.start(g) : m.end(g)]
-                    match_d[g + '_accuracy'] = qvalsToAccuracy(
-                            match_d[g + '_qvals'])
+                    match_d[g].append(m.group(g))
+                    g_qvals = qs[m.start(g) : m.end(g)]
+                    match_d[g + '_qvals'].append(g_qvals)
+                    match_d[g + '_accuracy'].append(
+                            qvalsToAccuracy(g_qvals))
             else:
-                match_d[filter_colname] = False
+                match_d[filter_colname].append(False)
                 for c in groupnames:
-                    match_d[c] = ''
+                    match_d[c].append('')
                 for c in groupqvals:
-                    match_d[c] = numpy.array([], dtype='int')
+                    match_d[c].append(numpy.array([], dtype='int'))
                 for c in groupaccuracies:
-                    match_d[c] = 0
+                    match_d[c].append(0)
 
         # set index to make sure matches `df`
-        indexname = df.index.name
+        indexname = self.df.index.name
         assert indexname not in match_d
-        match_d[indexname] = df.index.tolist()
-        assert set(match_d.keys()).isdisjoint(df.columns)
-        self.df = pandas.concat([
+        match_d[indexname] = self.df.index.tolist()
+        assert set(match_d.keys()).isdisjoint(self.df.columns)
+        self.df = pandas.concat(
                 [self.df,
-                 pandas.DataFrame(match_d).set_index(indexname)],
+                 pandas.DataFrame(match_d).set_index(indexname),
+                ],
                 axis=1)
 
 
