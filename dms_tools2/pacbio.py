@@ -68,28 +68,33 @@ class CCS:
     Here is an example.
 
     First, define the sequences, quality scores,
-    and names for 3 example sequences.
+    and names for 3 example sequences. The names indicate
+    the barcodes, the accuracy of the barcode, and the polarity.
     Two of the sequences have the desired termini and
     a barcode. The other does not. Note that the second
-    sequence has an extra nucleotide at the 5' end, this
-    will turn out to be fine with the `match_str` we write:
+    sequence has an extra nucleotide at each end, this
+    will turn out to be fine with the `match_str` we write.
+    The second sequence is also reverse complemented:
 
     >>> termini5 = 'ACG'
     >>> termini3 = 'CTT'
     >>> ccs_seqs = [
-    ...         {'name':'barcoded_TTC',
+    ...         {'name':'barcoded_TTC_0.999_plus',
     ...          'seq':termini5 + 'TTC' + 'ACG' + termini3,
     ...          'qvals':'?' * 12,
     ...         },
-    ...         {'name':'barcoded_AGA',
-    ...          'seq':'T' + termini5 + 'AGA' + 'GCA' + termini3,
-    ...          'qvals':'?' * 13,
+    ...         {'name':'barcoded_AGA_0.995_minus',
+    ...          'seq':dms_tools2.utils.reverseComplement(
+    ...                'T' + termini5 + 'AGA' + 'GCA' + termini3 + 'A'),
+    ...          'qvals':''.join(reversed('?' * 4 + '5?9' + '?' * 7)),
     ...         },
     ...         {'name':'invalid',
     ...          'seq':'GGG' + 'CAT' + 'GCA' + termini3,
     ...          'qvals':'?' * 12,
     ...         }
     ...         ]
+    >>> for iccs in ccs_seqs:
+    ...     iccs['accuracy'] = qvalsToAccuracy(iccs['qvals'], encoding='sanger')
 
     Now place these in a block of text that meets the
     `CCS SAM specification <https://github.com/PacificBiosciences/unanimity/blob/develop/doc/PBCCS.md>`_:
@@ -99,7 +104,8 @@ class CCS:
     ...        '4', '*', '0', '255', '*', '*', '0', '0',
     ...        '{0[seq]}',
     ...        '{0[qvals]}',
-    ...        'np:i:6', 'rq:f:0.999',
+    ...        'np:i:6',
+    ...        'rq:f:{0[accuracy]}',
     ...        ])
     >>> samtext = '\\n'.join([sam_template.format(iccs) for
     ...                      iccs in ccs_seqs])
@@ -140,20 +146,31 @@ class CCS:
 
     >>> set(ccs.df.columns) >= {'barcode', 'barcode_qvals',
     ...         'barcode_accuracy', 'read', 'read_qvals',
-    ...         'read_accuracy'}
+    ...         'read_accuracy', 'barcoded', 'barcoded_polarity'}
     True
 
-    Now make sure `df` indicates that the correct sequence
+    Now make sure `df` indicates that the correct sequences
     are barcoded, and that they have the correct barcodes:
 
-    >>> bc_names = [s['name'] for s in ccs_seqs if
-    ...         'barcoded' in s['name']]
-    >>> set(ccs.df.query('barcoded').name) == set(bc_names)
+    >>> bc_names = sorted([s['name'] for s in ccs_seqs if
+    ...         'barcoded' in s['name']])
+    >>> ccs.df = ccs.df.sort_values('barcode')
+    >>> (ccs.df.query('barcoded').name == bc_names).all()
     True
     >>> barcodes = [x.split('_')[1] for x in bc_names]
-    >>> set(ccs.df.query('barcoded').barcode) == set(barcodes)
+    >>> (ccs.df.query('barcoded').barcode == barcodes).all()
     True
-    >>> set(ccs.df.query('not barcoded').barcode) == {''}
+    >>> (ccs.df.query('not barcoded').barcode == ['']).all()
+    True
+    >>> barcode_accuracies = [float(x.split('_')[2]) for x in bc_names]
+    >>> numpy.allclose(ccs.df.query('barcoded').barcode_accuracy,
+    ...     barcode_accuracies, atol=1e-4)
+    True
+    >>> numpy.allclose(ccs.df.query('not barcoded').barcode_accuracy,
+    ...     0, atol=1e-4)
+    True
+    >>> barcoded_polarity = [x.split('_')[3] for x in bc_names]
+    >>> (ccs.df.query('barcoded').barcoded_polarity == barcoded_polarity).all()
     True
 
     """
@@ -257,21 +274,32 @@ class CCS:
                 none of the named groups in `match_str` have upper-
                 case letters that are nucleotide codes.
 
-        After calling this function, `df` has been updated by
-        adding the column specified by `colname`. In addition,
-        columns are added with the name of each group in 
-        `match_str`. The column is an empty string if there
-        is no match for the CCS in that row; otherwise it
-        is the string that matches that group in CCS.
-        For each group, we also add a column suffixed with 
-        "_qvals" that has the Q-values, and a column suffixed
-        with "_accuracy" that gives the accuracy as calculated
-        from the Q-values. The "_qvals" column is an empty
-        numpy array if no match, and the "_accuracy" is 0
-        if no match.
+        After calling this function, the following columns are added
+        to `df`:
+            Column with name given by `filter_colname`:
+                Entries `True` when `match_str` matches for that row.
+            Column with name given by `filter_colname` suffixed by "_polarity":
+                This entry is "plus" or "minus" depending on whether we 
+                directly match CCS (plus) or have to reverse-complement
+                first (minus).
+            Columns with name of each group in `match_str`:
+                The string that matches that group in CCS, or an 
+                empty string if no match. If the match is in the minus
+                polarity, the string placed in this column is
+                reverse-complemented to be in the plus orientation.
+            Columns with group names suffixed by "_qvals":
+                The Q-values for that group, or an empty numpy
+                array if no match. If the group is reverse-complement
+                to plus orientation, the Q-values are also reversed
+                to keep them in the same orientation as the group sequence.
+            Columns with group names suffixed by "_accuracy":
+                The accuracy for that group, or 0 if no match.
         """
         assert filter_colname not in self.df.columns,\
                 "`df` already has column {0}".format(filter_colname)
+        polarity_colname = filter_colname + "_polarity"
+        assert polarity_colname + "_polarity" not in self.df.columns,\
+                "`df` already has column {0}".format(polarity_colname)
 
         if expandIUPAC:
             all_nts = ''.join(NT_TO_REGEXP.keys())
@@ -294,21 +322,33 @@ class CCS:
 
         # look for matches for each row
         match_d = {c:[] for c in set.union(*[groupnames, groupqvals,
-                groupaccuracies, {filter_colname}])}
+                groupaccuracies, {filter_colname, polarity_colname}])}
         for tup in self.df.itertuples():
             s = getattr(tup, 'CCS')
             qs = getattr(tup, 'CCS_qvals')
             m = matcher.search(s)
             if m:
+                polarity = "plus"
+            else:
+                m = matcher.search(dms_tools2.utils.reverseComplement(s))
+                qs = numpy.flip(qs, axis=0)
+                polarity = "minus"
+            if m:
                 match_d[filter_colname].append(True)
+                match_d[polarity_colname].append(polarity)
                 for g in groupnames:
-                    match_d[g].append(m.group(g))
+                    if polarity == "plus":
+                        match_d[g].append(m.group(g))
+                    else:
+                        assert polarity == "minus"
+                        match_d[g].append(m.group(g))
                     g_qvals = qs[m.start(g) : m.end(g)]
                     match_d[g + '_qvals'].append(g_qvals)
                     match_d[g + '_accuracy'].append(
                             qvalsToAccuracy(g_qvals))
             else:
                 match_d[filter_colname].append(False)
+                match_d[polarity_colname].append('')
                 for c in groupnames:
                     match_d[c].append('')
                 for c in groupqvals:
@@ -378,12 +418,18 @@ class CCS:
                 "qvals not correct length"
 
 
-def qvalsToAccuracy(qvals):
+def qvalsToAccuracy(qvals, encoding='numbers'):
     """Converts set of quality scores into average accuracy.
 
     Args:
-        `qvals` (numpy array)
-            List of Q-values, assumed Sanger encoding.
+        `qvals` (numpy array or str)
+            List of Q-values, assumed to be Phred scores.
+            For how they are encoded, see `encoding`.
+        `encoding` (str)
+            If it is "numbers" then `qvals` should be a
+            numpy array giving the Q-values. If it is
+            "sanger", then `qvals` is a string, with 
+            the score being the ASCI value minus 33.
 
     Returns:
         A number giving the average accuracy, or 
@@ -400,11 +446,22 @@ def qvalsToAccuracy(qvals):
     1.0
     >>> qvalsToAccuracy(numpy.array([]))
     nan
+
+    >>> qvals = '.n~'
+    >>> round(qvalsToAccuracy(qvals, encoding='sanger'), 3)
+    0.983
     """
     if len(qvals) == 0:
         return numpy.nan
+
+    if encoding == 'numbers':
+        pass
+    elif encoding == 'sanger':
+        qvals = numpy.array([ord(q) - 33 for q in qvals])
     else:
-        return (1 - 10**(qvals / -10)).sum() / len(qvals)
+        raise RuntimeError("invalid `encoding`: {0}".format(encoding))
+
+    return (1 - 10**(qvals / -10)).sum() / len(qvals)
 
 
 def summarizeCCSreports(ccslist, report_type, plotfile,
