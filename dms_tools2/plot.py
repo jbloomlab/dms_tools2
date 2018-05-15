@@ -13,6 +13,7 @@ and `seaborn <https://seaborn.pydata.org/index.html>`_.
 import re
 import os
 import math
+import numbers
 
 import natsort
 import pandas
@@ -36,6 +37,7 @@ seaborn.set(context='talk',
                 'xtick.labelsize':15,
                 'ytick.labelsize':15,
                 'axes.labelsize':19,
+                'legend.fontsize':17,
                 'font.family':'sans-serif',
                 'font.sans-serif':['DejaVu Sans'],
                 }
@@ -50,6 +52,12 @@ import dms_tools2.utils
 #: `scale_color_manual(COLOR_BLIND_PALETTE)`.
 COLOR_BLIND_PALETTE = ["#000000", "#E69F00", "#56B4E9", "#009E73",
                        "#F0E442", "#0072B2", "#D55E00", "#CC79A7"]
+
+#: `color-blind safe palette <http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/>`_
+#: that differs from `COLOR_BLIND_PALETTE` in that first 
+#: color is gray rather than black.
+COLOR_BLIND_PALETTE_GRAY = ["#999999", "#E69F00", "#56B4E9", "#009E73",
+                            "#F0E442", "#0072B2", "#D55E00", "#CC79A7"]
 
 
 def breaksAndLabels(xi, x, n):
@@ -98,11 +106,12 @@ def latexSciNot(xlist):
     Useful for nice axis-tick formatting.
 
     Args:
-        `xlist` (list)
+        `xlist` (list or number)
             Numbers to format.
 
     Returns:
-        List of latex scientific notation formatted strings.
+        List of latex scientific notation formatted strings,
+        or single string if `xlist` is a number.
 
     >>> latexSciNot([0, 3, 3120, -0.0000927])
     ['$0$', '$3$', '$3.1 \\\\times 10^{3}$', '$-9.3 \\\\times 10^{-5}$']
@@ -119,6 +128,11 @@ def latexSciNot(xlist):
     >>> latexSciNot([0, 1, 2])
     ['$0$', '$1$', '$2$']
     """
+    if isinstance(xlist, numbers.Number):
+        isnum = True
+        xlist = [xlist]
+    else:
+        isnum = False
     formatlist = []
     for x in xlist:
         xf = "{0:.2g}".format(x)
@@ -132,6 +146,9 @@ def latexSciNot(xlist):
         else:
             xf = '${0}$'.format(xf)
         formatlist.append(xf)
+    if isnum:
+        assert len(formatlist) == 1
+        formatlist = formatlist[0]
     return formatlist
 
 
@@ -1049,7 +1066,7 @@ def findSigSel(df, valcol, plotfile, fdr=0.05, title=None):
     return (df_sigsel, cutoff, gamma_params)
 
 
-def hist_bins_intsafe(x, method='fd'):
+def hist_bins_intsafe(x, method='fd', shrink_threshold=None):
     """Histogram bins that work for integer data.
 
     You can auto-choose bins using `numpy.histogram`.
@@ -1064,6 +1081,11 @@ def hist_bins_intsafe(x, method='fd'):
             The binning method. Can be anything
             acceptable to `numpy.histogram` as
             a `bins` argument.
+        `shrink_threshold` (`None` or int)
+            If set to a value other than `None`,
+            apply a heuristic threshold to slow
+            the growth in number of bins if they
+            exceed this number.
 
     Returns:
         The bin edges as returned in the second
@@ -1076,28 +1098,35 @@ def hist_bins_intsafe(x, method='fd'):
     >>> numpy.random.seed(1)
     >>> x = 100 * numpy.random.random(500)
     >>> bin_edges = numpy.histogram(x, bins='fd')[1]
-    >>> bin_edges_intsafe = hist_bins_intsafe(x)
-    >>> (bin_edges == bin_edges_intsafe).all()
+    >>> bin_edges_intsafe = hist_bins_intsafe(x)[ : len(bin_edges)]
+    >>> numpy.allclose(bin_edges, bin_edges_intsafe)
     True
-    >>> (bin_edges == bin_edges.astype('int')).all()
+    >>> numpy.allclose(bin_edges, bin_edges.astype('int'))
     False
 
     But gives integer bins for int data:
     >>> x = x.astype('int')
     >>> bin_edges = numpy.histogram(x, bins='fd')[1]
     >>> bin_edges_intsafe = hist_bins_intsafe(x)
-    >>> (bin_edges == bin_edges_intsafe).all()
+    >>> numpy.allclose(bin_edges, bin_edges_intsafe)
     False
-    >>> (bin_edges == bin_edges.astype('int')).all()
+    >>> numpy.allclose(bin_edges, bin_edges.astype('int'))
     False
-    >>> (bin_edges_intsafe == bin_edges_intsafe.astype('int')).all()
+    >>> numpy.allclose(bin_edges_intsafe, bin_edges_intsafe.astype('int'))
     True
     """
     bin_edges = numpy.histogram(x, bins='fd')[1]
+    if shrink_threshold is None:
+        corr = 1
+    else:
+        assert shrink_threshold > 1
+        corr = max(1,
+                math.sqrt(len(bin_edges) / float(shrink_threshold)))
+
+    binwidth = (bin_edges[1] - bin_edges[0]) * corr
     if (x.astype('int') == x).all():
-        binwidth = math.ceil(bin_edges[1] - bin_edges[0])
-        bin_edges = numpy.arange(math.floor(x.min()),
-                math.ceil(x.max() + binwidth), binwidth) 
+        binwidth = math.ceil(binwidth)
+    bin_edges = numpy.arange(x.min(), x.max() + binwidth, binwidth)
     return bin_edges
 
 

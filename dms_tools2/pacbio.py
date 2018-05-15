@@ -23,6 +23,7 @@ from dms_tools2 import NT_TO_REGEXP
 # import dms_tools2.plot to set plotting contexts / themes
 import dms_tools2.plot
 from dms_tools2.plot import COLOR_BLIND_PALETTE
+from dms_tools2.plot import COLOR_BLIND_PALETTE_GRAY
 import matplotlib.pyplot as plt
 import seaborn
 from plotnine import *
@@ -195,7 +196,7 @@ class CCS:
         self._build_df_from_bamfile()
 
 
-    def plotResults(self, plotfile,
+    def plotResults(self, plotfile, lower_filter=None,
             cols=['passes', 'CCS_accuracy', 'CCS_length'],
             title=True):
         """Plots the CCS results in `df`.
@@ -206,6 +207,10 @@ class CCS:
         Args:
             `plotfile` (str)
                 Name of created plot.
+            `lower_filter` (`None` or str)
+                Can specify boolean column in `df`. In this
+                case, on lower diagonal only plot data
+                for which this column is `True`.
             `cols` (list)
                 List of variables to plot. There must be a
                 column for each in `df`.
@@ -216,28 +221,61 @@ class CCS:
         """
         assert set(cols) <= set(self.df.columns)
 
+        if lower_filter is not None:
+            assert lower_filter in self.df.columns, \
+                    "No `lower_filter` column {0}".format(lower_filter)
+            assert self.df[lower_filter].dtype == 'bool', \
+                    "`lower_filter` not boolean column"
+            filter_indices = self.df.query(lower_filter).index
+            color_all = COLOR_BLIND_PALETTE_GRAY[0]
+            color_filter = COLOR_BLIND_PALETTE_GRAY[1]
+        else:
+            color_all = COLOR_BLIND_PALETTE[0]
+
         def hist1d(x, color, **kwargs):
             """1D histogram for diagonal elements."""
-            plt.hist(x, color=color,
-                    bins=dms_tools2.plot.hist_bins_intsafe(x),
-                    **kwargs)
+            bins=dms_tools2.plot.hist_bins_intsafe(x,
+                    shrink_threshold=50)
+            plt.hist(x, color=color_all, bins=bins, **kwargs)
+            if lower_filter:
+                plt.hist(x.ix[filter_indices], color=color_filter,
+                         bins=bins, **kwargs)
 
-        def hist2d(x, y, color, **kwargs):
+        def hist2d(x, y, color, filterdata, **kwargs):
             """2D histogram for off-diagonal elements."""
-            plt.hist2d(x, y, 
-                    bins=[dms_tools2.plot.hist_bins_intsafe(a)
-                          for a in [x, y]],
-                    cmap=dms_tools2.plot.from_white_cmap(color),
-                    **kwargs)
+            bins = [dms_tools2.plot.hist_bins_intsafe(a,
+                    shrink_threshold=50) for a in [x, y]]
+            if filterdata:
+                color = color_filter
+                x = x.ix[filter_indices]
+                y = y.ix[filter_indices]
+            else:
+                color = color_all
+            cmap = dms_tools2.plot.from_white_cmap(color)
+            plt.hist2d(x, y, bins=bins, cmap=cmap, **kwargs)
 
-        color = COLOR_BLIND_PALETTE[0]
         g = (dms_tools2.plot.AugmentedPairGrid(self.df, vars=cols,
                 diag_sharey=False, size=3)
-             .map_diag(hist1d, color=color)
-             .map_upper(hist2d, color=color)
-             .map_lower(hist2d, color=color)
+             .map_diag(hist1d)
+             .map_upper(hist2d, filterdata=False)
+             .map_lower(hist2d, filterdata=(lower_filter is not None))
              .ax_lims_clip_outliers()
              )
+
+        if lower_filter is not None:
+            label_order = ['all CCSs\n({0})'.format(
+                                dms_tools2.plot.latexSciNot(len(self.df))),
+                           '{0} CCSs\n({1})'.format(lower_filter,
+                                dms_tools2.plot.latexSciNot(
+                                        len(self.df.query(lower_filter)))),
+                          ]
+            label_data = {lab:plt.Line2D([0], [0], color=c, lw=10,
+                                         solid_capstyle='butt')
+                          for (lab, c) in zip(label_order,
+                                [color_all, color_filter])
+                          }
+            g.add_legend(label_data, label_order=label_order,
+                         labelspacing=2, handlelength=1.5)
 
         if title:
             if not isinstance(title, str):
