@@ -249,7 +249,7 @@ class CCS:
 
 
     def filterSeqs(self, match_str, filter_colname='pass_filter',
-                   expandIUPAC=True):
+                   expandIUPAC=True, overwrite=True):
         """Identify CCSs that match a specific pattern.
 
         This filtering is useful if the CCS sequences in `df`
@@ -273,6 +273,10 @@ class CCS:
                 `match_str`. If you use this option, ensure that
                 none of the named groups in `match_str` have upper-
                 case letters that are nucleotide codes.
+            `overwrite` (bool)
+                If `True`, we overwrite any existing columns to
+                be created that already exist. If `False`, raise
+                an error if any of the columns already exist.
 
         After calling this function, the following columns are added
         to `df`:
@@ -295,11 +299,7 @@ class CCS:
             Columns with group names suffixed by "_accuracy":
                 The accuracy for that group, or 0 if no match.
         """
-        assert filter_colname not in self.df.columns,\
-                "`df` already has column {0}".format(filter_colname)
         polarity_colname = filter_colname + "_polarity"
-        assert polarity_colname + "_polarity" not in self.df.columns,\
-                "`df` already has column {0}".format(polarity_colname)
 
         if expandIUPAC:
             all_nts = ''.join(NT_TO_REGEXP.keys())
@@ -313,12 +313,17 @@ class CCS:
         groupaccuracies = {g + '_accuracy' for g in groupnames}
 
         # make sure created columns don't already exist
-        assert groupnames.isdisjoint(self.df.columns), \
-                "`df` has columns with `match_str` group names"
-        assert groupqvals.isdisjoint(self.df.columns), \
-                "`df` has columns with `match_str` group qvals"
-        assert groupaccuracies.isdisjoint(self.df.columns), \
-                "`df` has columns with `match_str` group accuracies"
+        if not overwrite:
+            assert filter_colname not in self.df.columns,\
+                    "`df` already has column {0}".format(filter_colname)
+            assert polarity_colname + "_polarity" not in self.df.columns,\
+                    "`df` already has column {0}".format(polarity_colname)
+            assert groupnames.isdisjoint(self.df.columns), \
+                    "`df` has columns with `match_str` group names"
+            assert groupqvals.isdisjoint(self.df.columns), \
+                    "`df` has columns with `match_str` group qvals"
+            assert groupaccuracies.isdisjoint(self.df.columns), \
+                    "`df` has columns with `match_str` group accuracies"
 
         # look for matches for each row
         match_d = {c:[] for c in set.union(*[groupnames, groupqvals,
@@ -360,9 +365,11 @@ class CCS:
         indexname = self.df.index.name
         assert indexname not in match_d
         match_d[indexname] = self.df.index.tolist()
-        assert set(match_d.keys()).isdisjoint(self.df.columns)
+        dup_cols = set(match_d.keys()).intersection(set(self.df.columns))
+        if (not overwrite) and drop_cols:
+            raise ValueError("overwriting columns")
         self.df = pandas.concat(
-                [self.df,
+                [self.df.drop(dup_cols, axis=1),
                  pandas.DataFrame(match_d).set_index(indexname),
                 ],
                 axis=1)
