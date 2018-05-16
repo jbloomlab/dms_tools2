@@ -298,7 +298,10 @@ class CCS:
                 A string that can be passed to `re.compile` that
                 gives the pattern that we are looking for, with
                 target subsequences as named groups. See also
-                the `expandIUPAC` parameter.
+                the `expandIUPAC` parameter. Note that if 
+                `expandIUPAC` is true, the group names cannot
+                include IUPAC codes (a safe thing to do is just
+                make the group names all lower case).
             `filter_colname` (str)
                 Name of a new column added to `df`. Every row
                 in `df` that has a CCS column that matches
@@ -340,9 +343,10 @@ class CCS:
         polarity_colname = filter_colname + "_polarity"
 
         if expandIUPAC:
-            all_nts = ''.join(NT_TO_REGEXP.keys())
-            assert not re.search('<[^>]*[ACGT]+[^>]*>', match_str),\
-                    "`match_str` group name has nucleotide code"
+            expand_nts = ''.join([key for key, value in 
+                    NT_TO_REGEXP.items() if len(value) > 1])
+            assert not re.search('<[^>]*[{0}]+[^>]*>'.format(expand_nts),
+                    match_str), "`match_str` group name has IUPAC code"
             match_str = match_str.translate(str.maketrans(NT_TO_REGEXP))
 
         matcher = re.compile(match_str)
