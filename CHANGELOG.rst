@@ -3,7 +3,7 @@ Change Log
 
 2.3.dev0
 --------
-* added `pacbio` module
+* added `pacbio` and `minimap2` modules
 
 2.2.6
 -------
