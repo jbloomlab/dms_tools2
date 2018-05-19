@@ -14,6 +14,7 @@ the ``minimap2`` executable on the command line.
 
 import os
 import re
+import io
 import subprocess
 import tempfile
 import collections
@@ -42,12 +43,17 @@ class MapperCmdLine:
     Known to work with ``minimap2`` version 2.10.
 
     Args:
+        `target` (str)
+            FASTA file with target (reference) to which we align
+            reads.
         `prog` (str)
             Path to ``minimap2`` executable.
         `options` (list)
             Command line options to ``minimap2``.
 
     Attributes:
+        `target (str)
+            Target (reference) set at initialization.
         `prog` (str)
             Path to ``minimap2`` set at initialization.
         `options` (list)
@@ -56,7 +62,7 @@ class MapperCmdLine:
             Version of ``minimap2``.
     """
 
-    def __init__(self, prog='minimap2', options=ORIENTED_READ):
+    def __init__(self, target, prog='minimap2', options=ORIENTED_READ):
         """See main :class:`MapperCmdLine` doc string."""
         try:
             version = subprocess.check_output([prog, '--version'])
@@ -65,19 +71,19 @@ class MapperCmdLine:
         self.version = version.strip().decode('utf-8')
         self.prog = prog
         self.options = options
+        assert os.path.isfile(target), "no `target` {0}".format(target)
+        self.target = target
 
 
-    def align(self, target, query, return_dict=True, outfile=None):
-        """Align sequences.
+    def map(self, query, return_dict=True, outfile=None):
+        """Map query sequences to reference target.
 
-        Aligns query sequences to a target. Adds ``--c --cs=long``
+        Aligns query sequences to `target`. Adds ``--c --cs=long``
         arguments to `options` to get a long CIGAR string, and
         returns the results as a dictionary and/or writes them
         to a PAF file.
 
         Args:
-            `target` (str)
-                FASTA file with target to which we align.
             `query` (str)
                 FASTA file with query sequences to align.
                 Headers should be unique.
@@ -101,7 +107,6 @@ class MapperCmdLine:
             in `query`, and the values are alignments in the format
             returned by :meth:`parsePAF`.
         """
-        assert os.path.isfile(target), "no `target` {0}".format(target)
         assert os.path.isfile(query), "no `query` {0}".format(query)
 
         assert '-a' not in self.options, \
@@ -111,17 +116,28 @@ class MapperCmdLine:
                 self.options.append(arg)
 
         if outfile is None:
-            fout = tempfile.TemporaryFile()
+            fout = tempfile.TemporaryFile('w+')
         else:
-            fout = open(outfile, 'w')
+            fout = open(outfile, 'w+')
+
         stderr = tempfile.TemporaryFile()
         try:
             _ = subprocess.check_call(
-                    [self.prog] + args + [target, query],
+                    [self.prog] + self.options + [self.target, query],
                     stdout=fout, stderr=stderr)
+            if return_dict:
+                fout.seek(0)
+                d = {}
+                for (query, alignment) in parsePAF(fout):
+                    assert query not in d, "duplicate query {0}".format(query)
+                    d[query] = alignment
+            else:
+                d = None
         finally:
             fout.close()
             stderr.close()
+
+        return d
 
 
 def parsePAF(paf_file):
@@ -136,14 +152,16 @@ def parsePAF(paf_file):
     `described here <https://github.com/lh3/minimap2>`_.
 
     Args:
-        `paf_file` (str)
-            Name of ``*.paf`` file.
+        `paf_file` (str or iterator)
+            If str, should be name of ``*.paf`` file.
+            Otherwise should be an iterator that returns
+            lines as would be read from a PAF file.
 
     Returns:
-        A generator that yields alignments on each line in 
-        `paf_file`. Each alignment is returned as the 2-tuple
-        `(query_name, a)`, where `query_name` is a str giving
-        the name of the query sequence, and `a` is a named tuple
+        A generator that yields query / alignments on each line in 
+        `paf_file`. Returned as the 2-tuple `(query_name, a)`,
+        where `query_name` is a str giving the name of the query
+        sequence, and `a` is a named tuple giving the alignment
         with the following attributes:
             `ctg`: name of reference to which query is mapped
             `r_st`, `r_en`: start / end in reference (0 based)
@@ -151,30 +169,66 @@ def parsePAF(paf_file):
             `strand`: 1 for forward, -1 for reverse
             `mapq`: mapping quality
             `cigar_str`: CIGAR string
+
+    Here is a short example:
+
+    >>> paf_file = io.StringIO("queryname\\t10\\t0\\t10\\t+\\t"
+    ...         "targetname\\t20\\t5\\t15\\t9\\t10\\t60\\t"
+    ...         "cs:Z:=ATG*ga=GAACAT")
+    >>> alignments = [tup for tup in parsePAF(paf_file)]
+    >>> len(alignments)
+    1
+    >>> (queryname, alignment) = alignments[0]
+    >>> queryname
+    'queryname'
+    >>> alignment.ctg
+    'targetname'
+    >>> (alignment.r_st, alignment.r_en)
+    (5, 15)
+    >>> (alignment.q_st, alignment.q_en)
+    (0, 10)
+    >>> alignment.strand
+    1
+    >>> alignment.mapq
+    60
+    >>> alignment.cigar_str
+    '=ATG*ga=GAACAT'
     """
-    assert os.path.isfile(paf_file), "no `paf_file` {0}".format(paf_file)
     
     Alignment = collections.namedtuple('Alignment', ['ctg', 'r_st',
-            'r_en', 'q_st', 'q_en', 'strand', 'cigar_str'])
+            'r_en', 'q_st', 'q_en', 'strand', 'mapq', 'cigar_str'])
     cigar_m = re.compile('cs:Z:(?P<cigar_str>'
-            '[:[0-9]+|\*[a-z][a-z]|[=\+\-][A-Za-z]+]+)(?:\s+|$)')
+            '(:[0-9]+|\*[a-z][a-z]|[=\+\-][A-Za-z]+)+)(?:\s+|$)')
 
-    with open(paf_file) as f:
-        for line in f:
-            entries = line.split('\t', maxsplit=12)
-            try:
-                cigar_str = cigar_m.search(entries[12]).group('cigar_str')
-            except:
-                raise ValueError("Cannot match CIGAR:\n{0}".format(entries[12]))
-            query_name = entries[0]
-            a = Alignment(ctg=entries[5],
-                          r_st=int(entries[7]),
-                          r_en=int(entries[8]),
-                          q_st=int(entries[2]),
-                          q_en=int(entries[3]),
-                          strand={'+':1, '-':-1}[entries[4]],
-                          cigar_str=cigar_str)
-            yield (query_name, a)
+    close_paf_file = False
+    if isinstance(paf_file, str):
+        assert os.path.isfile(paf_file), "no `paf_file` {0}".format(
+                paf_file)
+        paf_file = open(paf_file, 'r')
+        close_paf_file = True
+
+    elif not isinstance(paf_file, collections.Iterable):
+        raise ValueError("`paf_file` must be file name or iterable")
+
+    for line in paf_file:
+        entries = line.split('\t', maxsplit=12)
+        try:
+            cigar_str = cigar_m.search(entries[12]).group('cigar_str')
+        except:
+            raise ValueError("Cannot match CIGAR:\n{0}".format(entries[12]))
+        query_name = entries[0]
+        a = Alignment(ctg=entries[5],
+                      r_st=int(entries[7]),
+                      r_en=int(entries[8]),
+                      q_st=int(entries[2]),
+                      q_en=int(entries[3]),
+                      mapq=int(entries[11]),
+                      strand={'+':1, '-':-1}[entries[4]],
+                      cigar_str=cigar_str)
+        yield (query_name, a)
+
+    if close_paf_file:
+        paf_file.close()
 
 
 
