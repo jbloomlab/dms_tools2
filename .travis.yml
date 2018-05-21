@@ -12,6 +12,10 @@ before_install:
   - sudo apt-get -qq install texlive-fonts-recommended
   - sudo apt-get -qq install samtools
 
+before_script:
+  - curl -L https://github.com/lh3/minimap2/releases/download/v2.10/minimap2-2.10_x64-linux.tar.bz2 | tar -jxvf -
+  - export PATH=$PATH:$PWD/minimap2-2.10_x64-linux
+
 addons:
   apt:
     sources:
