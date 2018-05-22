@@ -117,6 +117,7 @@ html_theme_options = {
         'github_repo':'dms_tools2',
         'github_banner':'true',
         'travis_button':'true',
+        'sidebar_width':'250px',
         }
 
 # Add any paths that contain custom static files (such as style sheets) here,
