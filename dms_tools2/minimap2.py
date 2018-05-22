@@ -56,7 +56,7 @@ class MapperCmdLine:
             Command line options to ``minimap2``.
 
     Attributes:
-        `target (str)
+        `target` (str)
             Target (reference) set at initialization.
         `prog` (str)
             Path to ``minimap2`` set at initialization.
@@ -125,6 +125,7 @@ class MapperCmdLine:
     ...     matched.append([a.r_st, a.r_en] == list(map(int, expected[1 : 3])))
     ...     matched.append([a.q_st, a.q_en] == [0, len(queries[query])])
     ...     matched.append(a.cigar_str == expected[3])
+    ...     matched.append(a.strand == 1)
     >>> all(matched)
     True
     """
@@ -216,7 +217,7 @@ def parsePAF(paf_file):
 
     PAF format is `described here <https://github.com/lh3/miniasm/blob/master/PAF.md>`_.
     PAF long CIGAR string format from ``minimap2`` is 
-    `described here <https://github.com/lh3/minimap2>`_.
+    `detailed here <https://github.com/lh3/minimap2>`_.
 
     Args:
         `paf_file` (str or iterator)
@@ -230,12 +231,12 @@ def parsePAF(paf_file):
         where `query_name` is a str giving the name of the query
         sequence, and `a` is a named tuple giving the alignment
         with the following attributes:
-            `ctg`: name of reference to which query is mapped
-            `r_st`, `r_en`: start / end in reference (0 based)
-            `q_st`, `q_en`: start / end in query (0 based)
-            `strand`: 1 for forward, -1 for reverse
-            `mapq`: mapping quality
-            `cigar_str`: CIGAR string
+            - `ctg`: name of reference to which query is mapped
+            - `r_st`, `r_en`: start / end in reference (0 based)
+            - `q_st`, `q_en`: start / end in query (0 based)
+            - `strand`: 1 for forward, -1 for reverse
+            - `mapq`: mapping quality
+            - `cigar_str`: CIGAR string
 
     Here is a short example:
 
