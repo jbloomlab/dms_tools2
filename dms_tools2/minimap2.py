@@ -15,9 +15,13 @@ the ``minimap2`` executable on the command line.
 import os
 import re
 import io
+import functools
 import subprocess
 import tempfile
 import collections
+import random
+
+from dms_tools2 import NTS
 
 
 #: ``minimap2`` settings that work well for a query
@@ -60,6 +64,69 @@ class MapperCmdLine:
             Options to ``minimap2`` set at initialization.
         `version` (str)
             Version of ``minimap2``.
+
+    Here is an example where we align a few reads to two target
+    sequences.
+
+    First, we generate a few target sequences:
+
+    >>> targetlen = 200
+    >>> random.seed(1)
+    >>> targets = {}
+    >>> for i in [1, 2]:
+    ...     targets['target{0}'.format(i)] = ''.join(random.choice(NTS)
+    ...             for _ in range(targetlen))
+
+    Now we generate some queries. One is a random sequence that should not
+    align, and the other two are substrings of the targets into which we
+    have introduced a single mutation or indel. The names of the queries
+    give their target, start in query, end in query, cigar string:
+
+    >>> queries = {'randseq':''.join(random.choice(NTS) for _ in range(180))}
+    >>> for qstart, qend, mut in [(0, 183, 'mut53'), (36, 194, 'del140')]:
+    ...     target = random.choice(list(targets.keys()))
+    ...     qseq = targets[target][qstart : qend]
+    ...     mutsite = int(mut[3 : ])
+    ...     if 'mut' in mut:
+    ...         wt = qseq[mutsite]
+    ...         mut = random.choice([nt for nt in NTS if nt != wt])
+    ...         cigar = ('=' + qseq[ : mutsite] + '*' + wt.lower() +
+    ...                  mut.lower() + '=' + qseq[mutsite + 1 : ])
+    ...         qseq = qseq[ : mutsite] + mut + qseq[mutsite + 1 : ]
+    ...     elif 'del' in mut:
+    ...         cigar = ('=' + qseq[ : mutsite] + '-' +
+    ...                  qseq[mutsite].lower() + '=' + qseq[mutsite + 1 : ])
+    ...         qseq = qseq[ : mutsite] + qseq[mutsite + 1 : ]
+    ...     queryname = '_'.join(map(str, [target, qstart, qend, cigar]))
+    ...     queries[queryname] = qseq
+
+
+    Now map the queries to the targets:
+
+    >>> TempFile = functools.partial(tempfile.NamedTemporaryFile, mode='w')
+    >>> with TempFile() as targetfile, TempFile() as queryfile:
+    ...     _ = targetfile.write('\\n'.join('>{0}\\n{1}'.format(*tup)
+    ...                          for tup in targets.items()))
+    ...     targetfile.flush()
+    ...     _ = queryfile.write('\\n'.join('>{0}\\n{1}'.format(*tup)
+    ...                         for tup in queries.items()))
+    ...     queryfile.flush()
+    ...     mapper = MapperCmdLine(targetfile.name)
+    ...     alignments = mapper.map(queryfile.name)
+
+    Now make sure we find the expected alignments:
+
+    >>> set(alignments.keys()) == set(q for q in queries if q != 'randseq')
+    True
+    >>> matched = []
+    >>> for (query, a) in alignments.items():
+    ...     expected = query.split('_')
+    ...     matched.append(a.ctg == expected[0])
+    ...     matched.append([a.r_st, a.r_en] == list(map(int, expected[1 : 3])))
+    ...     matched.append([a.q_st, a.q_en] == [0, len(queries[query])])
+    ...     matched.append(a.cigar_str == expected[3])
+    >>> all(matched)
+    True
     """
 
     def __init__(self, target, prog='minimap2', options=ORIENTED_READ):
