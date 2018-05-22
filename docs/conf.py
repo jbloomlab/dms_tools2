@@ -18,6 +18,7 @@
 import os
 import sys
 import re
+import datetime
 sys.path.insert(0, '{0}/../dms_tools2'.format(os.path.abspath('.')))
 
 
@@ -55,7 +56,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'dms_tools2'
-copyright = u'2017, the Bloom lab'
+copyright = u'2017--{0}, the Bloom lab'.format(datetime.datetime.now().year)
 author = u'the Bloom lab'
 
 # The version info for the project you're documenting, acts as replacement for
