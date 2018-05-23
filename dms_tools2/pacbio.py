@@ -13,6 +13,7 @@ import io
 import math
 import subprocess
 import collections
+import tempfile
 
 import numpy
 import pandas
@@ -39,8 +40,8 @@ class CCS:
     may need a lot of RAM if `bamfile` is large.
 
     Args:
-        `name` (str)
-            Sample or sequencing run name
+        `sample` (str)
+            Sample or sequencing run
         `bamfile` (str)
             BAM file created by ``ccs``
         `reportfile` (str or `None`)
@@ -48,7 +49,7 @@ class CCS:
             `None` if you have no reports.
 
     Attributes:
-        `name` (str)
+        `sample` (str)
             Name set at initialization
         `bamfile` (str)
             ``ccs`` BAM file set at initialization
@@ -176,9 +177,9 @@ class CCS:
 
     """
 
-    def __init__(self, name, bamfile, reportfile):
+    def __init__(self, sample, bamfile, reportfile):
         """See main class doc string."""
-        self.name = name
+        self.sample = sample
 
         assert os.path.isfile(bamfile), "can't find {0}".format(bamfile)
         self.bamfile = bamfile
@@ -216,7 +217,7 @@ class CCS:
                 column for each in `df`.
             `title` (bool or str)
                 If `False`, no title. If `True`, make
-                `name` the title. If a string, make
+                `sample` the title. If a string, make
                 that the title.
         """
         assert set(cols) <= set(self.df.columns)
@@ -279,7 +280,7 @@ class CCS:
 
         if title:
             if not isinstance(title, str):
-                title = self.name
+                title = self.sample
             g.fig.suptitle(title, va='bottom')
 
         g.savefig(plotfile)
@@ -319,26 +320,24 @@ class CCS:
                 be created that already exist. If `False`, raise
                 an error if any of the columns already exist.
 
-        After calling this function, the following columns are added
-        to `df`:
-            Column with name given by `filter_colname`:
-                Entries `True` when `match_str` matches for that row.
-            Column with name given by `filter_colname` suffixed by "_polarity":
-                This entry is "plus" or "minus" depending on whether we 
-                directly match CCS (plus) or have to reverse-complement
-                first (minus).
-            Columns with name of each group in `match_str`:
-                The string that matches that group in CCS, or an 
-                empty string if no match. If the match is in the minus
-                polarity, the string placed in this column is
-                reverse-complemented to be in the plus orientation.
-            Columns with group names suffixed by "_qvals":
-                The Q-values for that group, or an empty numpy
-                array if no match. If the group is reverse-complement
-                to plus orientation, the Q-values are also reversed
-                to keep them in the same orientation as the group sequence.
-            Columns with group names suffixed by "_accuracy":
-                The accuracy for that group, or 0 if no match.
+        The following columns are added to `df`:
+
+            - Name given by `filter_colname`: `True` if `match_str` matches.
+
+            - Columns with name of `filter_colname` and these suffixes:
+                - "_polarity": "plus" or "minus" depending on whether 
+                  matches CCS directly or matches reverse-complement.
+                - Each group in `match_str`: the string that matches
+                  that group in CCS, or any empty string if no match.
+                  If the match is in the minus polarity, the string is
+                  reverse-complemented to be in the plus orientation.
+                - Each group names suffixed by "_qvals": The Q-values
+                  for that group, or an empty numpy if no match. If
+                  the group is reverse-complemented to plus orientation,
+                  the Q-values are also reversed to keep them in the
+                  same orientation as the group sequence.
+                - Group names suffixed by "_accuracy": accuracy for
+                  that group, or 0 if no match.
         """
         polarity_colname = filter_colname + "_polarity"
 
@@ -415,6 +414,87 @@ class CCS:
                  pandas.DataFrame(match_d).set_index(indexname),
                 ],
                 axis=1)
+
+    def align(self, mapper, query_col, alignment_col='aligned',
+              overwrite=True):
+        """Align sequences to target sequence(s).
+
+        Arguments:
+            `mapper` (:py:mod:`dms_tools2.minimap2.Mapper`)
+                Align sequences using `mapper.map`. Target
+                sequences are specified when initializing `mapper`.
+            `query_col` (str)
+                Column in `df` with query sequences to align.
+            `alignment_col` (str)
+				Specify names of new columns added to `df` (see
+				below).
+            `overwrite` (bool)
+                If `True`, we overwrite any existing columns to
+                be created that already exist. If `False`, raise
+                an error if any of the columns already exist.
+
+        Calling this function adds the following columns to `df`:
+
+            - Name given by `alignment_col`: `True` if alignment.
+
+            - Columns with names of `alignment_col` and these suffixes:
+                - "_target": name of target to which query aligned,
+                  or empty string if no alignment.
+                - "_clip_start": number of nucleotides clipped from
+                  start of query, or -1 if no alignment.
+                - "_clip_end": number of nucleotides clipped from
+                  end of query, or -1 if no alignment.
+                - "_start": position in target where alignment starts in
+                  0-based indexing, or -1 if no alignment.
+                - "_cigar" Long format cigar string 
+                  (`see here <https://github.com/lh3/minimap2>`_), 
+                  or empty string if no alignment
+        """
+        assert query_col in self.df.columns, \
+                "no `query_col` {0}".format(query_col)
+
+        newcols = {'aligned':alignment_col,
+                   'target':alignment_col + '_target',
+                   'clip_start':alignment_col + '_clip_start',
+                   'clip_end':alignment_col + '_clip_end',
+                   'start':alignment_col + '_start',
+                   'cigar':alignment_col + '_cigar'
+                  }
+        dup_cols = set(newcols.keys).union(set(self.df.columns))
+        if (not overwrite) and dup_cols:
+            raise ValueError("would duplicate existing columns:\n{0}"
+                             .format(dup_cols))
+
+        assert len(self.df.name) == len(self.df.name.unique()), \
+                "`name` in `df` not unique"
+        with tempfile.NamedTemporaryFile(mode='w') as queryfile:
+            queryfile.write('\n'.join([
+                            '>{0}\n{1}'.format(*tup) for tup in
+                            self.df.query('{0} != ""'.format(query_col))
+                                [['name', query_col]]
+                                .itertuples(index=False, name=False)
+                            ]))
+            map_dict = mapper.map(queryfile.name)
+
+        align_d = {c:[] for c in newcols.values()}
+        for name in self.df.names:
+            if name in map_dict:
+                a = map_dict[name]
+                assert a.polarity == 1, "method does not handle - polarity"
+                map_dict[newcols['aligned']].append(True)
+                map_dict[newcols['target']].append(a.ctg)
+                map_dict[newcols['cigar']].append(a.cigar_str)
+                map_dict[newcols['start']].append(a.r_st)
+                map_dict[newcols['clip_start']].append(a.q_st)
+                map_dict[newcols['clip_end']].append(a.q_len - a.q_en)
+
+            else:
+                map_dict[newcols['aligned']].append(False)
+                for col in ['target', 'cigar']:
+                    map_dict[newcols[col]].append('')
+                for col in ['clip_start', 'clip_end', 'start']:
+                    map_dict[newcols[col]].append('')
+
 
 
     def _parse_report(self):
@@ -540,7 +620,7 @@ def summarizeCCSreports(ccslist, report_type, plotfile,
     assert report_type in ['zmw', 'subread']
     report = report_type + '_report'
 
-    df = (pandas.concat([getattr(ccs, report).assign(sample=ccs.name)
+    df = (pandas.concat([getattr(ccs, report).assign(sample=ccs.sample)
                 for ccs in ccslist])
           .sort_values(['sample', 'number'], ascending=False)
           [['sample', 'status', 'number', 'fraction']]

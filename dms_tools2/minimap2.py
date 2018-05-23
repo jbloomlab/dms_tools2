@@ -4,9 +4,9 @@ minimap2
 ===============
 
 Runs `minimap2 <https://lh3.github.io/minimap2/>`_
-aligner. Although this aligner comes with it's own
-Python API (`mappy`), it does not support all option.
-
+aligner. Although this aligner has it's own Python AP
+Python API (`mappy <https://github.com/lh3/minimap2/tree/master/python>`_),
+it does not support all options.
 Therefore, this module interacts directly with
 the ``minimap2`` executable on the command line.
 """
@@ -40,8 +40,7 @@ ORIENTED_READ = ['-uf',
                  '--secondary=no']
 
 
-
-class MapperCmdLine:
+class Mapper:
     """Class to run ``minimap2`` at command line and get results.
 
     Known to work with ``minimap2`` version 2.10.
@@ -111,7 +110,7 @@ class MapperCmdLine:
     ...     _ = queryfile.write('\\n'.join('>{0}\\n{1}'.format(*tup)
     ...                         for tup in queries.items()))
     ...     queryfile.flush()
-    ...     mapper = MapperCmdLine(targetfile.name)
+    ...     mapper = Mapper(targetfile.name)
     ...     alignments = mapper.map(queryfile.name)
 
     Now make sure we find the expected alignments:
@@ -131,7 +130,7 @@ class MapperCmdLine:
     """
 
     def __init__(self, target, prog='minimap2', options=ORIENTED_READ):
-        """See main :class:`MapperCmdLine` doc string."""
+        """See main :class:`Mapper` doc string."""
         try:
             version = subprocess.check_output([prog, '--version'])
         except:
@@ -150,6 +149,9 @@ class MapperCmdLine:
         arguments to `options` to get a long CIGAR string, and
         returns the results as a dictionary and/or writes them
         to a PAF file.
+
+        Will raise an error if there are multiple mappings for
+        a query.
 
         Args:
             `query` (str)
@@ -234,6 +236,7 @@ def parsePAF(paf_file):
             - `ctg`: name of reference to which query is mapped
             - `r_st`, `r_en`: start / end in reference (0 based)
             - `q_st`, `q_en`: start / end in query (0 based)
+            - `q_len`: length of query
             - `strand`: 1 for forward, -1 for reverse
             - `mapq`: mapping quality
             - `cigar_str`: CIGAR string
@@ -261,10 +264,12 @@ def parsePAF(paf_file):
     60
     >>> alignment.cigar_str
     '=ATG*ga=GAACAT'
+    >>> alignment.q_len
+    10
     """
     
     Alignment = collections.namedtuple('Alignment', ['ctg', 'r_st',
-            'r_en', 'q_st', 'q_en', 'strand', 'mapq', 'cigar_str'])
+            'r_en', 'q_len', 'q_st', 'q_en', 'strand', 'mapq', 'cigar_str'])
     cigar_m = re.compile('cs:Z:(?P<cigar_str>'
             '(:[0-9]+|\*[a-z][a-z]|[=\+\-][A-Za-z]+)+)(?:\s+|$)')
 
@@ -290,6 +295,7 @@ def parsePAF(paf_file):
                       r_en=int(entries[8]),
                       q_st=int(entries[2]),
                       q_en=int(entries[3]),
+                      q_len=int(entries[1]),
                       mapq=int(entries[11]),
                       strand={'+':1, '-':-1}[entries[4]],
                       cigar_str=cigar_str)

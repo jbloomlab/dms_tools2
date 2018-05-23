@@ -81,7 +81,7 @@ class test_pacbio_CCS(unittest.TestCase):
             os.remove(plotfile)
 
         ccs2 = copy.deepcopy(self.ccs)
-        ccs2.name = 'test2'
+        ccs2.sample = 'test2'
 
         df = dms_tools2.pacbio.summarizeCCSreports(
                 [self.ccs, ccs2], 'zmw', plotfile)
