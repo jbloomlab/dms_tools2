@@ -3,6 +3,8 @@ Change Log
 
 2.3.dev0
 --------
+* Require Python 3.5 or greater.
+
 * added `pacbio` and `minimap2` modules
 
 2.2.6
