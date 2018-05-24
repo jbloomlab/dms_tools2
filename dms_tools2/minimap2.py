@@ -26,7 +26,9 @@ from dms_tools2 import NTS
 
 #: ``minimap2`` settings that work well for a query
 #: being matched to a short target where the target
-#: is known to be in the same orientation at the query.
+#: is known to be in the same orientation as the query,
+#: and some of the mutations are codon mutations (this
+#: last point requires care on opening small gaps).
 ORIENTED_READ = ['-uf', 
                  '-k15',
                  '-w5',
@@ -34,7 +36,7 @@ ORIENTED_READ = ['-uf',
                  '-G200k',
                  '-A1',
                  '-B2',
-                 '-O2,32',
+                 '-O6,40',
                  '-E1,0',
                  '-z200',
                  '--secondary=no']
@@ -303,7 +305,6 @@ def parsePAF(paf_file):
 
     if close_paf_file:
         paf_file.close()
-
 
 
 if __name__ == '__main__':

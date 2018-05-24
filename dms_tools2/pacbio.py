@@ -407,7 +407,7 @@ class CCS:
         assert indexname not in match_d
         match_d[indexname] = self.df.index.tolist()
         dup_cols = set(match_d.keys()).intersection(set(self.df.columns))
-        if (not overwrite) and drop_cols:
+        if (not overwrite) and dup_cols:
             raise ValueError("overwriting columns")
         self.df = pandas.concat(
                 [self.df.drop(dup_cols, axis=1),
@@ -460,7 +460,7 @@ class CCS:
                    'start':alignment_col + '_start',
                    'cigar':alignment_col + '_cigar'
                   }
-        dup_cols = set(newcols.keys).union(set(self.df.columns))
+        dup_cols = set(newcols.keys()).intersection(set(self.df.columns))
         if (not overwrite) and dup_cols:
             raise ValueError("would duplicate existing columns:\n{0}"
                              .format(dup_cols))
@@ -477,24 +477,35 @@ class CCS:
             map_dict = mapper.map(queryfile.name)
 
         align_d = {c:[] for c in newcols.values()}
-        for name in self.df.names:
+        for name in self.df.name:
             if name in map_dict:
                 a = map_dict[name]
-                assert a.polarity == 1, "method does not handle - polarity"
-                map_dict[newcols['aligned']].append(True)
-                map_dict[newcols['target']].append(a.ctg)
-                map_dict[newcols['cigar']].append(a.cigar_str)
-                map_dict[newcols['start']].append(a.r_st)
-                map_dict[newcols['clip_start']].append(a.q_st)
-                map_dict[newcols['clip_end']].append(a.q_len - a.q_en)
+                assert a.strand == 1, "method does not handle - polarity"
+                align_d[newcols['aligned']].append(True)
+                align_d[newcols['target']].append(a.ctg)
+                align_d[newcols['cigar']].append(a.cigar_str)
+                align_d[newcols['start']].append(a.r_st)
+                align_d[newcols['clip_start']].append(a.q_st)
+                align_d[newcols['clip_end']].append(a.q_len - a.q_en)
 
             else:
-                map_dict[newcols['aligned']].append(False)
+                align_d[newcols['aligned']].append(False)
                 for col in ['target', 'cigar']:
-                    map_dict[newcols[col]].append('')
+                    align_d[newcols[col]].append('')
                 for col in ['clip_start', 'clip_end', 'start']:
-                    map_dict[newcols[col]].append('')
+                    align_d[newcols[col]].append('')
 
+        # add to df, making sure index is correct
+        index_name = self.df.index.name
+        assert index_name not in align_d
+        align_d[index_name] = self.df.index.tolist()
+        if (not overwrite) and dup_cols:
+            raise ValueError("overwriting columns")
+        self.df = pandas.concat(
+                [self.df.drop(dup_cols, axis=1),
+                 pandas.DataFrame(align_d).set_index(index_name),
+                ],
+                axis=1)
 
 
     def _parse_report(self):
