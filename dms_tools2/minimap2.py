@@ -9,6 +9,7 @@ Python API (`mappy <https://github.com/lh3/minimap2/tree/master/python>`_),
 it does not support all options.
 Therefore, this module interacts directly with
 the ``minimap2`` executable on the command line.
+The module is tested with ``minimap2`` version 2.10.
 """
 
 
@@ -20,6 +21,8 @@ import subprocess
 import tempfile
 import collections
 import random
+
+import Bio.SeqIO
 
 from dms_tools2 import NTS
 
@@ -41,11 +44,24 @@ ORIENTED_READ = ['-uf',
                  '-z200',
                  '--secondary=no']
 
+# namedtuple to hold alignments
+Alignment = collections.namedtuple('Alignment',
+        ['target', 'r_st', 'r_en', 'q_len', 'q_st',
+         'q_en', 'strand', 'mapq', 'cigar_str'])
+Alignment.__doc__ = "Alignment of a query to a target (reference)."
+Alignment.target.__doc__ = "Target (reference) to which query was aligned."
+Alignment.r_st.__doc__ = "Alignment start in target (0 based)."
+Alignment.r_en.__doc__ = "Alignment end in target (0 based)."
+Alignment.q_st.__doc__ = "Alignment start in query (0 based)."
+Alignment.q_en.__doc__ = "Alignment end in query (0 based)."
+Alignment.q_len.__doc__ = "Total length of query prior to any clipping."
+Alignment.strand.__doc__ = "1 if aligns in forward polarity, -1 if in reverse."
+Alignment.mapq.__doc__ = "Mapping quality."
+Alignment.cigar_str.__doc__ = "CIGAR in `PAF long format <https://github.com/lh3/minimap2>`_"
+
 
 class Mapper:
     """Class to run ``minimap2`` at command line and get results.
-
-    Known to work with ``minimap2`` version 2.10.
 
     Args:
         `target` (str)
@@ -122,7 +138,7 @@ class Mapper:
     >>> matched = []
     >>> for (query, a) in alignments.items():
     ...     expected = query.split('_')
-    ...     matched.append(a.ctg == expected[0])
+    ...     matched.append(a.target == expected[0])
     ...     matched.append([a.r_st, a.r_en] == list(map(int, expected[1 : 3])))
     ...     matched.append([a.q_st, a.q_en] == [0, len(queries[query])])
     ...     matched.append(a.cigar_str == expected[3])
@@ -144,7 +160,8 @@ class Mapper:
         self.target = target
 
 
-    def map(self, query, return_dict=True, outfile=None):
+    def map(self, queryfile, return_dict=True, outfile=None,
+            unclip_matches=True):
         """Map query sequences to reference target.
 
         Aligns query sequences to `target`. Adds ``--c --cs=long``
@@ -156,7 +173,7 @@ class Mapper:
         a query.
 
         Args:
-            `query` (str)
+            `queryfile` (str)
                 FASTA file with query sequences to align.
                 Headers should be unique.
             `return_dict` (bool)
@@ -171,15 +188,19 @@ class Mapper:
                 Provide `None` if you just want to access
                 results via `return_dict` and don't want to
                 create a permanent output file.
+            `unclip_matches` (bool)
+                Pass alignments through :meth:`unclipMatches`.
+                Only applies to alignments returned in dict,
+                does not affect any results in `outfile`.
 
         Returns:
             Either a dict (if `return_dict` is `True`)
             or `None` (if `return_dict` is `False`). If returning
-            a dictionary, the keys are the header for each sequence
-            in `query`, and the values are alignments in the format
-            returned by :meth:`parsePAF`.
+            a dictionary, the keys are the name each sequence
+            in `queryfile`, and the values are alignments as 
+            :class:`Alignment` objects.
         """
-        assert os.path.isfile(query), "no `query` {0}".format(query)
+        assert os.path.isfile(queryfile), "no `queryfile` {0}".format(queryfile)
 
         assert '-a' not in self.options, \
                 "output should be PAF format, not SAM"
@@ -195,12 +216,12 @@ class Mapper:
         stderr = tempfile.TemporaryFile()
         try:
             _ = subprocess.check_call(
-                    [self.prog] + self.options + [self.target, query],
+                    [self.prog] + self.options + [self.target, queryfile],
                     stdout=fout, stderr=stderr)
             if return_dict:
                 fout.seek(0)
                 d = {}
-                for (query, alignment) in parsePAF(fout):
+                for query, alignment in parsePAF(fout):
                     assert query not in d, "duplicate query {0}".format(query)
                     d[query] = alignment
             else:
@@ -209,7 +230,143 @@ class Mapper:
             fout.close()
             stderr.close()
 
+        if unclip_matches:
+            targetseqs = {seq.name:str(seq.seq) for seq in 
+                          Bio.SeqIO.parse(self.target, 'fasta')}
+            queryseqs = {seq.name:str(seq.seq) for seq in
+                         Bio.SeqIO.parse(queryfile, 'fasta')}
+            for query in list(d.keys()):
+                a = d[query]
+                assert a.q_len == len(queryseqs[query])
+                a = unclipMatches(a, targetseqs[a.target], queryseqs[query])
+                d[query] = a
+
         return d
+
+
+def unclipMatches(a, target, query):
+    """Undo any soft clipping of exact matches.
+
+    For some unknown reason, ``minimap2`` sometimes soft clips
+    queries even when the clipped regions exactly match the 
+    target. This function takes such alignments and undoes 
+    the clipping to the extent possible without introducing
+    any mutations / gaps or otherwise affecting the alignment.
+
+    Args:
+        `a` (:class:`Alignment`)
+            Alignment of `query` to `target` to un-clip
+        `target` (str)
+            Target sequence to which query is aligned.
+        `query` (str)
+            Query sequence.
+
+    Returns:
+        A new :class:`Alignment` with soft clipping of exact
+        matches undone.
+
+    Here are examples:
+
+    Do nothing if no soft clipping.
+
+    >>> target = 'ATGCAATGA'
+    >>> query = 'TACAAT'
+    >>> a = Alignment(mapq=60, strand=1, r_st=1, r_en=7,
+    ...         target='target', q_st=0, q_en=6, q_len=6,
+    ...         cigar_str='=T*gaCAAT')
+    >>> unclipMatches(a, target, query) == a
+    True
+
+    Now some soft clipping that is undone at start:
+
+    >>> query = 'AAGCAATA'
+    >>> a = Alignment(mapq=60, strand=1, r_st=1, r_en=7,
+    ...         target='target', q_st=1, q_en=7, q_len=8,
+    ...         cigar_str='*taGCAAT')
+    >>> a2 = unclipMatches(a, target, query)
+    >>> a2.q_st
+    0
+    >>> a2.r_st
+    0
+    >>> a2.q_en == a.q_en
+    True
+    >>> a2.r_en == a.r_en
+    True
+    >>> a2.cigar_str
+    '=A*taGCAAT'
+
+    Some soft clipping that is undone at both ends:
+
+    >>> query = 'ACTGCAATGA'
+    >>> target = 'ATGCAATGA'
+    >>> a = Alignment(mapq=60, strand=1, r_st=3, r_en=7,
+    ...         target='target', q_st=4, q_en=8, q_len=10,
+    ...         cigar_str='=CAAT')
+    >>> a3 = unclipMatches(a, target, query)
+    >>> a3.q_st
+    2
+    >>> a3.q_en
+    10
+    >>> a3.r_st
+    1
+    >>> a3.r_en
+    9
+    >>> a3.cigar_str
+    '=TGCAATGA'
+    """
+    assert a.strand == 1, "not implemented for - strand"
+    assert a.q_len == len(query), "wrong length query"
+
+    # unclip from start
+    unclip = 0
+    while ((unclip < a.q_st) and (unclip < a.r_st) and
+           (query[a.q_st - unclip - 1] == target[a.r_st - unclip - 1])):
+        unclip += 1
+    if unclip > 0:
+        if a.cigar_str[0] == '=':
+            trimfirst = 1
+        else:
+            trimfirst = 0
+        new_cigar = '=' + query[a.q_st - unclip : a.q_st] + \
+                        a.cigar_str[trimfirst : ]
+        a = Alignment(
+                mapq=a.mapq,
+                strand=a.strand,
+                r_st=a.r_st - unclip,
+                r_en=a.r_en,
+                target=a.target,
+                q_st=a.q_st - unclip,
+                q_en=a.q_en,
+                q_len=a.q_len,
+                cigar_str=new_cigar,
+                )
+
+    # unclip from end
+    unclip = 0
+    while ((unclip + a.q_en < a.q_len) and
+           (unclip + a.r_en < len(target)) and
+           (query[a.q_en + unclip] == target[a.r_en + unclip])):
+        unclip += 1
+    if unclip > 0:
+        if a.cigar_str[-1].isupper():
+            addchar = ''
+        else:
+            addchar = '='
+        new_cigar = a.cigar_str + addchar + query[a.q_en : a.q_en + unclip]
+        a = Alignment(
+                mapq=a.mapq,
+                strand=a.strand,
+                r_st=a.r_st,
+                r_en=a.r_en + unclip,
+                target=a.target,
+                q_st=a.q_st,
+                q_en=a.q_en + unclip,
+                q_len=a.q_len,
+                cigar_str=new_cigar,
+                )
+
+    return a
+
 
 
 def parsePAF(paf_file):
@@ -233,15 +390,7 @@ def parsePAF(paf_file):
         A generator that yields query / alignments on each line in 
         `paf_file`. Returned as the 2-tuple `(query_name, a)`,
         where `query_name` is a str giving the name of the query
-        sequence, and `a` is a named tuple giving the alignment
-        with the following attributes:
-            - `ctg`: name of reference to which query is mapped
-            - `r_st`, `r_en`: start / end in reference (0 based)
-            - `q_st`, `q_en`: start / end in query (0 based)
-            - `q_len`: length of query
-            - `strand`: 1 for forward, -1 for reverse
-            - `mapq`: mapping quality
-            - `cigar_str`: CIGAR string
+        sequence, and `a` is an :class:`Alignment`.
 
     Here is a short example:
 
@@ -254,7 +403,7 @@ def parsePAF(paf_file):
     >>> (queryname, alignment) = alignments[0]
     >>> queryname
     'queryname'
-    >>> alignment.ctg
+    >>> alignment.target
     'targetname'
     >>> (alignment.r_st, alignment.r_en)
     (5, 15)
@@ -270,8 +419,6 @@ def parsePAF(paf_file):
     10
     """
     
-    Alignment = collections.namedtuple('Alignment', ['ctg', 'r_st',
-            'r_en', 'q_len', 'q_st', 'q_en', 'strand', 'mapq', 'cigar_str'])
     cigar_m = re.compile('cs:Z:(?P<cigar_str>'
             '(:[0-9]+|\*[a-z][a-z]|[=\+\-][A-Za-z]+)+)(?:\s+|$)')
 
@@ -292,7 +439,7 @@ def parsePAF(paf_file):
         except:
             raise ValueError("Cannot match CIGAR:\n{0}".format(entries[12]))
         query_name = entries[0]
-        a = Alignment(ctg=entries[5],
+        a = Alignment(target=entries[5],
                       r_st=int(entries[7]),
                       r_en=int(entries[8]),
                       q_st=int(entries[2]),

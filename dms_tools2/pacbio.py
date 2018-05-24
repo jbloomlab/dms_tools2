@@ -482,7 +482,7 @@ class CCS:
                 a = map_dict[name]
                 assert a.strand == 1, "method does not handle - polarity"
                 align_d[newcols['aligned']].append(True)
-                align_d[newcols['target']].append(a.ctg)
+                align_d[newcols['target']].append(a.target)
                 align_d[newcols['cigar']].append(a.cigar_str)
                 align_d[newcols['start']].append(a.r_st)
                 align_d[newcols['clip_start']].append(a.q_st)
