@@ -416,7 +416,7 @@ class CCS:
                 axis=1)
 
     def align(self, mapper, query_col, alignment_col='aligned',
-              overwrite=True):
+              overwrite=True, paf_file=None):
         """Align sequences to target sequence(s).
 
         Arguments:
@@ -432,6 +432,10 @@ class CCS:
                 If `True`, we overwrite any existing columns to
                 be created that already exist. If `False`, raise
                 an error if any of the columns already exist.
+            `paf_file` (`None` or str)
+                If a str, is the name of the PAF file created
+                by `mapper` (see `outfile` argument to
+                :py:mod:`dms_tools2.minimap2.Mapper.map`).
 
         Calling this function adds the following columns to `df`:
 
@@ -474,7 +478,7 @@ class CCS:
                                 [['name', query_col]]
                                 .itertuples(index=False, name=False)
                             ]))
-            map_dict = mapper.map(queryfile.name)
+            map_dict = mapper.map(queryfile.name, outfile=paf_file)
 
         align_d = {c:[] for c in newcols.values()}
         for name in self.df.name:

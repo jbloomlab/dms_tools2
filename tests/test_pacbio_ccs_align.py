@@ -3,7 +3,7 @@
 In the process, also tests `dms_tools2.minimap2`.
 """
 
-import os
+from pathlib import Path
 import unittest
 import collections
 import random
@@ -23,20 +23,23 @@ from dms_tools2 import NTS
 class test_pacbio_CCS_align(unittest.TestCase):
     """Tests `dms_tools2.pacbio.CCS` and related functions."""
 
+    TARGET_LEN = 1000
 
     def setUp(self):
         """Create target and query, initialize `CCS` object"""
 
-        cwd = os.path.abspath(os.path.dirname(__file__))
+        cwd = Path(__file__).absolute().parent
 
-        self.testdir = os.path.join(cwd, 'test_pacbio_ccs_align_files')
-        if not os.path.isdir(self.testdir):
-            os.mkdir(self.testdir)
+        self.testdir = (cwd.joinpath('test_pacbio_ccs_align_files')
+                           .joinpath(str(self.TARGET_LEN))
+                           )
+        Path.mkdir(self.testdir, parents=True, exist_ok=True)
 
         # specify target sequence and flanking sequences
         random.seed(0)
-        self.target = ''.join(random.choice(NTS) for _ in range(1000))
-        self.targetfile = os.path.join(self.testdir, 'target.fasta')
+        self.target = ''.join(random.choice(NTS)
+                for _ in range(self.TARGET_LEN))
+        self.targetfile = self.testdir.joinpath('target.fasta')
         with open(self.targetfile, 'w') as f:
             f.write('>target\n{0}'.format(self.target))
         self.flank5 = ''.join(random.choice(NTS) for _ in range(20))
@@ -56,7 +59,7 @@ class test_pacbio_CCS_align(unittest.TestCase):
                 barcoded = aligned = False
                 barcode = cigar = ''
                 seq = ''.join(random.choice(NTS) for _ in 
-                        range(random.randint(300, 2 * len(self.target))))
+                        range(random.randint(300, 2 * self.TARGET_LEN)))
             elif rand < 0.2:
                 # should pass filtering, fail aligning
                 barcoded = True
@@ -65,7 +68,7 @@ class test_pacbio_CCS_align(unittest.TestCase):
                 cigar = ''
                 seq = (self.flank5 + 
                        ''.join(random.choice(NTS) for _ in
-                               range(random.randint(300, 2 * len(self.target)))) +
+                               range(random.randint(300, 2 * self.TARGET_LEN))) +
                        barcode +
                        self.flank3
                        )
@@ -76,7 +79,7 @@ class test_pacbio_CCS_align(unittest.TestCase):
                 if random.random() < 0.4:
                     # mutations up to 5 in length, not too close to ends
                     mutlen = random.randint(1, 5)
-                    mutloc = random.randint(12, len(self.target) - 20)
+                    mutloc = random.randint(12, self.TARGET_LEN - 20)
                     mutcigar = mut = ''
                     for i in range(mutloc, mutloc + mutlen):
                         mut += random.choice([nt for nt in NTS if
@@ -89,9 +92,9 @@ class test_pacbio_CCS_align(unittest.TestCase):
                             mutcigar + \
                             '=' + self.target[mutloc + mutlen : ]
                 elif random.random() < 0.8:
-                    del_len = random.randint(1, 200)
+                    del_len = random.randint(1, int(0.5 * self.TARGET_LEN))
                     # deletion no closer than 90 nt to termini
-                    mutloc = random.randint(90, len(self.target) - del_len - 90)
+                    mutloc = random.randint(90, self.TARGET_LEN - del_len - 90)
                     # different nts on sides of del to avoid ambiguous location
                     while self.target[mutloc - 1] == self.target[mutloc + del_len - 1]:
                         del_len += 1
@@ -118,11 +121,11 @@ class test_pacbio_CCS_align(unittest.TestCase):
         # create bamfile of queries
         sam_template = '{0[name]}\t4\t*\t0\t255\t*\t*\t0\t0\t{0[seq]}\t' +\
                        '{0[qvals]}\tnp:i:6\trq:f:{0[accuracy]}'
-        samfile = os.path.join(self.testdir, 'queries.sam')
+        samfile = self.testdir.joinpath('queries.sam')
         with open(samfile, 'w') as f:
             for q in self.queries:
                 f.write(sam_template.format(q._asdict()) + '\n')
-        bamfile = os.path.join(self.testdir, 'queries.bam')
+        bamfile = self.testdir.joinpath('queries.bam')
         _ = subprocess.check_call(['samtools', 'view', '-b', '-o',
                                    bamfile, samfile])
 
@@ -145,8 +148,11 @@ class test_pacbio_CCS_align(unittest.TestCase):
                               [q.barcode for q in self.queries if q.barcoded])
 
         # now align and check that we get the right entries
-        mapper = dms_tools2.minimap2.Mapper(self.targetfile)
-        self.ccs.align(mapper, 'read')
+        mapper = dms_tools2.minimap2.Mapper(str(self.targetfile))
+        self.ccs.align(mapper, 'read',
+                paf_file=str(self.testdir.joinpath('alignment.paf')))
+        self.assertEqual(len(self.ccs.df.query('aligned')),
+                         len([q.name for q in self.queries if q.aligned]))
         self.assertCountEqual(self.ccs.df.query('aligned').name,
                              [q.name for q in self.queries if q.aligned])
         expected_cigars = dict((q.name, q.cigar) for q in self.queries)

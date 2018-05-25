@@ -33,22 +33,24 @@ from dms_tools2 import NTS
 #: is known to be in the same orientation as the query,
 #: and some of the mutations are codon mutations (this
 #: last point requires care on opening small gaps).
-ORIENTED_READ = ['-uf', 
+ORIENTED_READ = ['--for-only', 
                  '-k15',
-                 '-w5',
-                 '-g2000',
-                 '-G200k',
+                 '-g10000',
+                 '-G20000',
                  '-A1',
                  '-B2',
                  '-O6,40',
                  '-E1,0',
-                 '-z200',
-                 '--secondary=no']
+                 '-r5000',
+                 '--secondary=no',
+                 '--end-bonus=4',
+                 '-N0',
+                 ]
 
 # namedtuple to hold alignments
 Alignment = collections.namedtuple('Alignment',
         ['target', 'r_st', 'r_en', 'q_len', 'q_st',
-         'q_en', 'strand', 'mapq', 'cigar_str'])
+         'q_en', 'strand', 'cigar_str'])
 Alignment.__doc__ = "Alignment of a query to a target (reference)."
 Alignment.target.__doc__ = "Target (reference) to which query was aligned."
 Alignment.r_st.__doc__ = "Alignment start in target (0 based)."
@@ -57,7 +59,6 @@ Alignment.q_st.__doc__ = "Alignment start in query (0 based)."
 Alignment.q_en.__doc__ = "Alignment end in query (0 based)."
 Alignment.q_len.__doc__ = "Total length of query prior to any clipping."
 Alignment.strand.__doc__ = "1 if aligns in forward polarity, -1 if in reverse."
-Alignment.mapq.__doc__ = "Mapping quality."
 Alignment.cigar_str.__doc__ = "CIGAR in `PAF long format <https://github.com/lh3/minimap2>`_"
 
 
@@ -172,7 +173,7 @@ class Mapper:
 
 
     def map(self, queryfile, return_dict=True, outfile=None,
-            unclip_matches=True):
+            unclip_matches=True, join_gapped=True):
         """Map query sequences to reference target.
 
         Aligns query sequences to `target`. Adds ``--c --cs=long``
@@ -203,6 +204,10 @@ class Mapper:
                 Pass alignments through :meth:`unclipMatches`.
                 Only applies to alignments returned in dict,
                 does not affect any results in `outfile`.
+            `join_gapped` (bool)
+                Pass alignments through :meth:`joinGappedAlignments`.
+                Only applies to alignments returned in dict,
+                does not affect any results in `outfile`.
 
         Returns:
             Either a dict (if `return_dict` is `True`)
@@ -231,28 +236,132 @@ class Mapper:
                     stdout=fout, stderr=stderr)
             if return_dict:
                 fout.seek(0)
-                d = {}
+                dlist = collections.defaultdict(list)
                 for query, alignment in parsePAF(fout):
-                    assert query not in d, "duplicate query {0}".format(query)
-                    d[query] = alignment
-            else:
-                d = None
+                    dlist[query].append(alignment)
         finally:
             fout.close()
             stderr.close()
 
-        if unclip_matches:
-            targetseqs = {seq.name:str(seq.seq) for seq in 
-                          Bio.SeqIO.parse(self.target, 'fasta')}
-            queryseqs = {seq.name:str(seq.seq) for seq in
-                         Bio.SeqIO.parse(queryfile, 'fasta')}
-            for query in list(d.keys()):
-                a = d[query]
-                assert a.q_len == len(queryseqs[query])
-                a = unclipMatches(a, targetseqs[a.target], queryseqs[query])
-                d[query] = a
+        if return_dict:
+            if join_gapped or unclip_matches:
+                targetseqs = {seq.name:str(seq.seq) for seq in 
+                              Bio.SeqIO.parse(self.target, 'fasta')}
+            d = {}
+            for query in list(dlist.keys()):
+                if len(dlist[query]) == 1:
+                    d[query] = dlist[query][0]
+                    del dlist[query]
+                elif join_gapped:
+                    a = joinGappedAlignments(dlist[query],
+                            targetseqs[dlist[query][0].target])
+                    if a:
+                        d[query] = a
+                        del dlist[query]
+            if dlist:
+                raise ValueError("Multiple alignments for:\n\t{0}"
+                        .format('\n\t'.join(dlist.keys())))
+            if unclip_matches:
+                queryseqs = {seq.name:str(seq.seq) for seq in
+                             Bio.SeqIO.parse(queryfile, 'fasta')}
+                for query in list(d.keys()):
+                    a = d[query]
+                    assert a.q_len == len(queryseqs[query])
+                    a = unclipMatches(a, targetseqs[a.target], queryseqs[query])
+                    d[query] = a
+        else:
+            d = None
 
         return d
+
+
+def joinGappedAlignments(alignments, target):
+    """Join :class:`Alignment`s of same query with long gaps.
+
+    If a query aligns to a target with a very long gap,
+    ``minimap2`` will return two entries in the PAF file,
+    each of which can be captured as an :class:`Alignment`.
+    This function joins them into a single :class:`Alignmnent`
+    with a long gap. Generalizes to multiple alignments. Only
+    joins when the alignments are separated by simple gaps.
+
+    Args:
+        `alignments` (list)
+            List of :class:`Alignment` objects.
+        `target` (str)
+            Sequence of target to which alignments
+            are aligned.
+
+    Returns:
+        If the alignments can be joined, return a single
+        :class:`Alignment` object with the joined alignments.
+        Otherwise return `None`.
+
+    Example of joining three alignments with simple gaps:
+
+    >>> target = 'ATGCAGTCAGAATGA'
+    >>> query =   'TGC  TCAG ATG'.replace(' ', '')
+    >>> a0 = Alignment(q_st=0, q_en=3, r_st=1, r_en=4, q_len=9,
+    ...         cigar_str='=' + query[0 : 3], strand=1, target='target')
+    >>> a1 = Alignment(q_st=3, q_en=7, r_st=6, r_en=10, q_len=9,
+    ...         cigar_str='=' + query[3 : 7], strand=1, target='target')
+    >>> a2 = Alignment(q_st=7, q_en=10, r_st=11, r_en=14, q_len=9,
+    ...         cigar_str='=' + query[7 : 10], strand=1, target='target')
+    >>> a = joinGappedAlignments([a1, a0, a2], target)
+    >>> a.cigar_str
+    '=TGC-ag=TCAG-a=ATG'
+    >>> a.q_st == 0
+    True
+    >>> a.q_en == len(query)
+    True
+    >>> a.r_st
+    1
+    >>> a.r_en == len(target) - 1
+    True
+
+    But we cannot join the two most distant alignments are they are not
+    separated by a simple gap (there is also a gap in the query in this case):
+
+    >>> joinGappedAlignments([a0, a2], target) is None
+    True
+    """
+    assert (isinstance(alignments, collections.Iterable) and
+            all(isinstance(a, Alignment) for a in alignments) and
+            (len(alignments) >= 1)), \
+            "`alignments` not non-empty list of `Alignment`s"
+
+    for attr in ['q_len', 'strand', 'target']:
+        if len(set(getattr(a, attr) for a in alignments)) != 1:
+            raise ValueError("`alignments` don't all have same "
+                             "value of `{0}`".format(attr))
+
+    assert alignments[0].strand == 1, "only works for + strand"
+
+    # sort by start in query
+    alignments = [x[1] for x in sorted([(a.q_st, a) for a in alignments])]
+
+    # join alignments
+    while len(alignments) > 1:
+        a0 = alignments[0]
+        a1 = alignments[1]
+        if (a0.q_en == a1.q_st) and (a0.r_en < a1.r_st):
+            cigar = (a0.cigar_str + '-' + 
+                     target[a0.r_en : a1.r_st].lower() + a1.cigar_str)
+            a = Alignment(cigar_str=cigar,
+                          q_st=a0.q_st,
+                          q_en=a1.q_en,
+                          r_st=a0.r_st,
+                          r_en=a1.r_en,
+                          q_len=a0.q_len,
+                          strand=a0.strand,
+                          target=a0.target
+                          )
+            alignments = [a] + alignments[2 : ]
+        else:
+            return None # cannot join as not simple gaps
+
+    return alignments[0]            
+
 
 
 def unclipMatches(a, target, query):
@@ -282,7 +391,7 @@ def unclipMatches(a, target, query):
 
     >>> target = 'ATGCAATGA'
     >>> query = 'TACAAT'
-    >>> a = Alignment(mapq=60, strand=1, r_st=1, r_en=7,
+    >>> a = Alignment(strand=1, r_st=1, r_en=7,
     ...         target='target', q_st=0, q_en=6, q_len=6,
     ...         cigar_str='=T*gaCAAT')
     >>> unclipMatches(a, target, query) == a
@@ -291,7 +400,7 @@ def unclipMatches(a, target, query):
     Now some soft clipping that is undone at start:
 
     >>> query = 'AAGCAATA'
-    >>> a = Alignment(mapq=60, strand=1, r_st=1, r_en=7,
+    >>> a = Alignment(strand=1, r_st=1, r_en=7,
     ...         target='target', q_st=1, q_en=7, q_len=8,
     ...         cigar_str='*taGCAAT')
     >>> a2 = unclipMatches(a, target, query)
@@ -310,7 +419,7 @@ def unclipMatches(a, target, query):
 
     >>> query = 'ACTGCAATGA'
     >>> target = 'ATGCAATGA'
-    >>> a = Alignment(mapq=60, strand=1, r_st=3, r_en=7,
+    >>> a = Alignment(strand=1, r_st=3, r_en=7,
     ...         target='target', q_st=4, q_en=8, q_len=10,
     ...         cigar_str='=CAAT')
     >>> a3 = unclipMatches(a, target, query)
@@ -341,7 +450,6 @@ def unclipMatches(a, target, query):
         new_cigar = '=' + query[a.q_st - unclip : a.q_st] + \
                         a.cigar_str[trimfirst : ]
         a = Alignment(
-                mapq=a.mapq,
                 strand=a.strand,
                 r_st=a.r_st - unclip,
                 r_en=a.r_en,
@@ -365,7 +473,6 @@ def unclipMatches(a, target, query):
             addchar = '='
         new_cigar = a.cigar_str + addchar + query[a.q_en : a.q_en + unclip]
         a = Alignment(
-                mapq=a.mapq,
                 strand=a.strand,
                 r_st=a.r_st,
                 r_en=a.r_en + unclip,
@@ -422,8 +529,6 @@ def parsePAF(paf_file):
     (0, 10)
     >>> alignment.strand
     1
-    >>> alignment.mapq
-    60
     >>> alignment.cigar_str
     '=ATG*ga=GAACAT'
     >>> alignment.q_len
@@ -456,7 +561,6 @@ def parsePAF(paf_file):
                       q_st=int(entries[2]),
                       q_en=int(entries[3]),
                       q_len=int(entries[1]),
-                      mapq=int(entries[11]),
                       strand={'+':1, '-':-1}[entries[4]],
                       cigar_str=cigar_str)
         yield (query_name, a)
