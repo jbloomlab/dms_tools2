@@ -4,12 +4,13 @@ minimap2
 ===============
 
 Runs `minimap2 <https://lh3.github.io/minimap2/>`_
-aligner. Although this aligner has it's own Python AP
-Python API (`mappy <https://github.com/lh3/minimap2/tree/master/python>`_),
-it does not support all options.
-Therefore, this module interacts directly with
-the ``minimap2`` executable on the command line.
-The module is tested with ``minimap2`` version 2.10.
+aligner. 
+
+This module is tested to work with the version of
+``minimap2`` installed internally with `dms_tools2` (the
+default version when you initialize a :class:`Mapper`
+object). As long you use that version of ``minimap2``, you
+do not need to install ``minimap2`` separately.
 """
 
 
@@ -67,8 +68,13 @@ class Mapper:
         `target` (str)
             FASTA file with target (reference) to which we align
             reads.
-        `prog` (str)
-            Path to ``minimap2`` executable.
+        `prog` (str or `None`)
+            Path to ``minimap2`` executable. Set to `None` to
+            use the version of ``minimap2`` that is installed
+            internally in `dms_tools2`. This is recommended
+            unless you know that some other preferable version
+            of ``minimap2`` is available, and that version
+            has been tested against this module.
         `options` (list)
             Command line options to ``minimap2``.
 
@@ -147,8 +153,13 @@ class Mapper:
     True
     """
 
-    def __init__(self, target, prog='minimap2', options=ORIENTED_READ):
+    def __init__(self, target, prog=None, options=ORIENTED_READ):
         """See main :class:`Mapper` doc string."""
+        if prog is None:
+            # use default ``minimap2`` installed as package data
+            prog = os.path.join(os.path.dirname(__file__),
+                                'minimap2_prog')
+
         try:
             version = subprocess.check_output([prog, '--version'])
         except:

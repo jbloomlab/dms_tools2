@@ -56,3 +56,6 @@
 .. _`ggseqlogo`: https://omarwagih.github.io/ggseqlogo/
 .. _`reference for ggseqlogo`: https://doi.org/10.1093/bioinformatics/btx469
 .. _`rplot module`: https://jbloomlab.github.io/dms_tools2/dms_tools2.rplot.html
+.. _`minimap2 module`: https://jbloomlab.github.io/dms_tools2/dms_tools2.minimap2.html
+.. _`minimap2`: https://github.com/lh3/minimap2
+.. _`reference for minimap2`: https://doi.org/10.1093/bioinformatics/bty191
