@@ -78,7 +78,8 @@ class test_pacbio_CCS_align_1000(unittest.TestCase):
                 # should pass filtering and aligning
                 barcoded = aligned = True
                 barcode = ''.join(random.choice(NTS) for _ in range(self.bclen))
-                if random.random() < 0.4:
+                rand = random.random()
+                if rand < 0.3:
                     # mutations up to 5 in length, not too close to ends
                     mutlen = random.randint(1, 5)
                     mutloc = random.randint(12, self.TARGET_LEN - 20)
@@ -93,20 +94,32 @@ class test_pacbio_CCS_align_1000(unittest.TestCase):
                     cigar = '=' + self.target[ : mutloc] + \
                             mutcigar + \
                             '=' + self.target[mutloc + mutlen : ]
-                elif random.random() < 0.8:
-                    del_len = random.randint(1, int(0.5 * self.TARGET_LEN))
-                    # deletion no closer than 250 nt to termini
-                    delmargin = 300
+                elif rand < 0.6:
+                    # random deletion
+                    #del_len = random.randint(1, int(0.5 * self.TARGET_LEN))
+                    del_len = random.randint(1, 10)
+                    # deletion no closer than 25 nt to termini
+                    delmargin = 25
                     del_len = min(del_len, self.TARGET_LEN - 2 * delmargin)
                     mutloc = random.randint(delmargin,
                             self.TARGET_LEN - del_len - delmargin)
-                    # different nts on sides of del to avoid ambiguous location
-                    while self.target[mutloc - 1] == self.target[mutloc + del_len - 1]:
-                        del_len += 1
                     read = self.target[ : mutloc] + self.target[mutloc + del_len : ]
-                    cigar = '=' + self.target[ : mutloc] + \
-                            '-' + self.target[mutloc : mutloc + del_len].lower() + \
-                            '=' + self.target[mutloc + del_len : ]
+                    cigar = ('=' + self.target[ : mutloc] + 
+                             '-' + self.target[mutloc : mutloc + del_len].lower() +
+                             '=' + self.target[mutloc + del_len : ])
+                elif rand < 0.9:
+                    # random insertion
+                    ins_len = random.randint(1, 10)
+                    # deletion no closer than 25 nt to termini
+                    insmargin = 25
+                    ins_len = min(ins_len, self.TARGET_LEN - 2 * insmargin)
+                    mutloc = random.randint(insmargin,
+                            self.TARGET_LEN - ins_len - insmargin)
+                    ins = ''.join(random.choice(NTS) for _ in range(ins_len))
+                    read = self.target[ : mutloc] + ins + self.target[mutloc : ]
+                    cigar = ('=' + self.target[ : mutloc] +
+                             '+' + ins.lower() + 
+                             '=' + self.target[mutloc : ])
                 else:
                     # no mutations
                     read = self.target
@@ -118,8 +131,12 @@ class test_pacbio_CCS_align_1000(unittest.TestCase):
                        )
             qvals = '?' * len(seq)
             self.queries.append(
-                    Query(name=name, barcoded=barcoded, barcode=barcode,
-                          aligned=aligned, cigar=cigar, seq=seq,
+                    Query(name=name, 
+                          barcoded=barcoded,
+                          barcode=barcode,
+                          aligned=aligned, 
+                          cigar=dms_tools2.minimap2.shiftIndels(cigar),
+                          seq=seq,
                           qvals=qvals,
                           accuracy=qvalsToAccuracy(qvals, encoding='sanger')))
 
@@ -179,20 +196,20 @@ class test_pacbio_CCS_align_1000(unittest.TestCase):
 
             
 
-class test_pacbio_CCS_align_2500(test_pacbio_CCS_align_1000):
+#class test_pacbio_CCS_align_2500(test_pacbio_CCS_align_1000):
     """Tests `dms_tools2.pacbio.CCS` and related functions.
     
     Tests on simulated queries on target of length 2500."""
 
-    TARGET_LEN = 2500
+#    TARGET_LEN = 2500
 
 
-class test_pacbio_CCS_align_5000(test_pacbio_CCS_align_1000):
+#class test_pacbio_CCS_align_5000(test_pacbio_CCS_align_1000):
     """Tests `dms_tools2.pacbio.CCS` and related functions.
     
     Tests on simulated queries on target of length 5000."""
 
-    TARGET_LEN = 5000
+#    TARGET_LEN = 5000
 
 
 if __name__ == '__main__':

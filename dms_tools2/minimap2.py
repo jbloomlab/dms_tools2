@@ -300,19 +300,26 @@ def shiftIndels(cigar):
         A version of `cigar` with indels shifted as far
         forward as possible.
 
-    >>> shiftIndels('=AAC-atagcc=GGG')
-    '=AA-catagc=CGGG'
+    >>> shiftIndels('=AAC-atagcc=GGG-ac=T')
+    '=AA-catagc=CGGG-ac=T'
 
-    >>> shiftIndels('=AAC-atagac=GGG')
-    '=A-acatag=ACGGG'
+    >>> shiftIndels('=AAC-atagac=GGG-acg=AT')
+    '=A-acatag=ACGG-gac=GAT'
+
+    >>> shiftIndels('=TCC+c=TCAGA+aga=CT')
+    '=T+c=CCTC+aga=AGACT'
     """
-    delmatch = re.compile('(?P<lead>=[A-Z]+)'
-                          '(?P<gap>\-[a-z]+)'
+    # shift deletions
+    indelmatch = re.compile('(?P<lead>=[A-Z]+)'
+                          '(?P<indeltype>[\-\+])'
+                          '(?P<indel>[a-z]+)'
                           '(?P<trail>=[A-Z]+)')
-    for m in delmatch.finditer(cigar):
+    i = 0
+    m = indelmatch.search(cigar[i : ])
+    while m:
         n = 0
-        gap = m.group('gap').upper()
-        while m.group('lead')[-n - 1 : ] == gap[-n - 1 : ]:
+        indel = m.group('indel').upper()
+        while m.group('lead')[-n - 1 : ] == indel[-n - 1 : ]:
             n += 1
         if n > 0:
             if n == len(m.group('lead')) - 1:
@@ -321,14 +328,18 @@ def shiftIndels(cigar):
                 lead = m.group('lead')[ : -n]
             shiftseq = m.group('lead')[-n : ] # sequence to shift
             cigar = ''.join([
-                    cigar[ : m.start('lead')], # sequence before match
+                    cigar[ : i + m.start('lead')], # sequence before match
                     lead, # remaining portion of lead
-                    '-', shiftseq.lower(), m.group('gap')[1 : -n], # new gap
-                    '=', shiftseq, m.group('trail')[1 : ] # after gap
+                    m.group('indeltype'),
+                    shiftseq.lower(), m.group('indel')[ : -n], # new indel
+                    '=', shiftseq, m.group('trail')[1 : ], # trail after indel
+                    cigar[i + m.end('trail') : ] # sequence after match
                     ])
+        else:
+            i += m.start('trail')
+        m = indelmatch.search(cigar[i : ])
 
     return cigar
-
 
 
 def trimCigar(side, cigar):
