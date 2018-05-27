@@ -8,9 +8,9 @@ aligner.
 
 This module is tested to work with the version of
 ``minimap2`` installed internally with `dms_tools2` (the
-default version when you initialize a :class:`Mapper`
-object). As long you use that version of ``minimap2``, you
-do not need to install ``minimap2`` separately.
+default when you initialize a :class:`Mapper` object
+with `prog=None`). If you use that version of ``minimap2``,
+you do not need to install ``minimap2`` separately.
 """
 
 
@@ -27,25 +27,22 @@ import Bio.SeqIO
 
 from dms_tools2 import NTS
 
-
-#: ``minimap2`` settings that work well for a query
-#: being matched to a short target where the target
-#: is known to be in the same orientation as the query,
-#: and some of the mutations are codon mutations (this
-#: last point requires care on opening small gaps).
-ORIENTED_READ = ['--for-only', 
-                 '-k15',
-                 '-g5000',
-                 '-G20000',
-                 '-A1',
-                 '-B2',
-                 '-O6,30',
-                 '-E1,0',
-                 '-r5000',
-                 '--secondary=no',
-                 '--end-bonus=4',
-                 '-N0',
-                 ]
+#: `options` argument to :class:`Mapper` that works well
+#: for codon-mutant libraries such as those created for
+#: deep mutational scanning. Indels are highly penalized
+#: as they are not expected, and settings are used that
+#: effectively call strings of consecutive nucleotide
+#: mutations as expected during codon mutagenesis. The
+#: queries are assumed to be in the same orientation as
+#: the target.
+OPTIONS_CODON_DMS = ['--for-only',
+                     '-A2',
+                     '-B4',
+                     '-O12',
+                     '-E2',
+                     '--secondary=no',
+                     '--end-bonus=8',
+                    ]
 
 # namedtuple to hold alignments
 Alignment = collections.namedtuple('Alignment',
@@ -63,21 +60,21 @@ Alignment.cigar_str.__doc__ = "CIGAR in `PAF long format <https://github.com/lh3
 
 
 class Mapper:
-    """Class to run ``minimap2`` at command line and get results.
+    """Class to run ``minimap2`` and get results.
 
     Args:
         `target` (str)
             FASTA file with target (reference) to which we align
             reads.
-        `prog` (str or `None`)
-            Path to ``minimap2`` executable. Set to `None` to
-            use the version of ``minimap2`` that is installed
-            internally in `dms_tools2`. This is recommended
-            unless you know that some other preferable version
-            of ``minimap2`` is available, and that version
-            has been tested against this module.
         `options` (list)
-            Command line options to ``minimap2``.
+            Command line options to ``minimap2``. For 
+            recommended options, for different situations, see:
+                - :data:`OPTIONS_CODON_DMS`
+        `prog` (str or `None`)
+            Path to ``minimap2`` executable. `None` uses the
+            version of ``minimap2`` installed internally with
+            `dms_tools2`. This is recommended unless you have 
+            some other preferred version.
 
     Attributes:
         `target` (str)
@@ -135,7 +132,7 @@ class Mapper:
     ...     _ = queryfile.write('\\n'.join('>{0}\\n{1}'.format(*tup)
     ...                         for tup in queries.items()))
     ...     queryfile.flush()
-    ...     mapper = Mapper(targetfile.name)
+    ...     mapper = Mapper(targetfile.name, OPTIONS_CODON_DMS)
     ...     alignments = mapper.map(queryfile.name)
 
     Now make sure we find the expected alignments:
@@ -154,7 +151,7 @@ class Mapper:
     True
     """
 
-    def __init__(self, target, prog=None, options=ORIENTED_READ):
+    def __init__(self, target, options, prog=None):
         """See main :class:`Mapper` doc string."""
         if prog is None:
             # use default ``minimap2`` installed as package data
@@ -403,7 +400,7 @@ def trimCigar(side, cigar):
 
 
 def joinGappedAlignments(alignments, target, query):
-    """Join :class:`Alignment`s of same query with long gaps.
+    """Join :class:`Alignment` objects of same query with long gaps.
 
     If a query aligns to a target with a very long gap,
     ``minimap2`` will return two entries in the PAF file,
