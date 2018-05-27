@@ -69,7 +69,9 @@ class Mapper:
         `options` (list)
             Command line options to ``minimap2``. For 
             recommended options, for different situations, see:
+
                 - :data:`OPTIONS_CODON_DMS`
+
         `prog` (str or `None`)
             Path to ``minimap2`` executable. `None` uses the
             version of ``minimap2`` installed internally with
@@ -748,6 +750,124 @@ def parsePAF(paf_file):
 
     if close_paf_file:
         paf_file.close()
+
+#: matches individual group in long format CIGAR
+_CIGAR_GROUP_MATCH = re.compile('=[A-Z]+|\*[a-z]{2}|[\-\+[a-z]+')
+
+def cigarToQuery(cigar):
+    """Returns query specified by PAF long CIGAR.
+    
+    >>> cigarToQuery('=AT*ac=G+at=AG-ac=T')
+    'ATCGATAGT'
+    """
+    assert isinstance(cigar, str)
+    query = []
+    while cigar:
+        m = _CIGAR_GROUP_MATCH.match(cigar)
+        assert m, "can't match CIGAR:\n{0}".format(cigar)
+        assert m.start() == 0
+        if m.group()[0] == '=':
+            query.append(m.group()[1 : ])
+        elif m.group()[0] == '*':
+            query.append(m.group()[2].upper())
+        elif m.group()[0] == '-':
+            pass
+        elif m.group()[0] == '+':
+            query.append(m.group()[1 : ].upper())
+        else:
+            raise RuntimeError('should never get here')
+        cigar = cigar[m.end() : ]
+    return ''.join(query)
+
+
+def mutateSeq(wtseq, mutations, insertions, deletions):
+    """Mutates sequence and gets CIGAR.
+
+    Primarily useful for simulations.
+
+    In the mutation specifications below, 0-based numbering
+    is used. Sequence characters are upper case nucleotides.
+    Operations are applied in the order: mutations, insertions,
+    deletions. So a deletion can overwrite a mutation or insertion.
+    The entire insertion counts as just one added site when indexing
+    the deletions. You will get an error if deletions and insertions
+    overlap.
+
+    Arguments:
+        `wtseq` (str)
+            The wildtype sequence.
+        `mutations` (list)
+            List of point mutations in form `(i, mut)` where
+            `i` is site and `mut` is mutant amino acid (can be
+            same as wildtype).
+        `deletions` (list)
+            List of deletion locations in form `(istart, iend)`.
+        `insertions` (list)
+            List of insertions in form `(i, seqtoinsert)`.
+
+    Returns:
+        The 2-tuple `(mutantseq, cigar)` where `cigar` is the CIGAR
+        in `PAF long format <https://github.com/lh3/minimap2>`_.
+
+    Here is an example:
+
+    >>> wtseq = 'ATGGAATGA'
+    >>> (mutantseq, cigar) = mutateSeq(wtseq, [], [], [])
+    >>> mutantseq == wtseq
+    True
+    >>> cigar == '=' + wtseq
+    True
+
+    >>> (mutantseq, cigar) = mutateSeq(wtseq,
+    ...         [(0, 'C'), (1, 'T'), (3, 'A')],
+    ...         [(8, 'TAC')], [(5, 2)])
+    >>> mutantseq
+    'CTGAAGTACA'
+    >>> cigar
+    '*ac=TG*ga=A-at=G+tac=A'
+    """
+    assert re.match('^[{0}]+$'.format(''.join(NTS)), wtseq), \
+            "`wtseq` not all upper case nucleotides."
+    n = len(wtseq)
+    mutantseq = list(wtseq)
+    cigar = mutantseq.copy()
+
+    for i, mut in mutations:
+        assert 0 <= i < n
+        if mut.upper() != wtseq[i]:
+            mutantseq[i] = mut.upper()
+            cigar[i] = '*' + wtseq[i].lower() + mut.lower()
+
+    # traverse indels from back so index is maintained
+    for i, seqtoinsert in sorted(insertions, reverse=True):
+        mutantseq.insert(i, seqtoinsert.upper())
+        cigar.insert(i, '+' + seqtoinsert.lower())
+
+    for i, del_len in sorted(deletions, reverse=True):
+        delseq = []
+        for j in range(i, i + del_len):
+            if mutantseq[j] in NTS:
+                delseq.append(mutantseq[j])
+            elif mutantseq[j][0] == '*':
+                delseq.append(mutantseq[j][1])
+            else:
+                raise ValueError("overlapping insertions and deletions")
+        for _ in range(del_len):
+            mutantseq.pop(i)
+            cigar.pop(i)
+        cigar.insert(i, '-' + ''.join(delseq).lower())
+
+    # add equal signs to cigar
+    for i, op in list(enumerate(cigar)):
+        if (op in NTS) and (i == 0 or cigar[i - 1][-1] not in NTS):
+            cigar[i] = '=' + op
+
+    mutantseq = ''.join(mutantseq)
+    cigar = ''.join(cigar)
+    assert mutantseq == cigarToQuery(cigar)
+
+    return (mutantseq, cigar)
+
 
 
 if __name__ == '__main__':

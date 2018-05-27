@@ -20,115 +20,148 @@ from dms_tools2.pacbio import qvalsToAccuracy
 from dms_tools2 import NTS
 
 
-class test_pacbio_CCS_align_1000(unittest.TestCase):
+Query = collections.namedtuple('Query', ['name', 'barcoded',
+        'barcode', 'aligned', 'cigar', 'seq', 'qvals', 'accuracy'])
+Query.__doc__ = "Holds queries for simulated alignments."
+
+
+def randSeq(seqlen):
+    """Random nucleotide sequence of length `seqlen`."""
+    return ''.join([random.choice(NTS) for _ in range(seqlen)])
+
+
+class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
     """Tests `dms_tools2.pacbio.CCS` and related functions.
     
-    Tests on simulated queries on target of length 1000."""
+    Data simulates codon-level DMS of a short target."""
 
+    #: length of target sequence
     TARGET_LEN = 1000
+
+    #: random number seed
+    SEED = 1
+
+    #: number of queries to simulate
+    NQUERIES = 5000
+
+    #: options to :py:mod:`dms_tools2.minimap2.Mapper`
+    MAPPER_OPTIONS = dms_tools2.minimap2.OPTIONS_CODON_DMS
+
+    #: deletion lengths range from 1 to this number.
+    MAX_DEL_LEN = 10
+
+    #: insertion lengths range from 1 to this number.
+    MAX_INS_LEN = 10
+
+    #: probability sequence has a deletion
+    DEL_PROB = 0.3
+
+    #: probability sequence has an insertion
+    INS_PROB = 0.3
+
+    #: minimum spacing between indels and other mutations
+    INDEL_SPACING = 10
+
+    #: number of mutations ranges from 1 to this number
+    NMUTS = 4
+
+    #: each mutation changes this many consecutive nucleotides
+    MUTLEN = 3
+
+    #: no mutations within this distance from termini
+    MUT_BUFFER = 30
 
     def setUp(self):
         """Create target and query, initialize `CCS` object"""
 
-        cwd = Path(__file__).absolute().parent
-
-        self.testdir = (cwd.joinpath('test_pacbio_ccs_align_files')
-                           .joinpath(str(self.TARGET_LEN))
-                           )
+        self.testdir = (Path(__file__).absolute().parent
+                        .joinpath('test_pacbio_ccs_align_files')
+                        .joinpath(self.__class__.__name__)
+                        )
         Path.mkdir(self.testdir, parents=True, exist_ok=True)
 
-        # specify target sequence and flanking sequences
-        random.seed(0)
-        self.target = ''.join(random.choice(NTS)
-                for _ in range(self.TARGET_LEN))
+        # target sequence
+        random.seed(self.SEED)
+        self.target = randSeq(self.TARGET_LEN)
         self.targetfile = self.testdir.joinpath('target.fasta')
         with open(self.targetfile, 'w') as f:
             f.write('>target\n{0}'.format(self.target))
-        self.flank5 = ''.join(random.choice(NTS) for _ in range(20))
-        self.flank3 = ''.join(random.choice(NTS) for _ in range(18))
+
+        # flanking sequences and barcodes
+        self.flank5 = randSeq(20)
+        self.flank3 = randSeq(18)
         self.bclen = 12
 
         # create queries
-        Query = collections.namedtuple('Query', ['name', 'barcoded',
-                'barcode', 'aligned', 'cigar', 'seq', 'qvals', 'accuracy'])
         self.queries = []
-        for i in range(1, 5000):
-            name = 'query{0}'.format(i)
-            random.seed(i)
+        for iquery in range(self.NQUERIES):
+            name = 'query{0}'.format(iquery + 1)
             rand = random.random()
+
             if rand < 0.1:
                 # should fail filtering and aligning
                 barcoded = aligned = False
                 barcode = cigar = ''
-                seq = ''.join(random.choice(NTS) for _ in 
-                        range(random.randint(300, 2 * self.TARGET_LEN)))
+                seq = randSeq(random.randint(self.TARGET_LEN // 2,
+                                             self.TARGET_LEN * 2))
             elif rand < 0.2:
                 # should pass filtering, fail aligning
                 barcoded = True
-                barcode = ''.join(random.choice(NTS) for _ in range(self.bclen))
+                barcode = randSeq(self.bclen)
                 aligned = False
                 cigar = ''
                 seq = (self.flank5 + 
-                       ''.join(random.choice(NTS) for _ in
-                               range(random.randint(300, 2 * self.TARGET_LEN))) +
+                       randSeq(random.randint(self.TARGET_LEN // 2,
+                                              self.TARGET_LEN * 2)) +
                        barcode +
                        self.flank3
                        )
+
             else:
                 # should pass filtering and aligning
                 barcoded = aligned = True
-                barcode = ''.join(random.choice(NTS) for _ in range(self.bclen))
-                rand = random.random()
-                if rand < 0.3:
-                    # mutations up to 5 in length, not too close to ends
-                    mutlen = random.randint(1, 5)
-                    mutloc = random.randint(12, self.TARGET_LEN - 20)
-                    mutcigar = mut = ''
-                    for i in range(mutloc, mutloc + mutlen):
-                        mut += random.choice([nt for nt in NTS if
-                                             nt != self.target[i]])
-                        mutcigar += '*' + self.target[i].lower() + mut[-1].lower()
-                    read = self.target[ : mutloc] + \
-                           mut + \
-                           self.target[mutloc + mutlen : ]
-                    cigar = '=' + self.target[ : mutloc] + \
-                            mutcigar + \
-                            '=' + self.target[mutloc + mutlen : ]
-                elif rand < 0.6:
-                    # random deletion
-                    #del_len = random.randint(1, int(0.5 * self.TARGET_LEN))
-                    del_len = random.randint(1, 10)
-                    # deletion no closer than 25 nt to termini
-                    delmargin = 25
-                    del_len = min(del_len, self.TARGET_LEN - 2 * delmargin)
-                    mutloc = random.randint(delmargin,
-                            self.TARGET_LEN - del_len - delmargin)
-                    read = self.target[ : mutloc] + self.target[mutloc + del_len : ]
-                    cigar = ('=' + self.target[ : mutloc] + 
-                             '-' + self.target[mutloc : mutloc + del_len].lower() +
-                             '=' + self.target[mutloc + del_len : ])
-                elif rand < 0.9:
-                    # random insertion
-                    ins_len = random.randint(1, 10)
-                    # deletion no closer than 25 nt to termini
-                    insmargin = 25
-                    ins_len = min(ins_len, self.TARGET_LEN - 2 * insmargin)
-                    mutloc = random.randint(insmargin,
-                            self.TARGET_LEN - ins_len - insmargin)
-                    ins = ''.join(random.choice(NTS) for _ in range(ins_len))
-                    read = self.target[ : mutloc] + ins + self.target[mutloc : ]
-                    cigar = ('=' + self.target[ : mutloc] +
-                             '+' + ins.lower() + 
-                             '=' + self.target[mutloc : ])
-                else:
-                    # no mutations
-                    read = self.target
-                    cigar = '=' + self.target
+                barcode = randSeq(self.bclen)
+
+                # get sites eligible for mutating
+                mutsites = list(range(self.MUT_BUFFER,
+                        len(self.target) - self.MUT_BUFFER))
+
+                deletions = []
+                if random.random() < self.DEL_PROB:
+                    del_len = random.randint(1, self.MAX_DEL_LEN)
+                    max_i = max(mutsites) - del_len
+                    del_start = random.choice([i for i in mutsites
+                            if i < max_i])
+                    deletions.append((del_start, del_len))
+                    mutsites = [i for i in mutsites if
+                            (i < del_start - self.INDEL_SPACING) or
+                            (i > del_start + del_len + self.INDEL_SPACING)]
+
+                insertions = []
+                if random.random() < self.INS_PROB:
+                    ins = randSeq(random.randint(1, self.MAX_INS_LEN))
+                    ins_start = random.choice(mutsites)
+                    insertions.append((ins_start, ins))
+                    mutsites = [i for i in mutsites if
+                            (i < ins_start - self.INDEL_SPACING) or
+                            (i > ins_start + self.INDEL_SPACING)]
+
+                mutations = []
+                for imut in range(random.randint(0, self.NMUTS)):
+                    i = random.choice(mutsites)
+                    for j in range(i, i + self.MUTLEN):
+                        if j in mutsites:
+                            mutsites.remove(j)
+                            mutations.append((j, random.choice(NTS)))
+
+                (read, cigar) = dms_tools2.minimap2.mutateSeq(self.target,
+                        mutations, insertions, deletions)
                 seq = (self.flank5 + 
                        read +
                        barcode +
                        self.flank3
                        )
+
             qvals = '?' * len(seq)
             self.queries.append(
                     Query(name=name, 
@@ -175,7 +208,8 @@ class test_pacbio_CCS_align_1000(unittest.TestCase):
                               [q.barcode for q in self.queries if q.barcoded])
 
         # now align and check that we get the right entries
-        mapper = dms_tools2.minimap2.Mapper(str(self.targetfile))
+        mapper = dms_tools2.minimap2.Mapper(str(self.targetfile),
+                self.MAPPER_OPTIONS)
         self.ccs.align(mapper, 'read',
                 paf_file=str(self.testdir.joinpath('alignment.paf')))
         self.assertEqual(len(self.ccs.df.query('aligned')),
@@ -195,21 +229,13 @@ class test_pacbio_CCS_align_1000(unittest.TestCase):
                             getattr(row, 'read')))
 
             
-
-#class test_pacbio_CCS_align_2500(test_pacbio_CCS_align_1000):
+class test_pacbio_CCS_align_long_codonDMS(test_pacbio_CCS_align_short_codonDMS):
     """Tests `dms_tools2.pacbio.CCS` and related functions.
     
-    Tests on simulated queries on target of length 2500."""
+    Data simulates codon-level DMS of a long target."""
 
-#    TARGET_LEN = 2500
-
-
-#class test_pacbio_CCS_align_5000(test_pacbio_CCS_align_1000):
-    """Tests `dms_tools2.pacbio.CCS` and related functions.
-    
-    Tests on simulated queries on target of length 5000."""
-
-#    TARGET_LEN = 5000
+    #: length of target sequence
+    TARGET_LEN = 4000
 
 
 if __name__ == '__main__':
