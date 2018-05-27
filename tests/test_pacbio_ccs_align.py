@@ -20,8 +20,10 @@ from dms_tools2.pacbio import qvalsToAccuracy
 from dms_tools2 import NTS
 
 
-class test_pacbio_CCS_align(unittest.TestCase):
-    """Tests `dms_tools2.pacbio.CCS` and related functions."""
+class test_pacbio_CCS_align_1000(unittest.TestCase):
+    """Tests `dms_tools2.pacbio.CCS` and related functions.
+    
+    Tests on simulated queries on target of length 1000."""
 
     TARGET_LEN = 1000
 
@@ -93,8 +95,11 @@ class test_pacbio_CCS_align(unittest.TestCase):
                             '=' + self.target[mutloc + mutlen : ]
                 elif random.random() < 0.8:
                     del_len = random.randint(1, int(0.5 * self.TARGET_LEN))
-                    # deletion no closer than 90 nt to termini
-                    mutloc = random.randint(90, self.TARGET_LEN - del_len - 90)
+                    # deletion no closer than 250 nt to termini
+                    delmargin = 300
+                    del_len = min(del_len, self.TARGET_LEN - 2 * delmargin)
+                    mutloc = random.randint(delmargin,
+                            self.TARGET_LEN - del_len - delmargin)
                     # different nts on sides of del to avoid ambiguous location
                     while self.target[mutloc - 1] == self.target[mutloc + del_len - 1]:
                         del_len += 1
@@ -117,6 +122,11 @@ class test_pacbio_CCS_align(unittest.TestCase):
                           aligned=aligned, cigar=cigar, seq=seq,
                           qvals=qvals,
                           accuracy=qvalsToAccuracy(qvals, encoding='sanger')))
+
+        # create fasta file of queries
+        with self.testdir.joinpath('queries.fasta').open('w') as f:
+            f.write('\n'.join('>{0}\n{1}'.format(q.name, q.seq)
+                    for q in self.queries))
 
         # create bamfile of queries
         sam_template = '{0[name]}\t4\t*\t0\t255\t*\t*\t0\t0\t{0[seq]}\t' +\
@@ -160,14 +170,29 @@ class test_pacbio_CCS_align(unittest.TestCase):
             name = getattr(row, 'name')
             cigar = getattr(row, 'aligned_cigar')
             self.assertEqual(expected_cigars[name], cigar,
-                    "\nexpected:\n{0}\nactual:\n{1}\nclip:{2}, {3}\nread:\n{4}"
-                    .format(expected_cigars[name], cigar, 
+                    "\nquery: {0}\n\nexpected:\n{1}\n\nactual:\n{2}\n\n"
+                    "clip:{3}, {4}\n\nread:\n{5}"
+                    .format(name, expected_cigars[name], cigar, 
                             getattr(row, 'aligned_clip_start'), 
                             getattr(row, 'aligned_clip_end'),
                             getattr(row, 'read')))
 
             
 
+class test_pacbio_CCS_align_2500(test_pacbio_CCS_align_1000):
+    """Tests `dms_tools2.pacbio.CCS` and related functions.
+    
+    Tests on simulated queries on target of length 2500."""
+
+    TARGET_LEN = 2500
+
+
+class test_pacbio_CCS_align_5000(test_pacbio_CCS_align_1000):
+    """Tests `dms_tools2.pacbio.CCS` and related functions.
+    
+    Tests on simulated queries on target of length 5000."""
+
+    TARGET_LEN = 5000
 
 
 if __name__ == '__main__':

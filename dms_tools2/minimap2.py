@@ -35,11 +35,11 @@ from dms_tools2 import NTS
 #: last point requires care on opening small gaps).
 ORIENTED_READ = ['--for-only', 
                  '-k15',
-                 '-g10000',
+                 '-g5000',
                  '-G20000',
                  '-A1',
                  '-B2',
-                 '-O6,40',
+                 '-O6,30',
                  '-E1,0',
                  '-r5000',
                  '--secondary=no',
@@ -173,7 +173,7 @@ class Mapper:
 
 
     def map(self, queryfile, return_dict=True, outfile=None,
-            unclip_matches=True, join_gapped=True):
+            unclip_matches=True, join_gapped=True, shift_indels=True):
         """Map query sequences to reference target.
 
         Aligns query sequences to `target`. Adds ``--c --cs=long``
@@ -206,6 +206,10 @@ class Mapper:
                 does not affect any results in `outfile`.
             `join_gapped` (bool)
                 Pass alignments through :meth:`joinGappedAlignments`.
+                Only applies to alignments returned in dict,
+                does not affect any results in `outfile`.
+            `shift_indels` (bool)
+                Pass alignments through :meth:`shiftIndels`.
                 Only applies to alignments returned in dict,
                 does not affect any results in `outfile`.
 
@@ -247,6 +251,8 @@ class Mapper:
             if join_gapped or unclip_matches:
                 targetseqs = {seq.name:str(seq.seq) for seq in 
                               Bio.SeqIO.parse(self.target, 'fasta')}
+                queryseqs = {seq.name:str(seq.seq) for seq in
+                             Bio.SeqIO.parse(queryfile, 'fasta')}
             d = {}
             for query in list(dlist.keys()):
                 if len(dlist[query]) == 1:
@@ -254,7 +260,8 @@ class Mapper:
                     del dlist[query]
                 elif join_gapped:
                     a = joinGappedAlignments(dlist[query],
-                            targetseqs[dlist[query][0].target])
+                            targetseqs[dlist[query][0].target],
+                            queryseqs[query])
                     if a:
                         d[query] = a
                         del dlist[query]
@@ -262,20 +269,129 @@ class Mapper:
                 raise ValueError("Multiple alignments for:\n\t{0}"
                         .format('\n\t'.join(dlist.keys())))
             if unclip_matches:
-                queryseqs = {seq.name:str(seq.seq) for seq in
-                             Bio.SeqIO.parse(queryfile, 'fasta')}
                 for query in list(d.keys()):
                     a = d[query]
                     assert a.q_len == len(queryseqs[query])
                     a = unclipMatches(a, targetseqs[a.target], queryseqs[query])
                     d[query] = a
+            if shift_indels:
+                for query in list(d.keys()):
+                    d[query] = d[query]._replace(cigar_str=
+                            shiftIndels(d[query].cigar_str))
         else:
             d = None
 
         return d
 
 
-def joinGappedAlignments(alignments, target):
+def shiftIndels(cigar):
+    """Shifts indels to consistent position.
+
+    In some cases it is ambiguous where to place insertions /
+    deletions in the CIGAR string. This function moves them
+    to a consistent location (as far forward as possible).
+
+    Args:
+        `cigar` (str)
+            PAF long CIGAR string, format is 
+            `detailed here <https://github.com/lh3/minimap2>`_.
+
+    Returns:
+        A version of `cigar` with indels shifted as far
+        forward as possible.
+
+    >>> shiftIndels('=AAC-atagcc=GGG')
+    '=AA-catagc=CGGG'
+
+    >>> shiftIndels('=AAC-atagac=GGG')
+    '=A-acatag=ACGGG'
+    """
+    delmatch = re.compile('(?P<lead>=[A-Z]+)'
+                          '(?P<gap>\-[a-z]+)'
+                          '(?P<trail>=[A-Z]+)')
+    for m in delmatch.finditer(cigar):
+        n = 0
+        gap = m.group('gap').upper()
+        while m.group('lead')[-n - 1 : ] == gap[-n - 1 : ]:
+            n += 1
+        if n > 0:
+            if n == len(m.group('lead')) - 1:
+                lead = '' # removed entire lead
+            else:
+                lead = m.group('lead')[ : -n]
+            shiftseq = m.group('lead')[-n : ] # sequence to shift
+            cigar = ''.join([
+                    cigar[ : m.start('lead')], # sequence before match
+                    lead, # remaining portion of lead
+                    '-', shiftseq.lower(), m.group('gap')[1 : -n], # new gap
+                    '=', shiftseq, m.group('trail')[1 : ] # after gap
+                    ])
+
+    return cigar
+
+
+
+def trimCigar(side, cigar):
+    """Trims a nucleotide from CIGAR string.
+
+    Currently just trims one site.
+
+    Args:
+        `side` (str)
+            "start" trim from start, "end" to trim from end.
+        `cigar` (str)
+            PAF long CIGAR string, format is 
+            `detailed here <https://github.com/lh3/minimap2>`_.
+
+    Returns:
+        A version of `cigar` with a single site trimmed
+        from start or end.
+
+    >>> trimCigar('start', '=ATG')
+    '=TG'
+    >>> trimCigar('end', '=ATG')
+    '=AT'
+    >>> trimCigar('start', '*ac=TG')
+    '=TG'
+    >>> trimCigar('end', '=AT*ag')
+    '=AT'
+    >>> trimCigar('start', '-aac=TG')
+    '-ac=TG'
+    >>> trimCigar('end', '=TG+aac')
+    '=TG+aa'
+    """
+    if side == 'start':
+        if re.match('=[A-Z]{2}', cigar):
+            return '=' + cigar[2 : ]
+        elif re.match('=[A-Z][\*\-\+]', cigar):
+            return cigar[2 : ]
+        elif re.match('\*[a-z]{2}', cigar):
+            return cigar[3 : ]
+        elif re.match('[\-\+][a-z]{2}', cigar):
+            return cigar[0] + cigar[2 : ]
+        elif re.match('[\-\+][a-z][^a-z]'):
+            return cigar[2 : ]
+        else:
+            raise ValueError("Cannot match start of {0}".format(cigar))
+    elif side == 'end':
+        if re.search('[A-Z]{2}$', cigar):
+            return cigar[ : -1]
+        elif re.search('=[A-Z]$', cigar):
+            return cigar[ : -2]
+        elif re.search('\*[a-z]{2}$', cigar):
+            return cigar[ : -3]
+        elif re.search('[\-\+][a-z]$', cigar):
+            return cigar[ : -2]
+        elif re.search('[a-z]{2}$', cigar):
+            return cigar[ : -1]
+        else:
+            raise ValueError("Cannot match end of {0}".format(cigar))
+    else:
+        raise ValueError("`side` must be 'start' or 'end', got {0}"
+                         .format(side))
+
+
+def joinGappedAlignments(alignments, target, query):
     """Join :class:`Alignment`s of same query with long gaps.
 
     If a query aligns to a target with a very long gap,
@@ -283,33 +399,37 @@ def joinGappedAlignments(alignments, target):
     each of which can be captured as an :class:`Alignment`.
     This function joins them into a single :class:`Alignmnent`
     with a long gap. Generalizes to multiple alignments. Only
-    joins when the alignments are separated by simple gaps.
+    joins when the alignments are separated by simple gaps, and
+    the immediate flanking sequence aligns exactly.
 
     Args:
         `alignments` (list)
             List of :class:`Alignment` objects.
         `target` (str)
-            Sequence of target to which alignments
-            are aligned.
+            Target sequence to which `query` is aligned.
+        `query` (str)
+            Query sequence that is aligned to `target`.
 
     Returns:
         If the alignments can be joined, return a single
         :class:`Alignment` object with the joined alignments.
-        Otherwise return `None`.
+        Otherwise return `None` if the alignments cannot be
+        joined by this function, which may be the case if
+        complex overlap with multiple types of mutations.
 
     Example of joining three alignments with simple gaps:
 
-    >>> target = 'ATGCAGTCAGAATGA'
-    >>> query =   'TGC  TCAG ATG'.replace(' ', '')
+    >>> target = 'ATGCAGTCAGACATGA'
+    >>> query =   'TGC  TCAG  ATG'.replace(' ', '')
     >>> a0 = Alignment(q_st=0, q_en=3, r_st=1, r_en=4, q_len=9,
     ...         cigar_str='=' + query[0 : 3], strand=1, target='target')
     >>> a1 = Alignment(q_st=3, q_en=7, r_st=6, r_en=10, q_len=9,
     ...         cigar_str='=' + query[3 : 7], strand=1, target='target')
-    >>> a2 = Alignment(q_st=7, q_en=10, r_st=11, r_en=14, q_len=9,
+    >>> a2 = Alignment(q_st=7, q_en=10, r_st=12, r_en=15, q_len=9,
     ...         cigar_str='=' + query[7 : 10], strand=1, target='target')
-    >>> a = joinGappedAlignments([a1, a0, a2], target)
+    >>> a = joinGappedAlignments([a1, a0, a2], target, query)
     >>> a.cigar_str
-    '=TGC-ag=TCAG-a=ATG'
+    '=TGC-ag=TCAG-ac=ATG'
     >>> a.q_st == 0
     True
     >>> a.q_en == len(query)
@@ -322,7 +442,27 @@ def joinGappedAlignments(alignments, target):
     But we cannot join the two most distant alignments are they are not
     separated by a simple gap (there is also a gap in the query in this case):
 
-    >>> joinGappedAlignments([a0, a2], target) is None
+    >>> joinGappedAlignments([a0, a2], target, query) is None
+    True
+
+    Now a more complex example where `a2` overlaps with `a1` near
+    the gap, and so duplicated sequence needs to be trimmed:
+
+    >>> a2_overlap = a2._replace(q_st=a2.q_st - 1, r_st=a2.r_st - 1,
+    ...        cigar_str='=' + query[a2.q_st - 1 : a2.q_en]) 
+    >>> a_overlap = joinGappedAlignments([a0, a2_overlap, a1], target, query)
+    >>> a_overlap == a
+    True
+
+    Now even more complex example over overlap, where `a1` overlaps
+    with `a0` via a mutation:
+
+    >>> a0_overlap = a0._replace(q_en=a0.q_en + 1, r_en=a0.r_en + 1,
+    ...         cigar_str=a0.cigar_str + '*' + target[a0.r_en].lower()
+    ...                   + query[a0.q_en].lower())
+    >>> a_overlap2 = joinGappedAlignments([a0_overlap, a2_overlap, a1],
+    ...                                   target, query)
+    >>> a_overlap2 == a
     True
     """
     assert (isinstance(alignments, collections.Iterable) and
@@ -344,9 +484,38 @@ def joinGappedAlignments(alignments, target):
     while len(alignments) > 1:
         a0 = alignments[0]
         a1 = alignments[1]
-        if (a0.q_en == a1.q_st) and (a0.r_en < a1.r_st):
-            cigar = (a0.cigar_str + '-' + 
-                     target[a0.r_en : a1.r_st].lower() + a1.cigar_str)
+        #if a0.r_en >= a1.r_st:
+        #    return None # not a gap in the reference
+        if a0.q_en >= a1.q_st:
+            # try to resolve overlap between a1 and a0
+            while a0.q_en > a1.q_st:
+                noverlap = a0.q_en - a1.q_st
+                if query[a0.q_en - noverlap] == target[a0.r_en - noverlap]:
+                    # assign first nt of overlap to a0, not a1
+                    a1 = a1._replace(
+                            q_st=a1.q_st + 1,
+                            r_st=a1.r_st + 1,
+                            cigar_str=trimCigar('start', a1.cigar_str))
+                elif (query[a1.q_st + noverlap - 1] ==
+                        target[a1.r_st + noverlap - 1]):
+                    # assign last nt of overlap to a1, not a0
+                    a0 = a0._replace(
+                            q_en=a0.q_en - 1,
+                            r_en=a0.r_en - 1,
+                            cigar_str=trimCigar('end', a0.cigar_str))
+                else:
+                    # no exact match in overlap region, suggesting a
+                    # mutation complicating things... don't handle now
+                    return None
+            # now a simple join: a1 starts where a0 ends
+            if target[a0.r_en : a1.r_st]:
+                gap = '-' + target[a0.r_en : a1.r_st].lower()
+                a1_cigar = a1.cigar_str
+            else:
+                gap = ''
+                if a0.cigar_str[-1].isupper() and a1.cigar_str[0] == '=':
+                    a1_cigar = a1.cigar_str[1 : ]
+            cigar = a0.cigar_str + gap + a1_cigar
             a = Alignment(cigar_str=cigar,
                           q_st=a0.q_st,
                           q_en=a1.q_en,
@@ -357,8 +526,12 @@ def joinGappedAlignments(alignments, target):
                           target=a0.target
                           )
             alignments = [a] + alignments[2 : ]
+        elif a0.q_en < a1.q_st:
+            # gap in query between a0 and a1, might be caused
+            # by a mutation near gap site or insertion in query
+            return None 
         else:
-            return None # cannot join as not simple gaps
+            raise RuntimeError('should never get here')
 
     return alignments[0]            
 
