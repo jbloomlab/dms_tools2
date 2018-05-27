@@ -48,8 +48,8 @@ OPTIONS_CODON_DMS = ['--for-only',
 Alignment = collections.namedtuple('Alignment',
         ['target', 'r_st', 'r_en', 'q_len', 'q_st',
          'q_en', 'strand', 'cigar_str'])
-Alignment.__doc__ = "Alignment of a query to a target (reference)."
-Alignment.target.__doc__ = "Target (reference) to which query was aligned."
+Alignment.__doc__ = "Alignment of a query to a target."
+Alignment.target.__doc__ = "Name of target to which query was aligned."
 Alignment.r_st.__doc__ = "Alignment start in target (0 based)."
 Alignment.r_en.__doc__ = "Alignment end in target (0 based)."
 Alignment.q_st.__doc__ = "Alignment start in query (0 based)."
@@ -57,6 +57,49 @@ Alignment.q_en.__doc__ = "Alignment end in query (0 based)."
 Alignment.q_len.__doc__ = "Total length of query prior to any clipping."
 Alignment.strand.__doc__ = "1 if aligns in forward polarity, -1 if in reverse."
 Alignment.cigar_str.__doc__ = "CIGAR in `PAF long format <https://github.com/lh3/minimap2>`_"
+
+
+def checkAlignment(a, target, query):
+    """Checks alignment is valid given target and query.
+
+    Arguments:
+        `a` (:class:`Alignment`)
+            The alignment.
+        `target` (str)
+            The target to which `query` is aligned.
+        `query` (str)
+            The query aligned to `target`.
+
+    Returns:
+        `True` if `a` is a valid alignment of `query`
+        to `target`, `False` otherwise. Being valid does
+        not mean an alignment is good, just that the 
+        start / ends and CIGAR in `a` are valid.
+
+    >>> target = 'ATGCAT'
+    >>> query = 'TACA'
+    >>> a_valid = Alignment(target='target', r_st=1, r_en=5,
+    ...         q_st=0, q_en=4, q_len=4, strand=1,
+    ...         cigar_str='=T*ga=CA')
+    >>> checkAlignment(a_valid, target, query)
+    True
+    >>> a_invalid = a_valid._replace(r_st=0, r_en=4)
+    >>> checkAlignment(a_invalid, target, query)
+    False
+    """
+    assert a.strand == 1, "not implemented for - strand"
+    (cigar_query, cigar_target) = cigarToQueryAndTarget(a.cigar_str)
+    if (
+            (a.q_len < a.q_en) or
+            (a.r_st >= a.r_en) or
+            (a.q_st >= a.q_en) or
+            (a.q_len != len(query)) or
+            (query[a.q_st : a.q_en] != cigar_query) or
+            (target[a.r_st : a.r_en] != cigar_target)
+            ):
+        return False
+    else:
+        return True
 
 
 class Mapper:
@@ -172,7 +215,8 @@ class Mapper:
 
 
     def map(self, queryfile, return_dict=True, outfile=None,
-            unclip_matches=True, join_gapped=True, shift_indels=True):
+            unclip_matches=False, join_gapped=False, shift_indels=True,
+            check_alignments=True):
         """Map query sequences to reference target.
 
         Aligns query sequences to `target`. Adds ``--c --cs=long``
@@ -211,6 +255,10 @@ class Mapper:
                 Pass alignments through :meth:`shiftIndels`.
                 Only applies to alignments returned in dict,
                 does not affect any results in `outfile`.
+            `check_alignments` (bool)
+                Run all alignments through :meth:`checkAlignment`
+                before returning, and raise error if any are invalid.
+                This is a good debugging check, but does take time.
 
         Returns:
             Either a dict (if `return_dict` is `True`)
@@ -247,7 +295,7 @@ class Mapper:
             stderr.close()
 
         if return_dict:
-            if join_gapped or unclip_matches:
+            if join_gapped or unclip_matches or check_alignments:
                 targetseqs = {seq.name:str(seq.seq) for seq in 
                               Bio.SeqIO.parse(self.target, 'fasta')}
                 queryseqs = {seq.name:str(seq.seq) for seq in
@@ -277,11 +325,25 @@ class Mapper:
                 for query in list(d.keys()):
                     d[query] = d[query]._replace(cigar_str=
                             shiftIndels(d[query].cigar_str))
+            if check_alignments:
+                for query, a in d.items():
+                    if not checkAlignment(a, targetseqs[a.target],
+                            queryseqs[query]):
+                        raise ValueError("Invalid alignment for {0}.\n"
+                                "alignment = {1}\ntarget = {2}\nquery = {3}"
+                                .format(query, a, targetseqs[target],
+                                queryseqs[query]))
         else:
             d = None
 
         return d
 
+
+#: match indels for :meth:`shiftIndels`
+_INDELMATCH = re.compile('(?P<lead>=[A-Z]+)'
+                         '(?P<indeltype>[\-\+])'
+                         '(?P<indel>[a-z]+)'
+                         '(?P<trail>=[A-Z]+)')
 
 def shiftIndels(cigar):
     """Shifts indels to consistent position.
@@ -308,13 +370,8 @@ def shiftIndels(cigar):
     >>> shiftIndels('=TCC+c=TCAGA+aga=CT')
     '=T+c=CCTC+aga=AGACT'
     """
-    # shift deletions
-    indelmatch = re.compile('(?P<lead>=[A-Z]+)'
-                          '(?P<indeltype>[\-\+])'
-                          '(?P<indel>[a-z]+)'
-                          '(?P<trail>=[A-Z]+)')
     i = 0
-    m = indelmatch.search(cigar[i : ])
+    m = _INDELMATCH.search(cigar[i : ])
     while m:
         n = 0
         indel = m.group('indel').upper()
@@ -336,7 +393,7 @@ def shiftIndels(cigar):
                     ])
         else:
             i += m.start('trail')
-        m = indelmatch.search(cigar[i : ])
+        m = _INDELMATCH.search(cigar[i : ])
 
     return cigar
 
@@ -717,7 +774,6 @@ def parsePAF(paf_file):
     >>> alignment.q_len
     10
     """
-    
     cigar_m = re.compile('cs:Z:(?P<cigar_str>'
             '(:[0-9]+|\*[a-z][a-z]|[=\+\-][A-Za-z]+)+)(?:\s+|$)')
 
@@ -751,33 +807,37 @@ def parsePAF(paf_file):
     if close_paf_file:
         paf_file.close()
 
+
 #: matches individual group in long format CIGAR
 _CIGAR_GROUP_MATCH = re.compile('=[A-Z]+|\*[a-z]{2}|[\-\+[a-z]+')
 
-def cigarToQuery(cigar):
-    """Returns query specified by PAF long CIGAR.
+def cigarToQueryAndTarget(cigar):
+    """Returns `(query, target)` specified by PAF long CIGAR.
     
-    >>> cigarToQuery('=AT*ac=G+at=AG-ac=T')
-    'ATCGATAGT'
+    >>> cigarToQueryAndTarget('=AT*ac=G+at=AG-ac=T')
+    ('ATCGATAGT', 'ATAGAGACT')
     """
     assert isinstance(cigar, str)
     query = []
+    target = []
     while cigar:
         m = _CIGAR_GROUP_MATCH.match(cigar)
         assert m, "can't match CIGAR:\n{0}".format(cigar)
         assert m.start() == 0
         if m.group()[0] == '=':
             query.append(m.group()[1 : ])
+            target.append(m.group()[1 : ])
         elif m.group()[0] == '*':
             query.append(m.group()[2].upper())
+            target.append(m.group()[1].upper())
         elif m.group()[0] == '-':
-            pass
+            target.append(m.group()[1 : ].upper())
         elif m.group()[0] == '+':
             query.append(m.group()[1 : ].upper())
         else:
             raise RuntimeError('should never get here')
         cigar = cigar[m.end() : ]
-    return ''.join(query)
+    return (''.join(query), ''.join(target))
 
 
 def mutateSeq(wtseq, mutations, insertions, deletions):
@@ -864,7 +924,7 @@ def mutateSeq(wtseq, mutations, insertions, deletions):
 
     mutantseq = ''.join(mutantseq)
     cigar = ''.join(cigar)
-    assert mutantseq == cigarToQuery(cigar)
+    assert mutantseq == cigarToQueryAndTarget(cigar)[0]
 
     return (mutantseq, cigar)
 
