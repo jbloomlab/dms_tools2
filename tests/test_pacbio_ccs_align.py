@@ -62,7 +62,7 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
     #: minimum spacing between indels and other mutations
     INDEL_SPACING = 10
 
-    #: number of mutations ranges from 1 to this number
+    #: number of mutations ranges from 0 to this number
     NMUTS = 4
 
     #: each mutation changes this many consecutive nucleotides
@@ -124,7 +124,7 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
 
                 # get sites eligible for mutating
                 mutsites = list(range(self.MUT_BUFFER,
-                        len(self.target) - self.MUT_BUFFER))
+                        self.TARGET_LEN - self.MUT_BUFFER))
 
                 deletions = []
                 if random.random() < self.DEL_PROB:
@@ -236,6 +236,45 @@ class test_pacbio_CCS_align_long_codonDMS(test_pacbio_CCS_align_short_codonDMS):
 
     #: length of target sequence
     TARGET_LEN = 4000
+
+
+class test_pacbio_CCS_align_short_virus_w_del(
+        test_pacbio_CCS_align_short_codonDMS):
+    """Tests `dms_tools2.pacbio.CCS` and related functions.
+    
+    Data simulates short viral sequences with some long deletions."""
+
+    #: options to :py:mod:`dms_tools2.minimap2.Mapper`
+    MAPPER_OPTIONS = dms_tools2.minimap2.OPTIONS_VIRUS_W_DEL
+
+    #: deletion lengths range from 1 to this number.
+    MAX_DEL_LEN = 600
+
+    #: insertion lengths range from 1 to this number.
+    MAX_INS_LEN = 30
+
+    #: minimum spacing between indels and other mutations
+    INDEL_SPACING = 50
+
+    #: each mutation changes this many consecutive nucleotides
+    MUTLEN = 1
+
+    #: no mutations within this distance from termini
+    MUT_BUFFER = 80
+
+
+class test_pacbio_CCS_align_long_virus_w_del(
+        test_pacbio_CCS_align_short_virus_w_del):
+    """Tests `dms_tools2.pacbio.CCS` and related functions.
+
+    Data simulates long viral sequences with some long deletions."""
+
+    #: length of target sequence
+    TARGET_LEN = 4000
+
+    #: deletion lengths range from 1 to this number.
+    MAX_DEL_LEN = 3200
+
 
 
 if __name__ == '__main__':

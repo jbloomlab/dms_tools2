@@ -15,6 +15,7 @@ you do not need to install ``minimap2`` separately.
 
 
 import os
+import sys
 import re
 import io
 import functools
@@ -44,6 +45,27 @@ OPTIONS_CODON_DMS = ['--for-only',
                      '--end-bonus=8',
                     ]
 
+#: `options` argument to :class:`Mapper` that works well
+#: for libraries that contain viral genes expected to
+#: potentially have both point mutations (at nucleotide, not
+#: codon level) and some longer deletions.
+#: The queries are assumed to be in the same orientation
+#: as the target. These options resemble those suggested for
+#: `PacBio IsoSeq <https://github.com/lh3/minimap2/blob/master/cookbook.md#map-iso-seq>`_
+#: but use `-C0` and `-un` to avoid splice-site preference as
+#: we want to trick the aligner into thinking long deletions are
+#: spliced introns.
+OPTIONS_VIRUS_W_DEL = [
+                       '-x','splice',
+                       '-un',
+                       '-C0',
+                       '--splice-flank=no',
+                       '--secondary=no',
+                       '--for-only',
+                       '--end-seed-pen=2',
+                       '--end-bonus=4',
+                      ]
+
 # namedtuple to hold alignments
 Alignment = collections.namedtuple('Alignment',
         ['target', 'r_st', 'r_en', 'q_len', 'q_st',
@@ -56,7 +78,7 @@ Alignment.q_st.__doc__ = "Alignment start in query (0 based)."
 Alignment.q_en.__doc__ = "Alignment end in query (0 based)."
 Alignment.q_len.__doc__ = "Total length of query prior to any clipping."
 Alignment.strand.__doc__ = "1 if aligns in forward polarity, -1 if in reverse."
-Alignment.cigar_str.__doc__ = "CIGAR in `PAF long format <https://github.com/lh3/minimap2>`_"
+Alignment.cigar_str.__doc__ = "CIGAR in `PAF long format <https://github.com/lh3/minimap2#cs>`_"
 
 
 def checkAlignment(a, target, query):
@@ -214,15 +236,19 @@ class Mapper:
         self.target = target
 
 
-    def map(self, queryfile, return_dict=True, outfile=None,
+    def map(self, queryfile, outfile=None, introns_to_gaps=True,
             unclip_matches=False, join_gapped=False, shift_indels=True,
             check_alignments=True):
         """Map query sequences to reference target.
 
         Aligns query sequences to `target`. Adds ``--c --cs=long``
         arguments to `options` to get a long CIGAR string, and
-        returns the results as a dictionary and/or writes them
+        returns results as a dictionary, and optionally writes them
         to a PAF file.
+
+        This is **not** a memory-efficient implementation as
+        a lot is read into memory. So if you have very large
+        queries or targets, that may pose a problem.
 
         Will raise an error if there are multiple mappings for
         a query.
@@ -231,22 +257,18 @@ class Mapper:
             `queryfile` (str)
                 FASTA file with query sequences to align.
                 Headers should be unique.
-            `return_dict` (bool)
-                If `True`, return a dictionary keyed by
-                each header in `query` and with values
-                being the alignments. If you have a very
-                large `query`, you might set this to `False`
-                to avoid reading the alignments into memory.
             `outfile` (`None` or str)
                 Name of output file containing alignment
                 results in PAF format if a str is provided.
-                Provide `None` if you just want to access
-                results via `return_dict` and don't want to
-                create a permanent output file.
+                Provide `None` if you don't want to create
+                a permanent alignment file.
             `unclip_matches` (bool)
                 Pass alignments through :meth:`unclipMatches`.
                 Only applies to alignments returned in dict,
                 does not affect any results in `outfile`.
+            `introns_to_gaps` (bool)
+                If there are introns in the alignment CIGARs, convert
+                to gaps by running through :meth:`intronsToGaps`.
             `join_gapped` (bool)
                 Pass alignments through :meth:`joinGappedAlignments`.
                 Only applies to alignments returned in dict,
@@ -261,9 +283,7 @@ class Mapper:
                 This is a good debugging check, but does take time.
 
         Returns:
-            Either a dict (if `return_dict` is `True`)
-            or `None` (if `return_dict` is `False`). If returning
-            a dictionary, the keys are the name each sequence
+            A dict where the keys are the name of each query
             in `queryfile`, and the values are alignments as 
             :class:`Alignment` objects.
         """
@@ -275,6 +295,9 @@ class Mapper:
             if arg not in self.options:
                 self.options.append(arg)
 
+        targetseqs = {seq.name:str(seq.seq) for seq in 
+                      Bio.SeqIO.parse(self.target, 'fasta')}
+
         if outfile is None:
             fout = tempfile.TemporaryFile('w+')
         else:
@@ -285,56 +308,54 @@ class Mapper:
             _ = subprocess.check_call(
                     [self.prog] + self.options + [self.target, queryfile],
                     stdout=fout, stderr=stderr)
-            if return_dict:
-                fout.seek(0)
-                dlist = collections.defaultdict(list)
-                for query, alignment in parsePAF(fout):
-                    dlist[query].append(alignment)
+            fout.seek(0)
+            dlist = collections.defaultdict(list)
+            for query, alignment in parsePAF(fout, targetseqs, introns_to_gaps):
+                dlist[query].append(alignment)
+        except:
+            stderr.seek(0)
+            sys.stderr.write('\n{0}\n'.format(stderr.read()))
+            raise
         finally:
             fout.close()
             stderr.close()
 
-        if return_dict:
-            if join_gapped or unclip_matches or check_alignments:
-                targetseqs = {seq.name:str(seq.seq) for seq in 
-                              Bio.SeqIO.parse(self.target, 'fasta')}
-                queryseqs = {seq.name:str(seq.seq) for seq in
-                             Bio.SeqIO.parse(queryfile, 'fasta')}
-            d = {}
-            for query in list(dlist.keys()):
-                if len(dlist[query]) == 1:
-                    d[query] = dlist[query][0]
-                    del dlist[query]
-                elif join_gapped:
-                    a = joinGappedAlignments(dlist[query],
-                            targetseqs[dlist[query][0].target],
-                            queryseqs[query])
-                    if a:
-                        d[query] = a
-                        del dlist[query]
-            if dlist:
-                raise ValueError("Multiple alignments for:\n\t{0}"
-                        .format('\n\t'.join(dlist.keys())))
-            if unclip_matches:
-                for query in list(d.keys()):
-                    a = d[query]
-                    assert a.q_len == len(queryseqs[query])
-                    a = unclipMatches(a, targetseqs[a.target], queryseqs[query])
+        if join_gapped or unclip_matches or check_alignments:
+            queryseqs = {seq.name:str(seq.seq) for seq in
+                         Bio.SeqIO.parse(queryfile, 'fasta')}
+        d = {}
+        for query in list(dlist.keys()):
+            if len(dlist[query]) == 1:
+                d[query] = dlist[query][0]
+                del dlist[query]
+            elif join_gapped:
+                a = joinGappedAlignments(dlist[query],
+                        targetseqs[dlist[query][0].target],
+                        queryseqs[query])
+                if a:
                     d[query] = a
-            if shift_indels:
-                for query in list(d.keys()):
-                    d[query] = d[query]._replace(cigar_str=
-                            shiftIndels(d[query].cigar_str))
-            if check_alignments:
-                for query, a in d.items():
-                    if not checkAlignment(a, targetseqs[a.target],
-                            queryseqs[query]):
-                        raise ValueError("Invalid alignment for {0}.\n"
-                                "alignment = {1}\ntarget = {2}\nquery = {3}"
-                                .format(query, a, targetseqs[target],
-                                queryseqs[query]))
-        else:
-            d = None
+                    del dlist[query]
+        if dlist:
+            raise ValueError("Multiple alignments for:\n\t{0}"
+                    .format('\n\t'.join(dlist.keys())))
+        if unclip_matches:
+            for query in list(d.keys()):
+                a = d[query]
+                assert a.q_len == len(queryseqs[query])
+                a = unclipMatches(a, targetseqs[a.target], queryseqs[query])
+                d[query] = a
+        if shift_indels:
+            for query in list(d.keys()):
+                d[query] = d[query]._replace(cigar_str=
+                        shiftIndels(d[query].cigar_str))
+        if check_alignments:
+            for query, a in d.items():
+                if not checkAlignment(a, targetseqs[a.target],
+                        queryseqs[query]):
+                    raise ValueError("Invalid alignment for {0}.\n"
+                            "alignment = {1}\ntarget = {2}\nquery = {3}"
+                            .format(query, a, targetseqs[target],
+                            queryseqs[query]))
 
         return d
 
@@ -355,7 +376,7 @@ def shiftIndels(cigar):
     Args:
         `cigar` (str)
             PAF long CIGAR string, format is 
-            `detailed here <https://github.com/lh3/minimap2>`_.
+            `detailed here <https://github.com/lh3/minimap2#cs>`_.
 
     Returns:
         A version of `cigar` with indels shifted as far
@@ -408,7 +429,7 @@ def trimCigar(side, cigar):
             "start" trim from start, "end" to trim from end.
         `cigar` (str)
             PAF long CIGAR string, format is 
-            `detailed here <https://github.com/lh3/minimap2>`_.
+            `detailed here <https://github.com/lh3/minimap2#cs>`_.
 
     Returns:
         A version of `cigar` with a single site trimmed
@@ -726,23 +747,30 @@ def unclipMatches(a, target, query):
     return a
 
 
-
-def parsePAF(paf_file):
+def parsePAF(paf_file, targets=None, introns_to_gaps=False):
     """Parse ``*.paf`` file as created by ``minimap2``.
 
-    The ``*.paf`` file is assumed to be created with
+    `paf_file` is assumed to be created with
     the ``minimap2`` options ``-c --cs=long``, which
     creates long `cs` tags with the CIGAR string.
 
     PAF format is `described here <https://github.com/lh3/miniasm/blob/master/PAF.md>`_.
     PAF long CIGAR string format from ``minimap2`` is 
-    `detailed here <https://github.com/lh3/minimap2>`_.
+    `detailed here <https://github.com/lh3/minimap2#cs>`_.
 
     Args:
         `paf_file` (str or iterator)
             If str, should be name of ``*.paf`` file.
             Otherwise should be an iterator that returns
             lines as would be read from a PAF file.
+        `targets` (dict or `None`)
+            If not `None`, is dict keyed by target names,
+            with values target sequences. You need to provide
+            this if ``minimap2`` is run with a ``--splice``
+            option and `introns_to_gaps` is `True`.
+        `introns_to_gap` (bool)
+            Pass CIGAR strings through :meth:`intronsToGaps`.
+            Requires you to provide `targets`.
 
     Returns:
         A generator that yields query / alignments on each line in 
@@ -752,17 +780,18 @@ def parsePAF(paf_file):
 
     Here is a short example:
 
-    >>> paf_file = io.StringIO("queryname\\t10\\t0\\t10\\t+\\t"
-    ...         "targetname\\t20\\t5\\t15\\t9\\t10\\t60\\t"
-    ...         "cs:Z:=ATG*ga=GAACAT")
+    >>> paf_file = io.StringIO('\\t'.join([
+    ...         'myquery', '10', '0', '10', '+', 'mytarget',
+    ...         '20', '5', '15', '9', '10', '60',
+    ...         'cs:Z:=ATG*ga=GAACAT']))
     >>> alignments = [tup for tup in parsePAF(paf_file)]
     >>> len(alignments)
     1
     >>> (queryname, alignment) = alignments[0]
     >>> queryname
-    'queryname'
+    'myquery'
     >>> alignment.target
-    'targetname'
+    'mytarget'
     >>> (alignment.r_st, alignment.r_en)
     (5, 15)
     >>> (alignment.q_st, alignment.q_en)
@@ -773,9 +802,35 @@ def parsePAF(paf_file):
     '=ATG*ga=GAACAT'
     >>> alignment.q_len
     10
+
+    Now an example of using `targets` and `introns_to_gaps`.
+    You can see that this option converts the ``~gg5ac``
+    to ``-ggaac`` in the `cigar_str` attribute:
+
+    >>> targets = {'mytarget':'ATGGGAACAT'}
+    >>> paf_file = io.StringIO('\\t'.join([
+    ...         'myquery', '9', '0', '9', '+', 'mytarget',
+    ...         '10', '1', '10', '?', '4', '60',
+    ...         'cs:Z:=TG~gg5ac=AT']))
+    >>> a_keep_introns = [tup for tup in parsePAF(paf_file)][0][1]
+    >>> _ = paf_file.seek(0)
+    >>> a_introns_to_gaps = [tup for tup in parsePAF(paf_file,
+    ...         targets=targets, introns_to_gaps=True)][0][1]
+    >>> a_keep_introns.cigar_str
+    '=TG~gg5ac=AT'
+    >>> a_introns_to_gaps.cigar_str
+    '=TG-ggaac=AT'
     """
-    cigar_m = re.compile('cs:Z:(?P<cigar_str>'
-            '(:[0-9]+|\*[a-z][a-z]|[=\+\-][A-Za-z]+)+)(?:\s+|$)')
+    if introns_to_gaps and (not targets or not isinstance(targets, dict)):
+        raise ValueError("specify `target` dict if `introns_to_gaps`")
+
+    cigar_m = re.compile(
+            'cs:Z:(?P<cigar_str>('
+            '\*[a-z]{2}|' # matches mutations
+            '=[A-Z]+|' # matches identities
+            '[\+\-][a-z]+|' # matches indels
+            '\~[a-z]{2}\d+[a-z]{2}' # matches introns
+            ')+)(?:\s+|$)')
 
     close_paf_file = False
     if isinstance(paf_file, str):
@@ -794,9 +849,18 @@ def parsePAF(paf_file):
         except:
             raise ValueError("Cannot match CIGAR:\n{0}".format(entries[12]))
         query_name = entries[0]
-        a = Alignment(target=entries[5],
-                      r_st=int(entries[7]),
-                      r_en=int(entries[8]),
+        target = entries[5]
+        r_st = int(entries[7])
+        r_en = int(entries[8])
+        if introns_to_gaps:
+            try:
+                targetseq = targets[target]
+            except KeyError:
+                raise KeyError("No target {0} in targets".format(target))
+            cigar_str = intronsToGaps(cigar_str, targetseq[r_st : r_en])
+        a = Alignment(target=target,
+                      r_st=r_st,
+                      r_en=r_en,
                       q_st=int(entries[2]),
                       q_en=int(entries[3]),
                       q_len=int(entries[1]),
@@ -809,10 +873,80 @@ def parsePAF(paf_file):
 
 
 #: matches individual group in long format CIGAR
-_CIGAR_GROUP_MATCH = re.compile('=[A-Z]+|\*[a-z]{2}|[\-\+[a-z]+')
+_CIGAR_GROUP_MATCH = re.compile('=[A-Z]+|' # exact matches
+                                '\*[a-z]{2}|' # mutation
+                                '[\-\+[a-z]+|' # indel
+                                '\~[a-z]{2}\d+[a-z]{2}' # intron
+                                )
+
+
+def intronsToGaps(cigar, target):
+    """Converts introns to gaps in CIGAR string.
+
+    If you run ``minimap2``, it reports introns differently
+    than gaps in the target. This function converts
+    the intron notation to gaps. This is useful if you are
+    using the introns as an ad-hoc way to identify
+    long gaps.
+
+    Args:
+        `cigar` (str)
+            PAF long CIGAR string, format is 
+            `detailed here <https://github.com/lh3/minimap2#cs>`_.
+        `target` (str)
+            The exact portion of the target aligned to the query
+            in `cigar`.
+
+    >>> target = 'ATGGAACTAGCATCTAG'
+    >>> cigar = '=A+ca=TG-g=A*ag=CT~ag5at=CTAG'
+    >>> intronsToGaps(cigar, target)
+    '=A+ca=TG-g=A*ag=CT-agcat=CTAG'
+    """
+    newcigar = []
+    i = 0 # index in target
+    while cigar:
+        m = _CIGAR_GROUP_MATCH.match(cigar)
+        assert m, "can't match CIGAR:\n{0}".format(cigar)
+        assert m.start() == 0
+        if m.group()[0] == '=':
+            newcigar.append(m.group())
+            i += m.end() - 1
+        elif m.group()[0] == '*':
+            newcigar.append(m.group())
+            i += 1
+        elif m.group()[0] == '-':
+            newcigar.append(m.group())
+            i += m.end() - 1
+        elif m.group()[0] == '+':
+            newcigar.append(m.group())
+        elif m.group()[0] == '~':
+            intronlen = int(m.group()[3 : -2])
+            newcigar += ['-', target[i : i + intronlen].lower()]
+            assert m.group()[1 : 3].upper() == target[i : i + 2], \
+                    "target = {0}\ncigar = {1}".format(target, cigar)
+            i += intronlen
+            assert m.group()[-2 : ].upper() == target[i - 2 : i]
+        else:
+            raise RuntimeError('should never get here')
+        cigar = cigar[m.end() : ]
+
+    return ''.join(newcigar)
+
 
 def cigarToQueryAndTarget(cigar):
     """Returns `(query, target)` specified by PAF long CIGAR.
+
+    Cannot handle CIGAR strings with intron operations.
+    To check those, you first need to run through
+    :meth:`intronsToGaps`.
+
+    Args:
+        `cigar` (str)
+            CIGAR string.
+
+    Returns:
+        The 2-tuple `(query, target)`, where each is
+        a string giving the encoded query and target.
     
     >>> cigarToQueryAndTarget('=AT*ac=G+at=AG-ac=T')
     ('ATCGATAGT', 'ATAGAGACT')
@@ -834,6 +968,9 @@ def cigarToQueryAndTarget(cigar):
             target.append(m.group()[1 : ].upper())
         elif m.group()[0] == '+':
             query.append(m.group()[1 : ].upper())
+        elif m.group()[0] == '~':
+            raise ValueError("Cannot handle intron operations, but."
+                    "string has one:\n{0}".format(m.group()))
         else:
             raise RuntimeError('should never get here')
         cigar = cigar[m.end() : ]
@@ -867,7 +1004,7 @@ def mutateSeq(wtseq, mutations, insertions, deletions):
 
     Returns:
         The 2-tuple `(mutantseq, cigar)` where `cigar` is the CIGAR
-        in `PAF long format <https://github.com/lh3/minimap2>`_.
+        in `PAF long format <https://github.com/lh3/minimap2#cs>`_.
 
     Here is an example:
 
