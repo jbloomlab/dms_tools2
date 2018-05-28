@@ -8,6 +8,10 @@ Python package for analyzing deep mutational scanning (DMS) data.
 See http://jbloomlab.github.io/dms_tools2 for documentation.
 """
 
+import os
+import glob
+
+
 # import package-level metadata
 from ._metadata import __version__
 from ._metadata import __author__
@@ -51,3 +55,11 @@ NT_TO_REGEXP = dict(
         map(lambda tup: (tup[0], tup[1]) if len(tup[1]) == 1 else
                         (tup[0], '[' + tup[1] + ']'), 
         Bio.Seq.IUPAC.IUPACData.ambiguous_dna_values.items()))
+
+# import all modules as here: https://stackoverflow.com/a/1057534
+# but do not import `rplot` as it is optional.
+__all__ = [os.path.basename(f)[ : -3] for f in
+           glob.glob(os.path.dirname(__file__) + '/*.py') if
+           os.path.isfile(f) and not os.path.basename(f).startswith('_')
+           and not f.endswith('rplot.py')]
+from . import *

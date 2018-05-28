@@ -7,6 +7,8 @@ Change Log
 
 * added `pacbio` and `minimap2` modules, including the `./minimap2_source/` subtree.
 
+* ``import dms_tools2`` now imports all non-optional modules in the package
+
 2.2.6
 -------
 * fix bug in `diffsel.tidyToWide` such that sites with matching values (i.e. all 0 values) are not dropped during de-duplication.
