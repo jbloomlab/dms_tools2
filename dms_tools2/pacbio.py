@@ -197,10 +197,10 @@ class CCS:
         self._build_df_from_bamfile()
 
 
-    def plotResults(self, plotfile, lower_filter=None,
+    def plotColCorrs(self, plotfile, lower_filter=None,
             cols=['passes', 'CCS_accuracy', 'CCS_length'],
             title=True):
-        """Plots the CCS results in `df`.
+        """Plots correlation among CCS columns in `df`.
 
         The plot shows the distribution of each variable
         as well as all pairwise correlations.

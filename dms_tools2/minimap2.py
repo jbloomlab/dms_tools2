@@ -69,7 +69,7 @@ OPTIONS_VIRUS_W_DEL = [
 # namedtuple to hold alignments
 Alignment = collections.namedtuple('Alignment',
         ['target', 'r_st', 'r_en', 'q_len', 'q_st',
-         'q_en', 'strand', 'cigar_str'])
+         'q_en', 'strand', 'cigar_str', 'additional'])
 Alignment.__doc__ = "Alignment of a query to a target."
 Alignment.target.__doc__ = "Name of target to which query was aligned."
 Alignment.r_st.__doc__ = "Alignment start in target (0 based)."
@@ -79,6 +79,8 @@ Alignment.q_en.__doc__ = "Alignment end in query (0 based)."
 Alignment.q_len.__doc__ = "Total length of query prior to any clipping."
 Alignment.strand.__doc__ = "1 if aligns in forward polarity, -1 if in reverse."
 Alignment.cigar_str.__doc__ = "CIGAR in `PAF long format <https://github.com/lh3/minimap2#cs>`_"
+Alignment.additional.__doc__ = ("List of additional :class:`Alignment` "
+        "objects, useful for multiple alignments.")
 
 
 def checkAlignment(a, target, query):
@@ -102,7 +104,7 @@ def checkAlignment(a, target, query):
     >>> query = 'TACA'
     >>> a_valid = Alignment(target='target', r_st=1, r_en=5,
     ...         q_st=0, q_en=4, q_len=4, strand=1,
-    ...         cigar_str='=T*ga=CA')
+    ...         cigar_str='=T*ga=CA', additional=[])
     >>> checkAlignment(a_valid, target, query)
     True
     >>> a_invalid = a_valid._replace(r_st=0, r_en=4)
@@ -136,6 +138,8 @@ class Mapper:
             recommended options, for different situations, see:
 
                 - :data:`OPTIONS_CODON_DMS`
+
+                - :data:`OPTIONS_VIRUS_W_DEL`
 
         `prog` (str or `None`)
             Path to ``minimap2`` executable. `None` uses the
@@ -237,8 +241,7 @@ class Mapper:
 
 
     def map(self, queryfile, outfile=None, introns_to_gaps=True,
-            unclip_matches=False, join_gapped=False, shift_indels=True,
-            check_alignments=True):
+            shift_indels=True, check_alignments=True):
         """Map query sequences to reference target.
 
         Aligns query sequences to `target`. Adds ``--c --cs=long``
@@ -250,9 +253,6 @@ class Mapper:
         a lot is read into memory. So if you have very large
         queries or targets, that may pose a problem.
 
-        Will raise an error if there are multiple mappings for
-        a query.
-
         Args:
             `queryfile` (str)
                 FASTA file with query sequences to align.
@@ -262,17 +262,9 @@ class Mapper:
                 results in PAF format if a str is provided.
                 Provide `None` if you don't want to create
                 a permanent alignment file.
-            `unclip_matches` (bool)
-                Pass alignments through :meth:`unclipMatches`.
-                Only applies to alignments returned in dict,
-                does not affect any results in `outfile`.
             `introns_to_gaps` (bool)
                 If there are introns in the alignment CIGARs, convert
                 to gaps by running through :meth:`intronsToGaps`.
-            `join_gapped` (bool)
-                Pass alignments through :meth:`joinGappedAlignments`.
-                Only applies to alignments returned in dict,
-                does not affect any results in `outfile`.
             `shift_indels` (bool)
                 Pass alignments through :meth:`shiftIndels`.
                 Only applies to alignments returned in dict,
@@ -280,12 +272,20 @@ class Mapper:
             `check_alignments` (bool)
                 Run all alignments through :meth:`checkAlignment`
                 before returning, and raise error if any are invalid.
-                This is a good debugging check, but does take time.
+                This is a good debugging check, but costs time.
 
         Returns:
-            A dict where the keys are the name of each query
-            in `queryfile`, and the values are alignments as 
-            :class:`Alignment` objects.
+            A dict where keys are the name of each query in
+            `queryfile` for which there is an alignment (there
+            are no keys for queries that do not align). If there
+            is a single alignment for a query, the value is that
+            :class:`Alignment` object. There can be multiple primary
+            alignments (`see here <https://github.com/lh3/minimap2/issues/113>`_).
+            If there are multiple alignments, the value is the 
+            :class:`Alignment` with the largest number of exact matches,
+            and the remaining alignments are listed in the
+            :class:`Alignment.additional` attribute of that "best"
+            alignment.
         """
         assert os.path.isfile(queryfile), "no `queryfile` {0}".format(queryfile)
 
@@ -302,7 +302,6 @@ class Mapper:
             fout = tempfile.TemporaryFile('w+')
         else:
             fout = open(outfile, 'w+')
-
         stderr = tempfile.TemporaryFile()
         try:
             _ = subprocess.check_call(
@@ -320,35 +319,28 @@ class Mapper:
             fout.close()
             stderr.close()
 
-        if join_gapped or unclip_matches or check_alignments:
-            queryseqs = {seq.name:str(seq.seq) for seq in
-                         Bio.SeqIO.parse(queryfile, 'fasta')}
         d = {}
         for query in list(dlist.keys()):
             if len(dlist[query]) == 1:
                 d[query] = dlist[query][0]
-                del dlist[query]
-            elif join_gapped:
-                a = joinGappedAlignments(dlist[query],
-                        targetseqs[dlist[query][0].target],
-                        queryseqs[query])
-                if a:
-                    d[query] = a
-                    del dlist[query]
-        if dlist:
-            raise ValueError("Multiple alignments for:\n\t{0}"
-                    .format('\n\t'.join(dlist.keys())))
-        if unclip_matches:
-            for query in list(d.keys()):
-                a = d[query]
-                assert a.q_len == len(queryseqs[query])
-                a = unclipMatches(a, targetseqs[a.target], queryseqs[query])
-                d[query] = a
+            else:
+                assert len(dlist[query]) > 1
+                sorted_alignments = [tup[1] for tup in sorted(
+                        [(numExactMatches(a.cigar_str), a)
+                        for a in dlist[query]], reverse=True)]
+                d[query] = sorted_alignments[0]._replace(
+                        additional=sorted_alignments[1 : ])
+            del dlist[query]
+
         if shift_indels:
             for query in list(d.keys()):
-                d[query] = d[query]._replace(cigar_str=
-                        shiftIndels(d[query].cigar_str))
+                new_cigar_str = shiftIndels(d[query].cigar_str)
+                if new_cigar_str != d[query].cigar_str:
+                    d[query] = d[query]._replace(cigar_str=new_cigar_str)
+
         if check_alignments:
+            queryseqs = {seq.name:str(seq.seq) for seq in
+                         Bio.SeqIO.parse(queryfile, 'fasta')}
             for query, a in d.items():
                 if not checkAlignment(a, targetseqs[a.target],
                         queryseqs[query]):
@@ -479,8 +471,10 @@ def trimCigar(side, cigar):
                          .format(side))
 
 
-def joinGappedAlignments(alignments, target, query):
+def _joinGappedAlignments(alignments, target, query):
     """Join :class:`Alignment` objects of same query with long gaps.
+
+    **FUNCTION APPEARS TO WORK, BUT CURRENTLY OBSOLETE (NOT USED)**
 
     If a query aligns to a target with a very long gap,
     ``minimap2`` will return two entries in the PAF file,
@@ -510,12 +504,15 @@ def joinGappedAlignments(alignments, target, query):
     >>> target = 'ATGCAGTCAGACATGA'
     >>> query =   'TGC  TCAG  ATG'.replace(' ', '')
     >>> a0 = Alignment(q_st=0, q_en=3, r_st=1, r_en=4, q_len=9,
-    ...         cigar_str='=' + query[0 : 3], strand=1, target='target')
+    ...         cigar_str='=' + query[0 : 3], strand=1, target='target',
+    ...         additional=[])
     >>> a1 = Alignment(q_st=3, q_en=7, r_st=6, r_en=10, q_len=9,
-    ...         cigar_str='=' + query[3 : 7], strand=1, target='target')
+    ...         cigar_str='=' + query[3 : 7], strand=1, target='target',
+    ...         additional=[])
     >>> a2 = Alignment(q_st=7, q_en=10, r_st=12, r_en=15, q_len=9,
-    ...         cigar_str='=' + query[7 : 10], strand=1, target='target')
-    >>> a = joinGappedAlignments([a1, a0, a2], target, query)
+    ...         cigar_str='=' + query[7 : 10], strand=1, target='target',
+    ...         additional=[])
+    >>> a = _joinGappedAlignments([a1, a0, a2], target, query)
     >>> a.cigar_str
     '=TGC-ag=TCAG-ac=ATG'
     >>> a.q_st == 0
@@ -530,7 +527,7 @@ def joinGappedAlignments(alignments, target, query):
     But we cannot join the two most distant alignments are they are not
     separated by a simple gap (there is also a gap in the query in this case):
 
-    >>> joinGappedAlignments([a0, a2], target, query) is None
+    >>> _joinGappedAlignments([a0, a2], target, query) is None
     True
 
     Now a more complex example where `a2` overlaps with `a1` near
@@ -538,7 +535,7 @@ def joinGappedAlignments(alignments, target, query):
 
     >>> a2_overlap = a2._replace(q_st=a2.q_st - 1, r_st=a2.r_st - 1,
     ...        cigar_str='=' + query[a2.q_st - 1 : a2.q_en]) 
-    >>> a_overlap = joinGappedAlignments([a0, a2_overlap, a1], target, query)
+    >>> a_overlap = _joinGappedAlignments([a0, a2_overlap, a1], target, query)
     >>> a_overlap == a
     True
 
@@ -548,7 +545,7 @@ def joinGappedAlignments(alignments, target, query):
     >>> a0_overlap = a0._replace(q_en=a0.q_en + 1, r_en=a0.r_en + 1,
     ...         cigar_str=a0.cigar_str + '*' + target[a0.r_en].lower()
     ...                   + query[a0.q_en].lower())
-    >>> a_overlap2 = joinGappedAlignments([a0_overlap, a2_overlap, a1],
+    >>> a_overlap2 = _joinGappedAlignments([a0_overlap, a2_overlap, a1],
     ...                                   target, query)
     >>> a_overlap2 == a
     True
@@ -611,7 +608,8 @@ def joinGappedAlignments(alignments, target, query):
                           r_en=a1.r_en,
                           q_len=a0.q_len,
                           strand=a0.strand,
-                          target=a0.target
+                          target=a0.target,
+                          additional=[], 
                           )
             alignments = [a] + alignments[2 : ]
         elif a0.q_en < a1.q_st:
@@ -625,8 +623,10 @@ def joinGappedAlignments(alignments, target, query):
 
 
 
-def unclipMatches(a, target, query):
+def _unclipMatches(a, target, query):
     """Undo any soft clipping of exact matches.
+
+    **FUNCTION APPEARS TO WORK, BUT CURRENTLY OBSOLETE (NOT USED)**
 
     For some unknown reason, ``minimap2`` sometimes soft clips
     queries even when the clipped regions exactly match the 
@@ -654,8 +654,8 @@ def unclipMatches(a, target, query):
     >>> query = 'TACAAT'
     >>> a = Alignment(strand=1, r_st=1, r_en=7,
     ...         target='target', q_st=0, q_en=6, q_len=6,
-    ...         cigar_str='=T*gaCAAT')
-    >>> unclipMatches(a, target, query) == a
+    ...         cigar_str='=T*gaCAAT', additional=[])
+    >>> _unclipMatches(a, target, query) == a
     True
 
     Now some soft clipping that is undone at start:
@@ -663,8 +663,8 @@ def unclipMatches(a, target, query):
     >>> query = 'AAGCAATA'
     >>> a = Alignment(strand=1, r_st=1, r_en=7,
     ...         target='target', q_st=1, q_en=7, q_len=8,
-    ...         cigar_str='*taGCAAT')
-    >>> a2 = unclipMatches(a, target, query)
+    ...         cigar_str='*taGCAAT', additional=[])
+    >>> a2 = _unclipMatches(a, target, query)
     >>> a2.q_st
     0
     >>> a2.r_st
@@ -682,8 +682,8 @@ def unclipMatches(a, target, query):
     >>> target = 'ATGCAATGA'
     >>> a = Alignment(strand=1, r_st=3, r_en=7,
     ...         target='target', q_st=4, q_en=8, q_len=10,
-    ...         cigar_str='=CAAT')
-    >>> a3 = unclipMatches(a, target, query)
+    ...         cigar_str='=CAAT', additional=[])
+    >>> a3 = _unclipMatches(a, target, query)
     >>> a3.q_st
     2
     >>> a3.q_en
@@ -719,6 +719,7 @@ def unclipMatches(a, target, query):
                 q_en=a.q_en,
                 q_len=a.q_len,
                 cigar_str=new_cigar,
+                additional=[]
                 )
 
     # unclip from end
@@ -742,6 +743,7 @@ def unclipMatches(a, target, query):
                 q_en=a.q_en + unclip,
                 q_len=a.q_len,
                 cigar_str=new_cigar,
+                additional=[]
                 )
 
     return a
@@ -865,11 +867,27 @@ def parsePAF(paf_file, targets=None, introns_to_gaps=False):
                       q_en=int(entries[3]),
                       q_len=int(entries[1]),
                       strand={'+':1, '-':-1}[entries[4]],
-                      cigar_str=cigar_str)
+                      cigar_str=cigar_str, 
+                      additional=[])
         yield (query_name, a)
 
     if close_paf_file:
         paf_file.close()
+
+
+#: matches an exact match group in long format CIGAR
+_EXACT_MATCH = re.compile('=[A-Z]+')
+
+def numExactMatches(cigar):
+    """Number exactly matched nucleotides in long CIGAR.
+
+    >>> numExactMatches('=ATG-aca=A*gc+ac=TAC')
+    7
+    """
+    n = 0
+    for m in _EXACT_MATCH.finditer(cigar):
+        n += len(m.group()) - 1
+    return n
 
 
 #: matches individual group in long format CIGAR
