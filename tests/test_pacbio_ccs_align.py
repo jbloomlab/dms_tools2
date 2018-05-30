@@ -1,4 +1,4 @@
-"""Tests `dms_tools2.pacbio.CCS` fitlering and alignment.
+"""Tests `dms_tools2.pacbio.CCS` matching and alignment.
 
 In the process, also tests `dms_tools2.minimap2`.
 """
@@ -99,13 +99,13 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
             rand = random.random()
 
             if rand < 0.1:
-                # should fail filtering and aligning
+                # should fail matching and aligning
                 barcoded = aligned = False
                 barcode = cigar = ''
                 seq = randSeq(random.randint(self.TARGET_LEN // 2,
                                              self.TARGET_LEN * 2))
             elif rand < 0.2:
-                # should pass filtering, fail aligning
+                # should pass matching, fail aligning
                 barcoded = True
                 barcode = randSeq(self.bclen)
                 aligned = False
@@ -118,7 +118,7 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
                        )
 
             else:
-                # should pass filtering and aligning
+                # should pass matching and aligning
                 barcoded = aligned = True
                 barcode = randSeq(self.bclen)
 
@@ -193,17 +193,18 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
         self.ccs = dms_tools2.pacbio.CCS('test', bamfile, reportfile=None)
 
 
-    def test_filter_and_align(self):
-        """Tests filtering and alignment on `CCS`."""
+    def test_match_and_align(self):
+        """Tests match and alignment on `CCS`."""
         # make sure all queries in `CCS` data frame
         self.assertCountEqual(self.ccs.df.name, [q.name for q in self.queries])
 
-        # now filter and check that we get the right entries
+        # now match and check that we get the right entries
         match_str = self.flank5 + \
                     '(?P<read>N+)' + \
                     '(?P<barcode>N{{{0}}})'.format(self.bclen) + \
                     self.flank3
-        self.ccs.filterSeqs(match_str, 'barcoded')
+        self.ccs.df = dms_tools2.pacbio.matchSeqs(self.ccs.df,
+                match_str, 'CCS', 'barcoded')
         self.assertCountEqual(self.ccs.df.query('barcoded').barcode,
                               [q.barcode for q in self.queries if q.barcoded])
 

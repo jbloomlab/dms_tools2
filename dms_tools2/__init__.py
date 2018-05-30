@@ -53,7 +53,7 @@ AA_TO_CODONS = {
 #: dict keyed by nucleotide code, values `re` matches for code.
 NT_TO_REGEXP = dict(
         map(lambda tup: (tup[0], tup[1]) if len(tup[1]) == 1 else
-                        (tup[0], '[' + tup[1] + ']'), 
+                        (tup[0], '[' + ''.join(sorted(tup[1])) + ']'), 
         Bio.Seq.IUPAC.IUPACData.ambiguous_dna_values.items()))
 
 # import all modules as here: https://stackoverflow.com/a/1057534

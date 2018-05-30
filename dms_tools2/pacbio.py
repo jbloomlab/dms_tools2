@@ -19,8 +19,6 @@ import numpy
 import pandas
 import pysam
 
-from dms_tools2 import NT_TO_REGEXP
-
 # import dms_tools2.plot to set plotting contexts / themes
 import dms_tools2.plot
 from dms_tools2.plot import COLOR_BLIND_PALETTE
@@ -33,7 +31,7 @@ from plotnine import *
 class CCS:
     """Class to handle results of ``ccs``.
 
-    Reads and manipulate results of PacBio ``ccs``.
+    Holds results of PacBio ``ccs``.
     Has been tested on output of ``ccs`` version 3.0.0.
 
     This class reads all data into memory, and so you
@@ -137,14 +135,14 @@ class CCS:
     ...         'passes', 'CCS_accuracy', 'CCS_length'}
     True
 
-    Apply filter for sequences that have expected termini
+    Match sequences that have expected termini
     and define barcode and read in these:
 
     >>> match_str = (termini5 + '(?P<barcode>N{3})' +
     ...         '(?P<read>N+)' + termini3)
-    >>> ccs.filterSeqs(match_str, filter_colname='barcoded')
+    >>> ccs.df = matchSeqs(ccs.df, match_str, 'CCS', 'barcoded')
 
-    This filtering add new columns to `ccs.df`:
+    This matching add new columns to the new `ccs.df`:
 
     >>> set(ccs.df.columns) >= {'barcode', 'barcode_qvals',
     ...         'barcode_accuracy', 'read', 'read_qvals',
@@ -169,9 +167,10 @@ class CCS:
     ...     barcode_accuracies, atol=1e-4)
     True
     >>> numpy.allclose(ccs.df.query('not barcoded').barcode_accuracy,
-    ...     0, atol=1e-4)
+    ...     -1, atol=1e-4)
     True
-    >>> barcoded_polarity = [x.split('_')[3] for x in bc_names]
+    >>> barcoded_polarity = [{'plus':1, 'minus':-1}[x.split('_')[3]]
+    ...         for x in bc_names]
     >>> (ccs.df.query('barcoded').barcoded_polarity == barcoded_polarity).all()
     True
 
@@ -286,135 +285,6 @@ class CCS:
         g.savefig(plotfile)
         plt.close()
 
-
-    def filterSeqs(self, match_str, filter_colname='pass_filter',
-                   expandIUPAC=True, overwrite=True):
-        """Identify CCSs that match a specific pattern.
-
-        This filtering is useful if the CCS sequences in `df`
-        should have specific subsequences.
-
-        Args:
-            `match_str` (str)
-                A string that can be passed to `re.compile` that
-                gives the pattern that we are looking for, with
-                target subsequences as named groups. See also
-                the `expandIUPAC` parameter. Note that if 
-                `expandIUPAC` is true, the group names cannot
-                include IUPAC codes (a safe thing to do is just
-                make the group names all lower case).
-            `filter_colname` (str)
-                Name of a new column added to `df`. Every row
-                in `df` that has a CCS column that matches
-                `match_str` gets this column set to `True`,
-                and all other rows get it set to `False`.
-            `expandIUPAC` (bool)
-                Use `IUPAC code <https://en.wikipedia.org/wiki/Nucleic_acid_notation>`_
-                to expand ambiguous nucleotides (e.g., "N") in
-                `match_str`. This can simplify the writing of
-                `match_str`. If you use this option, ensure that
-                none of the named groups in `match_str` have upper-
-                case letters that are nucleotide codes.
-            `overwrite` (bool)
-                If `True`, we overwrite any existing columns to
-                be created that already exist. If `False`, raise
-                an error if any of the columns already exist.
-
-        The following columns are added to `df`:
-
-            - Name given by `filter_colname`: `True` if `match_str` matches.
-
-            - Columns with name of `filter_colname` and these suffixes:
-                - "_polarity": "plus" or "minus" depending on whether 
-                  matches CCS directly or matches reverse-complement.
-                - Each group in `match_str`: the string that matches
-                  that group in CCS, or any empty string if no match.
-                  If the match is in the minus polarity, the string is
-                  reverse-complemented to be in the plus orientation.
-                - Each group names suffixed by "_qvals": The Q-values
-                  for that group, or an empty numpy if no match. If
-                  the group is reverse-complemented to plus orientation,
-                  the Q-values are also reversed to keep them in the
-                  same orientation as the group sequence.
-                - Group names suffixed by "_accuracy": accuracy for
-                  that group, or 0 if no match.
-        """
-        polarity_colname = filter_colname + "_polarity"
-
-        if expandIUPAC:
-            expand_nts = ''.join([key for key, value in 
-                    NT_TO_REGEXP.items() if len(value) > 1])
-            assert not re.search('<[^>]*[{0}]+[^>]*>'.format(expand_nts),
-                    match_str), "`match_str` group name has IUPAC code"
-            match_str = match_str.translate(str.maketrans(NT_TO_REGEXP))
-
-        matcher = re.compile(match_str)
-        groupnames = set(matcher.groupindex.keys())
-        groupqvals = {g + '_qvals' for g in groupnames}
-        groupaccuracies = {g + '_accuracy' for g in groupnames}
-
-        # make sure created columns don't already exist
-        if not overwrite:
-            assert filter_colname not in self.df.columns,\
-                    "`df` already has column {0}".format(filter_colname)
-            assert polarity_colname + "_polarity" not in self.df.columns,\
-                    "`df` already has column {0}".format(polarity_colname)
-            assert groupnames.isdisjoint(self.df.columns), \
-                    "`df` has columns with `match_str` group names"
-            assert groupqvals.isdisjoint(self.df.columns), \
-                    "`df` has columns with `match_str` group qvals"
-            assert groupaccuracies.isdisjoint(self.df.columns), \
-                    "`df` has columns with `match_str` group accuracies"
-
-        # look for matches for each row
-        match_d = {c:[] for c in set.union(*[groupnames, groupqvals,
-                groupaccuracies, {filter_colname, polarity_colname}])}
-        for tup in self.df.itertuples():
-            s = getattr(tup, 'CCS')
-            qs = getattr(tup, 'CCS_qvals')
-            m = matcher.search(s)
-            if m:
-                polarity = "plus"
-            else:
-                m = matcher.search(dms_tools2.utils.reverseComplement(s))
-                qs = numpy.flip(qs, axis=0)
-                polarity = "minus"
-            if m:
-                match_d[filter_colname].append(True)
-                match_d[polarity_colname].append(polarity)
-                for g in groupnames:
-                    if polarity == "plus":
-                        match_d[g].append(m.group(g))
-                    else:
-                        assert polarity == "minus"
-                        match_d[g].append(m.group(g))
-                    g_qvals = qs[m.start(g) : m.end(g)]
-                    match_d[g + '_qvals'].append(g_qvals)
-                    match_d[g + '_accuracy'].append(
-                            qvalsToAccuracy(g_qvals))
-            else:
-                match_d[filter_colname].append(False)
-                match_d[polarity_colname].append('')
-                for c in groupnames:
-                    match_d[c].append('')
-                for c in groupqvals:
-                    match_d[c].append(numpy.array([], dtype='int'))
-                for c in groupaccuracies:
-                    match_d[c].append(0)
-
-        # set index to make sure matches `df`
-        indexname = self.df.index.name
-        assert indexname not in match_d
-        match_d[indexname] = self.df.index.tolist()
-        dup_cols = set(match_d.keys()).intersection(set(self.df.columns))
-        if (not overwrite) and dup_cols:
-            raise ValueError("overwriting columns")
-        self.df = pandas.concat(
-                [self.df.drop(dup_cols, axis=1),
-                 pandas.DataFrame(match_d).set_index(indexname),
-                ],
-                axis=1)
-
     def align(self, mapper, query_col, alignment_col='aligned',
               overwrite=True, paf_file=None):
         """Align sequences to target sequence(s).
@@ -441,7 +311,19 @@ class CCS:
 
             - Name given by `alignment_col`: `True` if alignment.
 
-            - Columns with names of `alignment_col` and these suffixes:
+            - Columns with names of `alignment_col` and these suffixes.
+              If there are multiple alignments, then all these columns
+              are for the "best" alignment returned by the 
+              :py:mod:`dms_tools2.minimap2.Mapper.map` method of `mapper`,
+              except for the "_additional_alignments" column:
+                - "_alignment": :py:mod:`dms_tools2.minimap2.Alignment`
+                  object for alignment.
+                - "_additional_alignments": `True` if there are 
+                  additional alignments returned by `mapper`, these
+                  additional alignments are in the 
+                  :py:mod:`dms_tools2.minimap2.Alignment.additional`
+                  attribute of the alignment object in the "_alignment"
+                  suffixed column.
                 - "_target": name of target to which query aligned,
                   or empty string if no alignment.
                 - "_clip_start": number of nucleotides clipped from
@@ -562,6 +444,178 @@ class CCS:
                 "qvals not correct length"
 
 
+def matchSeqs(df, match_str, col_to_match, match_col, *,
+        add_polarity=True, add_group_cols=True,
+        add_accuracy=True, add_qvals=True,
+        expandIUPAC=True, overwrite=False):
+    """Identify sequences in a dataframe that match a specific pattern.
+
+    Args:
+        `df` (pandas DataFrame)
+            Data frame with column holding sequences to match.
+        `match_str` (str)
+            A string that can be passed to `re.compile` that gives
+            the pattern that we are looking for, with target 
+            subsequences as named groups. See also the `expandIUPAC`
+            parameter, which simplifies writing `match_str`.
+        `col_to_match` (str)
+            Name of column in `df` that contains the sequences
+            to match.
+        `match_col` (str)
+            Name of column added to `df`. Elements of columns are
+            `True` if `col_to_match` matches `match_str` for that
+            row, and `False` otherwise.
+        `add_polarity` (bool)
+            Do we add a column specifying the polarity of the match?
+        `add_group_cols` (bool)
+            Do we add columns with the sequence of every group in
+            `match_str`?
+        `add_accuracy` (bool)
+            For each group in the match, do we add a column giving
+            the accuracy of that group's sequence? Only used
+            if `add_group_cols` is `True`.
+        `add_qvals` (bool)
+            For each group in the match, do we add a column giving
+            the Q values for that group's sequence? Only used if
+            `add_group_cols` is `True`.
+        `expandIUPAC` (bool)
+            Use `IUPAC code <https://en.wikipedia.org/wiki/Nucleic_acid_notation>`_
+            to expand ambiguous nucleotides (e.g., "N") by passing
+            `match_str` through the :meth:`re_expandIUPAC` function.
+        `overwrite` (bool)
+            If `True`, we overwrite any existing columns to
+            be created that already exist. If `False`, raise
+            an error if any of the columns already exist.
+
+    Returns:
+        A **copy** of `df` with new columns added. The exact columns
+        to add are specified by the calling arguments. Specifically:
+
+            - We always add a column with the name given by `match_col`
+              that is `True` if there was a match and `False` otherwise.
+
+            - If `add_polarity` is `True`, we add a column that is
+              `match_col` suffixed by "_polarity" which is 1 if
+              the match is directly to the sequence in `col_to_match`,
+              and -1 if it is to the reverse complement of this sequence.
+              The value is 0 if there is no match.
+
+            - If `add_group_cols` is `True`, then for each group
+              in `match_str` specified using the `re` group naming
+              syntax, we add a column with that group name that
+              gives the sequence matching that group. These
+              sequences are empty strings if there is no match.
+              These added sequences are in the polarity of the
+              match, so if the sequence in `match_col` has
+              to be reverse complemented for a match, then these
+              sequences will be the reverse complement that matches.
+              Additionally, when `add_group_cols` is True:
+
+                - If `add_accuracy` is `True`, we also add a column
+                  suffixed by "_accuracy" that gives the
+                  accuracy of that group as computed from the Q-values.
+                  The value -1 if there is match for that row. Adding
+                  accuracy requires a colum in `df` with the name
+                  given by `match_col` suffixed by "_qvals."
+
+                - If `add_qvals` is `True`, we also add a column 
+                  suffixed by "_qvals" that gives the Q-values
+                  for that sequence. Adding these Q-values requires
+                  that there by a column in `df` with the name given by
+                  `match_col` suffixed by "_qvals". The Q-values are
+                  in the form of a numpy array, or an empty numpy array
+                  if there is no match for that row.
+              
+    See the docs for :class:`CCS` for example use of this function."""
+
+    assert col_to_match in df.columns, \
+            "`df` lacks `col_to_match` column {0}".format(col_to_match)
+
+    if expandIUPAC:
+        match_str = re_expandIUPAC(match_str)
+    matcher = re.compile(match_str)
+
+    newcols = [match_col]
+    if add_polarity:
+        polarity_col = match_col + '_polarity'
+        newcols.append(polarity_col)
+
+    if add_group_cols:
+        groupnames = list(matcher.groupindex.keys())
+        if len(set(groupnames)) != len(groupnames):
+            raise ValueError("duplicate group names in {0}"
+                             .format(match_str))
+        newcols += groupnames
+        if add_accuracy:
+            newcols += [g + '_accuracy' for g in groupnames]
+        if add_qvals:
+            newcols += [g + '_qvals' for g in groupnames]
+        if add_accuracy or add_qvals:
+            match_qvals_col = col_to_match + '_qvals'
+            if match_qvals_col not in df.columns:
+                raise ValueError("To use `add_accuracy` or "
+                        "`add_qvals`, you need a column in `df` "
+                        "named {0}".format(match_qvals_col))
+    else:
+        groupnames = []
+
+    # make sure created columns don't already exist
+    if not overwrite and set(newcols).intersection(set(df.columns)):
+        raise ValueError("`df` already contains some of the "
+                "columns that we are supposed to add.\n"
+                "current columns:\n{0}\ncolumns to add:\n{1}"
+                .format(df.columns, newcols))
+
+    # look for matches for each row
+    match_d = {c:[] for c in newcols}
+    for tup in df.itertuples():
+        s = getattr(tup, col_to_match)
+        m = matcher.search(s)
+        if add_accuracy or add_qvals:
+            qs = getattr(tup, match_qvals_col)
+        if m:
+            polarity = 1
+        else:
+            m = matcher.search(dms_tools2.utils.reverseComplement(s))
+            polarity = -1
+            if add_accuracy or add_qvals:
+                qs = numpy.flip(qs, axis=0)
+        if m:
+            match_d[match_col].append(True)
+            if add_polarity:
+                match_d[polarity_col].append(polarity)
+            for g in groupnames:
+                match_d[g].append(m.group(g))
+                if add_qvals:
+                    match_d[g + '_qvals'].append(qs[m.start(g) : m.end(g)])
+                if add_accuracy:
+                    match_d[g + '_accuracy'].append(qvalsToAccuracy(
+                            qs[m.start(g) : m.end(g)]))
+        else:
+            match_d[match_col].append(False)
+            if add_polarity:
+                match_d[polarity_col].append(0)
+            for g in groupnames:
+                match_d[g].append('')
+                if add_qvals:
+                    match_d[g + '_qvals'].append(numpy.array([], dtype='int'))
+                if add_accuracy:
+                    match_d[g + '_accuracy'].append(-1)
+
+    # set index to make sure matches `df`
+    indexname = df.index.name
+    assert indexname not in match_d
+    match_d[indexname] = df.index.tolist()
+    dup_cols = set(match_d.keys()).intersection(set(df.columns))
+    if (not overwrite) and dup_cols:
+        raise ValueError("overwriting columns")
+    return pandas.concat(
+            [df.drop(dup_cols, axis=1),
+                pandas.DataFrame(match_d).set_index(indexname),
+            ],
+            axis=1)
+
+
 def qvalsToAccuracy(qvals, encoding='numbers'):
     """Converts set of quality scores into average accuracy.
 
@@ -666,6 +720,45 @@ def summarizeCCSreports(ccslist, report_type, plotfile,
     plt.close()
 
     return df
+
+def re_expandIUPAC(re_str):
+    """Expand IUPAC ambiguous nucleotide codes in `re` search string.
+
+    Simplifies writing `re` search strings that include ambiguous
+    nucleotide codes.
+
+    Args:
+        `re_str` (str)
+            String appropriate to be passed to `re.compile`.
+
+    Returns:
+        A version of `re_str` where any characters not in the group
+        names that correspond to upper-case ambiguous nucleotide codes
+        are expanded according to their definitions in the
+        `IUPAC code <https://en.wikipedia.org/wiki/Nucleic_acid_notation>`_.
+
+    >>> re_str = '^(?P<termini5>ATG)(?P<cDNA>N+)A+(?P<barcode>N{4})$'
+    >>> re_expandIUPAC(re_str)
+    '^(?P<termini5>ATG)(?P<cDNA>[ACGT]+)A+(?P<barcode>[ACGT]{4})$'
+    """
+    # We simply do a simple replacement on all characters not in group
+    # names. So first we must find group names:
+    groupname_indices = set([])
+    groupname_matcher = re.compile('\(\?P<[^>]*>')
+    for m in groupname_matcher.finditer(re_str):
+        for i in range(m.start(), m.end()):
+            groupname_indices.add(i)
+    
+    # now replace ambiguous characters
+    new_re_str = []
+    for i, c in enumerate(re_str):
+        if (i not in groupname_indices) and c in dms_tools2.NT_TO_REGEXP:
+            new_re_str.append(dms_tools2.NT_TO_REGEXP[c])
+        else:
+            new_re_str.append(c)
+
+    return ''.join(new_re_str)
+
 
 
 if __name__ == '__main__':
