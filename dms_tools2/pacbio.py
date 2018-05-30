@@ -285,115 +285,6 @@ class CCS:
         g.savefig(plotfile)
         plt.close()
 
-    def align(self, mapper, query_col, alignment_col='aligned',
-              overwrite=True, paf_file=None):
-        """Align sequences to target sequence(s).
-
-        Arguments:
-            `mapper` (:py:mod:`dms_tools2.minimap2.Mapper`)
-                Align sequences using `mapper.map`. Target
-                sequences are specified when initializing `mapper`.
-            `query_col` (str)
-                Column in `df` with query sequences to align.
-            `alignment_col` (str)
-				Specify names of new columns added to `df` (see
-				below).
-            `overwrite` (bool)
-                If `True`, we overwrite any existing columns to
-                be created that already exist. If `False`, raise
-                an error if any of the columns already exist.
-            `paf_file` (`None` or str)
-                If a str, is the name of the PAF file created
-                by `mapper` (see `outfile` argument to
-                :py:mod:`dms_tools2.minimap2.Mapper.map`).
-
-        Calling this function adds the following columns to `df`:
-
-            - Name given by `alignment_col`: `True` if alignment.
-
-            - Columns with names of `alignment_col` and these suffixes.
-              If there are multiple alignments, then all these columns
-              are for the "best" alignment returned by the 
-              :py:mod:`dms_tools2.minimap2.Mapper.map` method of `mapper`,
-              except for the "_additional_alignments" column:
-                - "_alignment": :py:mod:`dms_tools2.minimap2.Alignment`
-                  object for alignment.
-                - "_additional_alignments": `True` if there are 
-                  additional alignments returned by `mapper`, these
-                  additional alignments are in the 
-                  :py:mod:`dms_tools2.minimap2.Alignment.additional`
-                  attribute of the alignment object in the "_alignment"
-                  suffixed column.
-                - "_target": name of target to which query aligned,
-                  or empty string if no alignment.
-                - "_clip_start": number of nucleotides clipped from
-                  start of query, or -1 if no alignment.
-                - "_clip_end": number of nucleotides clipped from
-                  end of query, or -1 if no alignment.
-                - "_start": position in target where alignment starts in
-                  0-based indexing, or -1 if no alignment.
-                - "_cigar" Long format cigar string 
-                  (`see here <https://github.com/lh3/minimap2>`_), 
-                  or empty string if no alignment
-        """
-        assert query_col in self.df.columns, \
-                "no `query_col` {0}".format(query_col)
-
-        newcols = {'aligned':alignment_col,
-                   'target':alignment_col + '_target',
-                   'clip_start':alignment_col + '_clip_start',
-                   'clip_end':alignment_col + '_clip_end',
-                   'start':alignment_col + '_start',
-                   'cigar':alignment_col + '_cigar'
-                  }
-        dup_cols = set(newcols.keys()).intersection(set(self.df.columns))
-        if (not overwrite) and dup_cols:
-            raise ValueError("would duplicate existing columns:\n{0}"
-                             .format(dup_cols))
-
-        assert len(self.df.name) == len(self.df.name.unique()), \
-                "`name` in `df` not unique"
-        with tempfile.NamedTemporaryFile(mode='w') as queryfile:
-            queryfile.write('\n'.join([
-                            '>{0}\n{1}'.format(*tup) for tup in
-                            self.df.query('{0} != ""'.format(query_col))
-                                [['name', query_col]]
-                                .itertuples(index=False, name=False)
-                            ]))
-            map_dict = mapper.map(queryfile.name, outfile=paf_file)
-
-        align_d = {c:[] for c in newcols.values()}
-        for name in self.df.name:
-            if name in map_dict:
-                a = map_dict[name]
-                assert a.strand == 1, "method does not handle - polarity"
-                align_d[newcols['aligned']].append(True)
-                align_d[newcols['target']].append(a.target)
-                align_d[newcols['cigar']].append(a.cigar_str)
-                align_d[newcols['start']].append(a.r_st)
-                align_d[newcols['clip_start']].append(a.q_st)
-                align_d[newcols['clip_end']].append(a.q_len - a.q_en)
-
-            else:
-                align_d[newcols['aligned']].append(False)
-                for col in ['target', 'cigar']:
-                    align_d[newcols[col]].append('')
-                for col in ['clip_start', 'clip_end', 'start']:
-                    align_d[newcols[col]].append('')
-
-        # add to df, making sure index is correct
-        index_name = self.df.index.name
-        assert index_name not in align_d
-        align_d[index_name] = self.df.index.tolist()
-        if (not overwrite) and dup_cols:
-            raise ValueError("overwriting columns")
-        self.df = pandas.concat(
-                [self.df.drop(dup_cols, axis=1),
-                 pandas.DataFrame(align_d).set_index(index_name),
-                ],
-                axis=1)
-
-
     def _parse_report(self):
         """Set `zmw_report` and `subread_report` using `reportfile`."""
         # match reports made by ccs 3.0.0
@@ -466,16 +357,16 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
             `True` if `col_to_match` matches `match_str` for that
             row, and `False` otherwise.
         `add_polarity` (bool)
-            Do we add a column specifying the polarity of the match?
+            Add a column specifying the polarity of the match?
         `add_group_cols` (bool)
-            Do we add columns with the sequence of every group in
+            Add columns with the sequence of every group in
             `match_str`?
         `add_accuracy` (bool)
-            For each group in the match, do we add a column giving
+            For each group in the match, add a column giving
             the accuracy of that group's sequence? Only used
             if `add_group_cols` is `True`.
         `add_qvals` (bool)
-            For each group in the match, do we add a column giving
+            For each group in the match, add a column giving
             the Q values for that group's sequence? Only used if
             `add_group_cols` is `True`.
         `expandIUPAC` (bool)
@@ -494,7 +385,7 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
             - We always add a column with the name given by `match_col`
               that is `True` if there was a match and `False` otherwise.
 
-            - If `add_polarity` is `True`, we add a column that is
+            - If `add_polarity` is `True`, add a column that is
               `match_col` suffixed by "_polarity" which is 1 if
               the match is directly to the sequence in `col_to_match`,
               and -1 if it is to the reverse complement of this sequence.
@@ -502,7 +393,7 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
 
             - If `add_group_cols` is `True`, then for each group
               in `match_str` specified using the `re` group naming
-              syntax, we add a column with that group name that
+              syntax, add a column with that group name that
               gives the sequence matching that group. These
               sequences are empty strings if there is no match.
               These added sequences are in the polarity of the
@@ -560,11 +451,11 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
         groupnames = []
 
     # make sure created columns don't already exist
-    if not overwrite and set(newcols).intersection(set(df.columns)):
+    dup_cols = set(newcols).intersection(set(df.columns))
+    if not overwrite and dup_cols:
         raise ValueError("`df` already contains some of the "
-                "columns that we are supposed to add.\n"
-                "current columns:\n{0}\ncolumns to add:\n{1}"
-                .format(df.columns, newcols))
+                "columns that we are supposed to add:\n{0}"
+                .format(dup_cols))
 
     # look for matches for each row
     match_d = {c:[] for c in newcols}
@@ -606,12 +497,176 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
     indexname = df.index.name
     assert indexname not in match_d
     match_d[indexname] = df.index.tolist()
-    dup_cols = set(match_d.keys()).intersection(set(df.columns))
     if (not overwrite) and dup_cols:
         raise ValueError("overwriting columns")
     return pandas.concat(
             [df.drop(dup_cols, axis=1),
                 pandas.DataFrame(match_d).set_index(indexname),
+            ],
+            axis=1)
+
+
+def alignSeqs(df, mapper, query_col, aligned_col, *,
+        add_alignment=True, add_target=True, add_cigar=True,
+        add_endtoend=True, add_n_additional=True, overwrite=True,
+        paf_file=None):
+    """Align sequences in a dataframe to target sequence(s).
+
+    Arguments:
+        `df` (pandas DataFrame)
+            Data frame in which one column holds sequences to match.
+        `mapper` (:py:mod:`dms_tools2.minimap2.Mapper`)
+            Align using the :py:mod:`dms_tools2.minimap2.Mapper.map`
+            function of `mapper`. Target sequence(s) to which
+            we align are specified when initializing `mapper`.
+        `query_col` (str)
+            Name of column in `df` with query sequences to align.
+        `aligned_col` (str)
+            Name of column added to `df`. Elements of column are
+            `True` if `query_col` aligns, and `False` otherwise.
+        `add_alignment` (bool)
+            Add column with the :py:mod:`dms_tools2.minimap2.Alignment`.
+        `add_target` (bool)
+            Add column giving target (reference) to which sequence
+            aligns.
+        `add_cigar` (bool)
+            Add column with the CIGAR string in the long format
+            `described here <https://github.com/lh3/minimap2#cs>`_.
+        `add_endtoend` (bool)
+            Add column specifying whether the alignment is
+            end-to-end in both query and target.
+        `add_n_additional` (bool)
+            Add column specifying the number of additional
+            alignments.
+        `overwrite` (bool)
+            If `True`, we overwrite any existing columns to
+            be created that already exist. If `False`, raise
+            an error if any of the columns already exist.
+        `paf_file` (`None` or str)
+            If a str, is the name of the PAF file created
+            by `mapper` (see `outfile` argument of
+            :py:mod:`dms_tools2.minimap2.Mapper.map`) Otherwise
+            this file is not saved.
+
+    Returns:
+        A **copy** of `df` with new columns added. The exact
+        columns to add are specified by the calling arguments.
+        Specifically:
+
+            - We always add a column with the name given by
+              `aligned_col` that is `True` if there was an
+              alignment and `False` otherwise.
+              
+            - If `add_alignment` is `True`, add column named
+              `aligned_col` suffixed by "_alignment" that gives
+              the alignment as a :py:mod:`dms_tools2.minimap2.Alignment`
+              object, or `None` if there is no alignment. Note that
+              if there are multiple alignments, then this is the
+              "best" alignment, and the remaining alignments are in
+              the :py:mod:`dms_tools2.minimap2.Alignment.additional`
+              attribute.
+
+            - If `add_target` is `True`, add column named
+              `aligned_col` suffixed by "_target" that gives
+              the target to which the sequence aligns in the
+              "best" alignment, or an empty string if no alignment.
+
+            - If `add_cigar` is `True`, add column named
+              `aligned_col` suffixed by "_cigar" with the CIGAR
+              string (`long format <https://github.com/lh3/minimap2#cs>`_)
+              for the "best" alignment, or an empty string if there
+              is no alignment.
+
+            - If `add_endtoend` is `True`, add column named
+              `aligned_col` suffixed by "_endtoend" that is `True`
+              if the "best" alignment goes from end-to-end in
+              both the query and target. There can still be gaps in
+              an end-to-end alignment, but they are internal.
+
+            - If `add_n_additional` is `True`, add column
+              named `aligned_col` suffixed by "_n_additional" that
+              gives the number of additional alignments (in
+              :py:mod:`dms_tools2.minimap2.Alignment.additional`),
+              or -1 if there are no additional alignments.
+    """
+    assert query_col in df.columns, "no `query_col` {0}".format(query_col)
+
+    newcols = [aligned_col]
+    if add_alignment:
+        alignment_col = aligned_col + '_alignment'
+        newcols.append(alignment_col)
+    if add_target:
+        target_col = aligned_col + '_target'
+        newcols.append(target_col)
+    if add_cigar:
+        cigar_col = aligned_col + '_cigar'
+        newcols.append(cigar_col)
+    if add_endtoend:
+        endtoend_col = aligned_col + '_endtoend'
+        newcols.append(endtoend_col)
+    if add_n_additional:
+        n_additional_col = aligned_col + 'n_additional'
+        newcols.append(n_additional_col)
+
+    dup_cols = set(newcols).intersection(set(df.columns))
+    if (not overwrite) and dup_cols:
+        raise ValueError("`df` already contains these columns:\n{0}"
+                         .format(dup_cols))
+
+    assert len(df.name) == len(df.name.unique()), \
+            "`name` in `df` not unique"
+    with tempfile.NamedTemporaryFile(mode='w') as queryfile:
+        queryfile.write('\n'.join([
+                        '>{0}\n{1}'.format(*tup) for tup in
+                        df.query('{0} != ""'.format(query_col))
+                            [['name', query_col]]
+                            .itertuples(index=False, name=False)
+                        ]))
+        map_dict = mapper.map(queryfile.name, outfile=paf_file)
+
+    align_d = {c:[] for c in newcols}
+    for name in df.name:
+        if name in map_dict:
+            a = map_dict[name]
+            assert a.strand == 1, "method does not handle - polarity"
+            align_d[aligned_col].append(True)
+            if add_alignment:
+                align_d[alignment_col].append(a)
+            if add_target:
+                align_d[target_col].append(a.target)
+            if add_cigar:
+                align_d[cigar_col].append(a.cigar_str)
+            if add_endtoend:
+                if ((a.r_st == 0) and (a.q_st == 0) and
+                        (a.q_en == a.q_len) and
+                        (a.r_en == len(mapper.targetseqs[a.target]))):
+                    align_d[endtoend_col].append(True)
+                else:
+                    align_d[endtoend_col].append(False)
+            if add_n_additional:
+                align_d[n_additional_col].append(len(a.additional))
+        else:
+            align_d[aligned_col].append(False)
+            if add_alignment:
+                align_d[alignment_col].append(None)
+            if add_target:
+                align_d[target_col].append('')
+            if add_cigar:
+                align_d[cigar_col].append('')
+            if add_endtoend:
+                align_d[endtoend_col].append(False)
+            if add_n_additional:
+                align_d[n_additional_col].append(-1)
+
+    # set index to make sure matches `df`
+    index_name = df.index.name
+    assert index_name not in align_d
+    align_d[index_name] = df.index.tolist()
+    if (not overwrite) and dup_cols:
+        raise ValueError("overwriting columns")
+    return pandas.concat(
+            [df.drop(dup_cols, axis=1),
+                pandas.DataFrame(align_d).set_index(index_name),
             ],
             axis=1)
 

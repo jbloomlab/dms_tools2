@@ -130,7 +130,7 @@ class Mapper:
     """Class to run ``minimap2`` and get results.
 
     Args:
-        `target` (str)
+        `targetfile` (str)
             FASTA file with target (reference) to which we align
             reads.
         `options` (list)
@@ -148,8 +148,11 @@ class Mapper:
             some other preferred version.
 
     Attributes:
-        `target` (str)
-            Target (reference) set at initialization.
+        `targetfile` (str)
+            Target (reference) file set at initialization.
+        `targetseqs` (dict)
+            Sequences in `targetfile`. Keys are sequence
+            names, values are sequences as strings.
         `prog` (str)
             Path to ``minimap2`` set at initialization.
         `options` (list)
@@ -205,6 +208,8 @@ class Mapper:
     ...     queryfile.flush()
     ...     mapper = Mapper(targetfile.name, OPTIONS_CODON_DMS)
     ...     alignments = mapper.map(queryfile.name)
+    >>> mapper.targetseqs == targets
+    True
 
     Now make sure we find the expected alignments:
 
@@ -222,7 +227,7 @@ class Mapper:
     True
     """
 
-    def __init__(self, target, options, prog=None):
+    def __init__(self, targetfile, options, *, prog=None):
         """See main :class:`Mapper` doc string."""
         if prog is None:
             # use default ``minimap2`` installed as package data
@@ -236,15 +241,18 @@ class Mapper:
         self.version = version.strip().decode('utf-8')
         self.prog = prog
         self.options = options
-        assert os.path.isfile(target), "no `target` {0}".format(target)
-        self.target = target
+        assert os.path.isfile(targetfile), \
+                "no `targetfile` {0}".format(targetfile)
+        self.targetfile = targetfile
+        self.targetseqs = {seq.name:str(seq.seq) for seq in 
+                      Bio.SeqIO.parse(self.targetfile, 'fasta')}
 
 
-    def map(self, queryfile, outfile=None, introns_to_gaps=True,
+    def map(self, queryfile, *, outfile=None, introns_to_gaps=True,
             shift_indels=True, check_alignments=True):
-        """Map query sequences to reference target.
+        """Map query sequences to target.
 
-        Aligns query sequences to `target`. Adds ``--c --cs=long``
+        Aligns query sequences to targets. Adds ``--c --cs=long``
         arguments to `options` to get a long CIGAR string, and
         returns results as a dictionary, and optionally writes them
         to a PAF file.
@@ -295,9 +303,6 @@ class Mapper:
             if arg not in self.options:
                 self.options.append(arg)
 
-        targetseqs = {seq.name:str(seq.seq) for seq in 
-                      Bio.SeqIO.parse(self.target, 'fasta')}
-
         if outfile is None:
             fout = tempfile.TemporaryFile('w+')
         else:
@@ -305,11 +310,12 @@ class Mapper:
         stderr = tempfile.TemporaryFile()
         try:
             _ = subprocess.check_call(
-                    [self.prog] + self.options + [self.target, queryfile],
+                    [self.prog] + self.options + [self.targetfile, queryfile],
                     stdout=fout, stderr=stderr)
             fout.seek(0)
             dlist = collections.defaultdict(list)
-            for query, alignment in parsePAF(fout, targetseqs, introns_to_gaps):
+            for query, alignment in parsePAF(fout,
+                    self.targetseqs, introns_to_gaps):
                 dlist[query].append(alignment)
         except:
             stderr.seek(0)
@@ -342,11 +348,11 @@ class Mapper:
             queryseqs = {seq.name:str(seq.seq) for seq in
                          Bio.SeqIO.parse(queryfile, 'fasta')}
             for query, a in d.items():
-                if not checkAlignment(a, targetseqs[a.target],
+                if not checkAlignment(a, self.targetseqs[a.target],
                         queryseqs[query]):
                     raise ValueError("Invalid alignment for {0}.\n"
                             "alignment = {1}\ntarget = {2}\nquery = {3}"
-                            .format(query, a, targetseqs[target],
+                            .format(query, a, self.targetseqs[target],
                             queryseqs[query]))
 
         return d

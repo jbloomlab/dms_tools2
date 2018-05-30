@@ -211,7 +211,8 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
         # now align and check that we get the right entries
         mapper = dms_tools2.minimap2.Mapper(str(self.targetfile),
                 self.MAPPER_OPTIONS)
-        self.ccs.align(mapper, 'read',
+        self.ccs.df = dms_tools2.pacbio.alignSeqs(self.ccs.df,
+                mapper, 'read', 'aligned',
                 paf_file=str(self.testdir.joinpath('alignment.paf')))
         self.assertEqual(len(self.ccs.df.query('aligned')),
                          len([q.name for q in self.queries if q.aligned]))
@@ -221,13 +222,7 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
         for row in self.ccs.df.query('aligned').itertuples():
             name = getattr(row, 'name')
             cigar = getattr(row, 'aligned_cigar')
-            self.assertEqual(expected_cigars[name], cigar,
-                    "\nquery: {0}\n\nexpected:\n{1}\n\nactual:\n{2}\n\n"
-                    "clip:{3}, {4}\n\nread:\n{5}"
-                    .format(name, expected_cigars[name], cigar, 
-                            getattr(row, 'aligned_clip_start'), 
-                            getattr(row, 'aligned_clip_end'),
-                            getattr(row, 'read')))
+            self.assertEqual(expected_cigars[name], cigar)
 
             
 class test_pacbio_CCS_align_long_codonDMS(test_pacbio_CCS_align_short_codonDMS):
