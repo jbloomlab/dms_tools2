@@ -830,7 +830,8 @@ def parsePAF(paf_file, targets=None, introns_to_gaps=False):
     '=TG-ggaac=AT'
     """
     if introns_to_gaps and (not targets or not isinstance(targets, dict)):
-        raise ValueError("specify `target` dict if `introns_to_gaps`")
+        raise ValueError("specify `target` if `introns_to_gaps`:\n{0}"
+                         .format(targets))
 
     cigar_m = re.compile(
             'cs:Z:(?P<cigar_str>('

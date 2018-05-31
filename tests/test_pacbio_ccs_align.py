@@ -43,7 +43,7 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
     SEED = 1
 
     #: number of queries to simulate
-    NQUERIES = 1000
+    NQUERIES = 5000
 
     #: options to :py:mod:`dms_tools2.minimap2.Mapper`
     MAPPER_OPTIONS = dms_tools2.minimap2.OPTIONS_CODON_DMS
@@ -83,10 +83,12 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
 
         # target sequence
         random.seed(self.SEED)
-        self.target = randSeq(self.TARGET_LEN)
+        self.targets = {'target{0}'.format(i + 1):randSeq(self.TARGET_LEN)
+                        for i in range(2)}
         self.targetfile = self.testdir.joinpath('target.fasta')
         with open(self.targetfile, 'w') as f:
-            f.write('>target\n{0}'.format(self.target))
+            f.write('\n'.join('>{0}\n{1}'.format(*tup) for tup
+                    in self.targets.items()))
 
         # flanking sequences and barcodes
         self.flank5 = randSeq(20)
@@ -98,19 +100,18 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
         for iquery in range(self.NQUERIES):
             name = 'query{0}'.format(iquery + 1)
             rand = random.random()
+            barcode = cigar = target = ''
+            n_additional = -1
+            endtoend = barcoded = aligned = False
 
             if rand < 0.1:
                 # should fail matching and aligning
-                barcoded = aligned = False
-                barcode = cigar = ''
                 seq = randSeq(random.randint(self.TARGET_LEN // 2,
                                              self.TARGET_LEN * 2))
             elif rand < 0.2:
                 # should pass matching, fail aligning
                 barcoded = True
                 barcode = randSeq(self.bclen)
-                aligned = False
-                cigar = ''
                 seq = (self.flank5 + 
                        randSeq(random.randint(self.TARGET_LEN // 2,
                                               self.TARGET_LEN * 2)) +
@@ -120,7 +121,7 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
 
             else:
                 # should pass matching and aligning
-                barcoded = aligned = True
+                endtoend = barcoded = aligned = True
                 barcode = randSeq(self.bclen)
 
                 # get sites eligible for mutating
@@ -154,8 +155,15 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
                         if j in mutsites:
                             mutsites.remove(j)
                             mutations.append((j, random.choice(NTS)))
-
-                (read, cigar) = dms_tools2.minimap2.mutateSeq(self.target,
+                (target, targetseq) = random.choice(list(self.targets.items()))
+                n_additional = 0
+                if random.random() < 0.2 and not deletions:
+                    targetseq2 = random.choice(list(self.targets.values()))
+                    targetseq = targetseq + targetseq2[ : self.TARGET_LEN // 2]
+                    n_additional = 1
+                    endtoend = False
+                (read, cigar) = dms_tools2.minimap2.mutateSeq(
+                        targetseq,
                         mutations, insertions, deletions)
                 seq = (self.flank5 + 
                        read +
@@ -173,9 +181,9 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
                           seq=seq,
                           qvals=qvals,
                           accuracy=qvalsToAccuracy(qvals, encoding='sanger'),
-                          endtoend=aligned,
-                          n_additional={False:-1, True:0}[aligned],
-                          target={False:'', True:'target'}[aligned]))
+                          endtoend=endtoend,
+                          n_additional=n_additional,
+                          target=target))
 
         # create fasta file of queries
         with self.testdir.joinpath('queries.fasta').open('w') as f:
@@ -233,7 +241,8 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
         for row in self.ccs.df.query('aligned').itertuples():
             name = getattr(row, 'name')
             cigar = getattr(row, 'aligned_cigar')
-            self.assertEqual(expected_cigars[name], cigar)
+            if not getattr(row, 'aligned_n_additional'):
+                self.assertEqual(expected_cigars[name], cigar)
 
             
 class test_pacbio_CCS_align_long_codonDMS(test_pacbio_CCS_align_short_codonDMS):
