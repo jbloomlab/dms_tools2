@@ -38,7 +38,7 @@ class CCS:
     may need a lot of RAM if `bamfile` is large.
 
     Args:
-        `sample` (str)
+        `samplename` (str)
             Sample or sequencing run
         `bamfile` (str)
             BAM file created by ``ccs``
@@ -47,7 +47,7 @@ class CCS:
             `None` if you have no reports.
 
     Attributes:
-        `sample` (str)
+        `samplename` (str)
             Name set at initialization
         `bamfile` (str)
             ``ccs`` BAM file set at initialization
@@ -62,8 +62,15 @@ class CCS:
         `df` (pandas.DataFrame)
             The CCSs in `bamfile`. Each row is a different CCS
             On creation, there will be the following columns (you
-            can modify to add more): *CCS*, *CCS_qvals*, *name*,
-            *passes*, *CCS_accuracy*, *CCS_length*.
+            can modify to add more): 
+
+              - "name": the name of the CCS
+              - "samplename": the sample as set via `samplename`
+              - "CCS": the circular consensus sequence
+              - "CCS_qvals": the Q-values as a numpy array
+              - "passes": the number of passes of the CCS
+              - "CCS_accuracy": the accuracy of the CCS
+              - "CCS_length": the length of the CCS
 
     Here is an example.
 
@@ -124,15 +131,17 @@ class CCS:
     >>> os.remove(samfile)
     >>> os.remove(bamfile)
 
-    Check `ccs.df` has correct names, CCS sequences,
+    Check `ccs.df` has correct names, samplename, CCS sequences,
     and columns:
 
     >>> set(ccs.df.name) == {s['name'] for s in ccs_seqs}
     True
+    >>> all(ccs.df.samplename == 'test')
+    True
     >>> set(ccs.df.CCS) == {s['seq'] for s in ccs_seqs}
     True
     >>> set(ccs.df.columns) == {'CCS', 'CCS_qvals', 'name',
-    ...         'passes', 'CCS_accuracy', 'CCS_length'}
+    ...         'passes', 'CCS_accuracy', 'CCS_length', 'samplename'}
     True
 
     Match sequences that have expected termini
@@ -166,6 +175,10 @@ class CCS:
     >>> numpy.allclose(ccs.df.query('barcoded').barcode_accuracy,
     ...     barcode_accuracies, atol=1e-4)
     True
+    >>> numpy.allclose(ccs.df.query('barcoded').barcode_accuracy,
+    ...         [qvalsToAccuracy(qvals) for qvals in
+    ...         ccs.df.query('barcoded').barcode_qvals])
+    True
     >>> numpy.allclose(ccs.df.query('not barcoded').barcode_accuracy,
     ...     -1, atol=1e-4)
     True
@@ -176,9 +189,9 @@ class CCS:
 
     """
 
-    def __init__(self, sample, bamfile, reportfile):
+    def __init__(self, samplename, bamfile, reportfile):
         """See main class doc string."""
-        self.sample = sample
+        self.samplename = samplename
 
         assert os.path.isfile(bamfile), "can't find {0}".format(bamfile)
         self.bamfile = bamfile
@@ -216,7 +229,7 @@ class CCS:
                 column for each in `df`.
             `title` (bool or str)
                 If `False`, no title. If `True`, make
-                `sample` the title. If a string, make
+                `samplename` the title. If a string, make
                 that the title.
         """
         assert set(cols) <= set(self.df.columns)
@@ -279,7 +292,7 @@ class CCS:
 
         if title:
             if not isinstance(title, str):
-                title = self.sample
+                title = self.samplename
             g.fig.suptitle(title, va='bottom')
 
         g.savefig(plotfile)
@@ -322,6 +335,7 @@ class CCS:
             d['passes'].append(s.get_tag('np'))
             d['CCS_accuracy'].append(s.get_tag('rq'))
             d['CCS_length'].append(s.query_length)
+            d['samplename'].append(self.samplename)
 
         # create data frame
         self.df = pandas.DataFrame(d)
@@ -605,7 +619,7 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
         endtoend_col = aligned_col + '_endtoend'
         newcols.append(endtoend_col)
     if add_n_additional:
-        n_additional_col = aligned_col + 'n_additional'
+        n_additional_col = aligned_col + '_n_additional'
         newcols.append(n_additional_col)
 
     dup_cols = set(newcols).intersection(set(df.columns))
@@ -744,7 +758,7 @@ def summarizeCCSreports(ccslist, report_type, plotfile,
     assert report_type in ['zmw', 'subread']
     report = report_type + '_report'
 
-    df = (pandas.concat([getattr(ccs, report).assign(sample=ccs.sample)
+    df = (pandas.concat([getattr(ccs, report).assign(sample=ccs.samplename)
                 for ccs in ccslist])
           .sort_values(['sample', 'number'], ascending=False)
           [['sample', 'status', 'number', 'fraction']]

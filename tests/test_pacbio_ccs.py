@@ -6,8 +6,6 @@ import unittest
 import copy
 
 import numpy
-import pandas
-from pandas.testing import assert_frame_equal
 import pysam
 
 import dms_tools2.pacbio
@@ -64,7 +62,7 @@ class test_pacbio_CCS(unittest.TestCase):
         self.assertEqual(self.bamlines, self.ccs.df.shape[0])
         self.assertEqual(set(self.ccs.df.columns),
                 {'name', 'CCS', 'CCS_accuracy', 'CCS_qvals',
-                 'CCS_length', 'passes'})
+                 'CCS_length', 'passes', 'samplename'})
 
     def test_plotColCorrs(self):
         """Test `CCS.plotColCorrs`."""
@@ -81,7 +79,8 @@ class test_pacbio_CCS(unittest.TestCase):
             os.remove(plotfile)
 
         ccs2 = copy.deepcopy(self.ccs)
-        ccs2.sample = 'test2'
+        ccs2.samplename = 'test2'
+        ccs2.df = ccs2.df.assign(samplename=ccs2.samplename)
 
         df = dms_tools2.pacbio.summarizeCCSreports(
                 [self.ccs, ccs2], 'zmw', plotfile)

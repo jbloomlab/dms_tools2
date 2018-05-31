@@ -12,7 +12,7 @@ import itertools
 
 import numpy
 import pandas
-from pandas.testing import assert_frame_equal
+from pandas.testing import assert_frame_equal, assert_series_equal
 
 import dms_tools2.pacbio
 import dms_tools2.minimap2
@@ -21,7 +21,8 @@ from dms_tools2 import NTS
 
 
 Query = collections.namedtuple('Query', ['name', 'barcoded',
-        'barcode', 'aligned', 'cigar', 'seq', 'qvals', 'accuracy'])
+        'barcode', 'aligned', 'cigar', 'seq', 'qvals', 'accuracy', 
+        'endtoend', 'n_additional', 'target'])
 Query.__doc__ = "Holds queries for simulated alignments."
 
 
@@ -42,7 +43,7 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
     SEED = 1
 
     #: number of queries to simulate
-    NQUERIES = 5000
+    NQUERIES = 1000
 
     #: options to :py:mod:`dms_tools2.minimap2.Mapper`
     MAPPER_OPTIONS = dms_tools2.minimap2.OPTIONS_CODON_DMS
@@ -171,7 +172,10 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
                           cigar=dms_tools2.minimap2.shiftIndels(cigar),
                           seq=seq,
                           qvals=qvals,
-                          accuracy=qvalsToAccuracy(qvals, encoding='sanger')))
+                          accuracy=qvalsToAccuracy(qvals, encoding='sanger'),
+                          endtoend=aligned,
+                          n_additional={False:-1, True:0}[aligned],
+                          target={False:'', True:'target'}[aligned]))
 
         # create fasta file of queries
         with self.testdir.joinpath('queries.fasta').open('w') as f:
@@ -214,10 +218,17 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
         self.ccs.df = dms_tools2.pacbio.alignSeqs(self.ccs.df,
                 mapper, 'read', 'aligned',
                 paf_file=str(self.testdir.joinpath('alignment.paf')))
-        self.assertEqual(len(self.ccs.df.query('aligned')),
-                         len([q.name for q in self.queries if q.aligned]))
         self.assertCountEqual(self.ccs.df.query('aligned').name,
-                             [q.name for q in self.queries if q.aligned])
+                [q.name for q in self.queries if q.aligned])
+        assert_series_equal(self.ccs.df.aligned_target,
+                pandas.Series([q.target for q in self.queries]),
+                check_names=False)
+        assert_series_equal(self.ccs.df.aligned_endtoend,
+                pandas.Series([q.endtoend for q in self.queries]),
+                check_names=False)
+        assert_series_equal(self.ccs.df.aligned_n_additional,
+                pandas.Series([q.n_additional for q in self.queries]),
+                check_names=False)
         expected_cigars = dict((q.name, q.cigar) for q in self.queries)
         for row in self.ccs.df.query('aligned').itertuples():
             name = getattr(row, 'name')
