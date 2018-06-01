@@ -522,7 +522,7 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
 
 def alignSeqs(df, mapper, query_col, aligned_col, *,
         add_alignment=True, add_target=True, add_cigar=True,
-        add_endtoend=True, add_n_additional=True, overwrite=True,
+        add_n_trimmed=True, add_n_additional=True, overwrite=True,
         paf_file=None):
     """Align sequences in a dataframe to target sequence(s).
 
@@ -546,9 +546,10 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
         `add_cigar` (bool)
             Add column with the CIGAR string in the long format
             `described here <https://github.com/lh3/minimap2#cs>`_.
-        `add_endtoend` (bool)
-            Add column specifying whether the alignment is
-            end-to-end in both query and target.
+        `add_n_trimmed` (bool)
+            Add column giving the **total** of the number of nucleotides
+            trimmed from both ends of both the query and target in the
+            alignment. Will be zero if they align end-to-end.
         `add_n_additional` (bool)
             Add column specifying the number of additional
             alignments.
@@ -591,11 +592,12 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
               for the "best" alignment, or an empty string if there
               is no alignment.
 
-            - If `add_endtoend` is `True`, add column named
-              `aligned_col` suffixed by "_endtoend" that is `True`
-              if the "best" alignment goes from end-to-end in
-              both the query and target. There can still be gaps in
-              an end-to-end alignment, but they are internal.
+            - If `add_n_trimmed` is `True`, add column named
+              `aligned_col` suffixed by "_n_trimmed" that gives
+              the total number of nucleotides trimmed from both
+              the query and target in the "best" alignment. Is
+              zero if the alignment is end-to-end. Is -1 if no
+              alignment.
 
             - If `add_n_additional` is `True`, add column
               named `aligned_col` suffixed by "_n_additional" that
@@ -615,9 +617,9 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
     if add_cigar:
         cigar_col = aligned_col + '_cigar'
         newcols.append(cigar_col)
-    if add_endtoend:
-        endtoend_col = aligned_col + '_endtoend'
-        newcols.append(endtoend_col)
+    if add_n_trimmed:
+        n_trimmed_col = aligned_col + '_n_trimmed'
+        newcols.append(n_trimmed_col)
     if add_n_additional:
         n_additional_col = aligned_col + '_n_additional'
         newcols.append(n_additional_col)
@@ -650,13 +652,10 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
                 align_d[target_col].append(a.target)
             if add_cigar:
                 align_d[cigar_col].append(a.cigar_str)
-            if add_endtoend:
-                if ((a.r_st == 0) and (a.q_st == 0) and
-                        (a.q_en == a.q_len) and
-                        (a.r_en == len(mapper.targetseqs[a.target]))):
-                    align_d[endtoend_col].append(True)
-                else:
-                    align_d[endtoend_col].append(False)
+            if add_n_trimmed:
+                align_d[n_trimmed_col].append(a.r_st + a.q_st +
+                        (a.q_len - a.q_en) +
+                        (len(mapper.targetseqs[a.target]) - a.r_en))
             if add_n_additional:
                 align_d[n_additional_col].append(len(a.additional))
         else:
@@ -667,8 +666,8 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
                 align_d[target_col].append('')
             if add_cigar:
                 align_d[cigar_col].append('')
-            if add_endtoend:
-                align_d[endtoend_col].append(False)
+            if add_n_trimmed:
+                align_d[n_trimmed_col].append(-1)
             if add_n_additional:
                 align_d[n_additional_col].append(-1)
 

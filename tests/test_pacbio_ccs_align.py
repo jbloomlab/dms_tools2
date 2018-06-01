@@ -22,7 +22,7 @@ from dms_tools2 import NTS
 
 Query = collections.namedtuple('Query', ['name', 'barcoded',
         'barcode', 'aligned', 'cigar', 'seq', 'qvals', 'accuracy', 
-        'endtoend', 'n_additional', 'target'])
+        'n_trimmed', 'n_additional', 'target'])
 Query.__doc__ = "Holds queries for simulated alignments."
 
 
@@ -101,8 +101,8 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
             name = 'query{0}'.format(iquery + 1)
             rand = random.random()
             barcode = cigar = target = ''
-            n_additional = -1
-            endtoend = barcoded = aligned = False
+            n_trimmed = n_additional = -1
+            barcoded = aligned = False
 
             if rand < 0.1:
                 # should fail matching and aligning
@@ -121,7 +121,8 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
 
             else:
                 # should pass matching and aligning
-                endtoend = barcoded = aligned = True
+                barcoded = aligned = True
+                n_trimmed = 0
                 barcode = randSeq(self.bclen)
 
                 # get sites eligible for mutating
@@ -161,7 +162,7 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
                     targetseq2 = random.choice(list(self.targets.values()))
                     targetseq = targetseq + targetseq2[ : self.TARGET_LEN // 2]
                     n_additional = 1
-                    endtoend = False
+                    n_trimmed = self.TARGET_LEN // 2 # only approximate
                 (read, cigar) = dms_tools2.minimap2.mutateSeq(
                         targetseq,
                         mutations, insertions, deletions)
@@ -181,7 +182,7 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
                           seq=seq,
                           qvals=qvals,
                           accuracy=qvalsToAccuracy(qvals, encoding='sanger'),
-                          endtoend=endtoend,
+                          n_trimmed=n_trimmed,
                           n_additional=n_additional,
                           target=target))
 
@@ -231,9 +232,10 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
         assert_series_equal(self.ccs.df.aligned_target,
                 pandas.Series([q.target for q in self.queries]),
                 check_names=False)
-        assert_series_equal(self.ccs.df.aligned_endtoend,
-                pandas.Series([q.endtoend for q in self.queries]),
-                check_names=False)
+        # testing keeps in mind that n_trimmed not exact in expectation
+        # when > 0
+        self.assertListEqual([max(x, 1) for x in self.ccs.df.aligned_n_trimmed],
+                [max(q.n_trimmed, 1) for q in self.queries])
         assert_series_equal(self.ccs.df.aligned_n_additional,
                 pandas.Series([q.n_additional for q in self.queries]),
                 check_names=False)
