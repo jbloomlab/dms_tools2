@@ -476,14 +476,14 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
     for tup in df.itertuples():
         s = getattr(tup, col_to_match)
         m = matcher.search(s)
-        if add_accuracy or add_qvals:
+        if add_group_cols and (add_accuracy or add_qvals):
             qs = getattr(tup, match_qvals_col)
         if m:
             polarity = 1
         else:
             m = matcher.search(dms_tools2.utils.reverseComplement(s))
             polarity = -1
-            if add_accuracy or add_qvals:
+            if add_group_cols and (add_accuracy or add_qvals):
                 qs = numpy.flip(qs, axis=0)
         if m:
             match_d[match_col].append(True)
