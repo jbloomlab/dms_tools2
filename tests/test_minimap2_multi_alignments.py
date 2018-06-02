@@ -68,7 +68,74 @@ class test_minimap2_Mapper_multiple_alignments(unittest.TestCase):
             targets_actual = [a.target] + [a2.target for a2 in a.additional]
             self.assertEqual(targets_actual, targets_expect)
 
+class test_minimap2_Mapper_best_alignment(unittest.TestCase):
+    """Tests `minimap2.Mapper` finds best alignment of spliced gene."""
 
+    def setUp(self):
+        # WSN M1 and M2 mRNAs
+        self.seqs = {
+                'M1':'GCAAAAGCAGGTAGATATTGAAAGATGAGTCTTCTAACCGAGGTCGAAACGTACGTTCTCTCTATCGTCCCGTCAGGCCCCCTCAAAGCCGAGATCGCACAGAGACTTGAAGATGTCTTTGCAGGGAAGAACACCGATCTTGAGGTTCTCATGGAATGGCTAAAGACAAGACCAATCCTGTCACCTCTGACTAAGGGGATTTTAGGATTTGTGTTCACGCTCACCGTGCCCAGTGAGCGGGGACTGCAGCGTAGACGCTTTGTCCAAAATGCTCTTAATGGGAACGGAGATCCAAATAACATGGACAAAGCAGTTAAACTGTATAGGAAGCTTAAGAGGGAGATAACATTCCATGGGGCCAAAGAAATAGCACTCAGTTATTCTGCTGGTGCACTTGCCTGTTGTATGGGCCTCATATACAACAGGATGGGGGCTGTGACCACTGAAGTGGCATTTGGCCTGGTATGCGCAACCTGTGAACAGATTGCTGACTCCCAGCATCGGTCTCATAGGCAAATGGTGACAACAACCAATCCACTAATCAGACATGAGAACAGAATGGTTCTAGCCAGCACTACAGCTAAGGCTATGGAGCAAATGGCTGGATCGAGTGAGCAAGCAGCAGAGGCCATGGATATTGCTAGTCAGGCCAGGCAAATGGTGCAGGCGATGAGAACCGTTGGGACTCATCCTAGCTCCAGTGCTGGTCTAAAAGATGATCTTCTTGAAAATTTACAGGCCTATCAGAAACGAATGGGGGTGCAGATGCAACGATTCAAGTGATCCTCTCGTCATTGCAGCAAATATCATTGGAATCTTGCACTTGATATTGTGGATTCTTGATCGTCTTTTTTTCAAATGCATTTATCGTCGCTTTAAATACGGTTTGAAAAGAGGGCCTTCTACCGAAGGAGTGCCAGAGTCTATGAGGGAAGAATATCGAAAGGAACAGCAGAATGCTGTGGATGTTGACGATGGTCATTTTGTCAACATAGAGCTGGAGT',
+                'M2':'GCAAAAGCAGGTAGATATTGAAAGATGAGTCTTCTAACCGAGGTCGAAACGCCTATCAGAAACGAATGGGGGTGCAGATGCAACGATTCAAGTGATCCTCTCGTCATTGCAGCAAATATCATTGGAATCTTGCACTTGATATTGTGGATTCTTGATCGTCTTTTTTTCAAATGCATTTATCGTCGCTTTAAATACGGTTTGAAAAGAGGGCCTTCTACCGAAGGAGTGCCAGAGTCTATGAGGGAAGAATATCGAAAGGAACAGCAGAATGCTGTGGATGTTGACGATGGTCATTTTGTCAACATAGAGCTGGAGT',
+                }
+
+        self.testdir = (Path(__file__).absolute().parent
+                   .joinpath('test_minimap2_best_alignments_files')
+                   )
+        Path.mkdir(self.testdir, parents=True, exist_ok=True)
+
+        self.targetfile = self.testdir.joinpath('target.fasta')
+        with open(self.targetfile, 'w') as f:
+            f.write('\n'.join('>{0}\n{1}'.format(*tup) for tup in
+                    self.seqs.items()))
+
+    def test_M1_M2_alignment(self):
+        """Tests influenza M1 / M2 align to right isoform."""
+        mapper = dms_tools2.minimap2.Mapper(str(self.targetfile),
+                dms_tools2.minimap2.OPTIONS_VIRUS_W_DEL)
+
+        random.seed(1)
+        queries = []
+        expected_targets = {}
+        for i in range(1000):
+            target = random.choice(list(self.seqs.keys()) + ['unaligned'])
+            queryname = 'query{0}'.format(i + 1)
+            expected_targets[queryname] = target
+            if target == 'unaligned':
+                query = randSeq(random.randint(
+                        min(map(len, self.seqs.values())),
+                        max(map(len, self.seqs.values()))))
+            else:
+                query = self.seqs[target]
+                insertions = []
+                mutations = []
+                deletions = []
+                if random.random() < 0.5:
+                    mutations = [(random.randint(15, len(query) - 15),
+                                  random.choice(NTS))]
+                if random.random() < 0.3:
+                    deletions = [(random.randint(15, len(query) - 15),
+                                  random.randint(1, 10))]
+                elif random.random() < 0.3:
+                    insertions = [(random.randint(15, len(query) - 15),
+                                   randSeq(random.randint(1, 3)))]
+                query = dms_tools2.minimap2.mutateSeq(query,
+                        mutations, insertions, deletions)[0]
+            queries.append((queryname, query))
+
+        queryfile = self.testdir.joinpath('queries.fasta')
+        with open(queryfile, 'w') as f:
+            f.write('\n'.join('>{0}\n{1}'.format(*tup) for tup in queries))
+
+        alignmentfile = self.testdir.joinpath('alignment.paf')
+        alignments = mapper.map(str(queryfile), outfile=alignmentfile)
+
+        for (query, target) in expected_targets.items():
+            if target == 'unaligned':
+                self.assertTrue(query not in alignments)
+            else:
+                self.assertEqual(target, alignments[query].target,
+                        "wrong match for {0}. Expected {1}. Got:\n{2}"
+                        .format(query, target, alignments[query]))
 
 
 if __name__ == '__main__':
