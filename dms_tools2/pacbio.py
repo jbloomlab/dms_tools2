@@ -349,6 +349,191 @@ class CCS:
                 "qvals not correct length"
 
 
+def matchAndAlignCCS(ccslist, mapper, *,
+        termini5, gene, spacer, umi, barcode, termini3):
+    """Identify CCSs that match pattern and align them.
+
+    This is a convenience function that runs :meth:`matchSeqs`
+    and :meth:`alignSeqs` for a common use case. It takes one
+    or more :class:`CCS` objects, looks for CCS sequences in them
+    that match a specific pattern, and align them to targets. It
+    returns a large pandas data frame with all the results. The CCS
+    sequences are assumed to be molecules that have the following
+    structure, although potentially in either orientation::
+
+        5'-...-termini5-gene-spacer-umi-barcode-termini3-...-3'
+
+    As indicated by the ``...``, there can be sequence before and
+    after our expected pattern that we ignore. The gene element
+    is the aligned to the targets. The full CCS is also aligned
+    in the absence of the pattern matching.
+
+    Args:
+        `ccslist` (:class:`CCS` object or list of them)
+            Analyze the CCS's in the `df` attributes. If there are
+            multiple :class:`CCS` objectes, they are concatenated.
+            However, they must have the same columns.
+        `mapper` (:py:mod:`dms_tools2.minimap2.Mapper`)
+            Mapper used to perform alignments.
+        `termini5` (str or `None`)
+            Expected sequence at 5' end as str that can be compiled
+            to `re` object. Passed through :meth:`re_expandIUPAC`.
+            For instance, make it 'ATG|CTG' if the sequence might
+            start with either `ATG` or `CTG`. Set to `None` if
+            no expected 5' termini.
+        `gene` (str)
+            Like `termini5` but gives the gene to match. For instance,
+            'N+' if the gene can be arbitrary sequence and length.
+        `spacer` (str or `None`)
+            Like `termini5`, but for the spacer after `gene`.
+        `umi` (str or `None`)
+            Like `termini5`, but for UMI.
+        `barcode` (str or `None`)
+            Like `termini5`, but for barcode. For instance, 'N{10}'
+            if 10-nucleotide barcode.
+        `termini3` (str or `None`)
+            Like `termini5`, but for termini3.
+
+    Returns:
+        A pandas dataframe that will have all columns already in the
+        `df` attribute of the input :class:`CCS` objects with the
+        following columns added:
+
+        - `barcoded`: `True` if CCS matches full expected pattern,
+          `False` otherwise.
+
+        - `barcoded_polarity`: 1 of the match is in the polarity of
+          the CCS, -1 if to the reverse complement, 0 if no match.
+
+        - Columns named `termini5`, `gene`, `spacer`, `UMI`,
+          `barcode`, and `termini3` (except if any of these elements
+          are `None`). If `barcoded` is `True` for that CCS, these
+          columns give the sequence for that element. If it is `False`,
+          they are empty strings. There are likewise columns with
+          these same names suffixed with "_accuracy" that give the CCS
+          accuracy for that element, and columns suffixed with "_qvals"
+          that give the quality scores for the elements.
+
+        - For each of `termini5`, `spacer`, and `termini3` that are
+          not `None`, a column named `has_termini5`, etc that
+          indicates if that element is matched in isolate even if
+          the full pattern is not matched.
+
+        - `gene_aligned` is True if the CCS matches the expected
+          pattern (is `barcoded`), and `gene` can further be
+          aligned using `mapper`. It is `False` otherwise.
+
+        - `gene_aligned_alignment`, `gene_aligned_target`,
+          `gene_aligned_cigar`, `gene_aligned_n_trimmed`,
+          and `gene_aligned_n_additional` give the
+          :py:mod:`dms_tools2.minimap2.Alignment`, the
+          alignment target, the long-form CIGAR string,
+          the number of total nucleotides trimmed from
+          the end of the gene and target, and the number
+          of additional alignments if `gene_aligned`. If
+          the gene is not aligned, these are `None`,
+          empty strings, or -1.
+
+        - `CCS_aligned` is `True` if the CCS can be aligned
+          using `mapper` even if a gene cannot be matched,
+          and `False` otherwise. `CCS_aligned_alignment`
+          and `CCS_aligned_target` give the
+          :py:mod:`dms_tools2.minimap2.Alignment` (or `None`)
+          and the target (or empty string).
+    """
+    if isinstance(ccslist, collections.Iterable):
+        col_list = [ccs.df.columns for ccs in ccslist]
+        assert all([col_list[0].equals(col) for col in col_list]),\
+                "the CCS.df's in `ccslist` don't have same columns"
+        df = pandas.concat([ccs.df for ccs in ccslist])
+    else:
+        df = ccslist.df
+
+    # internal function:
+    def _align_CCS_both_orientations(df, mapper):
+        """Try align CCS both ways, adds columns.
+          `CCS_aligned`, `CCS_aligned_alignment`, and
+        `CCS_aligned_target`."""
+        df_bi = (df.pipe(dms_tools2.pacbio.alignSeqs,
+                         mapper=mapper,
+                         query_col='CCS',
+                         aligned_col='CCS_for_aligned')
+                   .assign(CCS_rev=lambda x: x.CCS.map(
+                           dms_tools2.utils.reverseComplement))
+                   .pipe(dms_tools2.pacbio.alignSeqs,
+                         mapper=mapper,
+                         query_col='CCS_rev',
+                         aligned_col='CCS_rev_aligned')
+                   )
+        return (df.assign(CCS_aligned=df_bi.CCS_for_aligned |
+                          df_bi.CCS_rev_aligned)
+                .assign(CCS_aligned_alignment=
+                        df_bi.CCS_for_aligned_alignment.where(
+                        df_bi.CCS_for_aligned,
+                        df_bi.CCS_rev_aligned_alignment))
+                .assign(CCS_aligned_target=lambda x:
+                        x.CCS_aligned_alignment.map(
+                        lambda x: x.target if x is not None else ''))
+                )
+
+    # build match_str
+    match_str = ''
+    if termini5 is not None:
+        match_str += '(?P<termini5>{0})'.format(termini5)
+    match_str += '(?P<gene>{0})'.format(gene)
+    if spacer is not None:
+        match_str += '(?P<spacer>{0})'.format(spacer)
+    if umi is not None:
+        match_str += '(?P<UMI>{0})'.format(umi)
+    if barcode is not None:
+        match_str += '(?P<barcode>{0})'.format(barcode)
+    if termini3 is not None:
+        match_str += '(?P<termini3>{0})'.format(termini3)
+
+
+
+    # now create and return df
+    return (
+        df
+
+        # match barcoded sequences
+        .pipe(dms_tools2.pacbio.matchSeqs,
+              match_str=match_str,
+              col_to_match='CCS',
+              match_col='barcoded')
+    
+        # look for just termini or spacer
+        .pipe(dms_tools2.pacbio.matchSeqs, 
+              match_str=termini5,
+              col_to_match='CCS',
+              match_col='has_termini5',
+              add_polarity=False,
+              add_group_cols=False)
+        .pipe(dms_tools2.pacbio.matchSeqs, 
+              match_str=termini3,
+              col_to_match='CCS',
+              match_col='has_termini3',
+              add_polarity=False,
+              add_group_cols=False)
+        .pipe(dms_tools2.pacbio.matchSeqs, 
+              match_str=spacer,
+              col_to_match='CCS',
+              match_col='has_spacer',
+              add_polarity=False,
+              add_group_cols=False)
+    
+        # see if gene aligns in correct orientation
+        .pipe(dms_tools2.pacbio.alignSeqs,
+              mapper=mapper,
+              query_col='gene',
+              aligned_col='gene_aligned')
+    
+        # look for any alignment of CCS, take best in either orientation
+        .pipe(_align_CCS_both_orientations,
+              mapper=mapper)
+        )
+
+
 def matchSeqs(df, match_str, col_to_match, match_col, *,
         add_polarity=True, add_group_cols=True,
         add_accuracy=True, add_qvals=True,
@@ -363,6 +548,7 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
             the pattern that we are looking for, with target 
             subsequences as named groups. See also the `expandIUPAC`
             parameter, which simplifies writing `match_str`.
+            If `None` we just return `df`.
         `col_to_match` (str)
             Name of column in `df` that contains the sequences
             to match.
@@ -432,6 +618,9 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
                   if there is no match for that row.
               
     See the docs for :class:`CCS` for example use of this function."""
+
+    if match_str is None:
+        return df
 
     assert col_to_match in df.columns, \
             "`df` lacks `col_to_match` column {0}".format(col_to_match)

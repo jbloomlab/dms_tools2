@@ -221,35 +221,45 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
                     '(?P<read>N+)' + \
                     '(?P<barcode>N{{{0}}})'.format(self.bclen) + \
                     self.flank3
-        self.ccs.df = dms_tools2.pacbio.matchSeqs(self.ccs.df,
+        df = dms_tools2.pacbio.matchSeqs(self.ccs.df,
                 match_str, 'CCS', 'barcoded')
-        self.assertCountEqual(self.ccs.df.query('barcoded').barcode,
+        self.assertCountEqual(df.query('barcoded').barcode,
                               [q.barcode for q in self.queries if q.barcoded])
 
         # now align and check that we get the right entries
         mapper = dms_tools2.minimap2.Mapper(str(self.targetfile),
                 self.MAPPER_OPTIONS)
-        self.ccs.df = dms_tools2.pacbio.alignSeqs(self.ccs.df,
+        df = dms_tools2.pacbio.alignSeqs(df,
                 mapper, 'read', 'aligned',
                 paf_file=str(self.testdir.joinpath('alignment.paf')))
-        self.assertCountEqual(self.ccs.df.query('aligned').name,
+        self.assertCountEqual(df.query('aligned').name,
                 [q.name for q in self.queries if q.aligned])
-        assert_series_equal(self.ccs.df.aligned_target,
+        assert_series_equal(df.aligned_target,
                 pandas.Series([q.target for q in self.queries]),
                 check_names=False)
         # testing keeps in mind that n_trimmed not exact in expectation
         # when > 0
-        self.assertListEqual([max(x, 1) for x in self.ccs.df.aligned_n_trimmed],
+        self.assertListEqual([max(x, 1) for x in df.aligned_n_trimmed],
                 [max(q.n_trimmed, 1) for q in self.queries])
-        assert_series_equal(self.ccs.df.aligned_n_additional,
+        assert_series_equal(df.aligned_n_additional,
                 pandas.Series([q.n_additional for q in self.queries]),
                 check_names=False)
         expected_cigars = dict((q.name, q.cigar) for q in self.queries)
-        for row in self.ccs.df.query('aligned').itertuples():
+        for row in df.query('aligned').itertuples():
             name = getattr(row, 'name')
             cigar = getattr(row, 'aligned_cigar')
             if not getattr(row, 'aligned_n_additional'):
                 self.assertEqual(expected_cigars[name], cigar)
+
+        # now test the `matchAndAlignCCS` function
+        df2 = dms_tools2.pacbio.matchAndAlignCCS(self.ccs, mapper,
+                termini5=self.flank5, gene='N+', spacer=None, umi=None,
+                barcode='N{{{0}}}'.format(self.bclen), termini3=self.flank3)
+        assert_series_equal(df.aligned, df2.gene_aligned, check_names=False)
+        assert_series_equal(df.aligned_target, df2.gene_aligned_target,
+                check_names=False)
+        assert_series_equal(df.aligned_cigar, df2.gene_aligned_cigar,
+                check_names=False)
 
             
 class test_pacbio_CCS_align_long_codonDMS(test_pacbio_CCS_align_short_codonDMS):
