@@ -106,8 +106,13 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
 
             if rand < 0.1:
                 # should fail matching and aligning
-                seq = randSeq(random.randint(self.TARGET_LEN // 2,
-                                             self.TARGET_LEN * 2))
+                if rand < 0.5:
+                    seq = randSeq(random.randint(self.TARGET_LEN // 2,
+                                                self.TARGET_LEN * 2))
+                else:
+                    # reverse complement won't match
+                    seq = dms_tools2.utils.reverseComplement(
+                            random.choice(list(self.targets.values())))
             elif rand < 0.2:
                 # should pass matching, fail aligning
                 barcoded = True
