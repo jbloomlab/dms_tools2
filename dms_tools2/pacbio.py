@@ -8,13 +8,13 @@ Tools for processing PacBio sequencing data.
 
 
 import os
-import re
 import io
 import math
 import subprocess
 import collections
 import tempfile
 
+import regex
 import numpy
 import pandas
 import pysam
@@ -301,7 +301,7 @@ class CCS:
     def _parse_report(self):
         """Set `zmw_report` and `subread_report` using `reportfile`."""
         # match reports made by ccs 3.0.0
-        reportmatch = re.compile('^ZMW Yield\n(?P<zmw>(.+\n)+)\n\n'
+        reportmatch = regex.compile('^ZMW Yield\n(?P<zmw>(.+\n)+)\n\n'
                             'Subread Yield\n(?P<subread>(.+\n)+)$')
 
         with open(self.reportfile) as f:
@@ -377,10 +377,11 @@ def matchAndAlignCCS(ccslist, mapper, *,
             Mapper used to perform alignments.
         `termini5` (str or `None`)
             Expected sequence at 5' end as str that can be compiled
-            to `re` object. Passed through :meth:`re_expandIUPAC`.
+            to `regex` object. Passed through :meth:`re_expandIUPAC`.
             For instance, make it 'ATG|CTG' if the sequence might
             start with either `ATG` or `CTG`. Set to `None` if
-            no expected 5' termini.
+            no expected 5' termini. Note that we use `regex`
+            rather than `re`, so fuzzy matching is enabled.
         `gene` (str)
             Like `termini5` but gives the gene to match. For instance,
             'N+' if the gene can be arbitrary sequence and length.
@@ -544,11 +545,13 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
         `df` (pandas DataFrame)
             Data frame with column holding sequences to match.
         `match_str` (str)
-            A string that can be passed to `re.compile` that gives
+            A string that can be passed to `regex.compile` that gives
             the pattern that we are looking for, with target 
             subsequences as named groups. See also the `expandIUPAC`
             parameter, which simplifies writing `match_str`.
-            If `None` we just return `df`.
+            If `None` we just return `df`. Note that we use
+            `regex` rather than `re`, so fuzzy matching is
+            enabled.
         `col_to_match` (str)
             Name of column in `df` that contains the sequences
             to match.
@@ -617,7 +620,22 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
                   in the form of a numpy array, or an empty numpy array
                   if there is no match for that row.
               
-    See the docs for :class:`CCS` for example use of this function."""
+    See docs for :class:`CCS` for example uses of this function.
+
+    Here is a short example that uses the fuzzy matching of
+    the `regex` model for the polyA tail:
+
+    >>> gene = 'ATGGCT'
+    >>> polyA = 'AAAACAAAA'
+    >>> df = pandas.DataFrame({'CCS':[gene + polyA]})
+    >>> match_str = '(?P<gene>N+)(?P<polyA>AA(A{5,}){e<=1}AA)'
+    >>> df = matchSeqs(df, match_str, 'CCS', 'matched',
+    ...         add_accuracy=False, add_qvals=False)
+    >>> expected = df.assign(gene=gene, polyA=polyA,
+    ...         matched=True, matched_polarity=1)
+    >>> (df.sort_index(axis=1) == expected.sort_index(axis=1)).all().all()
+    True
+    """
 
     if match_str is None:
         return df
@@ -627,7 +645,7 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
 
     if expandIUPAC:
         match_str = re_expandIUPAC(match_str)
-    matcher = re.compile(match_str)
+    matcher = regex.compile(match_str)
 
     newcols = [match_col]
     if add_polarity:
@@ -986,7 +1004,7 @@ def re_expandIUPAC(re_str):
 
     Args:
         `re_str` (str)
-            String appropriate to be passed to `re.compile`.
+            String appropriate to be passed to `regex.compile`.
 
     Returns:
         A version of `re_str` where any characters not in the group
@@ -1001,7 +1019,7 @@ def re_expandIUPAC(re_str):
     # We simply do a simple replacement on all characters not in group
     # names. So first we must find group names:
     groupname_indices = set([])
-    groupname_matcher = re.compile('\(\?P<[^>]*>')
+    groupname_matcher = regex.compile('\(\?P<[^>]*>')
     for m in groupname_matcher.finditer(re_str):
         for i in range(m.start(), m.end()):
             groupname_indices.add(i)

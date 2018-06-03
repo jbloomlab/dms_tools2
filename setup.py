@@ -77,6 +77,7 @@ setup(
         'seaborn>=0.8',
         'phydms>=2.1.4',
         'statsmodels>=0.8',
+        'regex>=2.4',
         ],
     extras_require = {
         'rplot':[
