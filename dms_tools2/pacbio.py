@@ -428,13 +428,17 @@ def matchAndAlignCCS(ccslist, mapper, *,
           `gene_aligned_cigar`, `gene_aligned_n_trimmed_query_start`,
           `gene_aligned_n_trimmed_query_end`,
           `gene_aligned_n_trimmed_target_start`,
-          `gene_aligned_n_trimmed_target_end`
-          and `gene_aligned_n_additional` give the
+          `gene_aligned_n_trimmed_target_end`,
+          `gene_aligned_n_additional`, and
+          `gene_aligned_n_additional_difftarget` give the
           :py:mod:`dms_tools2.minimap2.Alignment`, the
           alignment target, the long-form CIGAR string,
           the number of nucleotides trimmed from ends of the
-          the query gene or target, and the number
-          of additional alignments if `gene_aligned`. If
+          the query gene or target, the number
+          of additional alignments if `gene_aligned`,
+          and the number of additional alignments to different
+          targets (see `target_isoforms` attribute of
+          :py:mod:`dms_tools2.minimap2.Mapper`). If
           the gene is not aligned, these are `None`,
           empty strings, or -1.
 
@@ -732,8 +736,9 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
 
 def alignSeqs(df, mapper, query_col, aligned_col, *,
         add_alignment=True, add_target=True, add_cigar=True,
-        add_n_trimmed=True, add_n_additional=True, overwrite=True,
-        paf_file=None):
+        add_n_trimmed=True, add_n_additional=True,
+        add_n_additional_difftarget=True,
+        overwrite=True, paf_file=None):
     """Align sequences in a dataframe to target sequence(s).
 
     Arguments:
@@ -762,6 +767,9 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
         `add_n_additional` (bool)
             Add column specifying the number of additional
             alignments.
+        `add_n_additional_difftarget` (bool)
+            Add columns specifying number of additional alignments
+            to a target other than the one in the primary alignment.
         `overwrite` (bool)
             If `True`, we overwrite any existing columns to
             be created that already exist. If `False`, raise
@@ -814,7 +822,14 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
               named `aligned_col` suffixed by "_n_additional" that
               gives the number of additional alignments (in
               :py:mod:`dms_tools2.minimap2.Alignment.additional`),
-              or -1 if there are no additional alignments.
+              or -1 if there is no alignment.
+
+            - If `add_n_additional_difftarget` is `True`, add column
+              named `aligned_col` suffixed by "_n_additiona_difftarget"
+              that gives the number of additional alignments to
+              **different** targets that are not isoforms, or -1
+              if if there is no alignment. See the `target_isoforms`
+              attribute of :py:mod:`dms_tools2.minimap2.Mapper`.
     """
     assert query_col in df.columns, "no `query_col` {0}".format(query_col)
 
@@ -836,12 +851,17 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
     if add_n_additional:
         n_additional_col = aligned_col + '_n_additional'
         newcols.append(n_additional_col)
+    if add_n_additional_difftarget:
+        n_additional_difftarget_col = (
+                aligned_col + '_n_additional_difftarget')
+        newcols.append(n_additional_difftarget_col)
 
     dup_cols = set(newcols).intersection(set(df.columns))
     if (not overwrite) and dup_cols:
         raise ValueError("`df` already contains these columns:\n{0}"
                          .format(dup_cols))
 
+    # perform the mapping
     assert len(df.name) == len(df.name.unique()), \
             "`name` in `df` not unique"
     with tempfile.NamedTemporaryFile(mode='w') as queryfile:
@@ -876,6 +896,11 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
                         len(mapper.targetseqs[a.target]) - a.r_en)
             if add_n_additional:
                 align_d[n_additional_col].append(len(a.additional))
+            if add_n_additional_difftarget:
+                align_d[n_additional_difftarget_col].append(
+                        len([a2.target for a2 in a.additional if
+                        a2.target not in mapper.target_isoforms[a.target]]))
+
         else:
             align_d[aligned_col].append(False)
             if add_alignment:
@@ -890,6 +915,8 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
                     align_d[n_trimmed_prefix + suffix].append(-1)
             if add_n_additional:
                 align_d[n_additional_col].append(-1)
+            if add_n_additional_difftarget:
+                align_d[n_additional_difftarget_col].append(-1)
 
     # set index to make sure matches `df`
     index_name = df.index.name

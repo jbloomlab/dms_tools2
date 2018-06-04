@@ -149,6 +149,14 @@ class Mapper:
             version of ``minimap2`` installed internally with
             `dms_tools2`. This is recommended unless you have 
             some other preferred version.
+        `target_isoforms` (dict)
+            Sometimes targets might be be isoforms of each
+            other. You can specify that with this dict, which
+            is keyed by target names and has values that are sets
+            of other targets. If targets `M1` and `M2` are isoforms,
+            set `target_isoforms={'M1':['M2'], 'M2':['M1']}`.
+            This argument is just used to set the `target_isoforms`
+            attribute, but isn't used during alignment.
 
     Attributes:
         `targetfile` (str)
@@ -162,6 +170,11 @@ class Mapper:
             Options to ``minimap2`` set at initialization.
         `version` (str)
             Version of ``minimap2``.
+        `target_isoforms` (dict)
+            Isoforms for each target. This is the value set
+            by `target_isoforms` at initialization plus
+            ensuring that each target is listed as an isoform
+            of itself.
 
     Here is an example where we align a few reads to two target
     sequences.
@@ -210,6 +223,9 @@ class Mapper:
     ...                         for tup in queries.items()))
     ...     queryfile.flush()
     ...     mapper = Mapper(targetfile.name, OPTIONS_CODON_DMS)
+    ...     mapper2 = Mapper(targetfile.name, OPTIONS_CODON_DMS,
+    ...             target_isoforms={'target1':{'target2'},
+    ...                              'target2':{'target1'}})
     ...     alignments = mapper.map(queryfile.name)
     >>> mapper.targetseqs == targets
     True
@@ -228,9 +244,18 @@ class Mapper:
     ...     matched.append(a.strand == 1)
     >>> all(matched)
     True
+
+    Test out the `target_isoform` argument:
+
+    >>> mapper.target_isoforms == {'target1':{'target1'}, 'target2':{'target2'}}
+    True
+    >>> mapper2.target_isoforms == {'target1':{'target1', 'target2'},
+    ...         'target2':{'target1', 'target2'}}
+    True
     """
 
-    def __init__(self, targetfile, options, *, prog=None):
+    def __init__(self, targetfile, options, *, prog=None,
+            target_isoforms={}):
         """See main :class:`Mapper` doc string."""
         if prog is None:
             # use default ``minimap2`` installed as package data
@@ -249,6 +274,22 @@ class Mapper:
         self.targetfile = targetfile
         self.targetseqs = {seq.name:str(seq.seq) for seq in 
                       Bio.SeqIO.parse(self.targetfile, 'fasta')}
+
+        targetnames = set(self.targetseqs.keys())
+        in_target_isoforms = set(target_isoforms.keys()).union(
+                set(t for tl in target_isoforms.values() for t in tl))
+        if in_target_isoforms - targetnames:
+            raise ValueError("`target_isoforms` contains following "
+                             "targets not in `targetfile`: {0}".format(
+                             in_target_isoforms - targetnames))
+        self.target_isoforms = {}
+        for target in targetnames:
+            self.target_isoforms[target] = {target}
+            if target in target_isoforms:
+                addtl_targets = target_isoforms[target]
+                if isinstance(addtl_targets, list):
+                    addtl_targets = set(addtl_targets)
+                self.target_isoforms[target].update(addtl_targets)
 
 
     def map(self, queryfile, *, outfile=None, introns_to_gaps=True,
