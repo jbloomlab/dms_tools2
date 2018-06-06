@@ -671,6 +671,34 @@ def numExactMatches(cigar):
     return n
 
 
+_MUTATION_MATCH = re.compile('\*[a-z]{2}')
+
+def numAligned(cigar):
+    """Gets number of aligned nucleotides from PAF long CIGAR.
+
+    Args:
+        `cigar` (str)
+            CIGAR str.
+
+    Returns:
+        The number of aligned nucleotides in the cigar, where a
+        nucleotide is considered aligned if it is either a
+        match or a point mutation, but not if it is an indel.
+
+    Example: the CIGAR below has 3 matches, a deletion, 5 matches,
+    2 mutations, 2 matches, an insertion, 3 matches, 1 mutation, and
+    2 matches. So this counts as 3 + 5 + 2 + 2 + 3 + 1 + 2 = 18
+    aligned nucleotides:
+
+    >>> numAligned('=ACT-gata=AGTCA*ta*ga=TA+tta=GCA*ca=GT')
+    18
+
+    """
+    return (numExactMatches(cigar) +
+            len(list(_MUTATION_MATCH.finditer(cigar))))
+
+
+
 #: matches individual group in long format CIGAR
 _CIGAR_GROUP_MATCH = re.compile('=[A-Z]+|' # exact matches
                                 '\*[a-z]{2}|' # mutation
