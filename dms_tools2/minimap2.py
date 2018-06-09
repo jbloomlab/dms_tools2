@@ -520,7 +520,7 @@ class TargetVariants:
     >>> a_variant == a_new
     False
     >>> a_new.cigar_str
-    'CTACCCCG'
+    '=CTACCCCG'
 
     Now one that is mixed (doesn't match either wildtype or variant):
 
@@ -700,8 +700,10 @@ class TargetVariants:
             # does not match any of the target variants
             return ("mixed", a)
 
-        if self.mapper.targetseqs[a.target] != self.variantseqs[a.target]:
-            raise RuntimeError("need to build `a_new`")
+        if (self.mapper.targetseqs[a.target] != 
+                self.variantseqs[variant][a.target]):
+            a_new = a._replace(cigar_str=removeCIGARmutations(a.cigar_str,
+                    dict(zip([i - a.r_st for i in sites], list(var_str)))))
             return (variant, a_new)
         else:
             return (variant, a)
@@ -1199,6 +1201,81 @@ def mutateSeq(wtseq, mutations, insertions, deletions):
     return (mutantseq, cigar)
 
 
+def removeCIGARmutations(cigar, muts_to_remove):
+    """Removes point mutations from CIGAR string.
+
+    Args:
+        `cigar` (str)
+            Long format CIGAR string.
+        `muts_to_remove` (dict)
+            Dict keyed by site number in 0-based numbering of
+            target starting at first target position in `cigar`,
+            values are nucleotides that we want to make the new
+            target identity for the CIGAR at that site. All
+            of these nucleotides must be the wildtype in the
+            current CIGAR mutation.
+
+    Returns:
+        New CIGAR string expected if `cigar` was actually to the
+        target where the wildtype identity is what is given by
+        the mutation.
+
+    Here is an example: ATgcaTAGTgA
+                        012345678910
+
+    >>> cigar = '=AT-gca=T*at=G+ca*ga=TA'
+    >>> muts_to_remove = {6:'T', 8:'A'}
+    >>> removeCIGARmutations(cigar, muts_to_remove)
+    '=AT-gca=TTG+ca=ATA'
+    """
+    new_nts = {i:nt.upper() for i, nt in muts_to_remove.items()}
+    i_target = 0
+    newcigar = []
+    prevgroupmatch = False
+    while cigar:
+        m = _CIGAR_GROUP_MATCH.match(cigar)
+        assert m and m.start() == 0
+        if m.group()[0] == '=':
+            n = len(m.group()) - 1
+            i_target += n
+            if prevgroupmatch:
+                newcigar.append(m.group()[1 : ])
+            else:
+                newcigar.append(m.group())
+            prevgroupmatch = True
+        elif m.group()[0] == '*':
+            if i_target in new_nts:
+                query_nt = m.group()[2]
+                if query_nt.upper() != new_nts[i_target]:
+                    raise ValueError('not removing mutation')
+                if prevgroupmatch:
+                    newcigar.append(new_nts[i_target])
+                else:
+                    newcigar.append('=' + new_nts[i_target])
+                prevgroupmatch = True
+                del new_nts[i_target]
+            else:
+                prevgroupmatch = False
+            i_target += 1
+        elif m.group()[0] == '-':
+            n = len(m.group()) - 1
+            i_target += n
+            newcigar.append(m.group())
+            prevgroupmatch = False
+        elif m.group()[0] == '+':
+            newcigar.append(m.group())
+            prevgroupmatch = False
+        elif m.group()[0] == '~':
+            raise ValueError("Cannot handle intron operations")
+        else:
+            raise RuntimeError("should never get here")
+        cigar = cigar[m.end() : ]
+    assert cigar == ''
+    if new_nts:
+        raise ValueError("failed to find all mutations to remove")
+    return ''.join(newcigar)
+
+
 def iTargetToQuery(a, i):
     """Gets index in query aligned to target index.
 
@@ -1211,11 +1288,6 @@ def iTargetToQuery(a, i):
     Returns:
         Index in query that aligns to site `i` in target,
         or `None` if there is not an alignment at that site.
-
-     1234567 8
-     TGCAgaT-T
-     TACA--TCT
-     3456  789
 
     >>> a = Alignment(target='target', r_st=1, r_en=9,
     ...         q_st=3, q_en=10, q_len=7, strand=1,
