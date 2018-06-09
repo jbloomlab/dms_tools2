@@ -24,9 +24,11 @@ import tempfile
 import collections
 import random
 
+import numpy
 import Bio.SeqIO
 
 from dms_tools2 import NTS
+import dms_tools2.pacbio
 
 #: `options` argument to :class:`Mapper` that works well
 #: for codon-mutant libraries such as those created for
@@ -399,6 +401,310 @@ class Mapper:
                             queryseqs[query]))
 
         return d
+
+
+class TargetVariants:
+    """After alignment, assign to one of several target variants.
+
+    This class is useful if you have made alignments against
+    some specific set of targets using a :class:`Mapper`, but
+    in reality the queries could align to several different
+    **point mutant** variants of that target. You can use this
+    class to take the alignments and see if they instead exactly
+    match one the target variants.
+
+    You initialize the class to specify the set of target
+    variants, and then classify alignments using
+    :class:`TargetVariants.call`.
+
+    Args:
+        `variantfiles` (dict)
+            Specifies FASTA files giving the different target
+            variants. Each file must have exactly the same
+            targets with the same names as in the `targetfile`
+            attribute of `mapper`. These are the variants to
+            which we compare the queries, and they must be
+            point mutants (same length) as the targets for
+            `mapper`. Currently only works when there are
+            exactly two sets of variants.
+        `mapper` (:class:`Mapper`)
+            The mapper used to make the alignments. Used to check
+            that the sequences specified in `variantfiles` are
+            proper point mutant variants of the alignment targets.
+        `variantsites_min_acc` (float or `None`)
+            Minimum required accuracy (computed from Q-values)
+            required for calling by :class:`TargetVariants.call`.
+
+    Attributes:
+        `variantfiles` (dict)
+            See above.
+        `mapper` (:class:`Mapper`)
+            See above.
+        `variantsites_min_acc` (float or `None`)
+            See above.
+        `variantnames` (list)
+            Alphabeticized list of the variant names that key
+            `variantfiles`.
+        `targetnames` (list)
+            Alphabeticized list of the target names.
+        `variantseqs` (dict)
+            The actual sequences in `variantfiles`. Keyed
+            by each variant in `variantnames`, then keyed
+            by each name in `targetnames`, and values
+            are the sequences for that variant of that target.
+        `variablesites` (dict)
+            Keyed by target names, each value is a list of
+            all sites that differ between target variants,
+            sorted and in 0, 1, ... indexing.
+        `sitevariants` (dict)
+            Keyed by target names, then strings that give
+            the identity of a variant at each variable site,
+            then the name of the variant that matches that
+            that string.
+
+    Here is a short example.
+
+    First, create two target seqs, and two variants that each
+    differ at two positions:
+
+    >>> target1_wt  = 'ATGCATGAA'
+    >>> target1_var = 'ATCCATGTA'
+    >>> target2_wt  = 'GATACCCGG'
+    >>> target2_var = 'GCTACCCCG'
+
+    Now write these to two targetfiles, initialize :class:`Mapper`
+    with the wildtype target sets, initialize :class:`TargetVariants`
+    with wildtype and variant target sets:
+
+    >>> TempFile = functools.partial(tempfile.NamedTemporaryFile, mode='w')
+    >>> with TempFile() as wtfile, TempFile() as varfile:
+    ...     _ = wtfile.write('>target1\\n{0}\\n>target2\\n{1}'.format(
+    ...                      target1_wt, target2_wt))
+    ...     wtfile.flush()
+    ...     _ = varfile.write('>target1\\n{0}\\n>target2\\n{1}'.format(
+    ...                       target1_var, target2_var))
+    ...     varfile.flush()
+    ...     mapper = Mapper(wtfile.name, OPTIONS_CODON_DMS)
+    ...     targetvars = TargetVariants(
+    ...             {'wildtype':wtfile.name, 'variant':varfile.name},
+    ...             mapper, variantsites_min_acc=0.99)
+    >>> targetvars.variantnames
+    ['variant', 'wildtype']
+    >>> targetvars.targetnames
+    ['target1', 'target2']
+    >>> sorted(targetvars.variablesites.items())
+    [('target1', [2, 7]), ('target2', [1, 7])]
+    >>> targetvars.sitevariants == {
+    ...         'target1':{'GA':'wildtype', 'CT':'variant'},
+    ...         'target2':{'AG':'wildtype', 'CC':'variant'}}
+    True
+
+    Now test on some alignments. First, one that matches the
+    wildtype of target2:
+
+    >>> a_wildtype = Alignment(q_st=0, q_en=8, q_len=8, strand=1,
+    ...         r_st=1, r_en=9, score=16, target='target2',
+    ...         additional=[], cigar_str='=ATACCCGG')
+    >>> (variant, a_new) = targetvars.call(a_wildtype)
+    >>> variant
+    'wildtype'
+    >>> a_wildtype == a_new
+    True
+
+    Now one that matches the variant of target2:
+
+    >>> a_variant = a_wildtype._replace(cigar_str='*ac=TACCC*gc=G')
+    >>> (variant, a_new) = targetvars.call(a_variant)
+    >>> variant
+    'variant'
+    >>> a_variant == a_new
+    False
+    >>> a_new.cigar_str
+    'CTACCCCG'
+
+    Now one that is mixed (doesn't match either wildtype or variant):
+
+    >>> a_mixed = a_wildtype._replace(cigar_str='=ATACCC*gc=G')
+    >>> (variant, a_new) = targetvars.call(a_mixed)
+    >>> variant
+    'mixed'
+    >>> a_mixed == a_new
+    True
+
+    Now an alignment that doesn't span variable sites, and so is
+    called as unknown:
+
+    >>> a_unknown = Alignment(q_st=0, q_en=7, q_len=7, strand=1,
+    ...         r_st=2, r_en=9, score=14, target='target2',
+    ...         additional=[], cigar_str='=TACCCGG')
+    >>> (variant, a_new) = targetvars.call(a_unknown)
+    >>> variant
+    'unknown'
+    >>> a_unknown == a_new
+    True
+
+    Now do a case where we do and do not pass the accuracy
+    threshold:
+
+    >>> a_qvals = Alignment(q_st=1, q_en=9, q_len=9, strand=1,
+    ...         r_st=1, r_en=9, score=16, target='target2',
+    ...         additional=[], cigar_str='=ATACCCGG')
+    >>> qvals_high = numpy.array([30] * 9)
+    >>> (variant, a_new) = targetvars.call(a_qvals, qvals_high)
+    >>> variant
+    'wildtype'
+    >>> qvals_low = numpy.array([30, 10] + [30] * 7)
+    >>> (variant, a_new) = targetvars.call(a_qvals, qvals_low)
+    >>> variant
+    'low accuracy'
+    """
+
+    def __init__(self, variantfiles, mapper, *,
+            variantsites_min_acc=None):
+        """See main class doc string."""
+
+        if len(variantfiles) != 2:
+            raise ValueError("Currently only works for two sets of "
+                    "variants in `variantfiles`.")
+
+        self.variantnames = sorted(variantfiles.keys())
+        self.variantfiles = variantfiles
+        self.mapper = mapper
+        self.targetnames = sorted(self.mapper.targetseqs.keys())
+        if not ((variantsites_min_acc is None) or (0 <
+                variantsites_min_acc < 1)):
+            raise ValueError("`variantsites_min_acc` must be `None` "
+                    "or between 0 and 1")
+        self.variantsites_min_acc = variantsites_min_acc
+
+        # possible values returned by `TargetVariants.call` if
+        # not exact match to variant
+        self._call_strings = {'unknown':'unknown',
+                              'mixed':'mixed',
+                              'low accuracy':'low accuracy'}
+
+        self.variantseqs = {}
+        if set(self._call_strings.keys()).intersection(
+                set(self.variantfiles.keys())):
+            raise ValueError("variant names cannot be any of {0}"
+                    .format(set(self._call_strings.keys())))
+        for variant, variantfile in self.variantfiles.items():
+            self.variantseqs[variant] = {s.name:str(s.seq) for s in
+                    Bio.SeqIO.parse(variantfile, 'fasta')}
+            if set(self.targetnames) != set(
+                    self.variantseqs[variant].keys()):
+                raise ValueError("The file for variant {0} does not "
+                        "have the expected targets.\nExpected: {1}\n"
+                        "Actual: {2}".format(variant,
+                        set(self.targetnames),
+                        set(self.variantseqs[variant].keys())))
+            for targetname in self.targetnames:
+                if (len(self.mapper.targetseqs[targetname]) !=
+                        len(self.variantseqs[variant][targetname])):
+                    raise ValueError("variant {0} of target {1} is "
+                            "not same length as target in `mapper`. "
+                            "Can't handle variants that differ by "
+                            "more than point mutations.".format(
+                            variant, targetname))
+
+        self.variablesites = {}
+        self.sitevariants = {}
+        assert len(self.variantnames) == 2
+        for target in self.targetnames:
+            self.variablesites[target] = [i for i, (x, y) in enumerate(
+                    zip(self.variantseqs[self.variantnames[0]][target],
+                        self.variantseqs[self.variantnames[1]][target]))
+                    if x != y]
+            self.sitevariants[target] = {''.join(seqs[target][i]
+                    for i in self.variablesites[target]):name
+                    for name, seqs in self.variantseqs.items()}
+
+
+    def call(self, a, qvals=None):
+        """Call target variant for an alignment.
+
+        Args:
+            `a` (:class:`Alignment`)
+                The alignment (built with `mapper`) for which
+                we want to call the target variant.
+            `qvals` (`None` or numpy array)
+                Array of all Q-values for **entire** query used to
+                build alignment, not just aligned region. If not `None`
+                **and** `variantsites_min_acc` attribute is not `None`,
+                then an accuracy requirement is imposed.
+
+        Returns:
+            The 2-tuple `(variant, new_a)`. Possible values are:
+
+                - If `a` exactly matches one of the target variants
+                  at all variable sites and meets accuracy threshold
+                  of :class:`TargetVariants.variantsites_min_acc` at
+                  these sites, then `variant` is one of the variants in
+                  :class:`TargetVariant.variantnames` and `new_a`
+                  is a version of `a` in which any mismatches
+                  relative to this target variant have been removed
+                  in the :class:`Alignment.cigar_str` attribute (i.e.,
+                  the alignment is now to that target variant.
+
+                - If the variants for the targets for `a` are identical
+                  of if the alignment does not include all variable sites
+                  for this target, then `variant` is the string "unknown"
+                  and `new_a` is just `a`.
+
+                - If the alignment covers all variable sites for the
+                  target but some of those sites don't meet the
+                  accuracy threshold of `variantsites_min_acc`, then
+                  `variant` is "low accuracy" and `new_a` is just `a`.
+
+                - If the alignment covers all the variable sites at
+                  high accuracy but the sites don't exactly match
+                  one of the target variants, then `variant` is
+                  "mixed" and `new_a` is just `a`.
+        """
+        if a.strand != 1:
+            raise ValueError("Currently only implemented for + strand")
+
+        try:
+            sites = self.variablesites[a.target]
+        except KeyError:
+            raise ValueError("alignment has unrecognized target {0}"
+                    .format(a.target))
+
+        if len(sites) == 0:
+            # no variable sites, so can't call variant
+            return (self._call_strings["unknown"], a)
+
+        if a.r_st > sites[0] or a.r_en <= sites[-1]:
+            # alignment does not cover all relevant sites
+            return (self._call_strings["unknown"], a)
+
+        querysites = [iTargetToQuery(a, i) for i in sites]
+        if None in querysites:
+            # alignment must have gap at relevant site
+            return (self._call_strings["unknown"], a)
+
+        if qvals is not None and self.variantsites_min_acc:
+            if a.q_len != len(qvals):
+                raise ValueError("invalid length of `qvals`")
+            if any(dms_tools2.pacbio.qvalsToAccuracy(q) <
+                    self.variantsites_min_acc for q in qvals[querysites]):
+                return (self._call_strings["low accuracy"], a)
+
+        query = cigarToQueryAndTarget(a.cigar_str)[0]
+        var_str = ''.join([query[i - a.q_st] for i in querysites])
+
+        try:
+            variant = self.sitevariants[a.target][var_str]
+        except KeyError:
+            assert a.target in self.sitevariants
+            # does not match any of the target variants
+            return ("mixed", a)
+
+        if self.mapper.targetseqs[a.target] != self.variantseqs[a.target]:
+            raise RuntimeError("need to build `a_new`")
+            return (variant, a_new)
+        else:
+            return (variant, a)
 
 
 #: match indels for :meth:`shiftIndels`
@@ -892,6 +1198,77 @@ def mutateSeq(wtseq, mutations, insertions, deletions):
 
     return (mutantseq, cigar)
 
+
+def iTargetToQuery(a, i):
+    """Gets index in query aligned to target index.
+
+    Args:
+        `a` (:class:`Alignment`)
+            The alignment.
+        `i` (int)
+            Index in query in 0-based numbering.
+
+    Returns:
+        Index in query that aligns to site `i` in target,
+        or `None` if there is not an alignment at that site.
+
+     1234567 8
+     TGCAgaT-T
+     TACA--TCT
+     3456  789
+
+    >>> a = Alignment(target='target', r_st=1, r_en=9,
+    ...         q_st=3, q_en=10, q_len=7, strand=1,
+    ...         cigar_str='=T*ga=CA-ga=T+c=T',
+    ...         additional=[], score=-1)
+    >>> iTargetToQuery(a, 0) is None
+    True
+    >>> iTargetToQuery(a, 1)
+    3
+    >>> iTargetToQuery(a, 4)
+    6
+    >>> iTargetToQuery(a, 6) is None
+    True
+    >>> iTargetToQuery(a, 7)
+    7
+    >>> iTargetToQuery(a, 8)
+    9
+    >>> iTargetToQuery(a, 9) is None
+    True
+    """
+    if i < a.r_st or i >= a.r_en:
+        return None
+    i_query = a.q_st
+    i_target = a.r_st
+    cigar = a.cigar_str
+    while cigar:
+        m = _CIGAR_GROUP_MATCH.match(cigar)
+        assert m and m.start() == 0
+        if m.group()[0] == '=':
+            n = len(m.group()) - 1
+            if i < i_target + n:
+                return i - (i_target - i_query)
+            i_target += n
+            i_query += n
+        elif m.group()[0] == '*':
+            if i < i_target + 1:
+                return i - (i_target - i_query)
+            i_target += 1
+            i_query += 1
+        elif m.group()[0] == '-':
+            n = len(m.group()) - 1
+            if i < i_target + n:
+                return None
+            i_target += n
+        elif m.group()[0] == '+':
+            n = len(m.group()) - 1
+            i_query += n
+        elif m.group()[0] == '~':
+            raise ValueError("Cannot handle intron operations")
+        else:
+            raise RuntimeError("should never get here")
+        cigar = cigar[m.end() : ]
+    raise RuntimeError("should never get here")
 
 
 if __name__ == '__main__':

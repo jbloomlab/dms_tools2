@@ -13,6 +13,7 @@ import math
 import subprocess
 import collections
 import tempfile
+import numbers
 
 import regex
 import numpy
@@ -935,14 +936,15 @@ def qvalsToAccuracy(qvals, encoding='numbers'):
     """Converts set of quality scores into average accuracy.
 
     Args:
-        `qvals` (numpy array or str)
+        `qvals` (numpy array or number or str)
             List of Q-values, assumed to be Phred scores.
             For how they are encoded, see `encoding`.
         `encoding` (str)
             If it is "numbers" then `qvals` should be a
-            numpy array giving the Q-values. If it is
-            "sanger", then `qvals` is a string, with 
-            the score being the ASCI value minus 33.
+            numpy array giving the Q-values, or a number
+            with one Q-value. If it is "sanger", then `qvals`
+            is a string, with the score being the ASCII value
+            minus 33.
 
     Returns:
         A number giving the average accuracy, or 
@@ -963,7 +965,13 @@ def qvalsToAccuracy(qvals, encoding='numbers'):
     >>> qvals = '.n~'
     >>> round(qvalsToAccuracy(qvals, encoding='sanger'), 3)
     0.983
+
+    >>> round(qvalsToAccuracy(15), 3)
+    0.968
     """
+    if isinstance(qvals, numbers.Number) and encoding == 'numbers':
+        qvals = numpy.array([qvals])
+
     if len(qvals) == 0:
         return numpy.nan
 
