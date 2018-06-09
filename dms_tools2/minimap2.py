@@ -457,10 +457,9 @@ class TargetVariants:
             all sites that differ between target variants,
             sorted and in 0, 1, ... indexing.
         `sitevariants` (dict)
-            Keyed by target names, then strings that give
-            the identity of a variant at each variable site,
-            then the name of the variant that matches that
-            that string.
+            `sitevariants[target][variant]` is a list that gives
+            the identity of  `variant` for target ` at each site
+            in `variablesites[target]`.
 
     Here is a short example.
 
@@ -495,8 +494,8 @@ class TargetVariants:
     >>> sorted(targetvars.variablesites.items())
     [('target1', [2, 7]), ('target2', [1, 7])]
     >>> targetvars.sitevariants == {
-    ...         'target1':{'GA':'wildtype', 'CT':'variant'},
-    ...         'target2':{'AG':'wildtype', 'CC':'variant'}}
+    ...         'target1':{'wildtype':['G', 'A'], 'variant':['C', 'T']},
+    ...         'target2':{'wildtype':['A', 'G'], 'variant':['C', 'C']}}
     True
 
     Now test on some alignments. First, one that matches the
@@ -577,17 +576,7 @@ class TargetVariants:
                     "or between 0 and 1")
         self.variantsites_min_acc = variantsites_min_acc
 
-        # possible values returned by `TargetVariants.call` if
-        # not exact match to variant
-        self._call_strings = {'unknown':'unknown',
-                              'mixed':'mixed',
-                              'low accuracy':'low accuracy'}
-
         self.variantseqs = {}
-        if set(self._call_strings.keys()).intersection(
-                set(self.variantfiles.keys())):
-            raise ValueError("variant names cannot be any of {0}"
-                    .format(set(self._call_strings.keys())))
         for variant, variantfile in self.variantfiles.items():
             self.variantseqs[variant] = {s.name:str(s.seq) for s in
                     Bio.SeqIO.parse(variantfile, 'fasta')}
@@ -618,6 +607,9 @@ class TargetVariants:
             self.sitevariants[target] = {''.join(seqs[target][i]
                     for i in self.variablesites[target]):name
                     for name, seqs in self.variantseqs.items()}
+            self.sitevariants[target] = {variant:[seqs[target][i]
+                    for i in self.variablesites[target]] for 
+                    variant, seqs in self.variantseqs.items()}
 
 
     def call(self, a, qvals=None):
@@ -672,30 +664,32 @@ class TargetVariants:
 
         if len(sites) == 0:
             # no variable sites, so can't call variant
-            return (self._call_strings["unknown"], a)
+            return ('unknown', a)
 
         if a.r_st > sites[0] or a.r_en <= sites[-1]:
             # alignment does not cover all relevant sites
-            return (self._call_strings["unknown"], a)
+            return ('unknown', a)
 
         querysites = [iTargetToQuery(a, i) for i in sites]
         if None in querysites:
             # alignment must have gap at relevant site
-            return (self._call_strings["unknown"], a)
+            return ('unknown', a)
 
         if qvals is not None and self.variantsites_min_acc:
             if a.q_len != len(qvals):
                 raise ValueError("invalid length of `qvals`")
             if any(dms_tools2.pacbio.qvalsToAccuracy(q) <
                     self.variantsites_min_acc for q in qvals[querysites]):
-                return (self._call_strings["low accuracy"], a)
+                return ('low accuracy', a)
 
         query = cigarToQueryAndTarget(a.cigar_str)[0]
-        var_str = ''.join([query[i - a.q_st] for i in querysites])
+        query_idents = [query[i - a.q_st] for i in querysites]
 
-        try:
-            variant = self.sitevariants[a.target][var_str]
-        except KeyError:
+        for v, vsites in self.sitevariants[a.target].items():
+            if query_idents == vsites:
+                variant = v
+                break
+        else:
             assert a.target in self.sitevariants
             # does not match any of the target variants
             return ("mixed", a)
@@ -703,7 +697,7 @@ class TargetVariants:
         if (self.mapper.targetseqs[a.target] != 
                 self.variantseqs[variant][a.target]):
             a_new = a._replace(cigar_str=removeCIGARmutations(a.cigar_str,
-                    dict(zip([i - a.r_st for i in sites], list(var_str)))))
+                    dict(zip([i - a.r_st for i in sites], query_idents))))
             return (variant, a_new)
         else:
             return (variant, a)
