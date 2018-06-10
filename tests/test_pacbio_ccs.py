@@ -65,11 +65,12 @@ class test_pacbio_CCS(unittest.TestCase):
                  'CCS_length', 'passes', 'samplename'})
 
     def test_plotColCorrs(self):
-        """Test `CCS.plotColCorrs`."""
+        """Test `plot.plotColCorrs`."""
         plotfile = os.path.join(self.testdir, 'CCSresults.pdf')
         if os.path.isfile(plotfile):
             os.remove(plotfile)
-        self.ccs.plotColCorrs(plotfile)
+        dms_tools2.plot.plotColCorrs(self.ccs.df, plotfile,
+                ['passes', 'CCS_accuracy', 'CCS_length'])
         self.assertTrue(os.path.isfile(plotfile))
 
     def test_summarizeCCSreports(self):

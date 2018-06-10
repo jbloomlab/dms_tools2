@@ -1066,6 +1066,89 @@ def findSigSel(df, valcol, plotfile, fdr=0.05, title=None):
     return (df_sigsel, cutoff, gamma_params)
 
 
+def plotColCorrs(df, plotfile, cols, *, lower_filter=None,
+        title=None):
+    """Plots correlation among columns in pandas Data Frame.
+
+    Plots distribution of each variable and pairwise correlations.
+
+    Args:
+        `df` (pandas DataFrame)
+            Data frame with data to plot.
+        `plotfile` (str)
+            Name of created plot.
+        `cols` (list)
+               List of variables to plot. There must be a
+            column for each in `df`.
+        `lower_filter` (`None` or str)
+            Can be any string that can passed to the `query` function
+            of `df`. In this case, on the lower diagonal only plot
+            data for which this query is `True`.
+        `title` (`None` or str)
+            Title of plot.
+    """
+    if not set(cols).issubset(set(df.columns)):
+        raise ValueError("`cols` specifies columns not in `df`")
+
+    if lower_filter is not None:
+        filter_indices = df.query(lower_filter).index
+        color_all = COLOR_BLIND_PALETTE_GRAY[0]
+        color_filter = COLOR_BLIND_PALETTE_GRAY[1]
+    else:
+        color_all = COLOR_BLIND_PALETTE[0]
+
+    def hist1d(x, color, **kwargs):
+        """1D histogram for diagonal elements."""
+        bins=dms_tools2.plot.hist_bins_intsafe(x,
+                shrink_threshold=50)
+        plt.hist(x, color=color_all, bins=bins, **kwargs)
+        if lower_filter:
+            plt.hist(x.ix[filter_indices], color=color_filter,
+                     bins=bins, **kwargs)
+
+    def hist2d(x, y, color, filterdata, **kwargs):
+        """2D histogram for off-diagonal elements."""
+        bins = [dms_tools2.plot.hist_bins_intsafe(a,
+                shrink_threshold=50) for a in [x, y]]
+        if filterdata:
+            color = color_filter
+            x = x.ix[filter_indices]
+            y = y.ix[filter_indices]
+        else:
+            color = color_all
+        cmap = dms_tools2.plot.from_white_cmap(color)
+        plt.hist2d(x, y, bins=bins, cmap=cmap, **kwargs)
+
+    g = (dms_tools2.plot.AugmentedPairGrid(df, vars=cols,
+            diag_sharey=False, size=3)
+         .map_diag(hist1d)
+         .map_upper(hist2d, filterdata=False)
+         .map_lower(hist2d, filterdata=(lower_filter is not None))
+         .ax_lims_clip_outliers()
+         )
+
+    if lower_filter is not None:
+        label_order = ['all\n({0})'.format(
+                            dms_tools2.plot.latexSciNot(len(df))),
+                       '{0}\n({1})'.format(lower_filter,
+                            dms_tools2.plot.latexSciNot(
+                            len(df.query(lower_filter)))),
+                       ]
+        label_data = {lab:plt.Line2D([0], [0], color=c, lw=10,
+                                     solid_capstyle='butt')
+                      for (lab, c) in zip(label_order,
+                          [color_all, color_filter])
+                      }
+        g.add_legend(label_data, label_order=label_order,
+                     labelspacing=2, handlelength=1.5)
+
+    if title is not None:
+        g.fig.suptitle(title, va='bottom')
+
+    g.savefig(plotfile)
+    plt.close()
+
+
 def hist_bins_intsafe(x, method='fd', shrink_threshold=None):
     """Histogram bins that work for integer data.
 
