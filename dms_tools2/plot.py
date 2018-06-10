@@ -1078,8 +1078,7 @@ def plotColCorrs(df, plotfile, cols, *, lower_filter=None,
         `plotfile` (str)
             Name of created plot.
         `cols` (list)
-               List of variables to plot. There must be a
-            column for each in `df`.
+            List of columns in `df` to plot.
         `lower_filter` (`None` or str)
             Can be any string that can passed to the `query` function
             of `df`. In this case, on the lower diagonal only plot

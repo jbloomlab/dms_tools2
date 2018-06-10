@@ -261,7 +261,8 @@ class CCS:
 
 
 def matchAndAlignCCS(ccslist, mapper, *,
-        termini5, gene, spacer, umi, barcode, termini3):
+        termini5, gene, spacer, umi, barcode, termini3,
+        targetvariants=None):
     """Identify CCSs that match pattern and align them.
 
     This is a convenience function that runs :meth:`matchSeqs`
@@ -305,6 +306,9 @@ def matchAndAlignCCS(ccslist, mapper, *,
             if 10-nucleotide barcode.
         `termini3` (str or `None`)
             Like `termini5`, but for termini3.
+        `targetvariants` (:class:`dms_tools2.minimap2.TargetVariants`)
+            Call target variants. See docs for same argument to
+            :meth:`alignSeqs`.
 
     Returns:
         A pandas dataframe that will have all columns already in the
@@ -352,6 +356,10 @@ def matchAndAlignCCS(ccslist, mapper, *,
           :py:mod:`dms_tools2.minimap2.Mapper`). If
           the gene is not aligned, these are `None`,
           empty strings, or -1.
+
+        - If `targetvariants` is not `None`, column named
+          `gene_aligned_target_variant` giving target variant
+          returned by :class:`dms_tools2.minimap2.TargtVariants.call`.
 
         - `CCS_aligned` is `True` if the CCS can be aligned
           using `mapper` even if a gene cannot be matched,
@@ -409,8 +417,6 @@ def matchAndAlignCCS(ccslist, mapper, *,
     if termini3 is not None:
         match_str += '(?P<termini3>{0})'.format(termini3)
 
-
-
     # now create and return df
     return (
         df
@@ -445,7 +451,8 @@ def matchAndAlignCCS(ccslist, mapper, *,
         .pipe(dms_tools2.pacbio.alignSeqs,
               mapper=mapper,
               query_col='gene',
-              aligned_col='gene_aligned')
+              aligned_col='gene_aligned',
+              targetvariants=targetvariants)
     
         # look for any alignment of CCS, take best in either orientation
         .pipe(_align_CCS_both_orientations,
@@ -648,13 +655,14 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
 def alignSeqs(df, mapper, query_col, aligned_col, *,
         add_alignment=True, add_target=True, add_cigar=True,
         add_n_trimmed=True, add_n_additional=True,
-        add_n_additional_difftarget=True,
+        add_n_additional_difftarget=True, targetvariants=None,
         overwrite=True, paf_file=None):
     """Align sequences in a dataframe to target sequence(s).
 
     Arguments:
         `df` (pandas DataFrame)
             Data frame in which one column holds sequences to match.
+            There also must be a column named "name" with unique names.
         `mapper` (:py:mod:`dms_tools2.minimap2.Mapper`)
             Align using the :py:mod:`dms_tools2.minimap2.Mapper.map`
             function of `mapper`. Target sequence(s) to which
@@ -678,6 +686,14 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
         `add_n_additional` (bool)
             Add column specifying the number of additional
             alignments.
+        `targetvariants` (:class:`dms_tools2.minimap2.TargetVariants`)
+            Call target variants of aligned genes using the `call`
+            function of this object. Note that this also adjusts
+            the returned alignments / CIGAR if a variant is called.
+            If the `variantsites_min_acc` attribute is not `None`,
+            then `df` must have a column with the name of `query_col`
+            suffixed by '_qvals' that gives the Q-values to compute
+            accuracies.
         `add_n_additional_difftarget` (bool)
             Add columns specifying number of additional alignments
             to a target other than the one in the primary alignment.
@@ -736,11 +752,17 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
               or -1 if there is no alignment.
 
             - If `add_n_additional_difftarget` is `True`, add column
-              named `aligned_col` suffixed by "_n_additiona_difftarget"
+              named `aligned_col` suffixed by "_n_additional_difftarget"
               that gives the number of additional alignments to
               **different** targets that are not isoforms, or -1
               if if there is no alignment. See the `target_isoforms`
               attribute of :py:mod:`dms_tools2.minimap2.Mapper`.
+
+            - If `targetvariants` is not none, then add a column
+              named `aligned_call` suffixed by "_target_variant"
+              that has the values returned for that alignment by
+              :class:`dms_tools2.TargetVariants.call`, or an empty
+              string if no alignmnet.
     """
     assert query_col in df.columns, "no `query_col` {0}".format(query_col)
 
@@ -766,6 +788,17 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
         n_additional_difftarget_col = (
                 aligned_col + '_n_additional_difftarget')
         newcols.append(n_additional_difftarget_col)
+    if targetvariants is not None:
+        targetvariant_col = aligned_col + '_target_variant'
+        newcols.append(targetvariant_col)
+        if targetvariants.variantsites_min_acc is not None:
+            qvals_col = query_col + '_qvals'
+            if qvals_col not in df.columns:
+                raise ValueError("Cannot use `variantsites_min_acc` "
+                        "of `targetvariants` as there is not a column "
+                        "in `df` named {0}".format(qvals_col))
+            qvals = pandas.Series(df[qvals_col].values,
+                                  index=df.name).to_dict()
 
     dup_cols = set(newcols).intersection(set(df.columns))
     if (not overwrite) and dup_cols:
@@ -789,6 +822,9 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
         if name in map_dict:
             a = map_dict[name]
             assert a.strand == 1, "method does not handle - polarity"
+            if targetvariants:
+                (variant, a) = targetvariants.call(a, qvals[name])
+                align_d[targetvariant_col].append(variant)
             align_d[aligned_col].append(True)
             if add_alignment:
                 align_d[alignment_col].append(a)
@@ -828,6 +864,8 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
                 align_d[n_additional_col].append(-1)
             if add_n_additional_difftarget:
                 align_d[n_additional_difftarget_col].append(-1)
+            if targetvariants:
+                align_d[targetvariant_col].append('')
 
     # set index to make sure matches `df`
     index_name = df.index.name
