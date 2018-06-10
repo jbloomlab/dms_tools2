@@ -406,27 +406,24 @@ class Mapper:
 class TargetVariants:
     """After alignment, assign to one of several target variants.
 
-    This class is useful if you have made alignments against
-    some specific set of targets using a :class:`Mapper`, but
+    Useful if you aligned against one set of targets, but
     in reality the queries could align to several different
-    **point mutant** variants of that target. You can use this
+    **point mutant** variants of that target. Use this
     class to take the alignments and see if they instead exactly
-    match one the target variants.
+    match a variant of the target.
 
-    You initialize the class to specify the set of target
-    variants, and then classify alignments using
-    :class:`TargetVariants.call`.
+    Initialize to specify the target variants, then classify
+    using :class:`TargetVariants.call`.
 
     Args:
         `variantfiles` (dict)
-            Specifies FASTA files giving the different target
-            variants. Each file must have exactly the same
-            targets with the same names as in the `targetfile`
-            attribute of `mapper`. These are the variants to
+            Specifies FASTA files giving the target variants.
+            Each file must have the same target names as in
+            `mapper.targetfile`. These are the variants to
             which we compare the queries, and they must be
             point mutants (same length) as the targets for
             `mapper`. Currently only works when there are
-            exactly two sets of variants.
+            two sets of variants.
         `mapper` (:class:`Mapper`)
             The mapper used to make the alignments. Used to check
             that the sequences specified in `variantfiles` are
@@ -530,19 +527,20 @@ class TargetVariants:
     >>> a_mixed == a_new
     True
 
-    Now an alignment that doesn't span variable sites, and so is
-    called as unknown:
+    Now an alignment that only spans some variable sites:
 
-    >>> a_unknown = Alignment(q_st=0, q_en=7, q_len=7, strand=1,
+    >>> a_var_partial = Alignment(q_st=0, q_en=7, q_len=7, strand=1,
     ...         r_st=2, r_en=9, score=14, target='target2',
-    ...         additional=[], cigar_str='=TACCCGG')
-    >>> (variant, a_new) = targetvars.call(a_unknown)
+    ...         additional=[], cigar_str='=TACCC*gc=G')
+    >>> (variant, a_new) = targetvars.call(a_var_partial)
     >>> variant
-    'unknown'
-    >>> a_unknown == a_new
-    True
+    'partial variant'
+    >>> a_var_partial == a_new
+    False
+    >>> a_new.cigar_str
+    '=TACCCCG'
 
-    Now do a case where we do and do not pass the accuracy
+    Now alignments that do and do not pass the accuracy
     threshold:
 
     >>> a_qvals = Alignment(q_st=1, q_en=9, q_len=9, strand=1,
@@ -556,6 +554,17 @@ class TargetVariants:
     >>> (variant, a_new) = targetvars.call(a_qvals, qvals_low)
     >>> variant
     'low accuracy'
+
+    Now an alignment that does not span any variable sites:
+
+    >>> a_unknown = Alignment(q_st=0, q_en=5, q_len=5, strand=1,
+    ...         r_st=2, r_en=7, score=12, target='target2',
+    ...         additional=[], cigar_str='=TACCC')
+    >>> (variant, a_new) = targetvars.call(a_unknown)
+    >>> a_unknown == a_new
+    True
+    >>> variant
+    'unknown'
     """
 
     def __init__(self, variantfiles, mapper, *,
@@ -628,30 +637,32 @@ class TargetVariants:
         Returns:
             The 2-tuple `(variant, new_a)`. Possible values are:
 
-                - If `a` exactly matches one of the target variants
-                  at all variable sites and meets accuracy threshold
-                  of :class:`TargetVariants.variantsites_min_acc` at
-                  these sites, then `variant` is one of the variants in
-                  :class:`TargetVariant.variantnames` and `new_a`
-                  is a version of `a` in which any mismatches
-                  relative to this target variant have been removed
-                  in the :class:`Alignment.cigar_str` attribute (i.e.,
-                  the alignment is now to that target variant.
+                - If `a` does not cover any of the variable sites,
+                  then `variant` is "unknown" and `new_a` is
+                  just `a`.
 
-                - If the variants for the targets for `a` are identical
-                  of if the alignment does not include all variable sites
-                  for this target, then `variant` is the string "unknown"
-                  and `new_a` is just `a`.
-
-                - If the alignment covers all variable sites for the
-                  target but some of those sites don't meet the
-                  accuracy threshold of `variantsites_min_acc`, then
+                - If any of the variable sites in `a` don't meet
+                  the accuracy threshold of `variantsites_min_acc`, then
                   `variant` is "low accuracy" and `new_a` is just `a`.
 
-                - If the alignment covers all the variable sites at
-                  high accuracy but the sites don't exactly match
-                  one of the target variants, then `variant` is
-                  "mixed" and `new_a` is just `a`.
+                - If all of the variable sites present in `a` don't
+                  exactly match one of the variants, then `variant`
+                  is "mixed" and `new_a` is just `a`.
+
+                - If `a` exactly matches one of the target variants
+                  at all variable sites, then `variant` is a
+                  variant in :class:`TargetVariant.variantnames` and
+                  `new_a` is a version of `a` in which any mismatches
+                  relative to this target variant have been removed
+                  from the :class:`Alignment.cigar_str` attribute.
+
+                - If `a` only covers some of the variable sites but all
+                  of these match one of the target variants, then
+                  `variant` is "partial <variant>" where <variant>
+                  is a variant in :class:`TargetVariant.variantnames`,
+                  and `new_a` is a version of `a` in which any mismatches
+                  relative to this target variant havea been removed
+                  from the :class:`Alignment.cigar_str` attribute.
         """
         if a.strand != 1:
             raise ValueError("Currently only implemented for + strand")
@@ -662,17 +673,11 @@ class TargetVariants:
             raise ValueError("alignment has unrecognized target {0}"
                     .format(a.target))
 
-        if len(sites) == 0:
-            # no variable sites, so can't call variant
-            return ('unknown', a)
+        querysites_w_None = [iTargetToQuery(a, i) for i in sites]
+        querysites = [i for i in querysites_w_None if i is not None]
 
-        if a.r_st > sites[0] or a.r_en <= sites[-1]:
-            # alignment does not cover all relevant sites
-            return ('unknown', a)
-
-        querysites = [iTargetToQuery(a, i) for i in sites]
-        if None in querysites:
-            # alignment must have gap at relevant site
+        if not querysites:
+            # no variable sites covered, so can't call variant
             return ('unknown', a)
 
         if qvals is not None and self.variantsites_min_acc:
@@ -685,9 +690,15 @@ class TargetVariants:
         query = cigarToQueryAndTarget(a.cigar_str)[0]
         query_idents = [query[i - a.q_st] for i in querysites]
 
-        for v, vsites in self.sitevariants[a.target].items():
+        for v, vsites_all in self.sitevariants[a.target].items():
+            assert len(vsites_all) == len(querysites_w_None) > 0
+            vsites = [nt for nt, i in zip(vsites_all, querysites_w_None)
+                    if i is not None]
             if query_idents == vsites:
-                variant = v
+                if len(vsites_all) == len(querysites):
+                    variant = v
+                else:
+                    variant = 'partial ' + v
                 break
         else:
             assert a.target in self.sitevariants
@@ -695,9 +706,13 @@ class TargetVariants:
             return ("mixed", a)
 
         if (self.mapper.targetseqs[a.target] != 
-                self.variantseqs[variant][a.target]):
+                self.variantseqs[v][a.target]):
+            assert len(sites) == len(querysites_w_None)
+            targetsites = [i - a.r_st for i, j in
+                    zip(sites, querysites_w_None) if j is not None]
+            assert len(targetsites) == len(query_idents)
             a_new = a._replace(cigar_str=removeCIGARmutations(a.cigar_str,
-                    dict(zip([i - a.r_st for i in sites], query_idents))))
+                    dict(zip(targetsites, query_idents))))
             return (variant, a_new)
         else:
             return (variant, a)
@@ -1277,7 +1292,7 @@ def iTargetToQuery(a, i):
         `a` (:class:`Alignment`)
             The alignment.
         `i` (int)
-            Index in query in 0-based numbering.
+            Index in target in 0-based numbering.
 
     Returns:
         Index in query that aligns to site `i` in target,
@@ -1334,7 +1349,7 @@ def iTargetToQuery(a, i):
         else:
             raise RuntimeError("should never get here")
         cigar = cigar[m.end() : ]
-    raise RuntimeError("should never get here")
+    raise RuntimeError("should not get here\ni={0}\na={1}".format(i, a))
 
 
 if __name__ == '__main__':
