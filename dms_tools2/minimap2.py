@@ -163,9 +163,10 @@ class Mapper:
     Attributes:
         `targetfile` (str)
             Target (reference) file set at initialization.
-        `targetseqs` (dict)
+        `targetseqs` (OrderedDict)
             Sequences in `targetfile`. Keys are sequence
-            names, values are sequences as strings.
+            names, values are sequences as strings. In
+            same order as listing in `targetfile`.
         `prog` (str)
             Path to ``minimap2`` set at initialization.
         `options` (list)
@@ -185,7 +186,7 @@ class Mapper:
 
     >>> targetlen = 200
     >>> random.seed(1)
-    >>> targets = {}
+    >>> targets = collections.OrderedDict()
     >>> for i in [1, 2]:
     ...     targets['target{0}'.format(i)] = ''.join(random.choice(NTS)
     ...             for _ in range(targetlen))
@@ -274,8 +275,8 @@ class Mapper:
         assert os.path.isfile(targetfile), \
                 "no `targetfile` {0}".format(targetfile)
         self.targetfile = targetfile
-        self.targetseqs = {seq.name:str(seq.seq) for seq in 
-                      Bio.SeqIO.parse(self.targetfile, 'fasta')}
+        self.targetseqs = collections.OrderedDict([(seq.name, str(seq.seq))
+                      for seq in Bio.SeqIO.parse(self.targetfile, 'fasta')])
 
         targetnames = set(self.targetseqs.keys())
         in_target_isoforms = set(target_isoforms.keys()).union(
