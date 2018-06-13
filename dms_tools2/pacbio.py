@@ -21,7 +21,7 @@ import pandas
 import pysam
 
 # import dms_tools2.plot to set plotting contexts / themes
-import dms_tools2.plot
+import dms_tools2
 from dms_tools2.plot import COLOR_BLIND_PALETTE
 from dms_tools2.plot import COLOR_BLIND_PALETTE_GRAY
 import matplotlib.pyplot as plt
@@ -262,7 +262,7 @@ class CCS:
 
 def matchAndAlignCCS(ccslist, mapper, *,
         termini5, gene, spacer, umi, barcode, termini3,
-        targetvariants=None):
+        targetvariants=None, rc_barcode_umi=True):
     """Identify CCSs that match pattern and align them.
 
     This is a convenience function that runs :meth:`matchSeqs`
@@ -309,6 +309,12 @@ def matchAndAlignCCS(ccslist, mapper, *,
         `targetvariants` (:class:`dms_tools2.minimap2.TargetVariants`)
             Call target variants. See docs for same argument to
             :meth:`alignSeqs`.
+        `rc_barcode_umi` (bool)
+            Do we reverse complement the `barcode` and `UMI` in the
+            returned data frame relative to the orientation of
+            the gene. Typically this is desirable because actual
+            barcode sequencing goes in the reverse direction of the
+            gene.
 
     Returns:
         A pandas dataframe that will have all columns already in the
@@ -417,8 +423,8 @@ def matchAndAlignCCS(ccslist, mapper, *,
     if termini3 is not None:
         match_str += '(?P<termini3>{0})'.format(termini3)
 
-    # now create and return df
-    return (
+    # now create df
+    df = (
         df
 
         # match barcoded sequences
@@ -458,6 +464,16 @@ def matchAndAlignCCS(ccslist, mapper, *,
         .pipe(_align_CCS_both_orientations,
               mapper=mapper)
         )
+
+    # reverse complement barcode and UMI
+    if rc_barcode_umi:
+        if barcode is not None:
+            df.barcode = df.barcode.map(dms_tools2.utils.reverseComplement)
+
+        if umi is not None:
+            df.UMI = df.UMI.map(dms_tools2.utils.reverseComplement)
+
+    return df
 
 
 def matchSeqs(df, match_str, col_to_match, match_col, *,
