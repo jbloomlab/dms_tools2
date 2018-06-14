@@ -16,8 +16,10 @@ import logging
 import tempfile
 import itertools
 import collections
+import random
 
 import numpy
+import scipy.misc
 import pandas
 import HTSeq
 
@@ -295,6 +297,56 @@ def buildReadConsensus(reads, minreads, minconcur, use_cutils=True):
             else:
                 consensus.append('N')
     return ''.join(consensus)
+
+
+def rarefactionCurve(barcodes):
+    """Rarefaction curve from list of barcodes.
+
+    Uses the analytical formula for the rarefaction curve defined
+    `on Wikipedia <https://en.wikipedia.org/wiki/Rarefaction_(ecology)#Derivation>`_.
+
+    Args:
+        `barcodes` (list or pandas Series)
+            Holds the list of unique barcodes for which we calculate
+            the rarefaction curve. It is expected that some of these
+            barcodes will be repeated multiple times in the list if
+            the sampling is approaching saturation.
+
+    Returns:
+        List `fn` where element `n` is expected number of different
+        barcodes observed for `i + 1` barcodes.
+
+    Here we take a very small list and show that the results given
+    by the function are equivalent to those obtained by random
+    subsampling:
+
+    >>> barcodes = ['A', 'A', 'A', 'A', 'G', 'G', 'C', 'T']
+    >>> fn = rarefactionCurve(barcodes)
+    >>> fn[0] == 1
+    True
+    >>> fn[-1] == len(set(barcodes))
+    True
+    >>> random.seed(1)
+    >>> nrand = 10000
+    >>> sim_equal_fn = []
+    >>> for n in range(2, len(barcodes)):
+    ...     fn_sim = sum([len(set(random.sample(barcodes, n))) for _
+    ...             in range(nrand)]) / nrand
+    ...     sim_equal_fn.append(numpy.allclose(fn_sim, fn[n - 1], atol=1e-1))
+    >>> all(sim_equal_fn)
+    True
+    """
+    N = len(barcodes) # total number of items
+    Ni = collections.Counter(barcodes)
+    K = len(Ni)
+    Mj = collections.Counter(Ni.values())
+    fn = []
+    for n in range(1, N + 1):
+        N_choose_n_inv = 1.0 / scipy.misc.comb(N, n)
+        Ksum = sum([num * scipy.misc.comb(N - Nk, n) for Nk, num in Mj.items()])
+        fn.append(K - N_choose_n_inv * Ksum)
+    return fn
+
 
 
 def reverseComplement(s, use_cutils=True):
