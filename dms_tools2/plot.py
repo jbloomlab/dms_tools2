@@ -1152,7 +1152,7 @@ def plotColCorrs(df, plotfile, cols, *, lower_filter=None,
 
 def plotRarefactionCurves(df, rarefy_col, plotfile,
         *, facet_col=None, nrow=1,
-        xlabel='reads', ylabel=None):
+        xlabel='reads', ylabel=None, facet_scales='free'):
     """Plots rarefaction curves.
 
     The rarefaction curves are calculated analytically using
@@ -1177,11 +1177,14 @@ def plotRarefactionCurves(df, rarefy_col, plotfile,
             X-axis label.
         `ylabel` (str or `None`)
             Y-axis label. If `None`, defaults to value of `rarefy_col`.
+        `facet_scales` (str`)
+            Scales for faceting. Can be "free", "free_x", "free_y", or
+            "fixed"
 
     Here is an example. First, we simulate two sets of barcodes.
     For ease of fast simulation, the barcodes are just numbers here.
-    One samples a large set, the other a set half that size, both
-    to the same depth:
+    One samples a large set, the other a set a quarter that size with
+    half as many reads:
 
     >>> nbc = 40000
     >>> bclen = 10
@@ -1189,7 +1192,7 @@ def plotRarefactionCurves(df, rarefy_col, plotfile,
     >>> barcodes = list(range(nbc))
     >>> numpy.random.seed(1)
     >>> large_set = numpy.random.choice(barcodes, size=nreads)
-    >>> small_set = numpy.random.choice(barcodes[ : nbc // 2], size=nreads)
+    >>> small_set = numpy.random.choice(barcodes[ : nbc // 4], size=nreads // 2)
 
     Now we put these in a tidy data frame where one column is named
     "barcodes" and the other is named "sample":
@@ -1207,7 +1210,7 @@ def plotRarefactionCurves(df, rarefy_col, plotfile,
     Here is the resulting plot:
 
     .. image:: _static/_plotRarefactionCurves.png
-       :width: 4in
+       :width: 6in
        :align: center
     """
     if rarefy_col not in df.columns:
@@ -1220,7 +1223,10 @@ def plotRarefactionCurves(df, rarefy_col, plotfile,
         ylabel = rarefy_col
 
     # get iterator over groups or dummy iterator
+    categories = False
     if facet_col is not None:
+        if df[facet_col].dtype.name == 'category':
+            categories = df[facet_col].cat.categories
         df_iterator = df.groupby(facet_col)[rarefy_col]
         nfacets = len(df[facet_col].unique())
     else:
@@ -1235,23 +1241,45 @@ def plotRarefactionCurves(df, rarefy_col, plotfile,
         d[xlabel] += xs
         d['_facet_var'] += [name] * len(xs)
     rarefied = pandas.DataFrame(d)
+    if categories is not None:
+        rarefied['_facet_var'] = pandas.Categorical(
+                rarefied['_facet_var'], categories)
+
+    ident = lambda x: x.astype('int') if all(x.astype('int') == x) else x
+    if rarefied[xlabel].max() >= 1e4: 
+        xlabeler = latexSciNot
+    else:
+        xlabeler = ident
+    if rarefied[ylabel].max() >= 1e4:
+        ylabeler = latexSciNot
+    else:
+        ylabeler = ident
 
     p = (ggplot(rarefied, aes(xlabel, ylabel)) +
             geom_line() +
             xlab(xlabel) +
             ylab(ylabel) +
-            scale_x_continuous(labels=latexSciNot,
+            scale_x_continuous(labels=xlabeler,
                     breaks=lambda x: matplotlib.ticker.MaxNLocator(3)
                                      .tick_values(min(x), max(x))) +
-            scale_y_continuous(labels=latexSciNot)
+            scale_y_continuous(labels=ylabeler)
             )
 
+    panel_spacing_x = {"free":0.75, "free_x":0.1,
+                       "fixed":0.1, "free_y":0.75}[facet_scales]
+    panel_spacing_y = {"free":0.4, "free_x":0.4,
+                       "fixed":0.1, "free_y":0.1}[facet_scales]
     if facet_col is not None:
-        p += facet_wrap('~ _facet_var', nrow=nrow)
+        p += facet_wrap('~ _facet_var', nrow=nrow, scales=facet_scales)
+        p += theme(panel_spacing_x=panel_spacing_x,
+                   panel_spacing_y=panel_spacing_y)
 
-    p.save(plotfile, height=2.25,
-            width=(1.25 + 2 * math.ceil(nfacets / nrow)),
-            verbose=False)
+    ncol = math.ceil(nfacets / nrow)
+    p.save(plotfile,
+            height=0.5 + 1.75 * nrow + panel_spacing_y * (nrow - 1),
+            width=(1.25 + 2 * ncol + panel_spacing_x * (ncol - 1)),
+            verbose=False,
+            limitsize=False)
     plt.close()
 
 
