@@ -301,7 +301,7 @@ def buildReadConsensus(reads, minreads, minconcur, use_cutils=True):
     return ''.join(consensus)
 
 
-def rarefactionCurve(barcodes):
+def rarefactionCurve(barcodes, *, maxpoints=1e5, logspace=True):
     """Rarefaction curve from list of barcodes.
 
     Uses the analytical formula for the rarefaction curve defined
@@ -313,29 +313,37 @@ def rarefactionCurve(barcodes):
             the rarefaction curve. It is expected that some of these
             barcodes will be repeated multiple times in the list if
             the sampling is approaching saturation.
+        `maxpoints` (int)
+            Only calculate values at this many points. The benefit
+            of this is that it can become very costly to calculate
+            the curve at every point when there are many points.
+        `logspace` (True)
+            Logarithmically space the `maxpoints` points for
+            the calculation. This will give better results if
+            we are subsampling and the curve saturates. Only
+            done if we have to subsample.
 
     Returns:
-        List `fn` where element `n` is expected number of different
-        barcodes observed for `i + 1` barcodes.
+        The 2-tuple `(nreads, nbarcodes)`, where both `nreads` and
+        `nbarcodes` are lists of the same length, and `nbarcodes[i]`
+        is the expected number of barcodes observed when there are
+        `nreads[i]` reads.
 
     Here we take a very small list and show that the results given
     by the function are equivalent to those obtained by random
     subsampling:
 
     >>> barcodes = ['A', 'A', 'A', 'A', 'G', 'G', 'C', 'T']
-    >>> fn = rarefactionCurve(barcodes)
-    >>> round(fn[0], 3) == 1
-    True
-    >>> round(fn[-1], 3) == len(set(barcodes))
-    True
+    >>> (nreads, nbarcodes) = rarefactionCurve(barcodes)
     >>> random.seed(1)
     >>> nrand = 100000
-    >>> sim_equal_fn = []
-    >>> for n in range(2, len(barcodes)):
-    ...     fn_sim = sum([len(set(random.sample(barcodes, n))) for _
-    ...             in range(nrand)]) / nrand
-    ...     sim_equal_fn.append(numpy.allclose(fn_sim, fn[n - 1], atol=1e-2))
-    >>> all(sim_equal_fn)
+    >>> sim_equal_calc = []
+    >>> for n in range(1, len(barcodes) + 1):
+    ...     nbarcodes_sim = sum([len(set(random.sample(barcodes, n)))
+    ...             for _ in range(nrand)]) / nrand
+    ...     sim_equal_calc.append(numpy.allclose(nbarcodes_sim,
+    ...             nbarcodes[nreads.index(n)], atol=1e-2))
+    >>> all(sim_equal_calc)
     True
     """
     N = len(barcodes) # total number of items
@@ -349,12 +357,19 @@ def rarefactionCurve(barcodes):
     # [(N - Ni)! * (N - n)!] / [N! * (N - Ni - n)!]
     #
     # Also use fact that gamma(x + 1) = x!
-    fn = []
+    nbarcodes = []
     lnFactorial_N = scipy.special.gammaln(N + 1)
-    for n in range(1, N + 1):
+    if logspace and N > maxpoints:
+        nreads = list(numpy.unique(numpy.logspace(
+                math.log10(1), math.log10(N),
+                num=min(N, maxpoints)).astype('int')))
+    else:
+        nreads = list(numpy.unique(numpy.linspace(
+                1, N, num=min(N, maxpoints)).astype('int')))
+    for n in nreads:
         lnFactorial_N_minus_n = scipy.special.gammaln(N - n + 1)
         i = numpy.nonzero(N - Nk - n >= 0) # indices where this is true
-        fn.append(
+        nbarcodes.append(
                 K - (num[i] * numpy.exp(
                             scipy.special.gammaln(N - Nk[i] + 1) +
                             lnFactorial_N_minus_n -
@@ -362,7 +377,7 @@ def rarefactionCurve(barcodes):
                             scipy.special.gammaln(N - Nk[i] - n + 1))
                     ).sum()
                 )
-    return fn
+    return (nreads, nbarcodes)
 
 
 def reverseComplement(s, use_cutils=True):
