@@ -14,6 +14,8 @@ import re
 import os
 import math
 import numbers
+import random
+import collections
 
 import natsort
 import pandas
@@ -43,7 +45,7 @@ seaborn.set(context='talk',
                 }
            )
 
-from dms_tools2 import CODONS, AAS, AAS_WITHSTOP
+from dms_tools2 import CODONS, AAS, AAS_WITHSTOP, NTS
 import dms_tools2.utils
 
 #: `color-blind safe palette <http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/>`_
@@ -476,8 +478,8 @@ def plotCodonMutTypes(names, countsfiles, plotfile,
                 for n in [1, 2, 3]])
     elif classification == 'singlentchanges':
         muttypes = dict([(ntchange, ntchange) for ntchange in [
-                '{0}to{1}'.format(nt1, nt2) for nt1 in dms_tools2.NTS
-                for nt2 in dms_tools2.NTS if nt1 != nt2]])
+                '{0}to{1}'.format(nt1, nt2) for nt1 in NTS
+                for nt2 in NTS if nt1 != nt2]])
     else:
         raise ValueError("Invalid classification {0}".format(classification))
 
@@ -1146,6 +1148,113 @@ def plotColCorrs(df, plotfile, cols, *, lower_filter=None,
 
     g.savefig(plotfile)
     plt.close()
+
+
+def plotRarefactionCurves(df, rarefy_col, plotfile,
+        *, facet_col=None, nrow=1,
+        xlabel='reads', ylabel=None):
+    """Plots rarefaction curves.
+
+    The rarefaction curves are calculated analytically using
+    :py:mod:`dms_tools2.utils.rarefactionCurve`.
+
+    Args:
+        `df` (pandas DataFrame)
+            Data frame containing data. In tidy form if
+            faceting.
+        `rarefy_col` (str)
+            Name of column in `df` that contains the variable
+            that we rarify. For instance, these might be strings
+            giving barcodes.
+        `plotfile` (str)
+            Name of created plot.
+        `facet_col` (str or `None`)
+            If not `None`, should be name of a column in `df`
+            that contains a variable we facet in the plot.
+        `nrow` (int)
+            If faceting, the number of rows.
+        `xlabel` (str)
+            X-axis label.
+        `ylabel` (str or `None`)
+            Y-axis label. If `None`, defaults to value of `rarefy_col`.
+
+    Here is an example. First, we simulate two sets of barcodes.
+    For ease of fast simulation, the barcodes are just numbers here.
+    One samples a large set, the other a set half that size, both
+    to the same depth:
+
+    >>> nbc = 40000
+    >>> bclen = 10
+    >>> nreads = 200000
+    >>> barcodes = list(range(nbc))
+    >>> numpy.random.seed(1)
+    >>> large_set = numpy.random.choice(barcodes, size=nreads)
+    >>> small_set = numpy.random.choice(barcodes[ : nbc // 2], size=nreads)
+
+    Now we put these in a tidy data frame where one column is named
+    "barcodes" and the other is named "sample":
+
+    >>> df = pandas.DataFrame({
+    ...         "barcodes":list(small_set) + list(large_set),
+    ...         "sample":['small_set'] * len(small_set) +
+    ...                  ['large_set'] * len(large_set)})
+
+    Finally, plot the rarefaction curves:
+
+    >>> plotfile = '_plotRarefactionCurves.png'
+    >>> plotRarefactionCurves(df, 'barcodes', plotfile, facet_col='sample')
+
+    Here is the resulting plot:
+
+    .. image:: _static/_plotRarefactionCurves.png
+       :width: 4in
+       :align: center
+    """
+    if rarefy_col not in df.columns:
+        raise ValueError("`df` does not have `rarefy_col` {0}"
+                         .format(rarefy_col))
+    if (facet_col is not None) and (facet_col not in df.columns):
+        raise ValueError("`df` does not have `facet_col` {0}"
+                         .format(facet_col))
+    if ylabel is None:
+        ylabel = rarefy_col
+
+    # get iterator over groups or dummy iterator
+    if facet_col is not None:
+        df_iterator = df.groupby(facet_col)[rarefy_col]
+        nfacets = len(df[facet_col].unique())
+    else:
+        df_iterator = ('dummy', df[rarefy_col])
+        nfacets = 1
+    d = collections.defaultdict(list)
+
+    for name, group in df_iterator:
+        xs, ys = dms_tools2.utils.rarefactionCurve(group)
+        assert len(xs) == len(ys)
+        d[ylabel] += ys
+        d[xlabel] += xs
+        d['_facet_var'] += [name] * len(xs)
+    rarefied = pandas.DataFrame(d)
+
+    p = (ggplot(rarefied, aes(xlabel, ylabel)) +
+            geom_line() +
+            xlab(xlabel) +
+            ylab(ylabel) +
+            scale_x_continuous(labels=latexSciNot,
+                    breaks=lambda x: matplotlib.ticker.MaxNLocator(3)
+                                     .tick_values(min(x), max(x))) +
+            scale_y_continuous(labels=latexSciNot)
+            )
+
+    if facet_col is not None:
+        p += facet_wrap('~ _facet_var', nrow=nrow)
+
+    p.save(plotfile, height=2.25,
+            width=(1.25 + 2 * math.ceil(nfacets / nrow)),
+            verbose=False)
+    plt.close()
+
+
 
 
 def hist_bins_intsafe(x, method='fd', shrink_threshold=None):
