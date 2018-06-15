@@ -8,6 +8,7 @@ Miscellaneous utilities for ``dms_tools2``.
 
 
 import os
+import math
 import sys
 import time
 import platform
@@ -20,6 +21,7 @@ import random
 
 import numpy
 import scipy.misc
+import scipy.special
 import pandas
 import HTSeq
 
@@ -322,17 +324,17 @@ def rarefactionCurve(barcodes):
 
     >>> barcodes = ['A', 'A', 'A', 'A', 'G', 'G', 'C', 'T']
     >>> fn = rarefactionCurve(barcodes)
-    >>> fn[0] == 1
+    >>> round(fn[0], 3) == 1
     True
-    >>> fn[-1] == len(set(barcodes))
+    >>> round(fn[-1], 3) == len(set(barcodes))
     True
     >>> random.seed(1)
-    >>> nrand = 10000
+    >>> nrand = 100000
     >>> sim_equal_fn = []
     >>> for n in range(2, len(barcodes)):
     ...     fn_sim = sum([len(set(random.sample(barcodes, n))) for _
     ...             in range(nrand)]) / nrand
-    ...     sim_equal_fn.append(numpy.allclose(fn_sim, fn[n - 1], atol=1e-1))
+    ...     sim_equal_fn.append(numpy.allclose(fn_sim, fn[n - 1], atol=1e-2))
     >>> all(sim_equal_fn)
     True
     """
@@ -340,13 +342,27 @@ def rarefactionCurve(barcodes):
     Ni = collections.Counter(barcodes)
     K = len(Ni)
     Mj = collections.Counter(Ni.values())
-    fn = []
-    for n in range(1, N + 1):
-        N_choose_n_inv = 1.0 / scipy.misc.comb(N, n)
-        Ksum = sum([num * scipy.misc.comb(N - Nk, n) for Nk, num in Mj.items()])
-        fn.append(K - N_choose_n_inv * Ksum)
-    return fn
 
+    Nk, num = map(numpy.array, zip(*Mj.items()))
+
+    # use simplification that (N - Ni)Cr(n) / (N)Cr(n) =
+    # [(N - Ni)! * (N - n)!] / [N! * (N - Ni - n)!]
+    #
+    # Also use fact that gamma(x + 1) = x!
+    fn = []
+    lnFactorial_N = scipy.special.gammaln(N + 1)
+    for n in range(1, N + 1):
+        lnFactorial_N_minus_n = scipy.special.gammaln(N - n + 1)
+        i = numpy.nonzero(N - Nk - n >= 0) # indices where this is true
+        fn.append(
+                K - (num[i] * numpy.exp(
+                            scipy.special.gammaln(N - Nk[i] + 1) +
+                            lnFactorial_N_minus_n -
+                            lnFactorial_N -
+                            scipy.special.gammaln(N - Nk[i] - n + 1))
+                    ).sum()
+                )
+    return fn
 
 
 def reverseComplement(s, use_cutils=True):
