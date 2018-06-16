@@ -506,9 +506,9 @@ def plotCodonMutTypes(names, countsfiles, plotfile,
             + scale_y_continuous(labels=latexSciNot)
             )
     if len(muttypes) <= len(COLOR_BLIND_PALETTE):
-        p += scale_fill_manual(COLOR_BLIND_PALETTE)
+        p = p + scale_fill_manual(COLOR_BLIND_PALETTE)
     else:
-        p += guides(fill=guide_legend(ncol=2))
+        p = p + guides(fill=guide_legend(ncol=2))
 
     p.save(plotfile, height=2.7, width=(1.2 + 0.25 * len(names)),
             verbose=False)
@@ -802,8 +802,8 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
              + guides(color=False)
              )
     if not ((len(names) == 1) and ((not names[0]) or names[0].isspace())):
-        p += facet_wrap('~name', ncol=ncol)
-    p += theme(figure_size=(4.6 * (0.3 + ncol), 1.9 * (0.2 + nrow)))
+        p = p + facet_wrap('~name', ncol=ncol)
+    p = p + theme(figure_size=(4.6 * (0.3 + ncol), 1.9 * (0.2 + nrow)))
     p.save(plotfile, verbose=False)
     plt.close()
 
@@ -1265,24 +1265,22 @@ def plotRarefactionCurves(df, rarefy_col, plotfile,
             scale_y_continuous(labels=ylabeler)
             )
 
-    panel_spacing_x = {"free":0.75, "free_x":0.1,
+    x_panel_spacing = {"free":0.75, "free_x":0.1,
                        "fixed":0.1, "free_y":0.75}[facet_scales]
-    panel_spacing_y = {"free":0.4, "free_x":0.4,
+    y_panel_spacing = {"free":0.4, "free_x":0.4,
                        "fixed":0.1, "free_y":0.1}[facet_scales]
     if facet_col is not None:
-        p += facet_wrap('~ _facet_var', nrow=nrow, scales=facet_scales)
-        p += theme(panel_spacing_x=panel_spacing_x,
-                   panel_spacing_y=panel_spacing_y)
+        p = p + facet_wrap('~ _facet_var', nrow=nrow, scales=facet_scales)
+        p = p + theme(panel_spacing_x=x_panel_spacing,
+                   panel_spacing_y=y_panel_spacing)
 
     ncol = math.ceil(nfacets / nrow)
     p.save(plotfile,
-            height=0.5 + 1.75 * nrow + panel_spacing_y * (nrow - 1),
-            width=(1.25 + 2 * ncol + panel_spacing_x * (ncol - 1)),
+            height=0.5 + 1.75 * nrow + y_panel_spacing * (nrow - 1),
+            width=(1.25 + 2 * ncol + x_panel_spacing * (ncol - 1)),
             verbose=False,
             limitsize=False)
     plt.close()
-
-
 
 
 def hist_bins_intsafe(x, method='fd', shrink_threshold=None):
