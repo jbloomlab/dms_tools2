@@ -66,18 +66,19 @@ OPTIONS_VIRUS_W_DEL = [
                        '--secondary=no',
                        '--for-only',
                        '--end-seed-pen=2',
-                       '--end-bonus=4',
+                       '--end-bonus=1',
                       ]
 
 # namedtuple to hold alignments
 Alignment = collections.namedtuple('Alignment',
-        ['target', 'r_st', 'r_en', 'q_len', 'q_st',
+        ['target', 'r_st', 'r_en', 'r_len', 'q_len', 'q_st',
          'q_en', 'strand', 'cigar_str', 'additional',
          'score'])
 Alignment.__doc__ = "Alignment of a query to a target."
 Alignment.target.__doc__ = "Name of target to which query was aligned."
 Alignment.r_st.__doc__ = "Alignment start in target (0 based)."
 Alignment.r_en.__doc__ = "Alignment end in target (0 based)."
+Alignment.r_len.__doc__ = "Total length of target prior to any clipping."
 Alignment.q_st.__doc__ = "Alignment start in query (0 based)."
 Alignment.q_en.__doc__ = "Alignment end in query (0 based)."
 Alignment.q_len.__doc__ = "Total length of query prior to any clipping."
@@ -108,7 +109,7 @@ def checkAlignment(a, target, query):
     >>> target = 'ATGCAT'
     >>> query = 'TACA'
     >>> a_valid = Alignment(target='target', r_st=1, r_en=5,
-    ...         q_st=0, q_en=4, q_len=4, strand=1,
+    ...         r_len=6, q_st=0, q_en=4, q_len=4, strand=1,
     ...         cigar_str='=T*ga=CA', additional=[], score=-1)
     >>> checkAlignment(a_valid, target, query)
     True
@@ -120,15 +121,221 @@ def checkAlignment(a, target, query):
     (cigar_query, cigar_target) = cigarToQueryAndTarget(a.cigar_str)
     if (
             (a.q_len < a.q_en) or
+            (a.r_len < a.r_en) or
             (a.r_st >= a.r_en) or
             (a.q_st >= a.q_en) or
             (a.q_len != len(query)) or
+            (a.r_len != len(target)) or
             (query[a.q_st : a.q_en] != cigar_query) or
             (target[a.r_st : a.r_en] != cigar_target)
             ):
         return False
     else:
         return True
+
+
+class MutationCaller:
+    """Class to call mutations from :class:`Alignment` objects.
+
+    Pass :class:`Alignment` objects to :class:`MutationCaller.call`
+    to call mutations in query relative to the target.
+
+    Attributes:
+        `targetindex` (int)
+            Number assigned to first nucleotide of target in
+            mutation names. A value of 1 means that the first
+            nucleotide of the target is position 1.
+        `target_clip` (int)
+            Ignore any mutations that occur within this many
+            nucleotides of the termini of target. If an indel
+            includes any nucleotides that are not ignored,
+            then the full indel is reported.
+        `query_softclip` (int)
+            Ignore any mutations that occur within this many
+            nucleotides of the termini of the query **and**
+            are soft clipped in the alignment. If an indel
+            includes any nucleotides not ignored, then the full
+            indel is reported.
+
+    Here is an example. First, create an :class:`Alignment`
+    that corresponds to the following::
+
+        target: --ATGCATGAAT--CGAAA
+        query:  cgATGaAcG--TatCt---
+
+    >>> a = Alignment(q_st=2, q_en=14, q_len=14, strand=1,
+    ...         r_st=0, r_en=12, r_len=15, score=16, target='target',
+    ...         cigar_str='=ATG*ca=A*tc=G-aa=T+at=C*gt', additional=[])
+
+    Now call mutations using default (target indexing starts at 1,
+    no ignoring of termini):
+
+    >>> mutcaller = MutationCaller()
+    >>> muts = mutcaller.call(a)
+    >>> muts['mutations']
+    ['C4A', 'T6C', 'G12T']
+    >>> muts['deletions']
+    ['del8to9', 'del13to15']
+    >>> muts['insertions']
+    ['ins1len2', 'ins11len2']
+
+    Illustrate `targetindex` by re-calling with 0-based idexing:
+
+    >>> mutcaller_index0 = MutationCaller(targetindex=0)
+    >>> muts_index0 = mutcaller_index0.call(a)
+    >>> muts_index0['mutations']
+    ['C3A', 'T5C', 'G11T']
+    >>> muts_index0['deletions']
+    ['del7to8', 'del12to14']
+    >>> muts_index0['insertions']
+    ['ins0len2', 'ins10len2']
+
+    Use `target_clip` to ignore mutations near target termini:
+
+    >>> mutcaller_targetclip2 = MutationCaller(target_clip=2)
+    >>> muts_targetclip2 = mutcaller_targetclip2.call(a)
+    >>> muts_targetclip2['mutations']
+    ['C4A', 'T6C', 'G12T']
+    >>> muts_targetclip2['deletions']
+    ['del8to9', 'del13to15']
+    >>> muts_targetclip2['insertions']
+    ['ins11len2']
+    >>> mutcaller_targetclip4 = MutationCaller(target_clip=4)
+    >>> muts_targetclip4 = mutcaller_targetclip4.call(a)
+    >>> muts_targetclip4['mutations']
+    ['T6C']
+    >>> muts_targetclip4['deletions']
+    ['del8to9']
+    >>> muts_targetclip4['insertions']
+    ['ins11len2']
+
+    Use `query_softclip` to ignore clipped regions in query:
+
+    >>> mutcaller_querysoftclip = MutationCaller(query_softclip=3)
+    >>> muts_querysoftclip = mutcaller_querysoftclip.call(a)
+    >>> muts_querysoftclip['mutations']
+    ['C4A', 'T6C', 'G12T']
+    >>> muts_querysoftclip['deletions']
+    ['del8to9', 'del13to15']
+    >>> muts_querysoftclip['insertions']
+    ['ins11len2']
+    """
+
+    def __init__(self, *, targetindex=1, target_clip=0,
+            query_softclip=0):
+        """See main class docstring."""
+        self.targetindex = targetindex
+
+        if (not isinstance(target_clip, int)) or (
+                target_clip < 0):
+            raise ValueError("`target_clip` not int >= 0")
+        self.target_clip = target_clip
+
+        if (not isinstance(query_softclip, int)) or (
+                query_softclip < 0):
+            raise ValueError("`query_softclip` not int >= 0")
+        self.query_softclip = query_softclip
+
+
+    def call(self, a):
+        """Call mutations in alignment.
+
+        Args:
+            `a` (:class:`Alignment`)
+                Call mutations in this alignment.
+
+        Return:
+            A dict keyed by the strings "mutations", "deletions",
+            and "insertions" where the key for each gives:
+
+                - `mutations` is list of all point mutations,
+                  in the form "A1G" to indicate mutation of site
+                  1 (in target-based numbering) from A to G.
+
+                - `deletions` is list of all deletions, in the
+                  form "del1to20" to indicate deletion of sites
+                  1 to 20 (inclusive of both endpoints) in target-
+                  based numbering.
+
+                - `insertions` is list of all insertions, in the
+                  form "ins1len20" to indicate insertion of 20
+                  nucleotides immediately **before** site 1 in
+                  target-based numbering.
+        """
+        muts = {'mutations':[], 'deletions':[], 'insertions':[]}
+
+        # deletions / insertions before alignment
+        if a.r_st > 0:
+            muts['deletions'].append('del{0}to{1}'.format(
+                    self.targetindex, self.targetindex + a.r_st))
+        if a.q_st > self.query_softclip:
+            muts['insertions'].append('ins{0}len{1}'.format(
+                    self.targetindex, a.q_st))
+
+        # mutations in alignment
+        itarget = a.r_st + self.targetindex
+        cigar = a.cigar_str
+        while cigar:
+            m = _CIGAR_GROUP_MATCH.match(cigar)
+            assert m and m.start() == 0
+            if m.group()[0] == '=':
+                n = len(m.group()) - 1
+                itarget += n
+            elif m.group()[0] == '*':
+                assert len(m.group()) == 3
+                muts['mutations'].append('{0}{1}{2}'.format(
+                        m.group()[1].upper(), itarget,
+                        m.group()[2].upper()))
+                itarget += 1
+            elif m.group()[0] == '-':
+                n = len(m.group()) - 1
+                muts['deletions'].append('del{0}to{1}'.format(itarget,
+                        itarget + n - 1))
+                itarget += n
+            elif m.group()[0] == '+':
+                muts['insertions'].append('ins{0}len{1}'.format(
+                        itarget, len(m.group()) - 1))
+            elif m.group()[0] == '~':
+                raise ValueError("Cannot handle intron operations")
+            else:
+                raise RuntimeError("should never get here")
+            cigar = cigar[m.end() : ]
+        assert cigar == ''
+        assert itarget - self.targetindex == a.r_en
+
+        # deletions / insertions after alignment
+        if a.r_en < a.r_len:
+            muts['deletions'].append('del{0}to{1}'.format(
+                    self.targetindex + a.r_en,
+                    self.targetindex + a.r_len - 1))
+        if a.q_en < a.q_len - self.query_softclip:
+            muts['insertions'].append('ins{0}len{1}'.format(
+                    self.targetindex + a.r_en, a.q_len - a.q_en))
+
+        def _mutStartEnd(mstring):
+            """First, last nt of mutation `mstring` in target."""
+            if mstring[ : 3] == 'del':
+                return map(int, mstring[3 : ].split('to'))
+            elif mstring[ : 3] == 'ins':
+                i = int(mstring[3 : ].split('len')[0])
+                return (i, i)
+            else:
+                i = int(mstring[1 : -1])
+                return (i, i)
+
+        # filter away mutations too near target termini
+        if self.target_clip:
+            i_first = self.targetindex + self.target_clip
+            i_last = a.r_len + self.targetindex - self.target_clip
+            for muttype in list(muts.keys()):
+                mutlist = []
+                for m in muts[muttype]:
+                    istart, iend = _mutStartEnd(m)
+                    if not ((iend < i_first) or (istart >= i_last)):
+                        mutlist.append(m)
+                muts[muttype] = mutlist
+
+        return muts
 
 
 class Mapper:
@@ -500,7 +707,7 @@ class TargetVariants:
     wildtype of target2:
 
     >>> a_wildtype = Alignment(q_st=0, q_en=8, q_len=8, strand=1,
-    ...         r_st=1, r_en=9, score=16, target='target2',
+    ...         r_st=1, r_en=9, r_len=9, score=16, target='target2',
     ...         additional=[], cigar_str='=ATACCCGG')
     >>> (variant, a_new) = targetvars.call(a_wildtype)
     >>> variant
@@ -531,7 +738,7 @@ class TargetVariants:
     Now an alignment that only spans some variable sites:
 
     >>> a_var_partial = Alignment(q_st=0, q_en=7, q_len=7, strand=1,
-    ...         r_st=2, r_en=9, score=14, target='target2',
+    ...         r_st=2, r_en=9, r_len=9, score=14, target='target2',
     ...         additional=[], cigar_str='=TACCC*gc=G')
     >>> (variant, a_new) = targetvars.call(a_var_partial)
     >>> variant
@@ -545,7 +752,7 @@ class TargetVariants:
     threshold:
 
     >>> a_qvals = Alignment(q_st=1, q_en=9, q_len=9, strand=1,
-    ...         r_st=1, r_en=9, score=16, target='target2',
+    ...         r_st=1, r_en=9, r_len=9, score=16, target='target2',
     ...         additional=[], cigar_str='=ATACCCGG')
     >>> qvals_high = numpy.array([30] * 9)
     >>> (variant, a_new) = targetvars.call(a_qvals, qvals_high)
@@ -559,7 +766,7 @@ class TargetVariants:
     Now an alignment that does not span any variable sites:
 
     >>> a_unknown = Alignment(q_st=0, q_en=5, q_len=5, strand=1,
-    ...         r_st=2, r_en=7, score=12, target='target2',
+    ...         r_st=2, r_en=7, r_len=9, score=12, target='target2',
     ...         additional=[], cigar_str='=TACCC')
     >>> (variant, a_new) = targetvars.call(a_unknown)
     >>> a_unknown == a_new
@@ -961,6 +1168,7 @@ def parsePAF(paf_file, targets=None, introns_to_gaps=False):
         a = Alignment(target=target,
                       r_st=r_st,
                       r_en=r_en,
+                      r_len=int(entries[6]),
                       q_st=int(entries[2]),
                       q_en=int(entries[3]),
                       q_len=int(entries[1]),
@@ -1299,7 +1507,7 @@ def iTargetToQuery(a, i):
         Index in query that aligns to site `i` in target,
         or `None` if there is not an alignment at that site.
 
-    >>> a = Alignment(target='target', r_st=1, r_en=9,
+    >>> a = Alignment(target='target', r_st=1, r_en=9, r_len=9,
     ...         q_st=3, q_en=10, q_len=7, strand=1,
     ...         cigar_str='=T*ga=CA-ga=T+c=T',
     ...         additional=[], score=-1)

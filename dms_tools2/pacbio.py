@@ -268,8 +268,8 @@ def matchAndAlignCCS(ccslist, mapper, *,
     This is a convenience function that runs :meth:`matchSeqs`
     and :meth:`alignSeqs` for a common use case. It takes one
     or more :class:`CCS` objects, looks for CCS sequences in them
-    that match a specific pattern, and align them to targets. It
-    returns a large pandas data frame with all the results. The CCS
+    that match a specific pattern, and aligns them to targets. It
+    returns a pandas data frame with all the results. The CCS
     sequences are assumed to be molecules that have the following
     structure, although potentially in either orientation::
 
@@ -777,8 +777,8 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
             - If `targetvariants` is not none, then add a column
               named `aligned_call` suffixed by "_target_variant"
               that has the values returned for that alignment by
-              :class:`dms_tools2.TargetVariants.call`, or an empty
-              string if no alignmnet.
+              :class:`dms_tools2.minimap2.TargetVariants.call`, or
+              an empty string if no alignmnet.
     """
     assert query_col in df.columns, "no `query_col` {0}".format(query_col)
 
@@ -856,7 +856,7 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
                 align_d[n_trimmed_prefix + 'target_start'].append(
                         a.r_st)
                 align_d[n_trimmed_prefix + 'target_end'].append(
-                        len(mapper.targetseqs[a.target]) - a.r_en)
+                        a.r_len - a.r_en)
             if add_n_additional:
                 align_d[n_additional_col].append(len(a.additional))
             if add_n_additional_difftarget:
