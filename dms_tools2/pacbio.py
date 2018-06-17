@@ -262,7 +262,8 @@ class CCS:
 
 def matchAndAlignCCS(ccslist, mapper, *,
         termini5, gene, spacer, umi, barcode, termini3,
-        targetvariants=None, rc_barcode_umi=True):
+        targetvariants=None, mutationcaller=None,
+        rc_barcode_umi=True):
     """Identify CCSs that match pattern and align them.
 
     This is a convenience function that runs :meth:`matchSeqs`
@@ -309,6 +310,8 @@ def matchAndAlignCCS(ccslist, mapper, *,
         `targetvariants` (:class:`dms_tools2.minimap2.TargetVariants`)
             Call target variants. See docs for same argument to
             :meth:`alignSeqs`.
+        `mutationcaller` (:class:`dms_tools2.minimap2.MutationCaller`)
+            Call mutations. See docs for same argument to :meth:`alignSeqs`.
         `rc_barcode_umi` (bool)
             Do we reverse complement the `barcode` and `UMI` in the
             returned data frame relative to the orientation of
@@ -366,6 +369,12 @@ def matchAndAlignCCS(ccslist, mapper, *,
         - If `targetvariants` is not `None`, column named
           `gene_aligned_target_variant` giving target variant
           returned by :class:`dms_tools2.minimap2.TargtVariants.call`.
+
+        - If `mutationcaller` is not `None`, columns named
+          `gene_aligned_mutations`, `gene_aligned_deletions`,
+          and `gene_aligned_insertions` giving the specific
+          mutations of each type as returned by
+          :class:`dms_tools2.minimap2.MutationCaller.call`.
 
         - `CCS_aligned` is `True` if the CCS can be aligned
           using `mapper` even if a gene cannot be matched,
@@ -458,7 +467,8 @@ def matchAndAlignCCS(ccslist, mapper, *,
               mapper=mapper,
               query_col='gene',
               aligned_col='gene_aligned',
-              targetvariants=targetvariants)
+              targetvariants=targetvariants,
+              mutationcaller=mutationcaller)
     
         # look for any alignment of CCS, take best in either orientation
         .pipe(_align_CCS_both_orientations,
@@ -672,7 +682,7 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
         add_alignment=True, add_target=True, add_cigar=True,
         add_n_trimmed=True, add_n_additional=True,
         add_n_additional_difftarget=True, targetvariants=None,
-        overwrite=True, paf_file=None):
+        mutationcaller=None, overwrite=True, paf_file=None):
     """Align sequences in a dataframe to target sequence(s).
 
     Arguments:
@@ -710,6 +720,10 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
             then `df` must have a column with the name of `query_col`
             suffixed by '_qvals' that gives the Q-values to compute
             accuracies.
+        `mutationcaller` (:class:`dms_tools2.minimap2.MutationCaller`)
+            Call mutations of aligned genes using the `call` function
+            of this object. Note that any target variant mutations are
+            handled first and then removed and not called here.
         `add_n_additional_difftarget` (bool)
             Add columns specifying number of additional alignments
             to a target other than the one in the primary alignment.
@@ -774,11 +788,19 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
               if if there is no alignment. See the `target_isoforms`
               attribute of :py:mod:`dms_tools2.minimap2.Mapper`.
 
-            - If `targetvariants` is not none, then add a column
-              named `aligned_call` suffixed by "_target_variant"
+            - If `targetvariants` is not `None`, add a column
+              named `aligned_col` suffixed by "_target_variant"
               that has the values returned for that alignment by
               :class:`dms_tools2.minimap2.TargetVariants.call`, or
-              an empty string if no alignmnet.
+              an empty string if no alignment.
+
+            - If `mutationcaller` is not `None`, add columns
+              named `aligned_col` suffixed by "_mutations",
+              "_insertions", and "_deletions" which give the
+              mutations of each of these types in the form
+              of the lists returned by 
+              :class:`dms_tools2.minimap2.MutationCaller.call`,
+              or an empty list if there is no alignment.
     """
     assert query_col in df.columns, "no `query_col` {0}".format(query_col)
 
@@ -815,6 +837,12 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
                         "in `df` named {0}".format(qvals_col))
             qvals = pandas.Series(df[qvals_col].values,
                                   index=df.name).to_dict()
+    if mutationcaller is not None:
+        mut_types = ['mutations', 'insertions', 'deletions']
+        newcols += ['{0}_{1}'.format(aligned_col, mut_type)
+                for mut_type in mut_types]
+
+    assert len(newcols) == len(set(newcols))
 
     dup_cols = set(newcols).intersection(set(df.columns))
     if (not overwrite) and dup_cols:
@@ -841,6 +869,11 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
             if targetvariants:
                 (variant, a) = targetvariants.call(a, qvals[name])
                 align_d[targetvariant_col].append(variant)
+            if mutationcaller:
+                muts = mutationcaller.call(a)
+                for mut_type in mut_types:
+                    align_d['{0}_{1}'.format(aligned_col, mut_type)
+                            ].append(muts[mut_type])
             align_d[aligned_col].append(True)
             if add_alignment:
                 align_d[alignment_col].append(a)
@@ -882,6 +915,9 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
                 align_d[n_additional_difftarget_col].append(-1)
             if targetvariants:
                 align_d[targetvariant_col].append('')
+            if mutationcaller:
+                for mut_type in mut_types:
+                    align_d['{0}_{1}'.format(aligned_col, mut_type)].append([])
 
     # set index to make sure matches `df`
     index_name = df.index.name

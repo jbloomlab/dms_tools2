@@ -301,7 +301,10 @@ class MutationCaller:
                 raise RuntimeError("should never get here")
             cigar = cigar[m.end() : ]
         assert cigar == ''
-        assert itarget - self.targetindex == a.r_en
+        assert itarget - self.targetindex == a.r_en, (
+                "itarget = {0}\nself.targetindex = {1}\n"
+                "a.r_en = {2}\na = {3}".format(itarget,
+                self.targetindex, a.r_en, a))
 
         # deletions / insertions after alignment
         if a.r_en < a.r_len:
@@ -725,6 +728,20 @@ class TargetVariants:
     False
     >>> a_new.cigar_str
     '=CTACCCCG'
+
+    Now one that matches the variant of target2, but also has another
+    mutation:
+
+    >>> a_variant = a_wildtype._replace(cigar_str='*ac=TA*ca=CC*gc=G')
+    >>> (variant, a_new) = targetvars.call(a_variant)
+    >>> variant
+    'variant'
+    >>> a_variant == a_new
+    False
+    >>> a_new.cigar_str
+    '=CTA*ca=CCCG'
+
+    Now one that is mixed (doesn't match either wildtype or variant):
 
     Now one that is mixed (doesn't match either wildtype or variant):
 
@@ -1438,13 +1455,10 @@ def removeCIGARmutations(cigar, muts_to_remove):
         target where the wildtype identity is what is given by
         the mutation.
 
-    Here is an example: ATgcaTAGTgA
-                        012345678910
-
-    >>> cigar = '=AT-gca=T*at=G+ca*ga=TA'
+    >>> cigar = '=AT-gca=T*at=G+ca*ga=T*at'
     >>> muts_to_remove = {6:'T', 8:'A'}
     >>> removeCIGARmutations(cigar, muts_to_remove)
-    '=AT-gca=TTG+ca=ATA'
+    '=AT-gca=TTG+ca=AT*at'
     """
     new_nts = {i:nt.upper() for i, nt in muts_to_remove.items()}
     i_target = 0
@@ -1473,6 +1487,7 @@ def removeCIGARmutations(cigar, muts_to_remove):
                 prevgroupmatch = True
                 del new_nts[i_target]
             else:
+                newcigar.append(m.group())
                 prevgroupmatch = False
             i_target += 1
         elif m.group()[0] == '-':
