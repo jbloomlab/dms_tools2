@@ -169,6 +169,10 @@ class Mutations:
             `PacBio CCS <https://github.com/PacificBiosciences/unanimity/blob/develop/doc/PBCCS.md#interpretting-qual-values>`_
             specification.
 
+    After intialization, use the methods described below to get
+    information about the mutations. All of the methods that
+    return lists of mutations do them ordered by site (first to last).
+
     Here is an example. Note that Q-value of 20 indicates an accuracy
     of 0.99, and a Q-value of 30 indicates an accuracy of 0.999:
 
@@ -200,61 +204,92 @@ class Mutations:
     def __init__(self, *, substitution_tuples, insertion_tuples,
             deletion_tuples):
         """See main class doc string."""
-        self._subtups = sorted(substitution_tuples)
-        self._instups = sorted(insertion_tuples)
-        self._deltups = sorted(deletion_tuples)
+        self._substitution_tuples = sorted(substitution_tuples)
+        self._insertion_tuples = sorted(insertion_tuples)
+        self._deletion_tuples = sorted(deletion_tuples)
 
-    def substitutions(self, *, min_acc=None):
-        """List of substitutions.
+
+    def substitutions(self, *, returnval='mutation', min_acc=None):
+        """List of substitutions or associated values.
 
         Args:
             `min_acc` (float or `None`)
-                Only return substitutions with >= this accuracy.
+                Only include substitutions with >= this accuracy.
+            `returnval` (str)
+                Type of value to return in list:
+
+                - "mutation": Strings giving mutations, where
+                  "A1T" means site 1 is mutated from A to T.
 
         Returns:
-            List of mutations in form `['A1T', 'G43A']`, where
-            'A1T' means site 1 is mutated from A to T.
+            List of mutations or other value specified by `returnval`.
         """
         if min_acc is None:
-            return ['{1}{0}{2}'.format(*tup) for tup in self._subtups]
+            subtups = self._substitution_tuples
         else:
-            return ['{1}{0}{2}'.format(*tup) for tup in self._subtups
-                    if dms_tools2.pacbio.qvalsToAccuracy(tup[3]) >= min_acc]
+            subtups = [tup for tup in self._substitution_tuples if
+                    dms_tools2.pacbio.qvalsToAccuracy(tup[3]) >= min_acc]
 
-    def insertions(self, *, min_acc=None):
+        if returnval == 'mutation':
+            return ['{1}{0}{2}'.format(*tup) for tup in subtups]
+        else:
+            raise ValueError("invalid `returnval` {0}".format(returnval))
+
+
+    def insertions(self, *, returnval='mutation', min_acc=None):
         """List of insertions.
 
         Args:
             `min_acc` (float or `None`)
-                Only return insertions with >= this accuracy.
+                Only include insertions with >= this accuracy.
+            `returnval` (str)
+                Type of value to return in list:
+
+                - "mutation": Strings giving mutations, where
+                  "ins10len20" means insertion of length 20
+                  immediately before site 10.
 
         Returns:
-            List of insertions in form `['ins10len20']`, where
-            'ins10len20' means insertion of length 20 immediately
-            before site 10.
+            List of mutations or other value specified by `returnval`.
         """
         if min_acc is None:
-            return ['ins{0}len{1}'.format(*tup) for tup in self._instups]
+            instups = self._insertion_tuples
         else:
-            return ['ins{0}len{1}'.format(*tup) for tup in self._instups
-                    if dms_tools2.pacbio.qvalsToAccuracy(tup[2]) >= min_acc]
+            instups = [tup for tup in self._insertion_tuples if
+                    dms_tools2.pacbio.qvalsToAccuracy(tup[2]) >= min_acc]
 
-    def deletions(self, *, min_acc=None):
+        if returnval == 'mutation':
+            return ['ins{0}len{1}'.format(*tup) for tup in instups]
+        else:
+            raise ValueError("invalid `returnval` {0}".format(returnval))
+
+
+    def deletions(self, *, returnval='mutation', min_acc=None):
         """List of deletions.
 
         Args:
             `min_acc` (float or `None`)
-                Only return deletions with >= this accuracy.
+                Only include deletions with >= this accuracy.
+            `returnval` (str)
+                Type of value to return in list:
+
+                - "mutation": Strings giving mutations, where
+                  "del12to13" means deletion of nucleotides 12
+                  to 13, inclusive.
 
         Returns:
-            List of deletions in form `['del12to13']`, where
-            'del12to13' is deletion of nucleotides 12 to 13, inclusive.
+            List of mutations or other value specified by `returnval`.
         """
         if min_acc is None:
-            return ['del{0}to{1}'.format(*tup) for tup in self._deltups]
+            deltups = self._deletion_tuples
         else:
-            return ['del{0}to{1}'.format(*tup) for tup in self._deltups
-                    if dms_tools2.pacbio.qvalsToAccuracy(tup[2]) >= min_acc]
+            deltups = [tup for tup in self._deletion_tuples if
+                    dms_tools2.pacbio.qvalsToAccuracy(tup[2]) >= min_acc]
+
+        if returnval == 'mutation':
+            return ['del{0}to{1}'.format(*tup) for tup in deltups]
+        else:
+            raise ValueError("invalid `returnval` {0}".format(returnval))
 
 
 class MutationCaller:
