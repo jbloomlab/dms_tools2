@@ -371,7 +371,7 @@ def matchAndAlignCCS(ccslist, mapper, *,
           returned by :class:`dms_tools2.minimap2.TargtVariants.call`.
 
         - If `mutationcaller` is not `None`, columns named
-          `gene_aligned_mutations`, `gene_aligned_deletions`,
+          `gene_aligned_substitutions`, `gene_aligned_deletions`,
           and `gene_aligned_insertions` giving the specific
           mutations of each type as returned by
           :class:`dms_tools2.minimap2.MutationCaller.call`.
@@ -795,7 +795,7 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
               an empty string if no alignment.
 
             - If `mutationcaller` is not `None`, add columns
-              named `aligned_col` suffixed by "_mutations",
+              named `aligned_col` suffixed by "_substitutions",
               "_insertions", and "_deletions" which give the
               mutations of each of these types in the form
               of the lists returned by 
@@ -838,7 +838,7 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
             qvals = pandas.Series(df[qvals_col].values,
                                   index=df.name).to_dict()
     if mutationcaller is not None:
-        mut_types = ['mutations', 'insertions', 'deletions']
+        mut_types = ['substitutions', 'insertions', 'deletions']
         newcols += ['{0}_{1}'.format(aligned_col, mut_type)
                 for mut_type in mut_types]
 

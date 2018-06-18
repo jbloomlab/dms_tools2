@@ -172,7 +172,7 @@ class MutationCaller:
 
     >>> mutcaller = MutationCaller()
     >>> muts = mutcaller.call(a)
-    >>> muts['mutations']
+    >>> muts['substitutions']
     ['C4A', 'T6C', 'G12T']
     >>> muts['deletions']
     ['del8to9', 'del13to15']
@@ -183,7 +183,7 @@ class MutationCaller:
 
     >>> mutcaller_index0 = MutationCaller(targetindex=0)
     >>> muts_index0 = mutcaller_index0.call(a)
-    >>> muts_index0['mutations']
+    >>> muts_index0['substitutions']
     ['C3A', 'T5C', 'G11T']
     >>> muts_index0['deletions']
     ['del7to8', 'del12to14']
@@ -194,7 +194,7 @@ class MutationCaller:
 
     >>> mutcaller_targetclip2 = MutationCaller(target_clip=2)
     >>> muts_targetclip2 = mutcaller_targetclip2.call(a)
-    >>> muts_targetclip2['mutations']
+    >>> muts_targetclip2['substitutions']
     ['C4A', 'T6C', 'G12T']
     >>> muts_targetclip2['deletions']
     ['del8to9', 'del13to15']
@@ -202,7 +202,7 @@ class MutationCaller:
     ['ins11len2']
     >>> mutcaller_targetclip4 = MutationCaller(target_clip=4)
     >>> muts_targetclip4 = mutcaller_targetclip4.call(a)
-    >>> muts_targetclip4['mutations']
+    >>> muts_targetclip4['substitutions']
     ['T6C']
     >>> muts_targetclip4['deletions']
     ['del8to9']
@@ -213,7 +213,7 @@ class MutationCaller:
 
     >>> mutcaller_querysoftclip = MutationCaller(query_softclip=3)
     >>> muts_querysoftclip = mutcaller_querysoftclip.call(a)
-    >>> muts_querysoftclip['mutations']
+    >>> muts_querysoftclip['substitutions']
     ['C4A', 'T6C', 'G12T']
     >>> muts_querysoftclip['deletions']
     ['del8to9', 'del13to15']
@@ -245,11 +245,11 @@ class MutationCaller:
                 Call mutations in this alignment.
 
         Return:
-            A dict keyed by the strings "mutations", "deletions",
+            A dict keyed by the strings "substitutions", "deletions",
             and "insertions" where the key for each gives:
 
-                - `mutations` is list of all point mutations,
-                  in the form "A1G" to indicate mutation of site
+                - `substitutions` is list of all point mutations,
+                  in the form "A1G" to indicate substitution of site
                   1 (in target-based numbering) from A to G.
 
                 - `deletions` is list of all deletions, in the
@@ -262,7 +262,7 @@ class MutationCaller:
                   nucleotides immediately **before** site 1 in
                   target-based numbering.
         """
-        muts = {'mutations':[], 'deletions':[], 'insertions':[]}
+        muts = {'substitutions':[], 'deletions':[], 'insertions':[]}
 
         # deletions / insertions before alignment
         if a.r_st > 0:
@@ -283,7 +283,7 @@ class MutationCaller:
                 itarget += n
             elif m.group()[0] == '*':
                 assert len(m.group()) == 3
-                muts['mutations'].append('{0}{1}{2}'.format(
+                muts['substitutions'].append('{0}{1}{2}'.format(
                         m.group()[1].upper(), itarget,
                         m.group()[2].upper()))
                 itarget += 1
