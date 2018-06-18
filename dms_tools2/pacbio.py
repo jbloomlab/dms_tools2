@@ -370,11 +370,11 @@ def matchAndAlignCCS(ccslist, mapper, *,
           `gene_aligned_target_variant` giving target variant
           returned by :class:`dms_tools2.minimap2.TargtVariants.call`.
 
-        - If `mutationcaller` is not `None`, columns named
-          `gene_aligned_substitutions`, `gene_aligned_deletions`,
-          and `gene_aligned_insertions` giving the specific
-          mutations of each type as returned by
-          :class:`dms_tools2.minimap2.MutationCaller.call`.
+        - If `mutationcaller` is not `None`, column named
+          `gene_aligned_mutations` giving the
+          :class:`dms_tools2.minimap2.Mutations` object returned
+          by :class:`dms_tools2.minimap2.MutationCaller.call`,
+          or `None` if there is no alignment.
 
         - `CCS_aligned` is `True` if the CCS can be aligned
           using `mapper` even if a gene cannot be matched,
@@ -794,13 +794,11 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
               :class:`dms_tools2.minimap2.TargetVariants.call`, or
               an empty string if no alignment.
 
-            - If `mutationcaller` is not `None`, add columns
-              named `aligned_col` suffixed by "_substitutions",
-              "_insertions", and "_deletions" which give the
-              mutations of each of these types in the form
-              of the lists returned by 
-              :class:`dms_tools2.minimap2.MutationCaller.call`,
-              or an empty list if there is no alignment.
+            - If `mutationcaller` is not `None`, column named
+              `aligned_col` suffixed by "_mutations" giving the
+              :class:`dms_tools2.minimap2.Mutations` object returned
+              by :class:`dms_tools2.minimap2.MutationCaller.call`,
+              or `None` if there is no alignment.
     """
     assert query_col in df.columns, "no `query_col` {0}".format(query_col)
 
@@ -838,9 +836,8 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
             qvals = pandas.Series(df[qvals_col].values,
                                   index=df.name).to_dict()
     if mutationcaller is not None:
-        mut_types = ['substitutions', 'insertions', 'deletions']
-        newcols += ['{0}_{1}'.format(aligned_col, mut_type)
-                for mut_type in mut_types]
+        mutations_col = aligned_col + '_mutations'
+        newcols.append(mutations_col)
 
     assert len(newcols) == len(set(newcols))
 
@@ -870,10 +867,7 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
                 (variant, a) = targetvariants.call(a, qvals[name])
                 align_d[targetvariant_col].append(variant)
             if mutationcaller:
-                muts = mutationcaller.call(a)
-                for mut_type in mut_types:
-                    align_d['{0}_{1}'.format(aligned_col, mut_type)
-                            ].append(muts[mut_type])
+                align_d[mutations_col].append(mutationcaller.call(a))
             align_d[aligned_col].append(True)
             if add_alignment:
                 align_d[alignment_col].append(a)
@@ -916,8 +910,7 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
             if targetvariants:
                 align_d[targetvariant_col].append('')
             if mutationcaller:
-                for mut_type in mut_types:
-                    align_d['{0}_{1}'.format(aligned_col, mut_type)].append([])
+                align_d[mutations_col].append(None)
 
     # set index to make sure matches `df`
     index_name = df.index.name

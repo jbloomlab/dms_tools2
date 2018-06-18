@@ -156,9 +156,9 @@ class Mutations:
             number, `mut` is the mutant nucleotide, and `q`
             is the Q-value.
         `insertion_tuples` (list)
-            Lists insertions `(i, ins_len, q)` where `i`
-            is the site number, `inslen` is the insertion
-            length, and `qs` is a numpy array of the Q-values.
+            Lists insertions `(i, ins_len, q)` where `i` is
+            site immediately **after** insertion, `inslen` is
+            insertion length, and `qs` is numpy array of Q-values.
         `deletion_tuples` (list)
             Lists deletions `(istart, iend, q)` where
             `istart` is first site of deletion, `iend` is
@@ -230,7 +230,8 @@ class Mutations:
 
         Returns:
             List of insertions in form `['ins10len20']`, where
-            'ins10len20' means insertion of length 20 at site 10.
+            'ins10len20' means insertion of length 20 immediately
+            before site 10.
         """
         if min_acc is None:
             return ['ins{0}len{1}'.format(*tup) for tup in self._instups]
@@ -257,10 +258,7 @@ class Mutations:
 
 
 class MutationCaller:
-    """Class to call mutations from :class:`Alignment` objects.
-
-    Pass :class:`Alignment` objects to :class:`MutationCaller.call`
-    to call mutations in query relative to the target.
+    """Call :class:`Mutations` from :class:`Alignment`.
 
     Attributes:
         `targetindex` (int)
@@ -294,52 +292,52 @@ class MutationCaller:
 
     >>> mutcaller = MutationCaller()
     >>> muts = mutcaller.call(a)
-    >>> muts['substitutions']
+    >>> muts.substitutions()
     ['C4A', 'T6C', 'G12T']
-    >>> muts['deletions']
+    >>> muts.deletions()
     ['del8to9', 'del13to15']
-    >>> muts['insertions']
+    >>> muts.insertions()
     ['ins1len2', 'ins11len2']
 
     Illustrate `targetindex` by re-calling with 0-based idexing:
 
     >>> mutcaller_index0 = MutationCaller(targetindex=0)
     >>> muts_index0 = mutcaller_index0.call(a)
-    >>> muts_index0['substitutions']
+    >>> muts_index0.substitutions()
     ['C3A', 'T5C', 'G11T']
-    >>> muts_index0['deletions']
+    >>> muts_index0.deletions()
     ['del7to8', 'del12to14']
-    >>> muts_index0['insertions']
+    >>> muts_index0.insertions()
     ['ins0len2', 'ins10len2']
 
     Use `target_clip` to ignore mutations near target termini:
 
     >>> mutcaller_targetclip2 = MutationCaller(target_clip=2)
     >>> muts_targetclip2 = mutcaller_targetclip2.call(a)
-    >>> muts_targetclip2['substitutions']
+    >>> muts_targetclip2.substitutions()
     ['C4A', 'T6C', 'G12T']
-    >>> muts_targetclip2['deletions']
+    >>> muts_targetclip2.deletions()
     ['del8to9', 'del13to15']
-    >>> muts_targetclip2['insertions']
+    >>> muts_targetclip2.insertions()
     ['ins11len2']
     >>> mutcaller_targetclip4 = MutationCaller(target_clip=4)
     >>> muts_targetclip4 = mutcaller_targetclip4.call(a)
-    >>> muts_targetclip4['substitutions']
+    >>> muts_targetclip4.substitutions()
     ['T6C']
-    >>> muts_targetclip4['deletions']
+    >>> muts_targetclip4.deletions()
     ['del8to9']
-    >>> muts_targetclip4['insertions']
+    >>> muts_targetclip4.insertions()
     ['ins11len2']
 
     Use `query_softclip` to ignore clipped regions in query:
 
     >>> mutcaller_querysoftclip = MutationCaller(query_softclip=3)
     >>> muts_querysoftclip = mutcaller_querysoftclip.call(a)
-    >>> muts_querysoftclip['substitutions']
+    >>> muts_querysoftclip.substitutions()
     ['C4A', 'T6C', 'G12T']
-    >>> muts_querysoftclip['deletions']
+    >>> muts_querysoftclip.deletions()
     ['del8to9', 'del13to15']
-    >>> muts_querysoftclip['insertions']
+    >>> muts_querysoftclip.insertions()
     ['ins11len2']
     """
 
@@ -367,32 +365,19 @@ class MutationCaller:
                 Call mutations in this alignment.
 
         Return:
-            A dict keyed by the strings "substitutions", "deletions",
-            and "insertions" where the key for each gives:
-
-                - `substitutions` is list of all point mutations,
-                  in the form "A1G" to indicate substitution of site
-                  1 (in target-based numbering) from A to G.
-
-                - `deletions` is list of all deletions, in the
-                  form "del1to20" to indicate deletion of sites
-                  1 to 20 (inclusive of both endpoints) in target-
-                  based numbering.
-
-                - `insertions` is list of all insertions, in the
-                  form "ins1len20" to indicate insertion of 20
-                  nucleotides immediately **before** site 1 in
-                  target-based numbering.
+            A :class:`Mutations` object holding the mutations.
         """
-        muts = {'substitutions':[], 'deletions':[], 'insertions':[]}
+        substitution_tuples = []
+        deletion_tuples = []
+        insertion_tuples = []
 
         # deletions / insertions before alignment
         if a.r_st > 0:
-            muts['deletions'].append('del{0}to{1}'.format(
-                    self.targetindex, self.targetindex + a.r_st))
+            deletion_tuples.append((self.targetindex,
+                    self.targetindex + a.r_st, math.nan))
         if a.q_st > self.query_softclip:
-            muts['insertions'].append('ins{0}len{1}'.format(
-                    self.targetindex, a.q_st))
+            insertion_tuples.append((self.targetindex, a.q_st,
+                    [math.nan] * a.q_st))
 
         # mutations in alignment
         itarget = a.r_st + self.targetindex
@@ -405,18 +390,17 @@ class MutationCaller:
                 itarget += n
             elif m.group()[0] == '*':
                 assert len(m.group()) == 3
-                muts['substitutions'].append('{0}{1}{2}'.format(
-                        m.group()[1].upper(), itarget,
-                        m.group()[2].upper()))
+                substitution_tuples.append((itarget,
+                        m.group()[1].upper(), m.group()[2].upper(),
+                        math.nan))
                 itarget += 1
             elif m.group()[0] == '-':
                 n = len(m.group()) - 1
-                muts['deletions'].append('del{0}to{1}'.format(itarget,
-                        itarget + n - 1))
+                deletion_tuples.append((itarget, itarget + n - 1, math.nan))
                 itarget += n
             elif m.group()[0] == '+':
-                muts['insertions'].append('ins{0}len{1}'.format(
-                        itarget, len(m.group()) - 1))
+                n = len(m.group()) - 1
+                insertion_tuples.append((itarget, n, [math.nan] * n))
             elif m.group()[0] == '~':
                 raise ValueError("Cannot handle intron operations")
             else:
@@ -430,37 +414,30 @@ class MutationCaller:
 
         # deletions / insertions after alignment
         if a.r_en < a.r_len:
-            muts['deletions'].append('del{0}to{1}'.format(
+            deletion_tuples.append((
                     self.targetindex + a.r_en,
-                    self.targetindex + a.r_len - 1))
+                    self.targetindex + a.r_len - 1,
+                    math.nan))
         if a.q_en < a.q_len - self.query_softclip:
-            muts['insertions'].append('ins{0}len{1}'.format(
-                    self.targetindex + a.r_en, a.q_len - a.q_en))
-
-        def _mutStartEnd(mstring):
-            """First, last nt of mutation `mstring` in target."""
-            if mstring[ : 3] == 'del':
-                return map(int, mstring[3 : ].split('to'))
-            elif mstring[ : 3] == 'ins':
-                i = int(mstring[3 : ].split('len')[0])
-                return (i, i)
-            else:
-                i = int(mstring[1 : -1])
-                return (i, i)
+            n = a.q_len - a.q_en
+            insertion_tuples.append((
+                    self.targetindex + a.r_en,
+                    n, [math.nan] * n))
 
         # filter away mutations too near target termini
         if self.target_clip:
             i_first = self.targetindex + self.target_clip
             i_last = a.r_len + self.targetindex - self.target_clip
-            for muttype in list(muts.keys()):
-                mutlist = []
-                for m in muts[muttype]:
-                    istart, iend = _mutStartEnd(m)
-                    if not ((iend < i_first) or (istart >= i_last)):
-                        mutlist.append(m)
-                muts[muttype] = mutlist
+            substitution_tuples = [tup for tup in substitution_tuples
+                    if not (tup[0] < i_first or tup[0] >= i_last)]
+            insertion_tuples = [tup for tup in insertion_tuples
+                    if not (tup[0] < i_first or tup[0] >= i_last)]
+            deletion_tuples = [tup for tup in deletion_tuples
+                    if not (tup[1] < i_first or tup[0] >= i_last)]
 
-        return muts
+        return Mutations(substitution_tuples=substitution_tuples,
+                         insertion_tuples=insertion_tuples,
+                         deletion_tuples=deletion_tuples)
 
 
 class Mapper:
