@@ -18,6 +18,7 @@ import os
 import sys
 import re
 import io
+import math
 import functools
 import subprocess
 import tempfile
@@ -132,6 +133,127 @@ def checkAlignment(a, target, query):
         return False
     else:
         return True
+
+
+class Mutations:
+    """Class to hold mutations.
+
+    Holds three types of mutations: substitutions (point mutations),
+    insertions, and deletions. 
+
+    The numbering scheme used to define the mutations (e.g.,
+    0-based, 1-based) is determined upstream when deciding how to
+    number the mutations passed at initialization.
+
+    When initializing, set Q-values to `math.nan` if they are
+    not known. The Q-values are used to calculate accuracy
+    of mutations via :meth:`dms_tools2.pacbio.qvalsToAccuracy`.
+
+    Args:
+        `substitution_tuples` (list)
+            Lists substitutions `(i, wt, mut, q)` where
+            `wt` is the wildtype nucleotide, `i` is the site
+            number, `mut` is the mutant nucleotide, and `q`
+            is the Q-value.
+        `insertion_tuples` (list)
+            Lists insertions `(i, ins_len, q)` where `i`
+            is the site number, `inslen` is the insertion
+            length, and `qs` is a numpy array of the Q-values.
+        `deletion_tuples` (list)
+            Lists deletions `(istart, iend, q)` where
+            `istart` is first site of deletion, `iend` is
+            last site of deletion (so a single nucleotide
+            deletion has `istart == iend`), and `q` is the
+            Q-value of the site immediately **after** the
+            deletion, which is in accordance with
+            `PacBio CCS <https://github.com/PacificBiosciences/unanimity/blob/develop/doc/PBCCS.md#interpretting-qual-values>`_
+            specification.
+
+    Here is an example. Note that Q-value of 20 indicates an accuracy
+    of 0.99, and a Q-value of 30 indicates an accuracy of 0.999:
+
+    >>> muts = Mutations(
+    ...         substitution_tuples=[(1, 'A', 'T', math.nan),
+    ...             (15, 'C', 'A', 30), (13, 'G', 'A', 20)],
+    ...         insertion_tuples=[(5, 2, [20, 30])],
+    ...         deletion_tuples=[(8, 10, 20)])
+    >>> muts.substitutions()
+    ['A1T', 'G13A', 'C15A']
+    >>> muts.insertions()
+    ['ins5len2']
+    >>> muts.deletions()
+    ['del8to10']
+    >>> muts.substitutions(min_acc=0.99)
+    ['G13A', 'C15A']
+    >>> muts.substitutions(min_acc=0.995)
+    ['C15A']
+    >>> muts.insertions(min_acc=0.991)
+    ['ins5len2']
+    >>> muts.insertions(min_acc=0.999)
+    []
+    >>> muts.deletions(min_acc=0.95)
+    ['del8to10']
+    >>> muts.deletions(min_acc=0.999)
+    []
+    """
+
+    def __init__(self, *, substitution_tuples, insertion_tuples,
+            deletion_tuples):
+        """See main class doc string."""
+        self._subtups = sorted(substitution_tuples)
+        self._instups = sorted(insertion_tuples)
+        self._deltups = sorted(deletion_tuples)
+
+    def substitutions(self, *, min_acc=None):
+        """List of substitutions.
+
+        Args:
+            `min_acc` (float or `None`)
+                Only return substitutions with >= this accuracy.
+
+        Returns:
+            List of mutations in form `['A1T', 'G43A']`, where
+            'A1T' means site 1 is mutated from A to T.
+        """
+        if min_acc is None:
+            return ['{1}{0}{2}'.format(*tup) for tup in self._subtups]
+        else:
+            return ['{1}{0}{2}'.format(*tup) for tup in self._subtups
+                    if dms_tools2.pacbio.qvalsToAccuracy(tup[3]) >= min_acc]
+
+    def insertions(self, *, min_acc=None):
+        """List of insertions.
+
+        Args:
+            `min_acc` (float or `None`)
+                Only return insertions with >= this accuracy.
+
+        Returns:
+            List of insertions in form `['ins10len20']`, where
+            'ins10len20' means insertion of length 20 at site 10.
+        """
+        if min_acc is None:
+            return ['ins{0}len{1}'.format(*tup) for tup in self._instups]
+        else:
+            return ['ins{0}len{1}'.format(*tup) for tup in self._instups
+                    if dms_tools2.pacbio.qvalsToAccuracy(tup[2]) >= min_acc]
+
+    def deletions(self, *, min_acc=None):
+        """List of deletions.
+
+        Args:
+            `min_acc` (float or `None`)
+                Only return deletions with >= this accuracy.
+
+        Returns:
+            List of deletions in form `['del12to13']`, where
+            'del12to13' is deletion of nucleotides 12 to 13, inclusive.
+        """
+        if min_acc is None:
+            return ['del{0}to{1}'.format(*tup) for tup in self._deltups]
+        else:
+            return ['del{0}to{1}'.format(*tup) for tup in self._deltups
+                    if dms_tools2.pacbio.qvalsToAccuracy(tup[2]) >= min_acc]
 
 
 class MutationCaller:

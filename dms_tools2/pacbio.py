@@ -969,8 +969,11 @@ def qvalsToAccuracy(qvals, encoding='numbers'):
     >>> round(qvalsToAccuracy(15), 3)
     0.968
     """
-    if isinstance(qvals, numbers.Number) and encoding == 'numbers':
-        qvals = numpy.array([qvals])
+    if encoding == 'numbers':
+        if isinstance(qvals, numbers.Number):
+            qvals = numpy.array([qvals])
+        elif isinstance(qvals, list):
+            qvals = numpy.array(qvals)
 
     if len(qvals) == 0:
         return numpy.nan
