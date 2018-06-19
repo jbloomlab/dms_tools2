@@ -187,6 +187,9 @@ class Mutations:
     ['ins5len2']
     >>> muts.deletions()
     ['del8to10']
+
+    Now with some filtering on accuracy:
+
     >>> muts.substitutions(min_acc=0.99)
     ['G13A', 'C15A']
     >>> muts.substitutions(min_acc=0.995)
@@ -199,6 +202,13 @@ class Mutations:
     ['del8to10']
     >>> muts.deletions(min_acc=0.999)
     []
+
+    Now get lengths of insertions / deletions:
+
+    >>> muts.deletions(returnval='length')
+    [3]
+    >>> muts.insertions(returnval='length')
+    [2]
     """
 
     def __init__(self, *, substitution_tuples, insertion_tuples,
@@ -249,6 +259,8 @@ class Mutations:
                   "ins10len20" means insertion of length 20
                   immediately before site 10.
 
+                - "length": Integers giving insertion lengths.
+
         Returns:
             List of mutations or other value specified by `returnval`.
         """
@@ -260,6 +272,8 @@ class Mutations:
 
         if returnval == 'mutation':
             return ['ins{0}len{1}'.format(*tup) for tup in instups]
+        elif returnval == 'length':
+            return [tup[1] for tup in instups]
         else:
             raise ValueError("invalid `returnval` {0}".format(returnval))
 
@@ -277,6 +291,8 @@ class Mutations:
                   "del12to13" means deletion of nucleotides 12
                   to 13, inclusive.
 
+                - "length": Integers giving deletion lengths.
+
         Returns:
             List of mutations or other value specified by `returnval`.
         """
@@ -288,6 +304,8 @@ class Mutations:
 
         if returnval == 'mutation':
             return ['del{0}to{1}'.format(*tup) for tup in deltups]
+        elif returnval == 'length':
+            return [tup[1] - tup[0] + 1 for tup in deltups]
         else:
             raise ValueError("invalid `returnval` {0}".format(returnval))
 
