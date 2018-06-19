@@ -231,6 +231,9 @@ class Mutations:
                 - "mutation": Strings giving mutations, where
                   "A1T" means site 1 is mutated from A to T.
 
+                - "accuracy": Numbers giving accuracy of each
+                  mutation.
+
         Returns:
             List of mutations or other value specified by `returnval`.
         """
@@ -242,6 +245,9 @@ class Mutations:
 
         if returnval == 'mutation':
             return ['{1}{0}{2}'.format(*tup) for tup in subtups]
+        elif returnval == 'accuracy':
+            return [dms_tools2.pacbio.qvalsToAccuracy(tup[3])
+                    for tup in subtups]
         else:
             raise ValueError("invalid `returnval` {0}".format(returnval))
 
@@ -261,6 +267,10 @@ class Mutations:
 
                 - "length": Integers giving insertion lengths.
 
+                - "accuracy": Numbers giving accuracy of each
+                  mutation. Accuracy of insertion is averaged
+                  over its length.
+
         Returns:
             List of mutations or other value specified by `returnval`.
         """
@@ -274,6 +284,9 @@ class Mutations:
             return ['ins{0}len{1}'.format(*tup) for tup in instups]
         elif returnval == 'length':
             return [tup[1] for tup in instups]
+        elif returnval == 'accuracy':
+            return [dms_tools2.pacbio.qvalsToAccuracy(tup[2])
+                    for tup in instups]
         else:
             raise ValueError("invalid `returnval` {0}".format(returnval))
 
@@ -293,6 +306,10 @@ class Mutations:
 
                 - "length": Integers giving deletion lengths.
 
+                - "accuracy": Numbers giving accuracy of each
+                  mutation. Accuracy is for first nucleotide **after**
+                  deletion.
+
         Returns:
             List of mutations or other value specified by `returnval`.
         """
@@ -306,6 +323,9 @@ class Mutations:
             return ['del{0}to{1}'.format(*tup) for tup in deltups]
         elif returnval == 'length':
             return [tup[1] - tup[0] + 1 for tup in deltups]
+        elif returnval == 'accuracy':
+            return [dms_tools2.pacbio.qvalsToAccuracy(tup[2])
+                    for tup in deltups]
         else:
             raise ValueError("invalid `returnval` {0}".format(returnval))
 
@@ -340,11 +360,18 @@ class MutationCaller:
     ...         r_st=0, r_en=12, r_len=15, score=16, target='target',
     ...         cigar_str='=ATG*ca=A*tc=G-aa=T+at=C*gt', additional=[])
 
+    Also create some Q-values. Just to make things simple for this
+    example, we use unrealistic Q-values. For aligned sites they
+    are equal to the site number in the target; for un-aligned sites
+    they are 50.
+
+    >>> qvals = numpy.array([50, 50, 1, 2, 3, 4, 5, 6, 7, 10, 50, 50, 11, 12])
+
     Now call mutations using default (target indexing starts at 1,
     no ignoring of termini):
 
     >>> mutcaller = MutationCaller()
-    >>> muts = mutcaller.call(a)
+    >>> muts = mutcaller.call(a, qvals)
     >>> muts.substitutions()
     ['C4A', 'T6C', 'G12T']
     >>> muts.deletions()
@@ -352,10 +379,22 @@ class MutationCaller:
     >>> muts.insertions()
     ['ins1len2', 'ins11len2']
 
+    Check that Q-values are also correct:
+
+    >>> numpy.allclose(muts.substitutions(returnval='accuracy'),
+    ...     list(map(dms_tools2.pacbio.qvalsToAccuracy, [4, 6, 12])))
+    True
+    >>> numpy.allclose(muts.insertions(returnval='accuracy'), list(
+    ...     map(dms_tools2.pacbio.qvalsToAccuracy, [[50, 50], [50, 50]])))
+    True
+    >>> numpy.allclose(muts.deletions(returnval='accuracy'),
+    ...     [dms_tools2.pacbio.qvalsToAccuracy(10), math.nan], equal_nan=True)
+    True
+
     Illustrate `targetindex` by re-calling with 0-based idexing:
 
     >>> mutcaller_index0 = MutationCaller(targetindex=0)
-    >>> muts_index0 = mutcaller_index0.call(a)
+    >>> muts_index0 = mutcaller_index0.call(a, qvals)
     >>> muts_index0.substitutions()
     ['C3A', 'T5C', 'G11T']
     >>> muts_index0.deletions()
@@ -366,7 +405,7 @@ class MutationCaller:
     Use `target_clip` to ignore mutations near target termini:
 
     >>> mutcaller_targetclip2 = MutationCaller(target_clip=2)
-    >>> muts_targetclip2 = mutcaller_targetclip2.call(a)
+    >>> muts_targetclip2 = mutcaller_targetclip2.call(a, qvals)
     >>> muts_targetclip2.substitutions()
     ['C4A', 'T6C', 'G12T']
     >>> muts_targetclip2.deletions()
@@ -374,7 +413,7 @@ class MutationCaller:
     >>> muts_targetclip2.insertions()
     ['ins11len2']
     >>> mutcaller_targetclip4 = MutationCaller(target_clip=4)
-    >>> muts_targetclip4 = mutcaller_targetclip4.call(a)
+    >>> muts_targetclip4 = mutcaller_targetclip4.call(a, qvals)
     >>> muts_targetclip4.substitutions()
     ['T6C']
     >>> muts_targetclip4.deletions()
@@ -385,7 +424,7 @@ class MutationCaller:
     Use `query_softclip` to ignore clipped regions in query:
 
     >>> mutcaller_querysoftclip = MutationCaller(query_softclip=3)
-    >>> muts_querysoftclip = mutcaller_querysoftclip.call(a)
+    >>> muts_querysoftclip = mutcaller_querysoftclip.call(a, qvals)
     >>> muts_querysoftclip.substitutions()
     ['C4A', 'T6C', 'G12T']
     >>> muts_querysoftclip.deletions()
@@ -410,16 +449,32 @@ class MutationCaller:
         self.query_softclip = query_softclip
 
 
-    def call(self, a):
+    def call(self, a, qvals=None):
         """Call mutations in alignment.
 
         Args:
             `a` (:class:`Alignment`)
                 Call mutations in this alignment.
+            `qvals` (`None` or numpy array)
+                Array of Q-values for the **entire** query used
+                to build alignment, not just aligned region.
 
         Return:
             A :class:`Mutations` object holding the mutations.
         """
+
+        def _get_qval(i):
+            """Q-value for site aligning to target `i`."""
+            if qvals is None:
+                return math.nan
+            else:
+                j = iTargetToQuery(a, i - self.targetindex)
+                if j is None:
+                    return math.nan
+                else:
+                    assert 0 <= j < len(qvals)
+                    return qvals[j]
+
         substitution_tuples = []
         deletion_tuples = []
         insertion_tuples = []
@@ -427,10 +482,14 @@ class MutationCaller:
         # deletions / insertions before alignment
         if a.r_st > 0:
             deletion_tuples.append((self.targetindex,
-                    self.targetindex + a.r_st, math.nan))
+                    self.targetindex + a.r_st,
+                    _get_qval(self.targetindex + a.r_st)))
         if a.q_st > self.query_softclip:
-            insertion_tuples.append((self.targetindex, a.q_st,
-                    [math.nan] * a.q_st))
+            if qvals is None:
+                i_qvals = None
+            else:
+                i_qvals = [qvals[j] for j in range(a.q_st)]
+            insertion_tuples.append((self.targetindex, a.q_st, i_qvals))
 
         # mutations in alignment
         itarget = a.r_st + self.targetindex
@@ -445,15 +504,22 @@ class MutationCaller:
                 assert len(m.group()) == 3
                 substitution_tuples.append((itarget,
                         m.group()[1].upper(), m.group()[2].upper(),
-                        math.nan))
+                        _get_qval(itarget)))
                 itarget += 1
             elif m.group()[0] == '-':
                 n = len(m.group()) - 1
-                deletion_tuples.append((itarget, itarget + n - 1, math.nan))
+                deletion_tuples.append((itarget, itarget + n - 1,
+                        _get_qval(itarget + n)))
                 itarget += n
             elif m.group()[0] == '+':
                 n = len(m.group()) - 1
-                insertion_tuples.append((itarget, n, [math.nan] * n))
+                if qvals is None:
+                    i_qvals = None
+                else:
+                    i = iTargetToQuery(a, itarget - self.targetindex)
+                    i_qvals = [qvals[i - 1 - j]
+                            for j in range(n)]
+                insertion_tuples.append((itarget, n, i_qvals))
             elif m.group()[0] == '~':
                 raise ValueError("Cannot handle intron operations")
             else:
@@ -473,9 +539,12 @@ class MutationCaller:
                     math.nan))
         if a.q_en < a.q_len - self.query_softclip:
             n = a.q_len - a.q_en
+            if qvals is None:
+                i_qvals = None
+            else:
+                i_qvals = [qvals[j] for j in range(a.q_en, a.q_len)]
             insertion_tuples.append((
-                    self.targetindex + a.r_en,
-                    n, [math.nan] * n))
+                    self.targetindex + a.r_en, n, i_qvals))
 
         # filter away mutations too near target termini
         if self.target_clip:

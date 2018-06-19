@@ -867,7 +867,8 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
                 (variant, a) = targetvariants.call(a, qvals[name])
                 align_d[targetvariant_col].append(variant)
             if mutationcaller:
-                align_d[mutations_col].append(mutationcaller.call(a))
+                align_d[mutations_col].append(mutationcaller.call(a,
+                        qvals[name]))
             align_d[aligned_col].append(True)
             if add_alignment:
                 align_d[alignment_col].append(a)
