@@ -926,7 +926,7 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
             axis=1)
 
 
-def qvalsToAccuracy(qvals, encoding='numbers'):
+def qvalsToAccuracy(qvals, encoding='numbers', no_avg=False):
     """Converts set of quality scores into average accuracy.
 
     Args:
@@ -939,6 +939,9 @@ def qvalsToAccuracy(qvals, encoding='numbers'):
             with one Q-value. If it is "sanger", then `qvals`
             is a string, with the score being the ASCII value
             minus 33.
+        `no_avg` (bool)
+            Compute the accuracies of individual Q-values
+            rather than the average of the array or list.
 
     Returns:
         A number giving the average accuracy, or 
@@ -956,16 +959,20 @@ def qvalsToAccuracy(qvals, encoding='numbers'):
     >>> qvalsToAccuracy(numpy.array([]))
     nan
 
-    >>> qvals = '.n~'
-    >>> round(qvalsToAccuracy(qvals, encoding='sanger'), 3)
+    >>> qvals_str = '.n~'
+    >>> round(qvalsToAccuracy(qvals_str, encoding='sanger'), 3)
     0.983
 
     >>> round(qvalsToAccuracy(15), 3)
     0.968
+
+    >>> [round(a, 5) for a in qvalsToAccuracy(qvals, no_avg=True)]
+    [0.94988, 1.0, 1.0]
     """
     if encoding == 'numbers':
         if isinstance(qvals, numbers.Number):
             qvals = numpy.array([qvals])
+            no_avg = False
         elif isinstance(qvals, list):
             qvals = numpy.array(qvals)
 
@@ -979,7 +986,10 @@ def qvalsToAccuracy(qvals, encoding='numbers'):
     else:
         raise RuntimeError("invalid `encoding`: {0}".format(encoding))
 
-    return (1 - 10**(qvals / -10)).sum() / len(qvals)
+    if no_avg:
+        return 1 - 10**(qvals / -10)
+    else:
+        return (1 - 10**(qvals / -10)).sum() / len(qvals)
 
 
 def summarizeCCSreports(ccslist, report_type, plotfile,
