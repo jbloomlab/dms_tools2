@@ -952,22 +952,22 @@ def qvalsToAccuracy(qvals, encoding='numbers', no_avg=False):
     :math:`Q = -10 \log_{10} p`.
 
     >>> qvals = numpy.array([13, 77, 93])
-    >>> round(qvalsToAccuracy(qvals), 3)
-    0.983
-    >>> round(qvalsToAccuracy(qvals[1 : ]), 3)
-    1.0
+    >>> round(qvalsToAccuracy(qvals), 3) == 0.983
+    True
+    >>> round(qvalsToAccuracy(qvals[1 : ]), 3) == 1
+    True
     >>> qvalsToAccuracy(numpy.array([]))
     nan
 
     >>> qvals_str = '.n~'
-    >>> round(qvalsToAccuracy(qvals_str, encoding='sanger'), 3)
-    0.983
+    >>> round(qvalsToAccuracy(qvals_str, encoding='sanger'), 3) == 0.983
+    True
 
-    >>> round(qvalsToAccuracy(15), 3)
-    0.968
+    >>> round(qvalsToAccuracy(15), 3) == 0.968
+    True
 
-    >>> [round(a, 5) for a in qvalsToAccuracy(qvals, no_avg=True)]
-    [0.94988, 1.0, 1.0]
+    >>> [round(a, 5) for a in qvalsToAccuracy(qvals, no_avg=True)] == [0.94988, 1, 1]
+    True
     """
     if encoding == 'numbers':
         if isinstance(qvals, numbers.Number):
