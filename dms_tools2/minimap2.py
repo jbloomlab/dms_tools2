@@ -562,6 +562,83 @@ class MutationCaller:
                          deletion_tuples=deletion_tuples)
 
 
+class MutationConsensus:
+    """Takes consensus of several :class:`Mutation` objects.
+
+    Designed for when you have called :class:`Mutation` objects
+    for several sequences thought to represent the same template.
+    Determines whether we think mutations are real, aren't really
+    present, or if sequences appear to arise from a mix of wildtype
+    and mutant templates (e.g., not really just one template). The
+    method make some use of statistical information in the
+    accuracies computed from quality scores, but is largely heuristic.
+    This is because it is designed for cases where causes other than
+    simple sequencing error (e.g., mis-assigned sequences, true mix
+    of templates, errors during library preparation) may be present.
+
+    Initialize a :class:`MutationConsensus` object with arguments
+    below, which become attributes of the object. Then call consensus
+    mutations with :class:`MutationConsensus.callConsensus` method.
+
+    Args:
+        `n_mut` (int)
+            At least this many sequences must have mutation to
+            call it in consensus.
+        `min_error` (float)
+            Product of error rates in sequences calling mutation
+            must be less than this.
+        `min_mut_frac` (float)
+            More than this fraction of sequences must have
+            mutation to call it as present in consensus.
+        `max_mut_frac_for_wt` (float)
+            No more than this fraction of sequences can have
+            mutation to call it as absent in consensus.
+        `group_indel_frac` (float)
+            If other overlap by >= this fraction of their
+            total net length with the most common indel,
+            group them together as the most common indel.
+            Designed to handle this case where alignment issues
+            slightly change called boundaries of long indels.
+
+    Mutations are called from the list of :class:`Mutation` objects
+    passed to :class:`MutationConsensus.callConsensus` as follows:
+
+      1. If there is just one :class:`Mutation` object passed, call
+         sequence as wildtype.
+
+      2. If there are less than `n_mut` :class:`Mutation` objects
+         passed and some have mutations, call the sequence as
+         ambiguous.
+
+      3. If there are at least `n_mut` :class:`Mutation` objects
+         that contain a specific mutation, **and** the product
+         of their error rates (1 - accuracy) is < `min_error`,
+         **and** the fraction of :class:`Mutation` objects that
+         have this mutation is > `min_mut_frac`, then call
+         the sequence as having the mutation.
+
+      4. If the conditions in (3) above are met **except** that
+         the fraction of :class:`Mutation` objects that have
+         this mutation is $\le$ `min_mut_frac` but is >
+         `max_mut_frac_for_wt`, then call the sequence as having
+         the mutation in a mix.
+
+      5. Otherwise call the mutation as absent.
+    """
+
+    def __init__(self, *, n_mut=2, min_error=1e-4, min_mut_frac=0.67,
+            max_mut_frac_for_wt=0.25, group_indel_frac=0.8):
+        """See main class doc string."""
+        self.n_mut = n_mut
+        self.min_error = min_error
+        self.min_mut_frac = min_mut_frac
+        self.max_mut_frac_for_wt = max_mut_frac_for_wt
+        self.group_indel_frac = group_indel_frac
+
+    def callConsensus(self, mutationlist):
+        pass
+
+
 class Mapper:
     """Class to run ``minimap2`` and get results.
 
