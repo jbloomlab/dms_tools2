@@ -606,7 +606,7 @@ class MutationConsensus:
             set `min_error` to 1 to avoid any accuracy filtering.
         `indel_len_ignore_acc` (int)
             Ignore the accuracy filter specified by `min_error`
-            if an indel is $\ge$ this length. The reason is that
+            if an indel is :math:`\ge` this length. The reason is
             longer indels probably aren't just sequencing errors.
 
     Mutations are called from the list of :class:`Mutations`
@@ -731,6 +731,42 @@ class MutationConsensus:
     >>> mutcons.callConsensus([m_A1G_T2A_high_acc, m_A1G_high_acc],
     ...         'substitutions')
     'A1G'
+
+    Ignore the accuracy on long indels. Below the short deletion
+    fails the accuracy cutoff, but the large one doesn't:
+
+    >>> m_shortdel = Mutations(
+    ...         substitution_tuples=[],
+    ...         insertion_tuples=[],
+    ...         deletion_tuples=[(8, 9, math.nan)])
+    >>> m_longdel = Mutations(
+    ...         substitution_tuples=[],
+    ...         insertion_tuples=[],
+    ...         deletion_tuples=[(8, 18, math.nan)])
+    >>> mutcons.callConsensus([m_shortdel] * 2, 'deletions')
+    ''
+    >>> mutcons_laxerror = MutationConsensus(min_error=1e-3)
+    >>> mutcons_laxerror.callConsensus([m_shortdel] * 2, 'deletions')
+    'del8to9'
+    >>> mutcons.callConsensus([m_longdel] * 2, 'deletions')
+    'del8to18'
+
+    Group sufficiently overlapping indels:
+
+    >>> m_overlaplongdel = Mutations(
+    ...         substitution_tuples=[],
+    ...         insertion_tuples=[],
+    ...         deletion_tuples=[(9, 17, math.nan)])
+    >>> mutcons.callConsensus([m_longdel, m_shortdel], 'deletions')
+    ''
+    >>> mutcons.callConsensus([m_wt, m_longdel] + [m_overlaplongdel] * 2,
+    ...         'deletions')
+    'del9to17'
+    >>> mutcons_nogroupindel = MutationConsensus(group_indel_frac=1)
+    >>> mutcons_nogroupindel.callConsensus(
+    ...         [m_wt, m_longdel] + [m_overlaplongdel] * 2, 'deletions')
+    'del9to17_mixed'
+
     """
 
     def __init__(self, *, n_mut=2, min_error=1e-4, min_mut_frac=0.67,
@@ -746,6 +782,7 @@ class MutationConsensus:
         self.group_indel_frac = group_indel_frac
         self.nan_acc = nan_acc
         self.indel_len_ignore_acc = indel_len_ignore_acc
+
 
     def callConsensus(self, mutationlist, mutation_type):
         """Calls consensus from :class:`Mutations`.
@@ -774,34 +811,69 @@ class MutationConsensus:
         if nseqs < 1:
             raise ValueError("empty `mutationlist`")
 
-        if mutation_type == 'substitutions':
-            muts = [m.substitutions() for m in mutationlist]
-            accs = [m.substitutions(returnval='accuracy')
-                    for m in mutationlist]
-        elif mutation_type == 'insertions':
-            raise ValueError('acc of long indels')
-            raise NotImplementedError('not implemented for insertions yet')
-        elif mutation_type == 'deletions':
-            raise ValueError('acc of long indels')
-            raise NotImplementedError('not implemented for deletions yet')
-        else:
+        # function to get mutations of this type
+        try:
+            func = {'insertions':Mutations.insertions,
+                    'substitutions':Mutations.substitutions,
+                    'deletions':Mutations.deletions}[mutation_type]
+        except KeyError:
             raise ValueError("invalid `mutation_type` {0}".format(
                     mutation_type))
 
-        if all(not m for m in muts):
+        # mutations and accuracies
+        muts = [func(m) for m in mutationlist]
+        flatmuts = numpy.array([m for ml in muts for m in ml])
+        accs = [func(m, returnval='accuracy') for m in mutationlist]
+        flataccs = numpy.array([a for al in accs for a in al])
+        flataccs[numpy.isnan(flataccs)] = self.nan_acc
+
+        if len(flatmuts) == 0:
             return '' # all sequences are wildtype
 
         if len(muts) < self.n_mut:
             return 'unknown' # not enough sequences to call mutations
 
+        del accs, muts # not updated below, delete for safety
+
+        if mutation_type in {'insertions', 'deletions'}:
+
+            # assign perfect accuracy to long indels
+            lengths = [func(m, returnval='length') for m in mutationlist]
+            flatlengths = numpy.array([l for ll in lengths for l in ll])
+            flataccs[flatlengths >= self.indel_len_ignore_acc] = 1
+
+            # group sufficiently overlapping indels
+            indelcounts = collections.Counter(flatmuts)
+            max_n = indelcounts.most_common()[0][1]
+            top_indels = [m for m, n in indelcounts.items() if n == max_n]
+            if len(top_indels) == 1:
+                top_indel = top_indels[0]
+            else:
+                # several top indels, take longest
+                top_lengths = [flatlengths[flatmuts == top_indel][0] for
+                        top_indel in top_indels]
+                top_indel = sorted(zip(top_lengths, top_indels))[-1][1]
+            overlapping_indels = []
+            startmatch = re.compile('^(ins|del)(?P<start>\d+)(to|len)')
+            top_length = flatlengths[flatmuts == top_indel][0]
+            top_start = int(startmatch.match(top_indel).group('start'))
+            for m in set(flatmuts):
+                length = flatlengths[flatmuts == m][0]
+                start = int(startmatch.match(m).group('start'))
+                tot_len = (max(top_start + top_length, start + length)
+                        - min(top_start, start))
+                overlap_len = (min(top_start + top_length, start + length)
+                        - max(top_start, start))
+                if overlap_len / tot_len >= self.group_indel_frac:
+                    overlapping_indels.append(m)
+            flatmuts = numpy.array([top_indel if m in overlapping_indels
+                    else m for m in flatmuts])
+
         # get counts of all mutations with adequate counts
-        flatmuts = numpy.array([m for ml in muts for m in ml])
         mutcounts = {m:n for m, n in collections.Counter(flatmuts)
                 .items() if n >= self.n_mut}
 
         # now only get those mutations with adequate error rates
-        flataccs = numpy.array([a for al in accs for a in al])
-        flataccs[numpy.isnan(flataccs)] = self.nan_acc
         for m in list(mutcounts.keys()):
             if (1 - flataccs[flatmuts == m]).prod() >= self.min_error:
                 del mutcounts[m]
