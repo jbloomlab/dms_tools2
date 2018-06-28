@@ -4,7 +4,7 @@ minimap2
 ===============
 
 Runs `minimap2 <https://lh3.github.io/minimap2/>`_
-aligner. 
+aligner.
 
 This module is tested to work with the version of
 ``minimap2`` installed internally with `dms_tools2` (the
@@ -104,7 +104,7 @@ def checkAlignment(a, target, query):
     Returns:
         `True` if `a` is a valid alignment of `query`
         to `target`, `False` otherwise. Being valid does
-        not mean an alignment is good, just that the 
+        not mean an alignment is good, just that the
         start / ends and CIGAR in `a` are valid.
 
     >>> target = 'ATGCAT'
@@ -139,7 +139,7 @@ class Mutations:
     """Class to hold mutations.
 
     Holds three types of mutations: substitutions (point mutations),
-    insertions, and deletions. 
+    insertions, and deletions.
 
     The numbering scheme used to define the mutations (e.g.,
     0-based, 1-based) is determined upstream when deciding how to
@@ -563,9 +563,9 @@ class MutationCaller:
 
 
 class MutationConsensus:
-    """Takes consensus of several :class:`Mutation` objects.
+    """Takes consensus of several :class:`Mutations`.
 
-    Designed for when you have called :class:`Mutation` objects
+    Designed for when you have called :class:`Mutations`
     for several sequences thought to represent the same template.
     Determines whether we think mutations are real, aren't really
     present, or if sequences appear to arise from a mix of wildtype
@@ -599,44 +599,227 @@ class MutationConsensus:
             group them together as the most common indel.
             Designed to handle this case where alignment issues
             slightly change called boundaries of long indels.
+        `nan_acc` (float)
+            Accuracy assigned to :class:`Mutations` for which
+            accuracy is `math.nan`. If you expect that most
+            mutations will not have accuracy values, you should
+            set `min_error` to 1 to avoid any accuracy filtering.
+        `indel_len_ignore_acc` (int)
+            Ignore the accuracy filter specified by `min_error`
+            if an indel is $\ge$ this length. The reason is that
+            longer indels probably aren't just sequencing errors.
 
-    Mutations are called from the list of :class:`Mutation` objects
+    Mutations are called from the list of :class:`Mutations`
     passed to :class:`MutationConsensus.callConsensus` as follows:
 
-      1. If there is just one :class:`Mutation` object passed, call
-         sequence as wildtype.
+      1. If there is just one :class:`Mutations` object passed,
+         and it has no mutations, call as wildtype.
 
-      2. If there are less than `n_mut` :class:`Mutation` objects
-         passed and some have mutations, call the sequence as
-         ambiguous.
+      2. If there are less than `n_mut` :class:`Mutations`
+         passed and some have mutations, call as ambiguous.
 
-      3. If there are at least `n_mut` :class:`Mutation` objects
+      3. If there are at least `n_mut` :class:`Mutations`
+         passed but less than `n_mut` of them have a mutation,
+         call as wildtype.
+
+      4. If there are at least `n_mut` :class:`Mutations`
          that contain a specific mutation, **and** the product
          of their error rates (1 - accuracy) is < `min_error`,
-         **and** the fraction of :class:`Mutation` objects that
+         **and** the fraction of :class:`Mutations` that
          have this mutation is > `min_mut_frac`, then call
          the sequence as having the mutation.
 
-      4. If the conditions in (3) above are met **except** that
-         the fraction of :class:`Mutation` objects that have
-         this mutation is $\le$ `min_mut_frac` but is >
-         `max_mut_frac_for_wt`, then call the sequence as having
-         the mutation in a mix.
+      5. If the conditions in (4) above are met **except** that
+         the fraction of :class:`Mutations` that have
+         this mutation is :math:`\le` `min_mut_frac` but is >
+         `max_mut_frac_for_wt`, then call as having the mutation
+         in a mix.
 
-      5. Otherwise call the mutation as absent.
+      6. Otherwise call as wildtype.
+
+    Here is an example.
+
+    First, define some :class:`Mutations`:
+
+    >>> m_wt = Mutations(
+    ...         substitution_tuples=[],
+    ...         insertion_tuples=[],
+    ...         deletion_tuples=[])
+    >>> m_A1G_high_acc = Mutations(
+    ...         substitution_tuples=[(1, 'A', 'G', 30)],
+    ...         insertion_tuples=[],
+    ...         deletion_tuples=[])
+    >>> m_A1G_low_acc = Mutations(
+    ...         substitution_tuples=[(1, 'A', 'G', 20)],
+    ...         insertion_tuples=[],
+    ...         deletion_tuples=[])
+
+    Initialize a :class:`MutationConsensus` with default args:
+
+    >>> mutcons = MutationConsensus()
+
+    A single :class:`Mutations` with no mutation is called wildtype,
+    and so returns an empty string:
+
+    >>> mutcons.callConsensus([m_wt], 'substitutions')
+    ''
+    >>> mutcons.callConsensus([m_wt], 'insertions')
+    ''
+    >>> mutcons.callConsensus([m_wt], 'deletions')
+    ''
+
+    Same for two with no mutations:
+
+    >>> mutcons.callConsensus([m_wt, m_wt], 'substitutions')
+    ''
+
+    A single :class:`Mutations` with mutations is called as ambiguous:
+
+    >>> mutcons.callConsensus([m_A1G_high_acc], 'substitutions')
+    'unknown'
+
+    One with mutations and one without is called wildtype:
+
+    >>> mutcons.callConsensus([m_A1G_high_acc, m_wt], 'substitutions')
+    ''
+
+    Two high-quality mutation calls are give a consensus mutation:
+
+    >>> mutcons.callConsensus([m_A1G_high_acc, m_A1G_high_acc], 'substitutions')
+    'A1G'
+
+    But it takes three low-quality mutation calls to do the same:
+
+    >>> mutcons.callConsensus([m_A1G_low_acc, m_A1G_low_acc], 'substitutions')
+    ''
+
+    >>> mutcons.callConsensus([m_A1G_low_acc, m_A1G_low_acc, m_A1G_low_acc],
+    ...         'substitutions')
+    'A1G'
+
+    Having both mutation calls and wildtype calls give mixed:
+
+    >>> mutcons.callConsensus([m_A1G_high_acc, m_A1G_high_acc, m_wt],
+    ...         'substitutions')
+    'A1G_mixed'
+
+    Unless the mutation calls are in sufficient excess:
+
+    >>> mutcons.callConsensus([m_A1G_high_acc] * 3 + [m_wt],
+    ...         'substitutions')
+    'A1G'
+
+    Or the wildtype is in sufficient excess:
+
+    >>> mutcons.callConsensus([m_A1G_high_acc] * 2 + [m_wt] * 7,
+    ...         'substitutions')
+    ''
+
+    Example with two substitutions:
+
+    >>> m_A1G_T2A_high_acc = Mutations(
+    ...         substitution_tuples=[(1, 'A', 'G', 30), (2, 'T', 'A', 30)],
+    ...         insertion_tuples=[],
+    ...         deletion_tuples=[])
+    >>> mutcons.callConsensus([m_A1G_T2A_high_acc, m_A1G_T2A_high_acc],
+    ...         'substitutions')
+    'A1G T2A'
+
+    Example where one sequence has two mutations (enough to be called)
+    and the other only has one (not enough to be called):
+
+    >>> mutcons.callConsensus([m_A1G_T2A_high_acc, m_A1G_high_acc],
+    ...         'substitutions')
+    'A1G'
     """
 
     def __init__(self, *, n_mut=2, min_error=1e-4, min_mut_frac=0.67,
-            max_mut_frac_for_wt=0.25, group_indel_frac=0.8):
+            max_mut_frac_for_wt=0.25, group_indel_frac=0.8, nan_acc=0.99,
+            indel_len_ignore_acc=3):
         """See main class doc string."""
         self.n_mut = n_mut
         self.min_error = min_error
         self.min_mut_frac = min_mut_frac
         self.max_mut_frac_for_wt = max_mut_frac_for_wt
+        if min_mut_frac <= max_mut_frac_for_wt:
+            raise ValueError('min_mut_frac < max_mut_frac_for_wt')
         self.group_indel_frac = group_indel_frac
+        self.nan_acc = nan_acc
+        self.indel_len_ignore_acc = indel_len_ignore_acc
 
-    def callConsensus(self, mutationlist):
-        pass
+    def callConsensus(self, mutationlist, mutation_type):
+        """Calls consensus from :class:`Mutations`.
+
+        The calling is done using the criteria described in the
+        main docs for :class:`MutationConsensus`.
+
+        Args:
+            `mutationlist` (list)
+                List of one or more :class:`Mutations` from
+                which we call consensus.
+            `mutation_type` (str)
+                Type of mutation to call. Should be one of
+                'substitutions', 'insertions', or 'deletions'.
+
+        Returns:
+            A str giving the result. If consensus of mutations
+            cannot be called, returns the string "unknown".
+            Otherwise returns empty string if no consensus mutations,
+            or a string giving the mutations separated by spaces
+            the same way they are returned by the methods of
+            :class:`Mutations`. If a mutation is considered
+            mixed, the string is suffixed with "_mixed".
+        """
+        nseqs = len(mutationlist)
+        if nseqs < 1:
+            raise ValueError("empty `mutationlist`")
+
+        if mutation_type == 'substitutions':
+            muts = [m.substitutions() for m in mutationlist]
+            accs = [m.substitutions(returnval='accuracy')
+                    for m in mutationlist]
+        elif mutation_type == 'insertions':
+            raise ValueError('acc of long indels')
+            raise NotImplementedError('not implemented for insertions yet')
+        elif mutation_type == 'deletions':
+            raise ValueError('acc of long indels')
+            raise NotImplementedError('not implemented for deletions yet')
+        else:
+            raise ValueError("invalid `mutation_type` {0}".format(
+                    mutation_type))
+
+        if all(not m for m in muts):
+            return '' # all sequences are wildtype
+
+        if len(muts) < self.n_mut:
+            return 'unknown' # not enough sequences to call mutations
+
+        # get counts of all mutations with adequate counts
+        flatmuts = numpy.array([m for ml in muts for m in ml])
+        mutcounts = {m:n for m, n in collections.Counter(flatmuts)
+                .items() if n >= self.n_mut}
+
+        # now only get those mutations with adequate error rates
+        flataccs = numpy.array([a for al in accs for a in al])
+        flataccs[numpy.isnan(flataccs)] = self.nan_acc
+        for m in list(mutcounts.keys()):
+            if (1 - flataccs[flatmuts == m]).prod() >= self.min_error:
+                del mutcounts[m]
+
+        if not mutcounts:
+            return '' # no mutations with enough counts, call wildtype
+
+        mutlist = []
+        for m, n in sorted(mutcounts.items(),
+                key=lambda tup: (tup[1], tup[0])):
+            f = n / nseqs
+            if f > self.min_mut_frac:
+                mutlist.append(m)
+            elif f > self.max_mut_frac_for_wt:
+                mutlist.append(m + '_mixed')
+            else:
+                pass # consider wildtype
+        return ' '.join(mutlist)
 
 
 class Mapper:
@@ -647,7 +830,7 @@ class Mapper:
             FASTA file with target (reference) to which we align
             reads.
         `options` (list)
-            Command line options to ``minimap2``. For 
+            Command line options to ``minimap2``. For
             recommended options, for different situations, see:
 
                 - :data:`OPTIONS_CODON_DMS`
@@ -657,7 +840,7 @@ class Mapper:
         `prog` (str or `None`)
             Path to ``minimap2`` executable. `None` uses the
             version of ``minimap2`` installed internally with
-            `dms_tools2`. This is recommended unless you have 
+            `dms_tools2`. This is recommended unless you have
             some other preferred version.
         `target_isoforms` (dict)
             Sometimes targets might be be isoforms of each
@@ -844,7 +1027,7 @@ class Mapper:
             is a single alignment for a query, the value is that
             :class:`Alignment` object. There can be multiple primary
             alignments (`see here <https://github.com/lh3/minimap2/issues/113>`_).
-            If there are multiple alignments, the value is the 
+            If there are multiple alignments, the value is the
             :class:`Alignment` with the highest score, and the remaining
             alignments are listed in the :class:`Alignment.additional`
             attribute of that "best" alignment.
@@ -1140,7 +1323,7 @@ class TargetVariants:
                     for i in self.variablesites[target]):name
                     for name, seqs in self.variantseqs.items()}
             self.sitevariants[target] = {variant:[seqs[target][i]
-                    for i in self.variablesites[target]] for 
+                    for i in self.variablesites[target]] for
                     variant, seqs in self.variantseqs.items()}
 
 
@@ -1228,7 +1411,7 @@ class TargetVariants:
             # does not match any of the target variants
             return ("mixed", a)
 
-        if (self.mapper.targetseqs[a.target] != 
+        if (self.mapper.targetseqs[a.target] !=
                 self.variantseqs[v][a.target]):
             assert len(sites) == len(querysites_w_None)
             targetsites = [i - a.r_st for i, j in
@@ -1256,7 +1439,7 @@ def shiftIndels(cigar):
 
     Args:
         `cigar` (str)
-            PAF long CIGAR string, format is 
+            PAF long CIGAR string, format is
             `detailed here <https://github.com/lh3/minimap2#cs>`_.
 
     Returns:
@@ -1309,7 +1492,7 @@ def trimCigar(side, cigar):
         `side` (str)
             "start" trim from start, "end" to trim from end.
         `cigar` (str)
-            PAF long CIGAR string, format is 
+            PAF long CIGAR string, format is
             `detailed here <https://github.com/lh3/minimap2#cs>`_.
 
     Returns:
@@ -1369,7 +1552,7 @@ def parsePAF(paf_file, targets=None, introns_to_gaps=False):
     creates long `cs` tags with the CIGAR string.
 
     PAF format is `described here <https://github.com/lh3/miniasm/blob/master/PAF.md>`_.
-    PAF long CIGAR string format from ``minimap2`` is 
+    PAF long CIGAR string format from ``minimap2`` is
     `detailed here <https://github.com/lh3/minimap2#cs>`_.
 
     Args:
@@ -1387,7 +1570,7 @@ def parsePAF(paf_file, targets=None, introns_to_gaps=False):
             Requires you to provide `targets`.
 
     Returns:
-        A generator that yields query / alignments on each line in 
+        A generator that yields query / alignments on each line in
         `paf_file`. Returned as the 2-tuple `(query_name, a)`,
         where `query_name` is a str giving the name of the query
         sequence, and `a` is an :class:`Alignment`.
@@ -1488,7 +1671,7 @@ def parsePAF(paf_file, targets=None, introns_to_gaps=False):
                       q_en=int(entries[3]),
                       q_len=int(entries[1]),
                       strand={'+':1, '-':-1}[entries[4]],
-                      cigar_str=cigar_str, 
+                      cigar_str=cigar_str,
                       additional=[],
                       score=score)
         yield (query_name, a)
@@ -1559,7 +1742,7 @@ def intronsToGaps(cigar, target):
 
     Args:
         `cigar` (str)
-            PAF long CIGAR string, format is 
+            PAF long CIGAR string, format is
             `detailed here <https://github.com/lh3/minimap2#cs>`_.
         `target` (str)
             The exact portion of the target aligned to the query
@@ -1615,7 +1798,7 @@ def cigarToQueryAndTarget(cigar):
     Returns:
         The 2-tuple `(query, target)`, where each is
         a string giving the encoded query and target.
-    
+
     >>> cigarToQueryAndTarget('=AT*ac=G+at=AG-ac=T')
     ('ATCGATAGT', 'ATAGAGACT')
     """
