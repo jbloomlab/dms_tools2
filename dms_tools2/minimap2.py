@@ -524,8 +524,10 @@ class MutationCaller:
                     i_qvals = None
                 else:
                     i = iTargetToQuery(a, itarget - self.targetindex)
-                    i_qvals = [qvals[i - 1 - j]
-                            for j in range(n)]
+                    if i is None:
+                        i_qvals = None
+                    else:
+                        i_qvals = [qvals[i - 1 - j] for j in range(n)]
                 insertion_tuples.append((itarget, n, i_qvals))
             elif m.group()[0] == '~':
                 raise ValueError("Cannot handle intron operations")
