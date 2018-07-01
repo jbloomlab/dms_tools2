@@ -976,7 +976,7 @@ def qvalsToAccuracy(qvals, encoding='numbers', no_avg=False):
         elif isinstance(qvals, list):
             qvals = numpy.array(qvals)
 
-    if len(qvals) == 0:
+    if qvals is None or len(qvals) == 0:
         return numpy.nan
 
     if encoding == 'numbers':
