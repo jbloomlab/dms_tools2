@@ -117,6 +117,13 @@ def checkAlignment(a, target, query):
     >>> a_invalid = a_valid._replace(r_st=0, r_en=4)
     >>> checkAlignment(a_invalid, target, query)
     False
+
+    >>> target = 'ATGCAT'
+    >>> a_valid2 = Alignment(target='target', r_st=0, r_en=6,
+    ...         r_len=6, q_st=0, q_en=6, q_len=6, strand=1,
+    ...         cigar_str='=A+tgc-tgc=AT', additional=[], score=-1)
+    >>> checkAlignment(a_valid2, target, target)
+    True
     """
     assert a.strand == 1, "not implemented for - strand"
     (cigar_query, cigar_target) = cigarToQueryAndTarget(a.cigar_str)
@@ -1798,7 +1805,7 @@ def numAligned(cigar):
 #: matches individual group in long format CIGAR
 _CIGAR_GROUP_MATCH = re.compile('=[A-Z]+|' # exact matches
                                 '\*[a-z]{2}|' # mutation
-                                '[\-\+[a-z]+|' # indel
+                                '[\-\+][a-z]+|' # indel
                                 '\~[a-z]{2}\d+[a-z]{2}' # intron
                                 )
 
@@ -1873,6 +1880,9 @@ def cigarToQueryAndTarget(cigar):
 
     >>> cigarToQueryAndTarget('=AT*ac=G+at=AG-ac=T')
     ('ATCGATAGT', 'ATAGAGACT')
+
+    >>> cigarToQueryAndTarget('=A+tgc-tgc=AT')
+    ('ATGCAT', 'ATGCAT')
     """
     assert isinstance(cigar, str)
     query = []
