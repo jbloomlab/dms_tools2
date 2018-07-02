@@ -10,7 +10,7 @@
 #include "getopt.h"
 #endif
 
-#define MM_VERSION "2.10-r761"
+#define MM_VERSION "2.11-r797"
 
 #ifdef __linux__
 #include <sys/resource.h>
@@ -57,6 +57,9 @@ static struct option long_options[] = {
 	{ "max-clip-ratio", required_argument, 0, 0 },   // 27
 	{ "min-occ-floor",  required_argument, 0, 0 },   // 28
 	{ "MD",             no_argument,       0, 0 },   // 29
+	{ "lj-min-ratio",   required_argument, 0, 0 },   // 30
+	{ "score-N",        required_argument, 0, 0 },   // 31
+	{ "eqx",            no_argument,       0, 0 },   // 32
 	{ "help",           no_argument,       0, 'h' },
 	{ "max-intron-len", required_argument, 0, 'G' },
 	{ "version",        no_argument,       0, 'V' },
@@ -72,7 +75,7 @@ static inline int64_t mm_parse_num(const char *str)
 {
 	double x;
 	char *p;
-	x = strtod(optarg, &p);
+	x = strtod(str, &p);
 	if (*p == 'G' || *p == 'g') x *= 1e9;
 	else if (*p == 'M' || *p == 'm') x *= 1e6;
 	else if (*p == 'K' || *p == 'k') x *= 1e3;
@@ -94,7 +97,7 @@ static inline void yes_or_no(mm_mapopt_t *opt, int flag, int long_idx, const cha
 
 int main(int argc, char *argv[])
 {
-	const char *opt_str = "2aSDw:k:K:t:r:f:Vv:g:G:I:d:XT:s:x:Hcp:M:n:z:A:B:O:E:m:N:Qu:R:hF:LC:y";
+	const char *opt_str = "2aSDw:k:K:t:r:f:Vv:g:G:I:d:XT:s:x:Hcp:M:n:z:A:B:O:E:m:N:Qu:R:hF:LC:yY";
 	mm_mapopt_t opt;
 	mm_idxopt_t ipt;
 	int i, c, n_threads = 3, long_idx;
@@ -173,6 +176,9 @@ int main(int argc, char *argv[])
 		else if (c == 0 && long_idx ==27) opt.max_clip_ratio = atof(optarg); // --max-clip-ratio
 		else if (c == 0 && long_idx ==28) opt.min_mid_occ = atoi(optarg); // --min-occ-floor
 		else if (c == 0 && long_idx ==29) opt.flag |= MM_F_OUT_MD; // --MD
+		else if (c == 0 && long_idx ==30) opt.min_join_flank_ratio = atof(optarg); // --lj-min-ratio
+		else if (c == 0 && long_idx ==31) opt.sc_ambi = atoi(optarg); // --score-N
+		else if (c == 0 && long_idx ==32) opt.flag |= MM_F_EQX; // --eqx
 		else if (c == 0 && long_idx == 14) { // --frag
 			yes_or_no(&opt, MM_F_FRAG_MODE, long_idx, optarg, 1);
 		} else if (c == 0 && long_idx == 15) { // --secondary
@@ -241,7 +247,7 @@ int main(int argc, char *argv[])
 		fprintf(fp_help, "Usage: minimap2 [options] <target.fa>|<target.idx> [query.fa] [...]\n");
 		fprintf(fp_help, "Options:\n");
 		fprintf(fp_help, "  Indexing:\n");
-		fprintf(fp_help, "    -H           use homopolymer-compressed k-mer\n");
+		fprintf(fp_help, "    -H           use homopolymer-compressed k-mer (preferrable for PacBio)\n");
 		fprintf(fp_help, "    -k INT       k-mer size (no larger than 28) [%d]\n", ipt.k);
 		fprintf(fp_help, "    -w INT       minizer window size [%d]\n", ipt.w);
 		fprintf(fp_help, "    -I NUM       split index for every ~NUM input bases [4G]\n");
@@ -274,21 +280,19 @@ int main(int argc, char *argv[])
 		fprintf(fp_help, "    -c           output CIGAR in PAF\n");
 		fprintf(fp_help, "    --cs[=STR]   output the cs tag; STR is 'short' (if absent) or 'long' [none]\n");
 		fprintf(fp_help, "    --MD         output the MD tag\n");
+		fprintf(fp_help, "    --eqx        write =/X CIGAR operators\n");
 		fprintf(fp_help, "    -Y           use soft clipping for supplementary alignments\n");
 		fprintf(fp_help, "    -t INT       number of threads [%d]\n", n_threads);
 		fprintf(fp_help, "    -K NUM       minibatch size for mapping [500M]\n");
 //		fprintf(fp_help, "    -v INT       verbose level [%d]\n", mm_verbose);
 		fprintf(fp_help, "    --version    show version number\n");
 		fprintf(fp_help, "  Preset:\n");
-		fprintf(fp_help, "    -x STR       preset (always applied before other options) []\n");
-		fprintf(fp_help, "                 map-pb: -Hk19 (PacBio vs reference mapping)\n");
-		fprintf(fp_help, "                 map-ont: -k15 (Oxford Nanopore vs reference mapping)\n");
-		fprintf(fp_help, "                 asm5: -k19 -w19 -A1 -B19 -O39,81 -E3,1 -s200 -z200 (asm to ref mapping; break at 5%% div.)\n");
-		fprintf(fp_help, "                 asm10: -k19 -w19 -A1 -B9 -O16,41 -E2,1 -s200 -z200 (asm to ref mapping; break at 10%% div.)\n");
-		fprintf(fp_help, "                 ava-pb: -Hk19 -Xw5 -m100 -g10000 --max-chain-skip 25 (PacBio read overlap)\n");
-		fprintf(fp_help, "                 ava-ont: -k15 -Xw5 -m100 -g10000 -r2000 --max-chain-skip 25 (ONT read overlap)\n");
-		fprintf(fp_help, "                 splice: long-read spliced alignment (see minimap2.1 for details)\n");
-		fprintf(fp_help, "                 sr: short single-end reads without splicing (see minimap2.1 for details)\n");
+		fprintf(fp_help, "    -x STR       preset (always applied before other options; see minimap2.1 for details) []\n");
+		fprintf(fp_help, "                 - map-pb/map-ont: PacBio/Nanopore vs reference mapping\n");
+		fprintf(fp_help, "                 - ava-pb/ava-ont: PacBio/Nanopore read overlap\n");
+		fprintf(fp_help, "                 - asm5/asm10/asm20: asm-to-ref mapping, for ~0.1/1/5%% sequence divergence\n");
+		fprintf(fp_help, "                 - splice: long-read spliced alignment\n");
+		fprintf(fp_help, "                 - sr: genomic short-read mapping\n");
 		fprintf(fp_help, "\nSee `man ./minimap2.1' for detailed description of command-line options.\n");
 		return fp_help == stdout? 0 : 1;
 	}

@@ -31,6 +31,7 @@
 #define MM_F_ALL_CHAINS    0x800000
 #define MM_F_OUT_MD        0x1000000
 #define MM_F_COPY_COMMENT  0x2000000
+#define MM_F_EQX           0x4000000 // use =/X instead of M
 
 #define MM_I_HPC          0x1
 #define MM_I_NO_SEQ       0x2
@@ -115,8 +116,10 @@ typedef struct {
 
 	int max_join_long, max_join_short;
 	int min_join_flank_sc;
+	float min_join_flank_ratio;
 
 	int a, b, q, e, q2, e2; // matching score, mismatch, gap-open and gap-ext penalties
+	int sc_ambi; // score when one or both bases are "N"
 	int noncan;      // cost of non-canonical splicing sites
 	int zdrop, zdrop_inv;   // break alignment if alignment score drops too fast along the diagonal
 	int end_bonus;
@@ -215,6 +218,36 @@ mm_idx_t *mm_idx_reader_read(mm_idx_reader_t *r, int n_threads);
 void mm_idx_reader_close(mm_idx_reader_t *r);
 
 int mm_idx_reader_eof(const mm_idx_reader_t *r);
+
+/**
+ * Check whether the file contains a minimap2 index
+ *
+ * @param fn         file name
+ *
+ * @return the file size if fn is an index file; 0 if fn is not.
+ */
+int64_t mm_idx_is_idx(const char *fn);
+
+/**
+ * Load a part of an index
+ *
+ * Given a uni-part index, this function loads the entire index into memory.
+ * Given a multi-part index, it loads one part only and places the file pointer
+ * at the end of that part.
+ *
+ * @param fp         pointer to FILE object
+ *
+ * @return minimap2 index read from fp
+ */
+mm_idx_t *mm_idx_load(FILE *fp);
+
+/**
+ * Append an index (or one part of a full index) to file
+ *
+ * @param fp         pointer to FILE object
+ * @param mi         minimap2 index
+ */
+void mm_idx_dump(FILE *fp, const mm_idx_t *mi);
 
 /**
  * Create an index from strings in memory

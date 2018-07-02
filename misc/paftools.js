@@ -1,6 +1,6 @@
 #!/usr/bin/env k8
 
-var paftools_version = 'r755';
+var paftools_version = 'r767';
 
 /*****************************
  ***** Library functions *****
@@ -484,7 +484,7 @@ function paf_call(args)
 		// drop alignments that don't overlap with the current one
 		var k = 0;
 		for (var i = 0; i < a.length; ++i)
-			if (a[0][0] == ctg && a[0][2] > x)
+			if (a[i][0] == ctg && a[i][2] > x)
 				a[k++] = a[i];
 		a.length = k;
 		// core loop
@@ -496,7 +496,7 @@ function paf_call(args)
 				var cov = 1;
 				if (m[1] == '*' || m[1] == '+' || m[1] == '-')
 					for (var i = 0; i < a.length; ++i)
-						if (a[0][2] > x) ++cov;
+						if (a[i][2] > x) ++cov;
 				var qs, qe;
 				if (m[1] == '=' || m[1] == ':') {
 					var l = m[1] == '='? m[2].length : parseInt(m[2]);
@@ -676,8 +676,10 @@ function paf_stat(args)
 			last_qlen = ori_qlen;
 		}
 	}
-	l_tot += last_qlen;
-	l_cov += cov_len(regs);
+	if (regs.length) {
+		l_tot += last_qlen;
+		l_cov += cov_len(regs);
+	}
 
 	file.close();
 	buf.destroy();
