@@ -617,9 +617,6 @@ class MutationConsensus:
             0.9) that just gets rid of really low-accuracy ones.
             Is **not** applied to mutations with an accuracy
             of NaN (`math.nan`).
-        `min_error` (float)
-            Product of error rates in sequences calling mutation
-            must be less than this.
         `min_mut_frac` (float)
             More than this fraction of sequences must have
             mutation to call it as present in consensus.
@@ -632,21 +629,12 @@ class MutationConsensus:
             group them together as the most common indel.
             Designed to handle this case where alignment issues
             slightly change called boundaries of long indels.
-        `nan_acc` (float)
-            Accuracy assigned to :class:`Mutations` for which
-            accuracy is `math.nan`. If you expect that most
-            mutations will not have accuracy values, you should
-            set `min_error` to 1 to avoid any accuracy filtering.
-        `indel_len_ignore_acc` (int)
-            Ignore the accuracy filter specified by `min_error`
-            if an indel is :math:`\ge` this length. The reason is
-            longer indels probably aren't just sequencing errors.
 
     Mutations are called from the list of :class:`Mutations`
     passed to :class:`MutationConsensus.callConsensus` as follows:
 
       1. Ignore any mutations with accuracy less then `min_acc`,
-         but does **not** eliminate mutations with accuracy that
+         but do **not** eliminate mutations with accuracy that
          is `math.nan`.
 
       2. If there are less then `n_mut` :class:`Mutations` passed,
@@ -660,8 +648,7 @@ class MutationConsensus:
          call as wildtype.
 
       5. If there are at least `n_mut` :class:`Mutations`
-         that contain a specific mutation, **and** the product
-         of their error rates (1 - accuracy) is < `min_error`,
+         that contain a specific mutation
          **and** the fraction of :class:`Mutations` that
          have this mutation is > `min_mut_frac`, then call
          the sequence as having the mutation.
@@ -687,7 +674,7 @@ class MutationConsensus:
     ...         insertion_tuples=[],
     ...         deletion_tuples=[])
     >>> m_A1G_low_acc = Mutations(
-    ...         substitution_tuples=[(1, 'A', 'G', 20)],
+    ...         substitution_tuples=[(1, 'A', 'G', 9)],
     ...         insertion_tuples=[],
     ...         deletion_tuples=[])
 
@@ -725,14 +712,10 @@ class MutationConsensus:
     >>> mutcons.callConsensus([m_A1G_high_acc, m_A1G_high_acc], 'substitutions')
     'A1G'
 
-    But it takes three low-quality mutation calls to do the same:
+    But it two low-quality mutation calls do not:
 
     >>> mutcons.callConsensus([m_A1G_low_acc, m_A1G_low_acc], 'substitutions')
     ''
-
-    >>> mutcons.callConsensus([m_A1G_low_acc, m_A1G_low_acc, m_A1G_low_acc],
-    ...         'substitutions')
-    'A1G'
 
     Having both mutation calls and wildtype calls give mixed:
 
@@ -769,8 +752,7 @@ class MutationConsensus:
     ...         'substitutions')
     'A1G'
 
-    Ignore the accuracy on long indels. Below the short deletion
-    fails the accuracy cutoff, but the large one doesn't:
+    Group sufficiently overlapping indels:
 
     >>> m_shortdel = Mutations(
     ...         substitution_tuples=[],
@@ -781,15 +763,9 @@ class MutationConsensus:
     ...         insertion_tuples=[],
     ...         deletion_tuples=[(8, 18, math.nan)])
     >>> mutcons.callConsensus([m_shortdel] * 2, 'deletions')
-    ''
-    >>> mutcons_laxerror = MutationConsensus(min_error=1e-3)
-    >>> mutcons_laxerror.callConsensus([m_shortdel] * 2, 'deletions')
     'del8to9'
     >>> mutcons.callConsensus([m_longdel] * 2, 'deletions')
     'del8to18'
-
-    Group sufficiently overlapping indels:
-
     >>> m_overlaplongdel = Mutations(
     ...         substitution_tuples=[],
     ...         insertion_tuples=[],
@@ -806,33 +782,23 @@ class MutationConsensus:
 
     Demonstrate `min_acc` filter:
 
-    >>> m_A1G_very_low_acc = Mutations(
-    ...         substitution_tuples=[(1, 'A', 'G', 9)],
-    ...         insertion_tuples=[],
-    ...         deletion_tuples=[])
     >>> mutcons_no_min_acc = MutationConsensus(min_acc=0)
-    >>> mutcons.callConsensus([m_wt, m_A1G_very_low_acc] * 6,
-    ...         'substitutions')
+    >>> mutcons.callConsensus([m_wt, m_A1G_low_acc] * 6, 'substitutions')
     ''
-    >>> mutcons_no_min_acc.callConsensus([m_wt, m_A1G_very_low_acc] * 6,
-    ...         'substitutions')
+    >>> mutcons_no_min_acc.callConsensus([m_wt, m_A1G_low_acc] * 6, 'substitutions')
     'A1G_mixed'
     """
 
-    def __init__(self, *, n_mut=2, min_acc=0.9, min_error=1e-4,
-            min_mut_frac=0.8, max_mut_frac_for_wt=0.2, group_indel_frac=0.8,
-            nan_acc=0.99, indel_len_ignore_acc=3):
+    def __init__(self, *, n_mut=2, min_acc=0.9, min_mut_frac=0.8,
+            max_mut_frac_for_wt=0.2, group_indel_frac=0.8):
         """See main class doc string."""
         self.n_mut = n_mut
         self.min_acc = min_acc
-        self.min_error = min_error
         self.min_mut_frac = min_mut_frac
         self.max_mut_frac_for_wt = max_mut_frac_for_wt
         if min_mut_frac <= max_mut_frac_for_wt:
             raise ValueError('min_mut_frac < max_mut_frac_for_wt')
         self.group_indel_frac = group_indel_frac
-        self.nan_acc = nan_acc
-        self.indel_len_ignore_acc = indel_len_ignore_acc
 
 
     def callConsensus(self, mutationlist, mutation_type):
@@ -871,17 +837,11 @@ class MutationConsensus:
             raise ValueError("invalid `mutation_type` {0}".format(
                     mutation_type))
 
-        # mutations and accuracies
+        # mutations
         muts = [func(m, min_acc=self.min_acc, min_acc_filter_nan=False)
                 for m in mutationlist]
+        assert len(muts) == nseqs
         flatmuts = numpy.array([m for ml in muts for m in ml])
-        accs = [func(m, min_acc=self.min_acc, min_acc_filter_nan=False,
-                returnval='accuracy') for m in mutationlist]
-        assert len(muts) == len(accs) == nseqs
-        flataccs = numpy.array([a for al in accs for a in al])
-        assert len(flatmuts) == len(flataccs)
-        flataccs[numpy.isnan(flataccs)] = self.nan_acc
-        del accs, muts # not updated below, delete for safety
 
         if len(flatmuts) == 0:
             return '' # all sequences are wildtype
@@ -891,12 +851,10 @@ class MutationConsensus:
 
         if mutation_type in {'insertions', 'deletions'}:
 
-            # assign perfect accuracy to long indels
             lengths = [func(m, returnval='length', min_acc=self.min_acc,
                     min_acc_filter_nan=False) for m in mutationlist]
             flatlengths = numpy.array([l for ll in lengths for l in ll])
-            assert len(flatlengths) == len(flatmuts) == len(flataccs)
-            flataccs[flatlengths >= self.indel_len_ignore_acc] = 1
+            assert len(flatlengths) == len(flatmuts)
 
             # group sufficiently overlapping indels
             indelcounts = collections.Counter(flatmuts)
@@ -928,11 +886,6 @@ class MutationConsensus:
         # get counts of all mutations with adequate counts
         mutcounts = {m:n for m, n in collections.Counter(flatmuts)
                 .items() if n >= self.n_mut}
-
-        # now only get those mutations with adequate error rates
-        for m in list(mutcounts.keys()):
-            if (1 - flataccs[flatmuts == m]).prod() >= self.min_error:
-                del mutcounts[m]
 
         if not mutcounts:
             return '' # no mutations with enough counts, call wildtype
