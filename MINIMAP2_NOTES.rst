@@ -11,6 +11,10 @@ Version 2.10 of `minimap2`_ was added to ``./minimap2_source/`` via::
 
     git subtree add --prefix minimap2_source https://github.com/lh3/minimap2 v2.10 --squash
 
+It was then updated to version 2.11 with::
+
+    git subtree pull --prefix minimap2_source https://github.com/lh3/minimap2 v2.11 --squash
+
 All the files in this ``./minimap2_source/`` directory are specified for inclusion in the main package via `MANIFEST.in <MANIFEST.in>`_.
 
 The `setup.py <setup.py>`_ script then takes a somewhat hacky approach to build the ``minimap2`` executable and copy it to ``./dms_tools2/`` under the name ``minimap2_prog`` for inclusion as package data.
