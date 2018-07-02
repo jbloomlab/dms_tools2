@@ -226,12 +226,16 @@ class Mutations:
         self._deletion_tuples = sorted(deletion_tuples)
 
 
-    def substitutions(self, *, returnval='mutation', min_acc=None):
+    def substitutions(self, *, returnval='mutation', min_acc=None,
+            min_acc_filter_nan=True):
         """List of substitutions or associated values.
 
         Args:
             `min_acc` (float or `None`)
                 Only include substitutions with >= this accuracy.
+            `min_acc_filter_nan` (bool)
+                If using `min_acc` filter, do we also remove
+                mutations with an accuracy that is `math.nan`?
             `returnval` (str)
                 Type of value to return in list:
 
@@ -247,8 +251,10 @@ class Mutations:
         if min_acc is None:
             subtups = self._substitution_tuples
         else:
-            subtups = [tup for tup in self._substitution_tuples if
-                    dms_tools2.pacbio.qvalsToAccuracy(tup[3]) >= min_acc]
+            accs = [dms_tools2.pacbio.qvalsToAccuracy(tup[3])
+                    for tup in self._substitution_tuples]
+            subtups = [tup for tup, a in zip(self._substitution_tuples, accs) if
+                    (a >= min_acc) or ((not min_acc_filter_nan) and math.isnan(a))]
 
         if returnval == 'mutation':
             return ['{1}{0}{2}'.format(*tup) for tup in subtups]
@@ -259,12 +265,16 @@ class Mutations:
             raise ValueError("invalid `returnval` {0}".format(returnval))
 
 
-    def insertions(self, *, returnval='mutation', min_acc=None):
+    def insertions(self, *, returnval='mutation', min_acc=None,
+            min_acc_filter_nan=True):
         """List of insertions.
 
         Args:
             `min_acc` (float or `None`)
                 Only include insertions with >= this accuracy.
+            `min_acc_filter_nan` (bool)
+                If using `min_acc` filter, do we also remove
+                mutations with an accuracy that is `math.nan`?
             `returnval` (str)
                 Type of value to return in list:
 
@@ -284,8 +294,10 @@ class Mutations:
         if min_acc is None:
             instups = self._insertion_tuples
         else:
-            instups = [tup for tup in self._insertion_tuples if
-                    dms_tools2.pacbio.qvalsToAccuracy(tup[2]) >= min_acc]
+            accs = [dms_tools2.pacbio.qvalsToAccuracy(tup[2])
+                    for tup in self._insertion_tuples]
+            instups = [tup for tup, a in zip(self._insertion_tuples, accs) if
+                    (a >= min_acc) or ((not min_acc_filter_nan) and math.isnan(a))]
 
         if returnval == 'mutation':
             return ['ins{0}len{1}'.format(*tup) for tup in instups]
@@ -298,12 +310,16 @@ class Mutations:
             raise ValueError("invalid `returnval` {0}".format(returnval))
 
 
-    def deletions(self, *, returnval='mutation', min_acc=None):
+    def deletions(self, *, returnval='mutation', min_acc=None,
+            min_acc_filter_nan=True):
         """List of deletions.
 
         Args:
             `min_acc` (float or `None`)
                 Only include deletions with >= this accuracy.
+            `min_acc_filter_nan` (bool)
+                If using `min_acc` filter, do we also remove
+                mutations with an accuracy that is `math.nan`?
             `returnval` (str)
                 Type of value to return in list:
 
@@ -323,8 +339,10 @@ class Mutations:
         if min_acc is None:
             deltups = self._deletion_tuples
         else:
-            deltups = [tup for tup in self._deletion_tuples if
-                    dms_tools2.pacbio.qvalsToAccuracy(tup[2]) >= min_acc]
+            accs = [dms_tools2.pacbio.qvalsToAccuracy(tup[2])
+                    for tup in self._deletion_tuples]
+            deltups = [tup for tup, a in zip(self._deletion_tuples, accs) if
+                    (a >= min_acc) or ((not min_acc_filter_nan) and math.isnan(a))]
 
         if returnval == 'mutation':
             return ['del{0}to{1}'.format(*tup) for tup in deltups]
@@ -593,6 +611,12 @@ class MutationConsensus:
         `n_mut` (int)
             At least this many sequences must have mutation to
             call it in consensus.
+        `min_acc` (float)
+            Completely ignore any mutations with accuracy lower
+            than this. Should be very lenient threshold (e.g.,
+            0.9) that just gets rid of really low-accuracy ones.
+            Is **not** applied to mutations with an accuracy
+            of NaN (`math.nan`).
         `min_error` (float)
             Product of error rates in sequences calling mutation
             must be less than this.
@@ -621,30 +645,34 @@ class MutationConsensus:
     Mutations are called from the list of :class:`Mutations`
     passed to :class:`MutationConsensus.callConsensus` as follows:
 
-      1. If there are less then `n_mut` :class:`Mutations` passed,
+      1. Ignore any mutations with accuracy less then `min_acc`,
+         but does **not** eliminate mutations with accuracy that
+         is `math.nan`.
+
+      2. If there are less then `n_mut` :class:`Mutations` passed,
          and it has no mutations, call as wildtype.
 
-      2. If there are less than `n_mut` :class:`Mutations`
+      3. If there are less than `n_mut` :class:`Mutations`
          passed and some have mutations, call as ambiguous.
 
-      3. If there are at least `n_mut` :class:`Mutations`
+      4. If there are at least `n_mut` :class:`Mutations`
          passed but less than `n_mut` of them have a mutation,
          call as wildtype.
 
-      4. If there are at least `n_mut` :class:`Mutations`
+      5. If there are at least `n_mut` :class:`Mutations`
          that contain a specific mutation, **and** the product
          of their error rates (1 - accuracy) is < `min_error`,
          **and** the fraction of :class:`Mutations` that
          have this mutation is > `min_mut_frac`, then call
          the sequence as having the mutation.
 
-      5. If the conditions in (4) above are met **except** that
+      6. If the conditions in (5) above are met **except** that
          the fraction of :class:`Mutations` that have
          this mutation is :math:`\le` `min_mut_frac` but is >
          `max_mut_frac_for_wt`, then call as having the mutation
          in a mix.
 
-      6. Otherwise call as wildtype.
+      7. Otherwise call as wildtype.
 
     Here is an example.
 
@@ -714,13 +742,13 @@ class MutationConsensus:
 
     Unless the mutation calls are in sufficient excess:
 
-    >>> mutcons.callConsensus([m_A1G_high_acc] * 3 + [m_wt],
+    >>> mutcons.callConsensus([m_A1G_high_acc] * 5 + [m_wt],
     ...         'substitutions')
     'A1G'
 
     Or the wildtype is in sufficient excess:
 
-    >>> mutcons.callConsensus([m_A1G_high_acc] * 2 + [m_wt] * 7,
+    >>> mutcons.callConsensus([m_A1G_high_acc] * 2 + [m_wt] * 9,
     ...         'substitutions')
     ''
 
@@ -768,21 +796,35 @@ class MutationConsensus:
     ...         deletion_tuples=[(9, 17, math.nan)])
     >>> mutcons.callConsensus([m_longdel, m_shortdel], 'deletions')
     ''
-    >>> mutcons.callConsensus([m_wt, m_longdel] + [m_overlaplongdel] * 2,
+    >>> mutcons.callConsensus([m_wt, m_longdel] + [m_overlaplongdel] * 4,
     ...         'deletions')
     'del9to17'
     >>> mutcons_nogroupindel = MutationConsensus(group_indel_frac=1)
     >>> mutcons_nogroupindel.callConsensus(
-    ...         [m_wt, m_longdel] + [m_overlaplongdel] * 2, 'deletions')
+    ...         [m_wt, m_longdel] + [m_overlaplongdel] * 4, 'deletions')
     'del9to17_mixed'
 
+    Demonstrate `min_acc` filter:
+
+    >>> m_A1G_very_low_acc = Mutations(
+    ...         substitution_tuples=[(1, 'A', 'G', 9)],
+    ...         insertion_tuples=[],
+    ...         deletion_tuples=[])
+    >>> mutcons_no_min_acc = MutationConsensus(min_acc=0)
+    >>> mutcons.callConsensus([m_wt, m_A1G_very_low_acc] * 6,
+    ...         'substitutions')
+    ''
+    >>> mutcons_no_min_acc.callConsensus([m_wt, m_A1G_very_low_acc] * 6,
+    ...         'substitutions')
+    'A1G_mixed'
     """
 
-    def __init__(self, *, n_mut=2, min_error=1e-4, min_mut_frac=0.67,
-            max_mut_frac_for_wt=0.25, group_indel_frac=0.8, nan_acc=0.99,
-            indel_len_ignore_acc=3):
+    def __init__(self, *, n_mut=2, min_acc=0.9, min_error=1e-4,
+            min_mut_frac=0.8, max_mut_frac_for_wt=0.2, group_indel_frac=0.8,
+            nan_acc=0.99, indel_len_ignore_acc=3):
         """See main class doc string."""
         self.n_mut = n_mut
+        self.min_acc = min_acc
         self.min_error = min_error
         self.min_mut_frac = min_mut_frac
         self.max_mut_frac_for_wt = max_mut_frac_for_wt
@@ -830,25 +872,30 @@ class MutationConsensus:
                     mutation_type))
 
         # mutations and accuracies
-        muts = [func(m) for m in mutationlist]
+        muts = [func(m, min_acc=self.min_acc, min_acc_filter_nan=False)
+                for m in mutationlist]
         flatmuts = numpy.array([m for ml in muts for m in ml])
-        accs = [func(m, returnval='accuracy') for m in mutationlist]
+        accs = [func(m, min_acc=self.min_acc, min_acc_filter_nan=False,
+                returnval='accuracy') for m in mutationlist]
+        assert len(muts) == len(accs) == nseqs
         flataccs = numpy.array([a for al in accs for a in al])
+        assert len(flatmuts) == len(flataccs)
         flataccs[numpy.isnan(flataccs)] = self.nan_acc
+        del accs, muts # not updated below, delete for safety
 
         if len(flatmuts) == 0:
             return '' # all sequences are wildtype
 
-        if len(muts) < self.n_mut:
+        if nseqs < self.n_mut:
             return 'unknown' # not enough sequences to call mutations
-
-        del accs, muts # not updated below, delete for safety
 
         if mutation_type in {'insertions', 'deletions'}:
 
             # assign perfect accuracy to long indels
-            lengths = [func(m, returnval='length') for m in mutationlist]
+            lengths = [func(m, returnval='length', min_acc=self.min_acc,
+                    min_acc_filter_nan=False) for m in mutationlist]
             flatlengths = numpy.array([l for ll in lengths for l in ll])
+            assert len(flatlengths) == len(flatmuts) == len(flataccs)
             flataccs[flatlengths >= self.indel_len_ignore_acc] = 1
 
             # group sufficiently overlapping indels
