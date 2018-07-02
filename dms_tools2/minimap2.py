@@ -621,7 +621,7 @@ class MutationConsensus:
     Mutations are called from the list of :class:`Mutations`
     passed to :class:`MutationConsensus.callConsensus` as follows:
 
-      1. If there is just one :class:`Mutations` object passed,
+      1. If there are less then `n_mut` :class:`Mutations` passed,
          and it has no mutations, call as wildtype.
 
       2. If there are less than `n_mut` :class:`Mutations`
