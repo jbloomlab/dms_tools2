@@ -1223,7 +1223,7 @@ def plotRarefactionCurves(df, rarefy_col, plotfile,
         ylabel = rarefy_col
 
     # get iterator over groups or dummy iterator
-    categories = False
+    categories = None
     if facet_col is not None:
         if df[facet_col].dtype.name == 'category':
             categories = df[facet_col].cat.categories
