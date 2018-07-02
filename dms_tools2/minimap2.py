@@ -613,10 +613,9 @@ class MutationConsensus:
             call it in consensus.
         `min_acc` (float)
             Completely ignore any mutations with accuracy lower
-            than this. Should be very lenient threshold (e.g.,
-            0.9) that just gets rid of really low-accuracy ones.
-            Is **not** applied to mutations with an accuracy
-            of NaN (`math.nan`).
+            than this. Should be a threshold that just gets rid
+            of really low-accuracy ones. Is **not** applied to
+            mutations with an accuracy of NaN (`math.nan`).
         `min_mut_frac` (float)
             More than this fraction of sequences must have
             mutation to call it as present in consensus.
@@ -789,7 +788,7 @@ class MutationConsensus:
     'A1G_mixed'
     """
 
-    def __init__(self, *, n_mut=2, min_acc=0.9, min_mut_frac=0.8,
+    def __init__(self, *, n_mut=2, min_acc=0.95, min_mut_frac=0.8,
             max_mut_frac_for_wt=0.2, group_indel_frac=0.8):
         """See main class doc string."""
         self.n_mut = n_mut
