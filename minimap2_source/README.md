@@ -61,15 +61,16 @@ mainstream long-read mappers such as BLASR, BWA-MEM, NGMLR and GMAP. It is more
 accurate on simulated long reads and produces biologically meaningful alignment
 ready for downstream analyses. For >100bp Illumina short reads, minimap2 is
 three times as fast as BWA-MEM and Bowtie2, and as accurate on simulated data.
-Detailed evaluations are available from the [minimap2 preprint][preprint].
+Detailed evaluations are available from the [minimap2 paper][doi] or the
+[preprint][preprint].
 
 ### <a name="install"></a>Installation
 
 Minimap2 is optimized for x86-64 CPUs. You can acquire precompiled binaries from
 the [release page][release] with:
 ```sh
-curl -L https://github.com/lh3/minimap2/releases/download/v2.10/minimap2-2.10_x64-linux.tar.bz2 | tar -jxvf -
-./minimap2-2.10_x64-linux/minimap2
+curl -L https://github.com/lh3/minimap2/releases/download/v2.11/minimap2-2.11_x64-linux.tar.bz2 | tar -jxvf -
+./minimap2-2.11_x64-linux/minimap2
 ```
 If you want to compile from the source, you need to have a C compiler, GNU make
 and zlib development files installed. Then type `make` in the source code
@@ -77,7 +78,7 @@ directory to compile. If you see compilation errors, try `make sse2only=1`
 to disable SSE4 code, which will make minimap2 slightly slower.
 
 Minimap2 also works with ARM CPUs supporting the NEON instruction sets. To
-compile, use `make arm_neon=1`.
+compile for 32 bit ARM architectures (such as ARMv7), use `make arm_neon=1`. To compile for for 64 bit ARM architectures (such as ARMv8), use `make arm_neon=1 aarch64=1`.
 
 ### <a name="general"></a>General usage
 
@@ -253,7 +254,9 @@ similar to the `MD` SAM tag but is standalone and easier to parse.
 If `--cs=long` is used, the `cs` string also contains identical sequences in
 the alignment. The above example will become
 `=CGATCG-ata=AATAGAGTAG+gtc=GAAT*at=GCA`. The long form of `cs` encodes both
-reference and query sequences in one string.
+reference and query sequences in one string. The `cs` tag also encodes intron
+positions and splicing signals (see the [minimap2 manpage][manpage-cs] for
+details).
 
 #### <a name="paftools"></a>Working with the PAF format
 
@@ -316,9 +319,10 @@ There is not a specific mailing list for the time being.
 
 ### <a name="cite"></a>Citing minimap2
 
-If you use minimap2 in your work, please consider to cite:
+If you use minimap2 in your work, please cite:
 
-> Li, H. (2017). Minimap2: fast pairwise alignment for long nucleotide sequences. [arXiv:1708.01492][preprint]
+> Li, H. (2018). Minimap2: pairwise alignment for nucleotide sequences.
+> Bioinformatics. [doi:10.1093/bioinformatics/bty191][doi]
 
 ## <a name="dguide"></a>Developers' Guide
 
@@ -365,3 +369,5 @@ mappy` or [from BioConda][mappyconda] via `conda install -c bioconda mappy`.
 [issue]: https://github.com/lh3/minimap2/issues
 [k8]: https://github.com/attractivechaos/k8
 [manpage]: https://lh3.github.io/minimap2/minimap2.html
+[manpage-cs]: https://lh3.github.io/minimap2/minimap2.html#10
+[doi]: https://doi.org/10.1093/bioinformatics/bty191
