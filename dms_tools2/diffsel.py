@@ -237,14 +237,20 @@ def mutToSiteDiffSel(mutdiffsel):
     >>> numpy.allclose(sitediffsel['min_diffsel'], [-0.2, 0, -0.2, 0])
     True
     """
+    aas = list(set(mutdiffsel.wildtype).union(mutdiffsel.mutation))
     sitediffsel = (mutdiffsel
                    .pivot(index='site', columns='mutation', values='mutdiffsel')
                    .fillna(0)
-                   .assign(abs_diffsel=lambda x: x.abs().sum(axis=1),
-                           positive_diffsel=lambda x: x[x >= 0].sum(axis=1),
-                           negative_diffsel=lambda x: x[x <= 0].sum(axis=1),
-                           max_diffsel=lambda x: x.max(axis=1),
-                           min_diffsel=lambda x: x.min(axis=1),
+                   .assign(abs_diffsel=lambda x:
+                                    x[aas].abs().sum(axis=1),
+                           positive_diffsel=lambda x:
+                                    x[aas][x[aas] >= 0].sum(axis=1),
+                           negative_diffsel=lambda x:
+                                    x[aas][x[aas] <= 0].sum(axis=1),
+                           max_diffsel=lambda x:
+                                    x[aas].max(axis=1),
+                           min_diffsel=lambda x:
+                                    x[aas].min(axis=1),
                           )
                    .reset_index()
                    [['site', 'abs_diffsel', 'positive_diffsel', 
