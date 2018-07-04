@@ -249,7 +249,7 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
         expected_cigars = dict((q.name, q.cigar) for q in self.queries)
         for row in df.query('aligned').itertuples():
             name = getattr(row, 'name')
-            cigar = getattr(row, 'aligned_cigar')
+            cigar = getattr(row, 'aligned_alignment').cigar_str
             if not getattr(row, 'aligned_n_additional'):
                 self.assertEqual(expected_cigars[name], cigar)
 
@@ -260,7 +260,7 @@ class test_pacbio_CCS_align_short_codonDMS(unittest.TestCase):
         assert_series_equal(df.aligned, df2.gene_aligned, check_names=False)
         assert_series_equal(df.aligned_target, df2.gene_aligned_target,
                 check_names=False)
-        assert_series_equal(df.aligned_cigar, df2.gene_aligned_cigar,
+        assert_series_equal(df.aligned_alignment, df2.gene_aligned_alignment,
                 check_names=False)
 
             

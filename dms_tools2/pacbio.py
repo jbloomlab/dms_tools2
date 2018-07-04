@@ -349,15 +349,14 @@ def matchAndAlignCCS(ccslist, mapper, *,
           aligned using `mapper`. It is `False` otherwise.
 
         - `gene_aligned_alignment`, `gene_aligned_target`,
-          `gene_aligned_cigar`, `gene_aligned_n_trimmed_query_start`,
+          ``gene_aligned_n_trimmed_query_start`,
           `gene_aligned_n_trimmed_query_end`,
           `gene_aligned_n_trimmed_target_start`,
           `gene_aligned_n_trimmed_target_end`,
           `gene_aligned_n_additional`, and
           `gene_aligned_n_additional_difftarget` give the
-          :py:mod:`dms_tools2.minimap2.Alignment`, the
-          alignment target, the long-form CIGAR string,
-          the number of nucleotides trimmed from ends of the
+          :py:mod:`dms_tools2.minimap2.Alignment`, the alignment
+          target, number of nucleotides trimmed from ends of
           the query gene or target, the number
           of additional alignments if `gene_aligned`,
           and the number of additional alignments to different
@@ -679,7 +678,7 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
 
 
 def alignSeqs(df, mapper, query_col, aligned_col, *,
-        add_alignment=True, add_target=True, add_cigar=True,
+        add_alignment=True, add_target=True,
         add_n_trimmed=True, add_n_additional=True,
         add_n_additional_difftarget=True, targetvariants=None,
         mutationcaller=None, overwrite=True, paf_file=None):
@@ -703,9 +702,6 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
         `add_target` (bool)
             Add column giving target (reference) to which sequence
             aligns.
-        `add_cigar` (bool)
-            Add column with the CIGAR string in the long format
-            `described here <https://github.com/lh3/minimap2#cs>`_.
         `add_n_trimmed` (bool)
             Add columns giving number of nucleotides trimmed from
             ends of both the query and target in the alignment.
@@ -760,12 +756,6 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
               the target to which the sequence aligns in the
               "best" alignment, or an empty string if no alignment.
 
-            - If `add_cigar` is `True`, add column named
-              `aligned_col` suffixed by "_cigar" with the CIGAR
-              string (`long format <https://github.com/lh3/minimap2#cs>`_)
-              for the "best" alignment, or an empty string if there
-              is no alignment.
-
             - If `add_n_trimmed` is `True`, add column named
               `aligned_col` suffixed by "_n_trimmed_query_start",
               "_n_trimmed_query_end", "_n_trimmed_target_start",
@@ -809,9 +799,6 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
     if add_target:
         target_col = aligned_col + '_target'
         newcols.append(target_col)
-    if add_cigar:
-        cigar_col = aligned_col + '_cigar'
-        newcols.append(cigar_col)
     if add_n_trimmed:
         n_trimmed_prefix = aligned_col + '_n_trimmed_'
         for suffix in ['query_start', 'query_end',
@@ -874,8 +861,6 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
                 align_d[alignment_col].append(a)
             if add_target:
                 align_d[target_col].append(a.target)
-            if add_cigar:
-                align_d[cigar_col].append(a.cigar_str)
             if add_n_trimmed:
                 align_d[n_trimmed_prefix + 'query_start'].append(
                         a.q_st)
@@ -898,8 +883,6 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
                 align_d[alignment_col].append(None)
             if add_target:
                 align_d[target_col].append('')
-            if add_cigar:
-                align_d[cigar_col].append('')
             if add_n_trimmed:
                 for suffix in ['query_start', 'query_end',
                         'target_start', 'target_end']:
