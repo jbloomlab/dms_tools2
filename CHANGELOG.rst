@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.2.7
+-------
+* Fix behavior of `diffsel` to be compatible with `this pandas 0.23 update <https://pandas.pydata.org/pandas-docs/stable/whatsnew.html#assign-accepts-dependent-arguments>`_
+
 2.2.6
 -------
 * fix bug in `diffsel.tidyToWide` such that sites with matching values (i.e. all 0 values) are not dropped during de-duplication.
