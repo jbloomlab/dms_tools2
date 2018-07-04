@@ -222,9 +222,9 @@ def mutToSiteFracSurvive(mutfracsurvive):
                     x['mutation'] != x['wildtype'], numpy.nan))
             .pivot(index='site', columns='mutation', values='mutfracsurvive')
             .assign(avgfracsurvive=lambda x: x.abs().sum(axis=1, skipna=True)
-                            / x.count(axis=1),
-                    maxfracsurvive=lambda x: x.drop(columns='avgfracsurvive').max(axis=1),
-                    )
+                            / x.count(axis=1))
+            .assign(maxfracsurvive=lambda x: x.drop(columns='avgfracsurvive')
+                                              .max(axis=1))
             .reset_index()
             [['site', 'avgfracsurvive', 'maxfracsurvive']]
             )
