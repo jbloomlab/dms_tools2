@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>utils &#8212; dms_tools2 2.2.6 documentation</title>
+    <title>utils &#8212; dms_tools2 2.2.7 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '2.2.6',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -32,18 +24,19 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.utils"></span><div class="section" id="utils">
 <h1>utils<a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h1>
-<p>Miscellaneous utilities for <code class="docutils literal"><span class="pre">dms_tools2</span></code>.</p>
+<p>Miscellaneous utilities for <code class="docutils literal notranslate"><span class="pre">dms_tools2</span></code>.</p>
 <dl class="function">
 <dt id="dms_tools2.utils.adjustErrorCounts">
 <code class="descclassname">dms_tools2.utils.</code><code class="descname">adjustErrorCounts</code><span class="sig-paren">(</span><em>errcounts</em>, <em>counts</em>, <em>charlist</em>, <em>maxexcess</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#adjustErrorCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.adjustErrorCounts" title="Permalink to this definition">¶</a></dt>
@@ -72,7 +65,7 @@ the maximum frequency of that character is adjusted to be
 at most the number predicted by the frequency in <cite>counts</cite>
 plus <cite>maxexcess</cite>.</dd>
 </dl>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">counts</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">:[</span><span class="s1">&#39;A&#39;</span><span class="p">],</span> 
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">counts</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">:[</span><span class="s1">&#39;A&#39;</span><span class="p">],</span> 
 <span class="gp">... </span>        <span class="s1">&#39;A&#39;</span><span class="p">:</span><span class="mi">500</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span><span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span><span class="mi">40</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">:</span><span class="mi">20</span><span class="p">})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">errcounts</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">:[</span><span class="s1">&#39;A&#39;</span><span class="p">],</span>
 <span class="gp">... </span>        <span class="s1">&#39;A&#39;</span><span class="p">:</span><span class="mi">250</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span><span class="mi">30</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">:</span><span class="mi">10</span><span class="p">})</span>
@@ -100,9 +93,9 @@ plus <cite>maxexcess</cite>.</dd>
 specified by <cite>refseqstart</cite> and <cite>refseqend</cite>. Determines how many
 sites of type <cite>chartype</cite> have mutations, and if &lt;= <cite>maxmuts</cite> conside
 the subamplicon to align if fraction of ambiguous nucleotides &lt;= <cite>maxN</cite>.
-In <cite>r1</cite> and <cite>r2</cite>, an <code class="docutils literal"><span class="pre">N</span></code> indicates a non-called ambiguous identity.
-If the reads disagree in a region of overlap that is set to <code class="docutils literal"><span class="pre">N</span></code> in
-the final subamplicon, but if one read has <code class="docutils literal"><span class="pre">N</span></code> and the other a called
+In <cite>r1</cite> and <cite>r2</cite>, an <code class="docutils literal notranslate"><span class="pre">N</span></code> indicates a non-called ambiguous identity.
+If the reads disagree in a region of overlap that is set to <code class="docutils literal notranslate"><span class="pre">N</span></code> in
+the final subamplicon, but if one read has <code class="docutils literal notranslate"><span class="pre">N</span></code> and the other a called
 identity, then the called identity is used in the final subamplicon.</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -127,7 +120,7 @@ backwards towards the 5’ end of <cite>refseq</cite>).</dd>
 are allowed in the aligned subamplicons from the two reads.</dd>
 <dt><cite>maxN</cite> (int or float)</dt>
 <dd>Maximum number of nucleotides for which we allow
-ambiguous (<code class="docutils literal"><span class="pre">N</span></code>) identities in final subamplicon.</dd>
+ambiguous (<code class="docutils literal notranslate"><span class="pre">N</span></code>) identities in final subamplicon.</dd>
 <dt><cite>chartype</cite> (str)</dt>
 <dd>Character type for which we count mutations.
 Currently, the only allowable value is ‘codon’.</dd>
@@ -139,7 +132,7 @@ Currently, the only allowable value is ‘codon’.</dd>
 <dd>If reads align, return aligned subamplicon as string (of length
 <cite>refseqend - refseqstart + 1</cite>). Otherwise return <cite>None</cite>.</dd>
 </dl>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">refseq</span> <span class="o">=</span> <span class="s1">&#39;ATGGGGAAA&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">refseq</span> <span class="o">=</span> <span class="s1">&#39;ATGGGGAAA&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">alignSubamplicon</span><span class="p">(</span><span class="n">refseq</span><span class="p">,</span> <span class="s1">&#39;GGGGAA&#39;</span><span class="p">,</span> <span class="s1">&#39;TTTCCC&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">==</span> <span class="s1">&#39;GGGGAAA&#39;</span> 
 <span class="go">True</span>
@@ -182,7 +175,7 @@ Currently, the only allowable value is ‘codon’.</dd>
 <code class="descclassname">dms_tools2.utils.</code><code class="descname">annotateCodonCounts</code><span class="sig-paren">(</span><em>counts</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#annotateCodonCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.annotateCodonCounts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets annotated <cite>pandas.DataFrame</cite> from codon counts.</p>
 <p>Some of the programs (e.g., <cite>dms2_bcsubamplicons</cite>) create 
-<code class="docutils literal"><span class="pre">*_codoncounts.csv</span></code> files when run with <code class="docutils literal"><span class="pre">--chartype</span> <span class="pre">codon</span></code>.
+<code class="docutils literal notranslate"><span class="pre">*_codoncounts.csv</span></code> files when run with <code class="docutils literal notranslate"><span class="pre">--chartype</span> <span class="pre">codon</span></code>.
 These CSV files have columns indicating the <cite>site</cite> and <cite>wildtype</cite>
 codon, as well as a column for each codon giving the counts for that 
 codon. This function reads that file (or a <cite>pandas.DataFrame</cite> read
@@ -219,7 +212,7 @@ of 1-, 2-, and 3-nucleotide codon mutations at site.</p>
 </dl>
 </dd>
 </dl>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">:[</span><span class="s1">&#39;ATG&#39;</span><span class="p">,</span> <span class="s1">&#39;GGG&#39;</span><span class="p">],</span> <span class="s1">&#39;ATG&#39;</span><span class="p">:[</span><span class="mi">105</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">:[</span><span class="s1">&#39;ATG&#39;</span><span class="p">,</span> <span class="s1">&#39;GGG&#39;</span><span class="p">],</span> <span class="s1">&#39;ATG&#39;</span><span class="p">:[</span><span class="mi">105</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
 <span class="gp">... </span>        <span class="s1">&#39;GGG&#39;</span><span class="p">:[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">117</span><span class="p">],</span> <span class="s1">&#39;GGA&#39;</span><span class="p">:[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="s1">&#39;TGA&#39;</span><span class="p">:[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">codon</span> <span class="ow">in</span> <span class="n">CODONS</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="k">if</span> <span class="n">codon</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
@@ -263,14 +256,14 @@ of 1-, 2-, and 3-nucleotide codon mutations at site.</p>
 <dt id="dms_tools2.utils.buildReadConsensus">
 <code class="descclassname">dms_tools2.utils.</code><code class="descname">buildReadConsensus</code><span class="sig-paren">(</span><em>reads</em>, <em>minreads</em>, <em>minconcur</em>, <em>use_cutils=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#buildReadConsensus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.buildReadConsensus" title="Permalink to this definition">¶</a></dt>
 <dd><p>Builds consensus sequence of some reads.</p>
-<p>You may want to pre-fill low-quality sites with <code class="docutils literal"><span class="pre">N</span></code>
-using <cite>lowQtoN</cite>. An <code class="docutils literal"><span class="pre">N</span></code> is considered a non-called identity.</p>
+<p>You may want to pre-fill low-quality sites with <code class="docutils literal notranslate"><span class="pre">N</span></code>
+using <cite>lowQtoN</cite>. An <code class="docutils literal notranslate"><span class="pre">N</span></code> is considered a non-called identity.</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
 <dt><cite>reads</cite> (list)</dt>
 <dd>List of reads as strings. If reads are not all same
-length, shorter ones are extended from 3’ end with <code class="docutils literal"><span class="pre">N</span></code>
+length, shorter ones are extended from 3’ end with <code class="docutils literal notranslate"><span class="pre">N</span></code>
 to match maximal length.</dd>
 <dt><cite>minreads</cite> (int)</dt>
 <dd>Only call consensus at a site if at least this many reads 
@@ -284,9 +277,9 @@ identities agree.</dd>
 </dd>
 <dt>Returns:</dt>
 <dd>A string giving the consensus sequence. Non-called 
-sites are returned as <code class="docutils literal"><span class="pre">N`</span></code>.</dd>
+sites are returned as <code class="docutils literal notranslate"><span class="pre">N`</span></code>.</dd>
 </dl>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">reads</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ATGCAT&#39;</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">reads</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ATGCAT&#39;</span><span class="p">,</span>
 <span class="gp">... </span>         <span class="s1">&#39;NTGNANA&#39;</span><span class="p">,</span>
 <span class="gp">... </span>         <span class="s1">&#39;ACGNNTAT&#39;</span><span class="p">,</span>
 <span class="gp">... </span>         <span class="s1">&#39;NTGNTA&#39;</span><span class="p">]</span>
@@ -315,7 +308,7 @@ sites are returned as <code class="docutils literal"><span class="pre">N`</span>
 numbered 1, 2, …, with columns giving the accessibility
 of each amino acid by single nucleotide mutations.</dd>
 </dl>
-<p>The accessibility of codon <span class="math">\(c\)</span> to amino-acid <span class="math">\(a\)</span>
+<p>The accessibility of codon <span class="math notranslate nohighlight">\(c\)</span> to amino-acid <span class="math notranslate nohighlight">\(a\)</span>
 by single-nucleotide mutations is defined as the minimum
 number of nucleotide mutations needed to generate that
 amino-acid.</p>
@@ -324,23 +317,23 @@ accessibility as the weighted average of the accessibilities
 of all codons observed at that site in the collection of
 sequences.</p>
 <p>As an example, compute accessibility for one sequence:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;ATGGGA&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;ATGGGA&quot;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">acc</span> <span class="o">=</span> <span class="n">codonEvolAccessibility</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The returned pandas DataFrame <cite>acc</cite> is has a column named
 <cite>site</cite> plus columns for all amino acids:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">acc</span><span class="o">.</span><span class="n">columns</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">AAS_WITHSTOP</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">acc</span><span class="o">.</span><span class="n">columns</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">AAS_WITHSTOP</span><span class="p">)</span>
 <span class="go">True</span>
 </pre></div>
 </div>
 <p>We look at entries for a few amino acids. At the first 
 site, the wildtype entry in the sequence <cite>s</cite> is the codon
-for <em>M</em> (<code class="docutils literal"><span class="pre">ATG</span></code>). So at this site, the distance to <em>M</em>
-is 0. The distance to <em>I</em> (which has codon <code class="docutils literal"><span class="pre">ATA</span></code> as a
-codon) is 1, and the distance to <em>W</em> (which has only <code class="docutils literal"><span class="pre">TGG</span></code>
+for <em>M</em> (<code class="docutils literal notranslate"><span class="pre">ATG</span></code>). So at this site, the distance to <em>M</em>
+is 0. The distance to <em>I</em> (which has codon <code class="docutils literal notranslate"><span class="pre">ATA</span></code> as a
+codon) is 1, and the distance to <em>W</em> (which has only <code class="docutils literal notranslate"><span class="pre">TGG</span></code>
 as a codon) is 2.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">acc</span><span class="p">[[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;W&#39;</span><span class="p">]]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">acc</span><span class="p">[[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;W&#39;</span><span class="p">]]</span>
 <span class="go">   site    G    I    M    W</span>
 <span class="go">0     1  2.0  1.0  0.0  2.0</span>
 <span class="go">1     2  0.0  2.0  3.0  2.0</span>
@@ -348,7 +341,7 @@ as a codon) is 2.</p>
 </div>
 <p>If we pass the function a list of multiple sequences,
 then the accessibilities are averaged over the sequences:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">acc2</span> <span class="o">=</span> <span class="n">codonEvolAccessibility</span><span class="p">([</span><span class="s1">&#39;ATGGGA&#39;</span><span class="p">,</span> <span class="s1">&#39;ATAGGA&#39;</span><span class="p">])</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">acc2</span> <span class="o">=</span> <span class="n">codonEvolAccessibility</span><span class="p">([</span><span class="s1">&#39;ATGGGA&#39;</span><span class="p">,</span> <span class="s1">&#39;ATAGGA&#39;</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">acc2</span><span class="p">[[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;W&#39;</span><span class="p">]]</span>
 <span class="go">   site    G    I    M    W</span>
 <span class="go">0     1  2.0  0.5  0.5  2.5</span>
@@ -379,7 +372,7 @@ amino acid made by summing counts for encoding codons.</dd>
 </dl>
 </dd>
 </dl>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;othercol&#39;</span><span class="p">:[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;ATG&#39;</span><span class="p">:[</span><span class="mi">105</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;othercol&#39;</span><span class="p">:[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;ATG&#39;</span><span class="p">:[</span><span class="mi">105</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
 <span class="gp">... </span>        <span class="s1">&#39;GGG&#39;</span><span class="p">:[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">117</span><span class="p">],</span> <span class="s1">&#39;GGA&#39;</span><span class="p">:[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="s1">&#39;TGA&#39;</span><span class="p">:[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
 <span class="gp">... </span>        <span class="s1">&#39;wildtype&#39;</span><span class="p">:[</span><span class="s1">&#39;ATG&#39;</span><span class="p">,</span> <span class="s1">&#39;GGG&#39;</span><span class="p">]}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">codon</span> <span class="ow">in</span> <span class="n">CODONS</span><span class="p">:</span>
@@ -408,15 +401,15 @@ amino acid made by summing counts for encoding codons.</dd>
 <dl class="function">
 <dt id="dms_tools2.utils.convertCountsFormat">
 <code class="descclassname">dms_tools2.utils.</code><code class="descname">convertCountsFormat</code><span class="sig-paren">(</span><em>oldfile</em>, <em>newfile</em>, <em>charlist</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#convertCountsFormat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.convertCountsFormat" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert counts file from <code class="docutils literal"><span class="pre">dms_tools</span></code> to <code class="docutils literal"><span class="pre">dms_tools2</span></code> format.</p>
+<dd><p>Convert counts file from <code class="docutils literal notranslate"><span class="pre">dms_tools</span></code> to <code class="docutils literal notranslate"><span class="pre">dms_tools2</span></code> format.</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
 <dt><cite>oldfile</cite> (str)</dt>
-<dd>Name of counts file in the old <code class="docutils literal"><span class="pre">dms_tools</span></code> format:
+<dd>Name of counts file in the old <code class="docutils literal notranslate"><span class="pre">dms_tools</span></code> format:
 <a class="reference external" href="http://jbloomlab.github.io/dms_tools/fileformats.html">http://jbloomlab.github.io/dms_tools/fileformats.html</a></dd>
 <dt><cite>newfile</cite> (str)</dt>
-<dd>Name of created counts file in the <code class="docutils literal"><span class="pre">dms_tools2</span></code> format:
+<dd>Name of created counts file in the <code class="docutils literal notranslate"><span class="pre">dms_tools2</span></code> format:
 <a class="reference external" href="https://jbloomlab.github.io/dms_tools2/dms2_bcsubamp.html">https://jbloomlab.github.io/dms_tools2/dms2_bcsubamp.html</a></dd>
 <dt><cite>charlist</cite> (list)</dt>
 <dd>List of characters that we expect in the counts files.
@@ -433,7 +426,7 @@ For instance, could be <cite>CODONS</cite>.</dd>
 <p>This is designed for keeping track of counts of different
 mutations / identities when aligning many subamplicons to
 a sequence.</p>
-<p>Any positions where <cite>subamplicon</cite> has an <code class="docutils literal"><span class="pre">N</span></code> are ignored,
+<p>Any positions where <cite>subamplicon</cite> has an <code class="docutils literal notranslate"><span class="pre">N</span></code> are ignored,
 and not added to <cite>counts</cite>.</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -457,7 +450,7 @@ in 0, 1, … numbering.</dd>
 <dt>Returns:</dt>
 <dd>On completion, <cite>counts</cite> has been incremented.</dd>
 </dl>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">codonlen</span> <span class="o">=</span> <span class="mi">10</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">codonlen</span> <span class="o">=</span> <span class="mi">10</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">counts</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">codon</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">codonlen</span><span class="p">)</span> <span class="k">for</span> <span class="n">codon</span> 
 <span class="gp">... </span>        <span class="ow">in</span> <span class="n">CODONS</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">subamplicon1</span> <span class="o">=</span> <span class="s1">&#39;ATGGACTTTC&#39;</span>
@@ -539,7 +532,7 @@ filter, <cite>False</cite> if both passed, <cite>None</cite> if info not present
 </dl>
 <p>We run a simple test by first writing an example FASTQ file and
 then testing on it.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">n1_1</span> <span class="o">=</span> <span class="s1">&#39;@DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1984 1:N:0:CGATGT&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">n1_1</span> <span class="o">=</span> <span class="s1">&#39;@DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1984 1:N:0:CGATGT&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">r1_1</span> <span class="o">=</span> <span class="s1">&#39;ATGCAATTG&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">q1_1</span> <span class="o">=</span> <span class="s1">&#39;GGGGGIIII&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">n2_1</span> <span class="o">=</span> <span class="s1">&#39;@DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1984 2:N:0:CGATGT&#39;</span>
@@ -576,7 +569,7 @@ then testing on it.</p>
 <dl class="function">
 <dt id="dms_tools2.utils.lowQtoN">
 <code class="descclassname">dms_tools2.utils.</code><code class="descname">lowQtoN</code><span class="sig-paren">(</span><em>r</em>, <em>q</em>, <em>minq</em>, <em>use_cutils=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#lowQtoN"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.lowQtoN" title="Permalink to this definition">¶</a></dt>
-<dd><p>Replaces low quality nucleotides with <code class="docutils literal"><span class="pre">N</span></code> characters.</p>
+<dd><p>Replaces low quality nucleotides with <code class="docutils literal notranslate"><span class="pre">N</span></code> characters.</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
@@ -593,9 +586,9 @@ in Sanger ASCII encoding.</dd>
 </dd>
 <dt>Returns:</dt>
 <dd>A version of <cite>r</cite> where all positions <cite>i</cite> where 
-<cite>q[i] &lt; minq</cite> have been replaced with <code class="docutils literal"><span class="pre">N</span></code>.</dd>
+<cite>q[i] &lt; minq</cite> have been replaced with <code class="docutils literal notranslate"><span class="pre">N</span></code>.</dd>
 </dl>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="s1">&#39;ATGCAT&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="s1">&#39;ATGCAT&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">q</span> <span class="o">=</span> <span class="s1">&#39;GB&lt;.0+&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">minq</span> <span class="o">=</span> <span class="s1">&#39;0&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lowQtoN</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">minq</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;ATGNAN&#39;</span>
@@ -668,7 +661,7 @@ as <cite>infiles</cite>, but have the pre-pended filename extension
 <dt>Returns:</dt>
 <dd>Reverse complement of <cite>s</cite> as a str.</dd>
 </dl>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="s1">&#39;ATGCAAN&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="s1">&#39;ATGCAAN&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">reverseComplement</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;NTTGCAT&#39;</span>
 <span class="go">True</span>
 </pre></div>
@@ -685,6 +678,7 @@ as <cite>infiles</cite>, but have the pre-pended filename extension
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -757,12 +751,14 @@ as <cite>infiles</cite>, but have the pre-pended filename extension
 </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -773,8 +769,8 @@ as <cite>infiles</cite>, but have the pre-pended filename extension
       &copy;2017, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |
       <a href="_sources/dms_tools2.utils.rst.txt"

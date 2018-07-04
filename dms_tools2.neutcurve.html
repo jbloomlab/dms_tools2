@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>neutcurve &#8212; dms_tools2 2.2.6 documentation</title>
+    <title>neutcurve &#8212; dms_tools2 2.2.7 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '2.2.6',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -32,13 +24,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.neutcurve"></span><div class="section" id="neutcurve">
@@ -49,7 +42,7 @@
 <code class="descclassname">dms_tools2.neutcurve.</code><code class="descname">fit_fourParamLogistics</code><span class="sig-paren">(</span><em>neutdata</em>, <em>plotfile</em>, <em>fixbottom=False</em>, <em>fixtop=1</em>, <em>xlabel='antibody concentration'</em>, <em>ylabel='fraction surviving'</em>, <em>maxcol=3</em>, <em>ic50_in_name=True</em>, <em>nfitpoints=100</em>, <em>cextend=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/neutcurve.html#fit_fourParamLogistics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.neutcurve.fit_fourParamLogistics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fits and plots set of neutralization curves.</p>
 <p>Fits a set of 4-parameter logistic neutralization curves
-as defined by <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic" title="dms_tools2.neutcurve.fourParamLogistic"><code class="xref py py-class docutils literal"><span class="pre">fourParamLogistic</span></code></a>. Then makes a faceted
+as defined by <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic" title="dms_tools2.neutcurve.fourParamLogistic"><code class="xref py py-class docutils literal notranslate"><span class="pre">fourParamLogistic</span></code></a>. Then makes a faceted
 plot showing all these curves.</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -63,9 +56,9 @@ fraction surviving at each concentration.</dd>
 <dd>Name of created plot file showing the fitted
 curves (e.g., PDF or PNG)</dd>
 <dt><cite>fixbottom</cite></dt>
-<dd>Same meaning as for <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic" title="dms_tools2.neutcurve.fourParamLogistic"><code class="xref py py-class docutils literal"><span class="pre">fourParamLogistic</span></code></a></dd>
+<dd>Same meaning as for <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic" title="dms_tools2.neutcurve.fourParamLogistic"><code class="xref py py-class docutils literal notranslate"><span class="pre">fourParamLogistic</span></code></a></dd>
 <dt><cite>fixtop</cite></dt>
-<dd>Same meaning as for <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic" title="dms_tools2.neutcurve.fourParamLogistic"><code class="xref py py-class docutils literal"><span class="pre">fourParamLogistic</span></code></a></dd>
+<dd>Same meaning as for <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic" title="dms_tools2.neutcurve.fourParamLogistic"><code class="xref py py-class docutils literal notranslate"><span class="pre">fourParamLogistic</span></code></a></dd>
 <dt><cite>xlabel</cite> (str)</dt>
 <dd>x-label on plot</dd>
 <dt><cite>ylabel</cite> (str)</dt>
@@ -73,22 +66,22 @@ curves (e.g., PDF or PNG)</dd>
 <dt><cite>maxcol</cite> (int)</dt>
 <dd>Max number of columns in faceted plot</dd>
 <dt><cite>ic50_in_name</cite> (bool)</dt>
-<dd>Same meaning as for <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.plot" title="dms_tools2.neutcurve.fourParamLogistic.plot"><code class="xref py py-meth docutils literal"><span class="pre">fourParamLogistic.plot()</span></code></a></dd>
+<dd>Same meaning as for <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.plot" title="dms_tools2.neutcurve.fourParamLogistic.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fourParamLogistic.plot()</span></code></a></dd>
 <dt><cite>nfitpoints</cite> (int)</dt>
-<dd>Same meaning as for <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.plot" title="dms_tools2.neutcurve.fourParamLogistic.plot"><code class="xref py py-meth docutils literal"><span class="pre">fourParamLogistic.plot()</span></code></a></dd>
+<dd>Same meaning as for <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.plot" title="dms_tools2.neutcurve.fourParamLogistic.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fourParamLogistic.plot()</span></code></a></dd>
 <dt><cite>cextend</cite> (float)</dt>
-<dd>Same meaning as for <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.plot" title="dms_tools2.neutcurve.fourParamLogistic.plot"><code class="xref py py-meth docutils literal"><span class="pre">fourParamLogistic.plot()</span></code></a></dd>
+<dd>Same meaning as for <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.plot" title="dms_tools2.neutcurve.fourParamLogistic.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fourParamLogistic.plot()</span></code></a></dd>
 </dl>
 </dd>
 <dt>Returns:</dt>
 <dd>A dictionary keyed by each sample in <cite>neutdata</cite>,
-and with the values being the <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic" title="dms_tools2.neutcurve.fourParamLogistic"><code class="xref py py-class docutils literal"><span class="pre">fourParamLogistic</span></code></a>
+and with the values being the <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic" title="dms_tools2.neutcurve.fourParamLogistic"><code class="xref py py-class docutils literal notranslate"><span class="pre">fourParamLogistic</span></code></a>
 fitted object for that sample. You can use these
 objects to get detailed information about the fits.</dd>
 </dl>
 <p>Here is an example of plotting three curves in a 
 single row (we keep the default <cite>maxcol=3</cite>):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">neutdata</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">neutdata</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span>
 <span class="gp">... </span><span class="sd">&#39;&#39;&#39;concentration K280A-1 K280A-2 wildtype</span>
 <span class="gp">... </span><span class="sd">          0.0002  1.2049  1.2140  1.0549</span>
 <span class="gp">... </span><span class="sd">          0.0005  1.0026  1.0107  0.9337</span>
@@ -110,8 +103,8 @@ single row (we keep the default <cite>maxcol=3</cite>):</p>
 <p>The plot looks like this:</p>
 <a class="reference internal image-reference" href="_images/_fit_fourParamLogistics_neutplot.png"><img alt="_images/_fit_fourParamLogistics_neutplot.png" class="align-center" src="_images/_fit_fourParamLogistics_neutplot.png" style="width: 6in;" /></a>
 <p>We can access the IC50 values and other fitted parameters via
-the returned <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic" title="dms_tools2.neutcurve.fourParamLogistic"><code class="xref py py-class docutils literal"><span class="pre">fourParamLogistic</span></code></a> objects. For instance:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;IC50 for K280A-1 is </span><span class="si">{0:.4f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+the returned <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic" title="dms_tools2.neutcurve.fourParamLogistic"><code class="xref py py-class docutils literal notranslate"><span class="pre">fourParamLogistic</span></code></a> objects. For instance:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;IC50 for K280A-1 is </span><span class="si">{0:.4f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
 <span class="gp">... </span>        <span class="n">neutcurves</span><span class="p">[</span><span class="s1">&#39;K280A-1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">ic50</span><span class="p">()))</span>
 <span class="go">IC50 for K280A-1 is 0.0105</span>
 </pre></div>
@@ -121,24 +114,24 @@ the returned <a class="reference internal" href="#dms_tools2.neutcurve.fourParam
 <dl class="class">
 <dt id="dms_tools2.neutcurve.fourParamLogistic">
 <em class="property">class </em><code class="descclassname">dms_tools2.neutcurve.</code><code class="descname">fourParamLogistic</code><span class="sig-paren">(</span><em>cs</em>, <em>fs</em>, <em>fixbottom=False</em>, <em>fixtop=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/neutcurve.html#fourParamLogistic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.neutcurve.fourParamLogistic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A fitted 4-parameter logistic neutralization curve.</p>
-<p>Fits <span class="math">\(f(c) = b + \frac{t - b}{1 + (c/m)^s}\)</span>
-where <span class="math">\(f(c)\)</span> is the fraction surviving at
-concentration <span class="math">\(c\)</span>, <span class="math">\(m\)</span> is the midpoint
-of the neutralization curve, <span class="math">\(t\)</span> is the top
-value (e.g., 1), <span class="math">\(b\)</span> is the bottom value (e.g., 0),
-and <span class="math">\(s\)</span> is the slope of the curve.</p>
+<p>Fits <span class="math notranslate nohighlight">\(f(c) = b + \frac{t - b}{1 + (c/m)^s}\)</span>
+where <span class="math notranslate nohighlight">\(f(c)\)</span> is the fraction surviving at
+concentration <span class="math notranslate nohighlight">\(c\)</span>, <span class="math notranslate nohighlight">\(m\)</span> is the midpoint
+of the neutralization curve, <span class="math notranslate nohighlight">\(t\)</span> is the top
+value (e.g., 1), <span class="math notranslate nohighlight">\(b\)</span> is the bottom value (e.g., 0),
+and <span class="math notranslate nohighlight">\(s\)</span> is the slope of the curve.</p>
 <p>This documentation is written for the case when 
-<span class="math">\(f(c)\)</span> is the fraction <strong>surviving</strong>, meaning that
-<span class="math">\(f(c)\)</span> gets smaller as <span class="math">\(c\)</span> gets larger.
-This should lead you to fit <span class="math">\(s &gt; 0\)</span>.
-If you instead use <span class="math">\(f(c)\)</span> as the fraction neutralized,
-you will fit <span class="math">\(s &lt; 1\)</span>. In this case, the interpretation
+<span class="math notranslate nohighlight">\(f(c)\)</span> is the fraction <strong>surviving</strong>, meaning that
+<span class="math notranslate nohighlight">\(f(c)\)</span> gets smaller as <span class="math notranslate nohighlight">\(c\)</span> gets larger.
+This should lead you to fit <span class="math notranslate nohighlight">\(s &gt; 0\)</span>.
+If you instead use <span class="math notranslate nohighlight">\(f(c)\)</span> as the fraction neutralized,
+you will fit <span class="math notranslate nohighlight">\(s &lt; 1\)</span>. In this case, the interpretation
 of <cite>top</cite> and <cite>bottom</cite> will be reversed. However, this class
 has <strong>not</strong> been extensively tested in that scenario, and
 so may not work completely correctly if you have
-<span class="math">\(f(c)\)</span> represent the fraction neutralized.</p>
+<span class="math notranslate nohighlight">\(f(c)\)</span> represent the fraction neutralized.</p>
 <dl class="docutils">
 <dt>To initialize and fit an object, provide the following:</dt>
 <dd><dl class="first last docutils">
@@ -180,23 +173,23 @@ fitted, sorted from lowest to highest.</dd>
 <dd>Array of the fraction surviving measurements
 corresponding to the entries in <cite>cs</cite>.</dd>
 <dt><cite>midpoint</cite> (float)</dt>
-<dd>Midpoint of curve, <span class="math">\(m\)</span> in equation above.
+<dd>Midpoint of curve, <span class="math notranslate nohighlight">\(m\)</span> in equation above.
 Note that the midpoint may <strong>not</strong> be the same
-as the <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.ic50" title="dms_tools2.neutcurve.fourParamLogistic.ic50"><code class="xref py py-meth docutils literal"><span class="pre">ic50()</span></code></a></dd>
+as the <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.ic50" title="dms_tools2.neutcurve.fourParamLogistic.ic50"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ic50()</span></code></a></dd>
 <dt><cite>slope</cite> (float)</dt>
-<dd>Hill slope of curve, <span class="math">\(s\)</span> in equation above.</dd>
+<dd>Hill slope of curve, <span class="math notranslate nohighlight">\(s\)</span> in equation above.</dd>
 <dt><cite>bottom</cite> (float)</dt>
-<dd>Bottom of curve (value as <span class="math">\(c\)</span> gets large),
-<span class="math">\(b\)</span> in equation above.</dd>
+<dd>Bottom of curve (value as <span class="math notranslate nohighlight">\(c\)</span> gets large),
+<span class="math notranslate nohighlight">\(b\)</span> in equation above.</dd>
 <dt><cite>top</cite> (float)</dt>
-<dd>Top of curve (value as <span class="math">\(c\)</span> get small),
-<span class="math">\(t\)</span> in equation above.</dd>
+<dd>Top of curve (value as <span class="math notranslate nohighlight">\(c\)</span> get small),
+<span class="math notranslate nohighlight">\(t\)</span> in equation above.</dd>
 </dl>
 </div></blockquote>
-<p>Use the <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.ic50" title="dms_tools2.neutcurve.fourParamLogistic.ic50"><code class="xref py py-meth docutils literal"><span class="pre">ic50()</span></code></a> function to get the fitted IC50.</p>
+<p>Use the <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.ic50" title="dms_tools2.neutcurve.fourParamLogistic.ic50"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ic50()</span></code></a> function to get the fitted IC50.</p>
 <p>As an example, we first simulate some data with known
 parameter values:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="mf">0.03</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="mf">0.03</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="mf">1.9</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="mf">0.1</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="mf">1.0</span>
@@ -207,7 +200,7 @@ parameter values:</p>
 <p>Now we fit to these data, and then confirm that the
 fitted values are close to the ones used for the
 simulation:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">neut</span> <span class="o">=</span> <span class="n">fourParamLogistic</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">fs</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">neut</span> <span class="o">=</span> <span class="n">fourParamLogistic</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">fs</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">scipy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">neut</span><span class="o">.</span><span class="n">midpoint</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
 <span class="go">True</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">scipy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">neut</span><span class="o">.</span><span class="n">slope</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
@@ -223,7 +216,7 @@ the bottom was 0.1 rather than 0, the midpoint and IC50
 are different. Specifically, the IC50 is larger than the
 midpoint, as you have to go past the midpoint to get
 down to value of 0.5 fraction surviving.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">neut</span><span class="o">.</span><span class="n">ic50</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">neut</span><span class="o">.</span><span class="n">midpoint</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">neut</span><span class="o">.</span><span class="n">ic50</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">neut</span><span class="o">.</span><span class="n">midpoint</span>
 <span class="go">True</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">scipy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">neut</span><span class="o">.</span><span class="n">ic50</span><span class="p">(),</span> <span class="mf">0.0337385586</span><span class="p">)</span>
 <span class="go">True</span>
@@ -234,14 +227,14 @@ down to value of 0.5 fraction surviving.</p>
 </pre></div>
 </div>
 <p>Here is a plot of the curve and data points:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">neut</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;_fourParamLogistic_neutplot.png&#39;</span><span class="p">,</span> <span class="s1">&#39;example&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">neut</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;_fourParamLogistic_neutplot.png&#39;</span><span class="p">,</span> <span class="s1">&#39;example&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="_images/_fourParamLogistic_neutplot.png"><img alt="_images/_fourParamLogistic_neutplot.png" class="align-center" src="_images/_fourParamLogistic_neutplot.png" style="width: 2.4in;" /></a>
 <p>Now here is an example where we constrain both the top
 and the bottom (to 1 and 0, respectively) and fit
 the curve. Now the midpoint and IC50 are the same:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">b2</span> <span class="o">=</span> <span class="mi">0</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">b2</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">fs2</span> <span class="o">=</span> <span class="p">[</span><span class="n">fourParamLogistic</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="n">t2</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cs</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">neut2</span> <span class="o">=</span> <span class="n">fourParamLogistic</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">fs2</span><span class="p">,</span> <span class="n">fixbottom</span><span class="o">=</span><span class="n">b2</span><span class="p">)</span>
@@ -256,7 +249,7 @@ than the midpoint, so that we never get anywhere
 close to complete neutralization. In this case,
 the estimated IC50 is unreliable, and so will be
 returned as <cite>None</cite>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cs3</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1e-5</span> <span class="o">*</span> <span class="mi">2</span><span class="o">**</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">)]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cs3</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1e-5</span> <span class="o">*</span> <span class="mi">2</span><span class="o">**</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">)]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">cs3</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">m</span><span class="p">)</span>
 <span class="go">True</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">fs3</span> <span class="o">=</span> <span class="p">[</span><span class="n">fourParamLogistic</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="n">t2</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cs3</span><span class="p">]</span>
@@ -266,11 +259,11 @@ returned as <cite>None</cite>:</p>
 </pre></div>
 </div>
 <p>However, we can still see a limit on the IC50
-using the <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.ic50_str" title="dms_tools2.neutcurve.fourParamLogistic.ic50_str"><code class="xref py py-meth docutils literal"><span class="pre">ic50_str()</span></code></a> method. As seen below,
+using the <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.ic50_str" title="dms_tools2.neutcurve.fourParamLogistic.ic50_str"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ic50_str()</span></code></a> method. As seen below,
 this limit indicates that the IC50 exceeds the
 largest value in the concentrations used to fit
 the curve:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cs3</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cs3</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 <span class="go">0.00064</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">neut3</span><span class="o">.</span><span class="n">ic50_str</span><span class="p">()</span>
 <span class="go">&#39;$&gt;0.00064$&#39;</span>
@@ -279,7 +272,7 @@ the curve:</p>
 <dl class="staticmethod">
 <dt id="dms_tools2.neutcurve.fourParamLogistic.evaluate">
 <em class="property">static </em><code class="descname">evaluate</code><span class="sig-paren">(</span><em>c</em>, <em>m</em>, <em>s</em>, <em>b</em>, <em>t</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/neutcurve.html#fourParamLogistic.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.neutcurve.fourParamLogistic.evaluate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <span class="math">\(f(c) = b + \frac{t - b}{1 + (c/m)^s}\)</span>.</p>
+<dd><p>Returns <span class="math notranslate nohighlight">\(f(c) = b + \frac{t - b}{1 + (c/m)^s}\)</span>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -312,16 +305,16 @@ if the fit parameters are such that the
 extrapolated curve never reaches 0.5.</dd>
 </dl>
 <p>Calculated from:
-<span class="math">\(0.5 = b + \frac{t - b}{1 + (ic50/m)^s}\)</span>,
+<span class="math notranslate nohighlight">\(0.5 = b + \frac{t - b}{1 + (ic50/m)^s}\)</span>,
 which solves to 
-<span class="math">\(ic50 = m \times \left(\frac{t - 0.5}{0.5 - b}\right)^{1/s}\)</span></p>
+<span class="math notranslate nohighlight">\(ic50 = m \times \left(\frac{t - 0.5}{0.5 - b}\right)^{1/s}\)</span></p>
 </dd></dl>
 
 <dl class="method">
 <dt id="dms_tools2.neutcurve.fourParamLogistic.ic50_str">
 <code class="descname">ic50_str</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/neutcurve.html#fourParamLogistic.ic50_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.neutcurve.fourParamLogistic.ic50_str" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns string containing IC50.</p>
-<p>Unlike <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.ic50" title="dms_tools2.neutcurve.fourParamLogistic.ic50"><code class="xref py py-meth docutils literal"><span class="pre">ic50()</span></code></a>, it returns a string.
+<p>Unlike <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.ic50" title="dms_tools2.neutcurve.fourParamLogistic.ic50"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ic50()</span></code></a>, it returns a string.
 This is useful because the string will indicate
 if the extrapolated IC50 is outside the 
 range of fitted data, such as by being: <cite>&gt; 0.5</cite>.</p>
@@ -361,6 +354,7 @@ for fitting.</dd>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -433,12 +427,14 @@ for fitting.</dd>
 </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -449,8 +445,8 @@ for fitting.</dd>
       &copy;2017, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |
       <a href="_sources/dms_tools2.neutcurve.rst.txt"

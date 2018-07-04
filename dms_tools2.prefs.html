@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>prefs &#8212; dms_tools2 2.2.6 documentation</title>
+    <title>prefs &#8212; dms_tools2 2.2.7 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '2.2.6',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -32,13 +24,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.prefs"></span><div class="section" id="prefs">
@@ -56,24 +49,24 @@ to perform MCMC for Bayesian inferences.</p>
 <dl class="class">
 <dt id="dms_tools2.prefs.StanModelDifferentErr">
 <em class="property">class </em><code class="descclassname">dms_tools2.prefs.</code><code class="descname">StanModelDifferentErr</code><span class="sig-paren">(</span><em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#StanModelDifferentErr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.StanModelDifferentErr" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p><code class="docutils literal"><span class="pre">pystan</span></code> model when <cite>error_model</cite> is <cite>different</cite>.</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">pystan</span></code> model when <cite>error_model</cite> is <cite>different</cite>.</p>
 <p>For use by inferSitePrefs`.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="dms_tools2.prefs.StanModelNoneErr">
 <em class="property">class </em><code class="descclassname">dms_tools2.prefs.</code><code class="descname">StanModelNoneErr</code><span class="sig-paren">(</span><em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#StanModelNoneErr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.StanModelNoneErr" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p><code class="docutils literal"><span class="pre">pystan</span></code> model when <cite>error_model</cite> is <cite>none</cite>.</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">pystan</span></code> model when <cite>error_model</cite> is <cite>none</cite>.</p>
 <p>For use by inferSitePrefs`.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="dms_tools2.prefs.StanModelSameErr">
 <em class="property">class </em><code class="descclassname">dms_tools2.prefs.</code><code class="descname">StanModelSameErr</code><span class="sig-paren">(</span><em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#StanModelSameErr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.StanModelSameErr" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p><code class="docutils literal"><span class="pre">pystan</span></code> model when <cite>error_model</cite> is <cite>same</cite>.</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">pystan</span></code> model when <cite>error_model</cite> is <cite>same</cite>.</p>
 <p>For use by inferSitePrefs`.</p>
 </dd></dl>
 
@@ -99,7 +92,7 @@ to perform MCMC for Bayesian inferences.</p>
 numbering) and other columns being amino acids and values
 giving frequencies in alignment.</dd>
 </dl>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="n">x</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;&gt;seq1</span><span class="se">\n</span><span class="s1">&#39;</span>
 <span class="gp">... </span>                <span class="s1">&#39;ATGGGGCAG</span><span class="se">\n</span><span class="s1">&#39;</span>
 <span class="gp">... </span>                <span class="s1">&#39;&gt;seq2</span><span class="se">\n</span><span class="s1">&#39;</span>
@@ -139,7 +132,7 @@ for same sites and characters.</dd>
 preferences in <cite>prefsfiles</cite>. In this returned
 data frame, <cite>site</cite> is the index</dd>
 </dl>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tf1</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tf1</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">tf2</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tf1</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file1</span><span class="p">,</span> <span class="n">tf2</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file2</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="n">x</span> <span class="o">=</span> <span class="n">file1</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;site,A,C,G,T</span><span class="se">\n</span><span class="s1">&#39;</span>
@@ -169,16 +162,16 @@ data frame, <cite>site</cite> is the index</dd>
 <dt id="dms_tools2.prefs.inferPrefsByRatio">
 <code class="descclassname">dms_tools2.prefs.</code><code class="descname">inferPrefsByRatio</code><span class="sig-paren">(</span><em>charlist</em>, <em>sites</em>, <em>wts</em>, <em>pre</em>, <em>post</em>, <em>errpre</em>, <em>errpost</em>, <em>pseudocount</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#inferPrefsByRatio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.inferPrefsByRatio" title="Permalink to this definition">¶</a></dt>
 <dd><p>Site-specific preferences from normalized enrichment ratios.</p>
-<p>Calculates site-specific preference <span class="math">\(\pi_{r,a}\)</span> of each
-site <span class="math">\(r\)</span> for each character <span class="math">\(a\)</span> using re-normalized
+<p>Calculates site-specific preference <span class="math notranslate nohighlight">\(\pi_{r,a}\)</span> of each
+site <span class="math notranslate nohighlight">\(r\)</span> for each character <span class="math notranslate nohighlight">\(a\)</span> using re-normalized
 enrichment ratios. This function accomplishes the same goal as
 <cite>inferSitePrefs</cite>, but is much simpler and faster, although less
 statistically rigorous in principle.</p>
 <p>Specifically, this function calculates the preferences as</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\pi_{r,a} = \frac{\phi_{r,a}}{\sum_{a'} \phi_{r,a'}}\]</div>
-<p>where <span class="math">\(\phi_{r,a}\)</span> is the enrichment ratio of character
-<span class="math">\(a\)</span> relative to wildtype after selection.</p>
+<p>where <span class="math notranslate nohighlight">\(\phi_{r,a}\)</span> is the enrichment ratio of character
+<span class="math notranslate nohighlight">\(a\)</span> relative to wildtype after selection.</p>
 <p>The actual definition of these enrichment ratios is somewhat
 complex due to the need to correct for errors and add a
 pseudocount. We have 4 sets of counts:</p>
@@ -190,57 +183,57 @@ pseudocount. We have 4 sets of counts:</p>
 <li><cite>errpost</cite>: error-control for post-selection counts</li>
 </ul>
 </div></blockquote>
-<p>For each set of counts <span class="math">\(s\)</span>, let <span class="math">\(N_r^s\)</span> (e.g., 
-<span class="math">\(N_r^{pre}\)</span>) denote the total counts for this sample at
-site <span class="math">\(r\)</span>, and let <span class="math">\(n_{r,a}^{s}\)</span> (e.g., 
-<span class="math">\(n_{r,a}^{pre}\)</span>) denote the counts at that site for
-character <span class="math">\(a\)</span>.</p>
+<p>For each set of counts <span class="math notranslate nohighlight">\(s\)</span>, let <span class="math notranslate nohighlight">\(N_r^s\)</span> (e.g., 
+<span class="math notranslate nohighlight">\(N_r^{pre}\)</span>) denote the total counts for this sample at
+site <span class="math notranslate nohighlight">\(r\)</span>, and let <span class="math notranslate nohighlight">\(n_{r,a}^{s}\)</span> (e.g., 
+<span class="math notranslate nohighlight">\(n_{r,a}^{pre}\)</span>) denote the counts at that site for
+character <span class="math notranslate nohighlight">\(a\)</span>.</p>
 <p>Because some of the counts are low, we add a pseudocount 
-<span class="math">\(P\)</span> to each observation. Importantly, we need to scale
+<span class="math notranslate nohighlight">\(P\)</span> to each observation. Importantly, we need to scale
 this pseudocount by the total depth for that sample at that site
 in order to avoid systematically estimating different frequencies
 purely as a function of sequencing depth, which will bias
 the preference estimates.
-Therefore, given the pseudocount value <span class="math">\(P\)</span> defined via the
-<code class="docutils literal"><span class="pre">--pseudocount</span></code> argument to <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a>, we calculate the
-scaled pseudocount for sample <span class="math">\(s\)</span> and site <span class="math">\(r\)</span> as</p>
-<div class="math">
+Therefore, given the pseudocount value <span class="math notranslate nohighlight">\(P\)</span> defined via the
+<code class="docutils literal notranslate"><span class="pre">--pseudocount</span></code> argument to <a class="reference internal" href="dms2_prefs.html#dms2-prefs"><span class="std std-ref">dms2_prefs</span></a>, we calculate the
+scaled pseudocount for sample <span class="math notranslate nohighlight">\(s\)</span> and site <span class="math notranslate nohighlight">\(r\)</span> as</p>
+<div class="math notranslate nohighlight">
 \[P_r^s = P \times \frac{N_r^s}{\min\limits_{s'} N_r^{s'}}.\]</div>
-<p>This equation makes the pseudocount <span class="math">\(P\)</span> for the lowest-depth
+<p>This equation makes the pseudocount <span class="math notranslate nohighlight">\(P\)</span> for the lowest-depth
 sample, and scales up the pseodocounts for all other samples
 proportional to their depth.</p>
 <p>With this pseudocount, the
-estimated frequency of character <span class="math">\(a\)</span> at site <span class="math">\(r\)</span>
-in sample <span class="math">\(s\)</span> is</p>
-<div class="math">
+estimated frequency of character <span class="math notranslate nohighlight">\(a\)</span> at site <span class="math notranslate nohighlight">\(r\)</span>
+in sample <span class="math notranslate nohighlight">\(s\)</span> is</p>
+<div class="math notranslate nohighlight">
 \[f_{r,a}^s = \frac{n_{r,a}^s + P_r^s}{N_{r}^s + A \times P_r^s}\]</div>
-<p>where <span class="math">\(A\)</span> is the number of characters in the alphabet (e.g.,
+<p>where <span class="math notranslate nohighlight">\(A\)</span> is the number of characters in the alphabet (e.g.,
 20 for amino acids without stop codons).</p>
 <p>The <strong>error-corrected</strong> estimates of the frequency of character
-<span class="math">\(a\)</span> before and after selection are then</p>
-<div class="math">
+<span class="math notranslate nohighlight">\(a\)</span> before and after selection are then</p>
+<div class="math notranslate nohighlight">
 \[ \begin{align}\begin{aligned}f_{r,a}^{before} &amp;= \max\left(\frac{P_r^{pre}}{N_{r}^{pre} + A \times P_r^{pre}},
 \; f_{r,a}^{pre} + \delta_{a,\rm{wt}\left(r\right)}
 - f_{r,a}^{errpre}\right)\\f_{r,a}^{after} &amp;= \max\left(\frac{P_r^{post}}{N_{r}^{post} + A \times P_r^{post}},
 \; f_{r,a}^{post} + \delta_{a,\rm{wt}\left(r\right)}
 - f_{r,a}^{errpost}\right)\end{aligned}\end{align} \]</div>
-<p>where <span class="math">\(\delta_{a,\rm{wt}\left(r\right)}\)</span> is the 
-Kronecker-delta, equal to 1 if <span class="math">\(a\)</span> is the same as the
-wildtype character <span class="math">\(\rm{wt}\left(r\right)\)</span> at site
-<span class="math">\(r\)</span>, and 0 otherwise. We use the <span class="math">\(\max\)</span> operator
+<p>where <span class="math notranslate nohighlight">\(\delta_{a,\rm{wt}\left(r\right)}\)</span> is the 
+Kronecker-delta, equal to 1 if <span class="math notranslate nohighlight">\(a\)</span> is the same as the
+wildtype character <span class="math notranslate nohighlight">\(\rm{wt}\left(r\right)\)</span> at site
+<span class="math notranslate nohighlight">\(r\)</span>, and 0 otherwise. We use the <span class="math notranslate nohighlight">\(\max\)</span> operator
 to ensure that even if the error-control frequency exceeds
 the actual estimate, our estimated frequency never drops
 below the pseudocount over the depth of the uncorrected sample.</p>
 <p>Given these definitions, we then simply calculate the enrichment 
 ratios as</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\phi_{r,a} = \frac{\left(f_{r,a}^{after}\right) / 
 \left(f_{r,\rm{wt}\left(r\right)}^{after}\right)}
 {\left(f_{r,a}^{before}\right) / 
 \left(f_{r,\rm{wt}\left(r\right)}^{before}\right)}\]</div>
 <p>In the case where we are <strong>not</strong> using any error-controls, then
 we simply set 
-<span class="math">\(f_{r,\rm{wt}}^{errpre} = f_{r,\rm{wt}}^{errpost} 
+<span class="math notranslate nohighlight">\(f_{r,\rm{wt}}^{errpre} = f_{r,\rm{wt}}^{errpost} 
 = \delta_{a,\rm{wt}\left(r\right)}\)</span>.</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -279,12 +272,12 @@ for that character.</dd>
 <dt id="dms_tools2.prefs.inferSitePrefs">
 <code class="descclassname">dms_tools2.prefs.</code><code class="descname">inferSitePrefs</code><span class="sig-paren">(</span><em>charlist</em>, <em>wtchar</em>, <em>error_model</em>, <em>counts</em>, <em>priors</em>, <em>seed=1</em>, <em>niter=10000</em>, <em>increasetries=5</em>, <em>n_jobs=1</em>, <em>r_max=1.1</em>, <em>neff_min=100</em>, <em>nchains=4</em>, <em>increasefac=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#inferSitePrefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.inferSitePrefs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Infers site-specific preferences by MCMC for a specific site.</p>
-<p>Infer the site-specific preferences <span class="math">\(\pi_{r,a}\)</span> for some site
-<span class="math">\(r\)</span> for each character <span class="math">\(a\)</span> by integrating over the 
+<p>Infer the site-specific preferences <span class="math notranslate nohighlight">\(\pi_{r,a}\)</span> for some site
+<span class="math notranslate nohighlight">\(r\)</span> for each character <span class="math notranslate nohighlight">\(a\)</span> by integrating over the 
 posterior defined by the product of the following priors and 
-likelihoods, where <span class="math">\(\boldsymbol{\mathbf{\pi_r}}\)</span> indicates
-the vector of <span class="math">\(\pi_{r,a}\)</span> values for all characters:</p>
-<div class="math">
+likelihoods, where <span class="math notranslate nohighlight">\(\boldsymbol{\mathbf{\pi_r}}\)</span> indicates
+the vector of <span class="math notranslate nohighlight">\(\pi_{r,a}\)</span> values for all characters:</p>
+<div class="math notranslate nohighlight">
 \[ \begin{align}\begin{aligned}\Pr\left(\boldsymbol{\mathbf{\pi_r}}\right) 
 &amp;= \mathrm{Dirichlet}\left(\boldsymbol{\mathbf{a_{\pi,r}}}\right)\\\Pr\left(\boldsymbol{\mathbf{\mu_r}}\right) 
 &amp;= \mathrm{Dirichlet}\left(\boldsymbol{\mathbf{a_{\mu,r}}}\right)\\\Pr\left(\boldsymbol{\mathbf{\epsilon_r}}\right) 
@@ -294,7 +287,7 @@ the vector of <span class="math">\(\pi_{r,a}\)</span> values for all characters:
 &amp;= \mathrm{Multinomial}\left(\boldsymbol{\mathbf{n_r^{\rm{post}}}}; \frac{\boldsymbol{\mathbf{\mu_r}} \circ \boldsymbol{\mathbf{\pi_r}}}{\boldsymbol{\mathbf{\mu_r}} \cdot \boldsymbol{\mathbf{\pi_r}}} + \boldsymbol{\mathbf{\rho_r}} - \boldsymbol{\mathbf{\delta_r}}\right)\\\Pr\left(\boldsymbol{\mathbf{n_r^{\rm{err,pre}}}} \mid \boldsymbol{\mathbf{\epsilon_r}}\right) 
 &amp;= \mathrm{Multinomial}\left(\boldsymbol{\mathbf{n_r^{\rm{err,pre}}}}; \boldsymbol{\mathbf{\epsilon_r}}\right)\\\Pr\left(\boldsymbol{\mathbf{n_r^{\rm{err,post}}}} \mid \boldsymbol{\mathbf{\rho_r}}\right) 
 &amp;= \mathrm{Multinomial}\left(\boldsymbol{\mathbf{n_r^{\rm{err,post}}}}; \boldsymbol{\mathbf{\rho_r}}\right)\end{aligned}\end{align} \]</div>
-<p>where <span class="math">\(\boldsymbol{\mathbf{\delta_r}}\)</span> is a vector that is 
+<p>where <span class="math notranslate nohighlight">\(\boldsymbol{\mathbf{\delta_r}}\)</span> is a vector that is 
 zero except for a one at the element corresponding to the wildtype.</p>
 <p>The MCMC tries to guarantee convergence via the parameters specified
 by <cite>r_max</cite>, <cite>neff_min</cite>, <cite>nchains</cite>, <cite>niter</cite>, <cite>increasefac</cite>, 
@@ -313,13 +306,13 @@ as they will not need to be compiled. Can be:</p>
 <blockquote class="last">
 <div><ul class="simple">
 <li>The str <cite>none</cite> or instance of <cite>StanModelNoneErr</cite>:
-no errors (<span class="math">\(\boldsymbol{\mathbf{\epsilon_r}} = \boldsymbol{\mathbf{\rho_r}} = \mathbf{0}\)</span>)</li>
+no errors (<span class="math notranslate nohighlight">\(\boldsymbol{\mathbf{\epsilon_r}} = \boldsymbol{\mathbf{\rho_r}} = \mathbf{0}\)</span>)</li>
 <li>The str <cite>same</cite> or instance of <cite>StanModelSameErr</cite>: 
 same error rates  pre and post-selection 
-(<span class="math">\(\boldsymbol{\mathbf{\epsilon_r}} = \boldsymbol{\mathbf{\rho_r}}\)</span>).</li>
+(<span class="math notranslate nohighlight">\(\boldsymbol{\mathbf{\epsilon_r}} = \boldsymbol{\mathbf{\rho_r}}\)</span>).</li>
 <li>The str <cite>different</cite> or instance of <cite>StanModelDifferentErr</cite>: 
 different error rates pre- and post-selection
-(<span class="math">\(\boldsymbol{\mathbf{\epsilon_r}} \ne \boldsymbol{\mathbf{\rho_r}}\)</span>).</li>
+(<span class="math notranslate nohighlight">\(\boldsymbol{\mathbf{\epsilon_r}} \ne \boldsymbol{\mathbf{\rho_r}}\)</span>).</li>
 </ul>
 </div></blockquote>
 </dd>
@@ -329,14 +322,14 @@ a dict keyed by all characters in <cite>charlist</cite> with
 the values giving integer counts for that character. The keys:</p>
 <blockquote class="last">
 <div><ul class="simple">
-<li><cite>pre</cite>: <span class="math">\(\boldsymbol{\mathbf{n_r^{\rm{pre}}}}\)</span></li>
-<li><cite>post</cite>: <span class="math">\(\boldsymbol{\mathbf{n_r^{\rm{post}}}}\)</span></li>
+<li><cite>pre</cite>: <span class="math notranslate nohighlight">\(\boldsymbol{\mathbf{n_r^{\rm{pre}}}}\)</span></li>
+<li><cite>post</cite>: <span class="math notranslate nohighlight">\(\boldsymbol{\mathbf{n_r^{\rm{post}}}}\)</span></li>
 <li><em>err</em>: required if <cite>error_model</cite> is <cite>same</cite>, specifies
-<span class="math">\(\boldsymbol{\mathbf{n_r^{\rm{err,pre}}}} = \boldsymbol{\mathbf{n_r^{\rm{err,post}}}}\)</span></li>
+<span class="math notranslate nohighlight">\(\boldsymbol{\mathbf{n_r^{\rm{err,pre}}}} = \boldsymbol{\mathbf{n_r^{\rm{err,post}}}}\)</span></li>
 <li><cite>errpre</cite> and <cite>errpost</cite>: required if <cite>error_model</cite> is
 <cite>different</cite>, specify 
-<span class="math">\(\boldsymbol{\mathbf{n_r^{\rm{err,pre}}}}\)</span> and
-<span class="math">\(\boldsymbol{\mathbf{n_r^{\rm{err,post}}}}\)</span>.</li>
+<span class="math notranslate nohighlight">\(\boldsymbol{\mathbf{n_r^{\rm{err,pre}}}}\)</span> and
+<span class="math notranslate nohighlight">\(\boldsymbol{\mathbf{n_r^{\rm{err,post}}}}\)</span>.</li>
 </ul>
 </div></blockquote>
 </dd>
@@ -347,14 +340,14 @@ giving the prior for that character. Values less than
 <cite>PRIOR_MIN_VALUE</cite> are set to <cite>PRIOR_MIN_VALUE</cite>. Keys are</p>
 <blockquote class="last">
 <div><ul class="simple">
-<li><cite>pir_prior_params</cite>: <span class="math">\(\boldsymbol{\mathbf{a_{\pi,r}}}\)</span></li>
-<li><cite>mur_prior_params</cite>: <span class="math">\(\boldsymbol{\mathbf{a_{\mu,r}}}\)</span></li>
+<li><cite>pir_prior_params</cite>: <span class="math notranslate nohighlight">\(\boldsymbol{\mathbf{a_{\pi,r}}}\)</span></li>
+<li><cite>mur_prior_params</cite>: <span class="math notranslate nohighlight">\(\boldsymbol{\mathbf{a_{\mu,r}}}\)</span></li>
 <li><cite>epsilonr_prior_params</cite>: only required if <cite>error_model</cite> is 
 <cite>same</cite> or <cite>different</cite>, specifies 
-<span class="math">\(\boldsymbol{\mathbf{a_{\epsilon,r}}}\)</span></li>
+<span class="math notranslate nohighlight">\(\boldsymbol{\mathbf{a_{\epsilon,r}}}\)</span></li>
 <li><cite>rhor_prior_params</cite> : only required if <cite>error_model</cite> is 
 <cite>different</cite>, specifies
-<span class="math">\(\boldsymbol{\mathbf{a_{\rho,r}}}\)</span></li>
+<span class="math notranslate nohighlight">\(\boldsymbol{\mathbf{a_{\rho,r}}}\)</span></li>
 </ul>
 </div></blockquote>
 </dd>
@@ -366,7 +359,7 @@ giving the prior for that character. Values less than
 <dd>Specify MCMC convergence. They all have reasonable defaults.
 The MCMC is considered to have converged if the mean Gelman-Rubin R
 statistic (<a class="reference external" href="http://www.jstor.org/stable/2246093">http://www.jstor.org/stable/2246093</a>) over all 
-<span class="math">\(\pi_{r,x}\)</span> values &lt;= <cite>r_max</cite> and the mean effective sample
+<span class="math notranslate nohighlight">\(\pi_{r,x}\)</span> values &lt;= <cite>r_max</cite> and the mean effective sample
 size is &gt;= <cite>neff_min</cite>. The MCMC first runs with <cite>nchains</cite> chains
 and <cite>niter</cite> iterations. If it fails to converge, it increases
 the iterations by a factor of <cite>increasefac</cite> and tries again,
@@ -383,12 +376,12 @@ R to be <cite>1 + 1.5 (r_max - 1)</cite>.</dd>
 <li><cite>converged</cite> is <cite>True</cite> if the MCMC converged, <cite>False</cite> otherwise.</li>
 <li><dl class="first docutils">
 <dt><cite>pi_means</cite> is dict keyed by characters in <cite>charlist</cite></dt>
-<dd>with the value giving the <span class="math">\(\pi_{r,a}\)</span>.</dd>
+<dd>with the value giving the <span class="math notranslate nohighlight">\(\pi_{r,a}\)</span>.</dd>
 </dl>
 </li>
 <li><dl class="first docutils">
 <dt><cite>pi_95credint</cite> is dict keyed by characters, values are 2-tuples</dt>
-<dd>giving median-centered credible interval for <span class="math">\(\pi_{r,a}\)</span>.</dd>
+<dd>giving median-centered credible interval for <span class="math notranslate nohighlight">\(\pi_{r,a}\)</span>.</dd>
 </dl>
 </li>
 <li><cite>logstring</cite> is a string describing MCMC run and convergence.</li>
@@ -403,13 +396,13 @@ R to be <cite>1 + 1.5 (r_max - 1)</cite>.</dd>
 <dt id="dms_tools2.prefs.prefsEntropy">
 <code class="descclassname">dms_tools2.prefs.</code><code class="descname">prefsEntropy</code><span class="sig-paren">(</span><em>prefs</em>, <em>charlist</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#prefsEntropy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.prefsEntropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate site entropy and number of effective characters.</p>
-<p>The site entropy <span class="math">\(h_r\)</span> for site <span class="math">\(r\)</span> is defined as
-<span class="math">\(h_r = -\sum_{x} \pi_{r,x} \log\left(\pi_{r,x}\right)\)</span>
-where <span class="math">\(\pi_{r,x}\)</span> is the preference for character (e.g.,
-amino acid) <span class="math">\(x\)</span> at site <span class="math">\(r\)</span>, and the log is
+<p>The site entropy <span class="math notranslate nohighlight">\(h_r\)</span> for site <span class="math notranslate nohighlight">\(r\)</span> is defined as
+<span class="math notranslate nohighlight">\(h_r = -\sum_{x} \pi_{r,x} \log\left(\pi_{r,x}\right)\)</span>
+where <span class="math notranslate nohighlight">\(\pi_{r,x}\)</span> is the preference for character (e.g.,
+amino acid) <span class="math notranslate nohighlight">\(x\)</span> at site <span class="math notranslate nohighlight">\(r\)</span>, and the log is
 the natural logarithm.</p>
-<p>The number of effective characters at site <span class="math">\(r\)</span>
-is <span class="math">\(N_{\rm{eff}, r} = \exp\left(h_r\right)\)</span>.</p>
+<p>The number of effective characters at site <span class="math notranslate nohighlight">\(r\)</span>
+is <span class="math notranslate nohighlight">\(N_{\rm{eff}, r} = \exp\left(h_r\right)\)</span>.</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
@@ -426,9 +419,9 @@ the amino acids.</dd>
 <dd>A copy of <cite>prefs</cite> that has additional columns named
 <cite>entropy</cite> and <cite>neffective</cite>, giving the site entropy and
 number of effective characters for each site. For
-the entropies, log is taken to base <span class="math">\(e\)</span>.</dd>
+the entropies, log is taken to base <span class="math notranslate nohighlight">\(e\)</span>.</dd>
 </dl>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">charlist</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">charlist</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">prefs</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
 <span class="gp">... </span>        <span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
 <span class="gp">... </span>        <span class="s1">&#39;A&#39;</span><span class="p">:[</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="mf">3.</span><span class="p">],</span>
@@ -453,10 +446,10 @@ the entropies, log is taken to base <span class="math">\(e\)</span>.</dd>
 <dt id="dms_tools2.prefs.prefsToMutEffects">
 <code class="descclassname">dms_tools2.prefs.</code><code class="descname">prefsToMutEffects</code><span class="sig-paren">(</span><em>prefs</em>, <em>charlist</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#prefsToMutEffects"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.prefsToMutEffects" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts amino acid preferences to effects of specific mutations.</p>
-<p>If the preference of site <span class="math">\(r\)</span> for amino acid <span class="math">\(a\)</span> is
-<span class="math">\(\pi_{r,a}\)</span>, then the estimated effect (e.g., ratio of
-enrichment ratios) for mutating that site from <span class="math">\(x\)</span> to
-<span class="math">\(y\)</span> is <span class="math">\(\frac{\pi_{r,y}}{\pi_{r,x}}\)</span>. Very small
+<p>If the preference of site <span class="math notranslate nohighlight">\(r\)</span> for amino acid <span class="math notranslate nohighlight">\(a\)</span> is
+<span class="math notranslate nohighlight">\(\pi_{r,a}\)</span>, then the estimated effect (e.g., ratio of
+enrichment ratios) for mutating that site from <span class="math notranslate nohighlight">\(x\)</span> to
+<span class="math notranslate nohighlight">\(y\)</span> is <span class="math notranslate nohighlight">\(\frac{\pi_{r,y}}{\pi_{r,x}}\)</span>. Very small
 values indicate disfavored mutations, and very large values
 indicate highly favored mutations. The logarithm base 2 of the
 expected effects is also a useful measure – negative values
@@ -486,7 +479,7 @@ a column for every character in <cite>charlist</cite>.</dd>
 </div></blockquote>
 </dd>
 </dl>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">charlist</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">charlist</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">prefs</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
 <span class="gp">... </span>        <span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
 <span class="gp">... </span>        <span class="s1">&#39;A&#39;</span><span class="p">:[</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">],</span>
@@ -513,11 +506,11 @@ a column for every character in <cite>charlist</cite>.</dd>
 <dt id="dms_tools2.prefs.rescalePrefs">
 <code class="descclassname">dms_tools2.prefs.</code><code class="descname">rescalePrefs</code><span class="sig-paren">(</span><em>prefs</em>, <em>stringency</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#rescalePrefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.rescalePrefs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Re-scale amino acid preferences by stringency parameter.</p>
-<p>If the initial preference of site <span class="math">\(r\)</span> for amino-acid 
-<span class="math">\(a\)</span> is <span class="math">\(\pi_{r,a}\)</span>, then the re-scaled preference is</p>
-<div class="math">
+<p>If the initial preference of site <span class="math notranslate nohighlight">\(r\)</span> for amino-acid 
+<span class="math notranslate nohighlight">\(a\)</span> is <span class="math notranslate nohighlight">\(\pi_{r,a}\)</span>, then the re-scaled preference is</p>
+<div class="math notranslate nohighlight">
 \[\frac{\left(\pi_{r,a}\right)^{\beta}}{\sum_{a'} \left(\pi_{r,a'}\right)}\]</div>
-<p>where <span class="math">\(\beta\)</span> is the stringency parameter.</p>
+<p>where <span class="math notranslate nohighlight">\(\beta\)</span> is the stringency parameter.</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
@@ -532,7 +525,7 @@ amino acid).</dd>
 <dd>A data frame in the same format as <cite>prefs</cite> but with the
 re-scaled preferences.</dd>
 </dl>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">prefs</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">prefs</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span>
 <span class="gp">... </span>        <span class="p">[(</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]),</span> <span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.24</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">]),</span> <span class="p">(</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.43</span><span class="p">])]</span>
 <span class="gp">... </span>        <span class="o">+</span> <span class="p">[(</span><span class="n">aa</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">])</span> <span class="k">for</span> <span class="n">aa</span> <span class="ow">in</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">AAS</span> <span class="k">if</span>
 <span class="gp">... </span>        <span class="n">aa</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">]]))</span>
@@ -556,6 +549,7 @@ re-scaled preferences.</dd>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -628,12 +622,14 @@ re-scaled preferences.</dd>
 </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -644,8 +640,8 @@ re-scaled preferences.</dd>
       &copy;2017, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |
       <a href="_sources/dms_tools2.prefs.rst.txt"

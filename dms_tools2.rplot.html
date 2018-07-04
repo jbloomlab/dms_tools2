@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>rplot &#8212; dms_tools2 2.2.6 documentation</title>
+    <title>rplot &#8212; dms_tools2 2.2.7 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '2.2.6',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -32,47 +24,48 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.rplot"></span><div class="section" id="rplot">
 <h1>rplot<a class="headerlink" href="#rplot" title="Permalink to this headline">¶</a></h1>
-<p>Plotting that uses <code class="docutils literal"><span class="pre">R</span></code>.</p>
+<p>Plotting that uses <code class="docutils literal notranslate"><span class="pre">R</span></code>.</p>
 <p>The <cite>dms_tools2</cite> software is written in Python, but there are
-useful plotting features that are only available in <code class="docutils literal"><span class="pre">R</span></code>,
+useful plotting features that are only available in <code class="docutils literal notranslate"><span class="pre">R</span></code>,
 such <a class="reference external" href="https://omarwagih.github.io/ggseqlogo/">ggseqlogo</a>.</p>
-<p>This module uses <code class="docutils literal"><span class="pre">R</span></code> to make plots using these features. It
+<p>This module uses <code class="docutils literal notranslate"><span class="pre">R</span></code> to make plots using these features. It
 requires <a class="reference external" href="https://rpy2.readthedocs.io">rpy2</a> to be installed.
 Installation of <a class="reference external" href="https://rpy2.readthedocs.io">rpy2</a> is 
 <strong>not</strong> automatic when you install <cite>dms_tools2</cite> unless
-you have <code class="docutils literal"><span class="pre">R</span></code> and <a class="reference external" href="https://rpy2.readthedocs.io">rpy2</a>
+you have <code class="docutils literal notranslate"><span class="pre">R</span></code> and <a class="reference external" href="https://rpy2.readthedocs.io">rpy2</a>
 installed, or install <cite>dms_tools2</cite> using:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">dms_tools</span><span class="p">[</span><span class="n">rplot</span><span class="p">]</span> <span class="o">--</span><span class="n">user</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">dms_tools</span><span class="p">[</span><span class="n">rplot</span><span class="p">]</span> <span class="o">--</span><span class="n">user</span>
 </pre></div>
 </div>
 <dl class="data">
 <dt id="dms_tools2.rplot.AA_COLORS_FG">
-<code class="descclassname">dms_tools2.rplot.</code><code class="descname">AA_COLORS_FG</code><em class="property"> = {'*': '#000000', 'A': '#f76ab4', 'C': '#ff7f00', 'D': '#3c58e5', 'E': '#3c58e5', 'F': '#84380b', 'G': '#f76ab4', 'H': '#e41a1c', 'I': '#12ab0d', 'K': '#e41a1c', 'L': '#12ab0d', 'M': '#12ab0d', 'N': '#972aa8', 'P': '#12ab0d', 'Q': '#972aa8', 'R': '#e41a1c', 'S': '#ff7f00', 'T': '#ff7f00', 'V': '#12ab0d', 'W': '#84380b', 'Y': '#84380b'}</em><a class="headerlink" href="#dms_tools2.rplot.AA_COLORS_FG" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.rplot.</code><code class="descname">AA_COLORS_FG</code><em class="property"> = {'*': '#000000', 'A': '#f76ab4', 'C': '#ff7f00', 'D': '#e41a1c', 'E': '#e41a1c', 'F': '#84380b', 'G': '#f76ab4', 'H': '#3c58e5', 'I': '#12ab0d', 'K': '#3c58e5', 'L': '#12ab0d', 'M': '#12ab0d', 'N': '#972aa8', 'P': '#12ab0d', 'Q': '#972aa8', 'R': '#3c58e5', 'S': '#ff7f00', 'T': '#ff7f00', 'V': '#12ab0d', 'W': '#84380b', 'Y': '#84380b'}</em><a class="headerlink" href="#dms_tools2.rplot.AA_COLORS_FG" title="Permalink to this definition">¶</a></dt>
 <dd><p>default colors for amino acid chars, by functional group</p>
 </dd></dl>
 
 <dl class="data">
 <dt id="dms_tools2.rplot.SHOW_WARNINGS">
 <code class="descclassname">dms_tools2.rplot.</code><code class="descname">SHOW_WARNINGS</code><em class="property"> = 'ignore'</em><a class="headerlink" href="#dms_tools2.rplot.SHOW_WARNINGS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Show warnings when running <code class="docutils literal"><span class="pre">R</span></code> code? Plausible values: <cite>default</cite>,
+<dd><p>Show warnings when running <code class="docutils literal notranslate"><span class="pre">R</span></code> code? Plausible values: <cite>default</cite>,
 <cite>ignore</cite>, and <cite>always</cite>. The <cite>R</cite> code gives many warnings, so
 <cite>ignore</cite> is good when not developing new code.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="dms_tools2.rplot.facetedGGSeqLogo">
-<code class="descclassname">dms_tools2.rplot.</code><code class="descname">facetedGGSeqLogo</code><span class="sig-paren">(</span><em>logodata</em>, <em>chars</em>, <em>plotfile</em>, <em>width</em>, <em>height</em>, <em>ncol=None</em>, <em>char_colors={'*': '#000000'</em>, <em>'A': '#f76ab4'</em>, <em>'C': '#ff7f00'</em>, <em>'D': '#3c58e5'</em>, <em>'E': '#3c58e5'</em>, <em>'F': '#84380b'</em>, <em>'G': '#f76ab4'</em>, <em>'H': '#e41a1c'</em>, <em>'I': '#12ab0d'</em>, <em>'K': '#e41a1c'</em>, <em>'L': '#12ab0d'</em>, <em>'M': '#12ab0d'</em>, <em>'N': '#972aa8'</em>, <em>'P': '#12ab0d'</em>, <em>'Q': '#972aa8'</em>, <em>'R': '#e41a1c'</em>, <em>'S': '#ff7f00'</em>, <em>'T': '#ff7f00'</em>, <em>'V': '#12ab0d'</em>, <em>'W': '#84380b'</em>, <em>'Y': '#84380b'}</em>, <em>xlabelsrotate=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/rplot.html#facetedGGSeqLogo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.rplot.facetedGGSeqLogo" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.rplot.</code><code class="descname">facetedGGSeqLogo</code><span class="sig-paren">(</span><em>logodata</em>, <em>chars</em>, <em>plotfile</em>, <em>width</em>, <em>height</em>, <em>ncol=None</em>, <em>char_colors={'*': '#000000'</em>, <em>'A': '#f76ab4'</em>, <em>'C': '#ff7f00'</em>, <em>'D': '#e41a1c'</em>, <em>'E': '#e41a1c'</em>, <em>'F': '#84380b'</em>, <em>'G': '#f76ab4'</em>, <em>'H': '#3c58e5'</em>, <em>'I': '#12ab0d'</em>, <em>'K': '#3c58e5'</em>, <em>'L': '#12ab0d'</em>, <em>'M': '#12ab0d'</em>, <em>'N': '#972aa8'</em>, <em>'P': '#12ab0d'</em>, <em>'Q': '#972aa8'</em>, <em>'R': '#3c58e5'</em>, <em>'S': '#ff7f00'</em>, <em>'T': '#ff7f00'</em>, <em>'V': '#12ab0d'</em>, <em>'W': '#84380b'</em>, <em>'Y': '#84380b'}</em>, <em>xlabelsrotate=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/rplot.html#facetedGGSeqLogo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.rplot.facetedGGSeqLogo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates faceted logo plot.</p>
 <p>Designed to show several measurements on the same site
 site-by-side, potentially for many sites. Each site
@@ -107,7 +100,7 @@ as many as needed to plot everything in one row.</dd>
 </dl>
 <p>Here is an example that creates two facets each with
 two stacks for the characters <cite>A</cite> and <cite>C</cite>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">logodata</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">logodata</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="sd">&#39;&#39;&#39;facetlabel  stacklabel   A   C</span>
 <span class="gp">... </span><span class="sd">           site-1       BF520 0.8 0.2</span>
 <span class="gp">... </span><span class="sd">           site-1       BG505 0.9 0.1</span>
@@ -130,7 +123,7 @@ two stacks for the characters <cite>A</cite> and <cite>C</cite>:</p>
 
 <dl class="function">
 <dt id="dms_tools2.rplot.siteSubsetGGSeqLogo">
-<code class="descclassname">dms_tools2.rplot.</code><code class="descname">siteSubsetGGSeqLogo</code><span class="sig-paren">(</span><em>logodata</em>, <em>chars</em>, <em>plotfile</em>, <em>width</em>, <em>height</em>, <em>yname=''</em>, <em>char_colors={'*': '#000000'</em>, <em>'A': '#f76ab4'</em>, <em>'C': '#ff7f00'</em>, <em>'D': '#3c58e5'</em>, <em>'E': '#3c58e5'</em>, <em>'F': '#84380b'</em>, <em>'G': '#f76ab4'</em>, <em>'H': '#e41a1c'</em>, <em>'I': '#12ab0d'</em>, <em>'K': '#e41a1c'</em>, <em>'L': '#12ab0d'</em>, <em>'M': '#12ab0d'</em>, <em>'N': '#972aa8'</em>, <em>'P': '#12ab0d'</em>, <em>'Q': '#972aa8'</em>, <em>'R': '#e41a1c'</em>, <em>'S': '#ff7f00'</em>, <em>'T': '#ff7f00'</em>, <em>'V': '#12ab0d'</em>, <em>'W': '#84380b'</em>, <em>'Y': '#84380b'}</em>, <em>ylimits=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/rplot.html#siteSubsetGGSeqLogo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.rplot.siteSubsetGGSeqLogo" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.rplot.</code><code class="descname">siteSubsetGGSeqLogo</code><span class="sig-paren">(</span><em>logodata</em>, <em>chars</em>, <em>plotfile</em>, <em>width</em>, <em>height</em>, <em>yname=''</em>, <em>char_colors={'*': '#000000'</em>, <em>'A': '#f76ab4'</em>, <em>'C': '#ff7f00'</em>, <em>'D': '#e41a1c'</em>, <em>'E': '#e41a1c'</em>, <em>'F': '#84380b'</em>, <em>'G': '#f76ab4'</em>, <em>'H': '#3c58e5'</em>, <em>'I': '#12ab0d'</em>, <em>'K': '#3c58e5'</em>, <em>'L': '#12ab0d'</em>, <em>'M': '#12ab0d'</em>, <em>'N': '#972aa8'</em>, <em>'P': '#12ab0d'</em>, <em>'Q': '#972aa8'</em>, <em>'R': '#3c58e5'</em>, <em>'S': '#ff7f00'</em>, <em>'T': '#ff7f00'</em>, <em>'V': '#12ab0d'</em>, <em>'W': '#84380b'</em>, <em>'Y': '#84380b'}</em>, <em>ylimits=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/rplot.html#siteSubsetGGSeqLogo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.rplot.siteSubsetGGSeqLogo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates one-row logo plot with subset of sites.</p>
 <p>Designed to show logo plot for a subset of sites. This
 is useful when you have data for many sites, but only
@@ -167,7 +160,7 @@ as <cite>(ymin, ymax)</cite></dd>
 </dl>
 <p>Here is an example that creates a plot for a subset of
 sites for two characters:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">logodata</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">logodata</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="sd">&#39;&#39;&#39;site show    A    C</span>
 <span class="gp">... </span><span class="sd">       A101 True  0.8  0.2</span>
 <span class="gp">... </span><span class="sd">       N102 True  0.7  0.3</span>
@@ -195,13 +188,14 @@ sites for two characters:</p>
 <dl class="function">
 <dt id="dms_tools2.rplot.versionInfo">
 <code class="descclassname">dms_tools2.rplot.</code><code class="descname">versionInfo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/rplot.html#versionInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.rplot.versionInfo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns string giving <cite>rpy2</cite> and <code class="docutils literal"><span class="pre">R</span></code> version info.</p>
+<dd><p>Returns string giving <cite>rpy2</cite> and <code class="docutils literal notranslate"><span class="pre">R</span></code> version info.</p>
 </dd></dl>
 
 </div>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -274,12 +268,14 @@ sites for two characters:</p>
 </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -290,8 +286,8 @@ sites for two characters:</p>
       &copy;2017, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |
       <a href="_sources/dms_tools2.rplot.rst.txt"

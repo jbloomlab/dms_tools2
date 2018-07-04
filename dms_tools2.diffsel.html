@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>diffsel &#8212; dms_tools2 2.2.6 documentation</title>
+    <title>diffsel &#8212; dms_tools2 2.2.7 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '2.2.6',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -32,13 +24,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.diffsel"></span><div class="section" id="diffsel">
@@ -53,7 +46,7 @@
 <dd><dl class="first last docutils">
 <dt><cite>mutdiffselfiles</cite> (list)</dt>
 <dd>List of CSV files with mutdiffsel as returned by
-<code class="docutils literal"><span class="pre">dms2_diffsel</span></code>.</dd>
+<code class="docutils literal notranslate"><span class="pre">dms2_diffsel</span></code>.</dd>
 <dt><cite>avgtype</cite> (str)</dt>
 <dd><dl class="first last docutils">
 <dt>Type of “average” to calculate. Possibilities:</dt>
@@ -70,7 +63,7 @@
 <dd>A <cite>pandas.DataFrame</cite> containing the mean or median
 mutation differential selection.</dd>
 </dl>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tf</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tf</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tf</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f1</span><span class="p">,</span> <span class="n">tf</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f2</span><span class="p">,</span> <span class="n">tf</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f3</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="n">x</span> <span class="o">=</span> <span class="n">f1</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;site,wildtype,mutation,mutdiffsel</span><span class="se">\n</span><span class="s1">&#39;</span>
 <span class="gp">... </span>                 <span class="s1">&#39;157,K,D,8.3</span><span class="se">\n</span><span class="s1">&#39;</span>
@@ -165,7 +158,7 @@ Columns are <cite>site</cite>, <cite>wildtype</cite>, <cite>mutation</cite>, <ci
 </dl>
 </dd>
 </dl>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mutdiffsel</span> <span class="o">=</span> <span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mutdiffsel</span> <span class="o">=</span> <span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
 <span class="gp">... </span>        <span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
 <span class="gp">... </span>        <span class="s1">&#39;wildtype&#39;</span><span class="p">:[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">],</span>
 <span class="gp">... </span>        <span class="s1">&#39;A&#39;</span><span class="p">:[</span><span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mf">4.1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">],</span>
@@ -202,9 +195,9 @@ Columns are <cite>site</cite>, <cite>wildtype</cite>, <cite>mutation</cite>, <ci
 <dt id="dms_tools2.diffsel.tidyToWide">
 <code class="descclassname">dms_tools2.diffsel.</code><code class="descname">tidyToWide</code><span class="sig-paren">(</span><em>tidy_df</em>, <em>valuecol</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/diffsel.html#tidyToWide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.diffsel.tidyToWide" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts tidy <cite>diffsel</cite> data frame to wide form.</p>
-<p>The <cite>diffsel</cite> data frames returned by <code class="docutils literal"><span class="pre">dms2_diffsel</span></code> (and
+<p>The <cite>diffsel</cite> data frames returned by <code class="docutils literal notranslate"><span class="pre">dms2_diffsel</span></code> (and
 also other dataframes, such as the <cite>fracsurvive</cite> ones
-from <code class="docutils literal"><span class="pre">dms_fracsurvive</span></code> are in tidy form. This function
+from <code class="docutils literal notranslate"><span class="pre">dms_fracsurvive</span></code> are in tidy form. This function
 converts them to wide form.</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -223,7 +216,7 @@ with the name matching <cite>valuecol</cite>.</dd>
 <cite>wildtype</cite>, and all characters (e.g., amino acids)
 for which values are given. Natural sorted by <cite>site</cite>.</dd>
 </dl>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tidy_df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tidy_df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="sd">&#39;&#39;&#39;site wildtype mutation diffsel</span>
 <span class="gp">... </span><span class="sd">          3        A        D    -1.5 </span>
 <span class="gp">... </span><span class="sd">          3        A        C    10.1</span>
@@ -246,6 +239,7 @@ for which values are given. Natural sorted by <cite>site</cite>.</dd>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -318,12 +312,14 @@ for which values are given. Natural sorted by <cite>site</cite>.</dd>
 </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -334,8 +330,8 @@ for which values are given. Natural sorted by <cite>site</cite>.</dd>
       &copy;2017, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |
       <a href="_sources/dms_tools2.diffsel.rst.txt"

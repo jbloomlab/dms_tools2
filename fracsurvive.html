@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Fraction surviving &#8212; dms_tools2 2.2.6 documentation</title>
+    <title>Fraction surviving &#8212; dms_tools2 2.2.7 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '2.2.6',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -32,13 +24,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="fraction-surviving">
@@ -82,77 +75,77 @@ These programs create visualizations of the results, and you can also visualize 
 <div class="section" id="definition-of-fraction-surviving">
 <h2><a class="toc-backref" href="#id3">Definition of fraction surviving</a><a class="headerlink" href="#definition-of-fraction-surviving" title="Permalink to this headline">¶</a></h2>
 <p>This definition of the fraction surviving was originally introduced in <a class="reference external" href="https://www.nature.com/articles/s41467-018-03665-3">Doud et al (2018)</a>.</p>
-<p>We use <span class="math">\(F_{r,x}\)</span> to denote the fraction of variants with character <span class="math">\(x\)</span> (e.g., an amino acid) at site <span class="math">\(r\)</span> that survive the selection.</p>
-<p>In order to calculate <span class="math">\(F_{r,x}\)</span>, we need three pieces of information:</p>
+<p>We use <span class="math notranslate nohighlight">\(F_{r,x}\)</span> to denote the fraction of variants with character <span class="math notranslate nohighlight">\(x\)</span> (e.g., an amino acid) at site <span class="math notranslate nohighlight">\(r\)</span> that survive the selection.</p>
+<p>In order to calculate <span class="math notranslate nohighlight">\(F_{r,x}\)</span>, we need three pieces of information:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li>The <strong>overall</strong> fraction of the entire library that survives the selection. We will denote this quantity as <span class="math">\(\gamma\)</span>, and it should range from zero to one. For instance, <span class="math">\(\gamma\)</span> might be calculated by using qPCR to determine the number of virions that infect cells in the presence of antibody versus the number that infect cells in the absence of antibody – the ratio of these two numbers would be the overall fraction of the entire library the survives the selection. You could also compute <span class="math">\(\gamma\)</span> directly from deep-sequencing if your library contains some internal control variant that you know will not be affected by the selection (e.g., a variant with a totally orthogonal envelope protein that is not recognized by the antibody).</li>
-<li>The number of deep sequencing counts of each character <span class="math">\(x\)</span> at each site <span class="math">\(r\)</span> in both the selected (e.g., antibody neutralized) and mock-selected samples. Denote these quantities as <span class="math">\(n_{r,x}^{\rm{selected}}\)</span> and <span class="math">\(n_{r,x}^{\rm{mock}}\)</span>, respectively. Also define variables that give the total number of counts at each site for each condition as <span class="math">\(N_r^{\rm{selected}} = \sum_x n_{r,x}^{\rm{selected}}\)</span> and <span class="math">\(N_r^{\rm{mock}} = \sum_x n_{r,x}^{\rm{mock}}\)</span>.</li>
+<li>The <strong>overall</strong> fraction of the entire library that survives the selection. We will denote this quantity as <span class="math notranslate nohighlight">\(\gamma\)</span>, and it should range from zero to one. For instance, <span class="math notranslate nohighlight">\(\gamma\)</span> might be calculated by using qPCR to determine the number of virions that infect cells in the presence of antibody versus the number that infect cells in the absence of antibody – the ratio of these two numbers would be the overall fraction of the entire library the survives the selection. You could also compute <span class="math notranslate nohighlight">\(\gamma\)</span> directly from deep-sequencing if your library contains some internal control variant that you know will not be affected by the selection (e.g., a variant with a totally orthogonal envelope protein that is not recognized by the antibody).</li>
+<li>The number of deep sequencing counts of each character <span class="math notranslate nohighlight">\(x\)</span> at each site <span class="math notranslate nohighlight">\(r\)</span> in both the selected (e.g., antibody neutralized) and mock-selected samples. Denote these quantities as <span class="math notranslate nohighlight">\(n_{r,x}^{\rm{selected}}\)</span> and <span class="math notranslate nohighlight">\(n_{r,x}^{\rm{mock}}\)</span>, respectively. Also define variables that give the total number of counts at each site for each condition as <span class="math notranslate nohighlight">\(N_r^{\rm{selected}} = \sum_x n_{r,x}^{\rm{selected}}\)</span> and <span class="math notranslate nohighlight">\(N_r^{\rm{mock}} = \sum_x n_{r,x}^{\rm{mock}}\)</span>.</li>
 </ol>
 </div></blockquote>
-<p>Given these pieces of information, the estimated fraction of variants in the selected and mock-selected libraries that contain character <span class="math">\(x\)</span> at site <span class="math">\(r\)</span> are calculated as:</p>
-<div class="math" id="equation-fracsurvive_rho">
-<span class="eqno">(1)<a class="headerlink" href="#equation-fracsurvive_rho" title="Permalink to this equation">¶</a></span>\[\begin{split}\rho_{r,x}^{\rm{selected}} &amp;=&amp; \frac{n_{r,x}^{\rm{selected}} + f_{r, \rm{selected}} \times P}{N_r^{\rm{selected}} + f_{r, \rm{selected}} \times P \times A} \\
+<p>Given these pieces of information, the estimated fraction of variants in the selected and mock-selected libraries that contain character <span class="math notranslate nohighlight">\(x\)</span> at site <span class="math notranslate nohighlight">\(r\)</span> are calculated as:</p>
+<div class="math notranslate nohighlight" id="equation-fracsurvive-rho">
+<span class="eqno">(29)<a class="headerlink" href="#equation-fracsurvive-rho" title="Permalink to this equation">¶</a></span>\[\begin{split}\rho_{r,x}^{\rm{selected}} &amp;=&amp; \frac{n_{r,x}^{\rm{selected}} + f_{r, \rm{selected}} \times P}{N_r^{\rm{selected}} + f_{r, \rm{selected}} \times P \times A} \\
 \rho_{r,x}^{\rm{mock}} &amp;=&amp; \frac{n_{r,x}^{\rm{mock}} + f_{r, \rm{mock}} \times P}{N_r^{\rm{mock}} + f_{r, \rm{mock}} \times P \times A} \\\end{split}\]</div>
-<p>where <span class="math">\(A\)</span> is the number of characters (e.g., 20 for amino acids), <span class="math">\(P &gt; 0\)</span> is a pseudocount that is added to each observed count (specified by <code class="docutils literal"><span class="pre">--pseudocount</span></code> option to <a class="reference internal" href="dms2_fracsurvive.html#dms2-fracsurvive"><span class="std std-ref">dms2_fracsurvive</span></a> / <a class="reference internal" href="dms2_batch_fracsurvive.html#dms2-batch-fracsurvive"><span class="std std-ref">dms2_batch_fracsurvive</span></a>), and <span class="math">\(f_{r, \rm{selected}}\)</span> and <span class="math">\(f_{r, \rm{mock}}\)</span> are defined so that the pseudocount is scaled up for the library (<em>mock</em> or <em>selected</em>) with higher depth at site <span class="math">\(r\)</span>:</p>
-<div class="math">
+<p>where <span class="math notranslate nohighlight">\(A\)</span> is the number of characters (e.g., 20 for amino acids), <span class="math notranslate nohighlight">\(P &gt; 0\)</span> is a pseudocount that is added to each observed count (specified by <code class="docutils literal notranslate"><span class="pre">--pseudocount</span></code> option to <a class="reference internal" href="dms2_fracsurvive.html#dms2-fracsurvive"><span class="std std-ref">dms2_fracsurvive</span></a> / <a class="reference internal" href="dms2_batch_fracsurvive.html#dms2-batch-fracsurvive"><span class="std std-ref">dms2_batch_fracsurvive</span></a>), and <span class="math notranslate nohighlight">\(f_{r, \rm{selected}}\)</span> and <span class="math notranslate nohighlight">\(f_{r, \rm{mock}}\)</span> are defined so that the pseudocount is scaled up for the library (<em>mock</em> or <em>selected</em>) with higher depth at site <span class="math notranslate nohighlight">\(r\)</span>:</p>
+<div class="math notranslate nohighlight">
 \[f_{r, \rm{selected}} = \max\left[1, \left(\sum_x n_{r,x}^{\rm{selected}}\right) / \left(\sum_x n_{r,x}^{\rm{mock}}\right)\right]\]</div>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[f_{r, \rm{mock}} = \max\left[1, \left(\sum_x n_{r,x}^{\rm{mock}}\right) / \left(\sum_x n_{r,x}^{\rm{selected}}\right)\right].\]</div>
 <p>The reason for scaling the pseudocount by library depth is that the <em>mock</em> and <em>selected</em> libraries may often be sequenced at different depths.
 If the same pseudocount is added to both, then the relative frequencies of mutations will be systematically different than one even if the relative counts for the wildtype and mutant amino acid are the same in both two conditions.
 Scaling the pseudocounts by the ratio of depths fixes this problem.
-If you are using <code class="docutils literal"><span class="pre">--chartype</span></code> of <code class="docutils literal"><span class="pre">codon_to_aa</span></code>, the counts for amino acids are aggregated <strong>before</strong> doing the calculations above.</p>
-<p>If the mutation has no effect on whether or not a variant survives the selection, then we expect <span class="math">\(\rho_{r,x}^{\rm{selected}} = \rho_{r,x}^{\rm{mock}}\)</span>.
-On the other hand, if the mutation makes the variant more likely to survive the selection, then we expected <span class="math">\(\rho_{r,x}^{\rm{selected}} &gt; \rho_{r,x}^{\rm{mock}}\)</span>.
-If the <strong>only</strong> variants that survive have the mutation, then we expect <span class="math">\(\rho_{r,x}^{\rm{selected}} = 1\)</span> and the total fraction of the library <span class="math">\(\gamma\)</span> that survives to just be equal to the unselected frequency of this mutation, <span class="math">\(\gamma = \rho_{r,x}^{\rm{mock}}\)</span>.
-More generally, the fraction of variants with mutation of <span class="math">\(r\)</span> to <span class="math">\(x\)</span> that survive the selection is</p>
-<div class="math" id="equation-fracsurvive">
-<span class="eqno">(2)<a class="headerlink" href="#equation-fracsurvive" title="Permalink to this equation">¶</a></span>\[F_{r,x} = \frac{\gamma \times \rho_{r,x}^{\rm{selected}}}{\rho_{r,x}^{\rm{mock}}}.\]</div>
-<p>It is this quantity <span class="math">\(F_{r,x}\)</span> that is reported by <a class="reference internal" href="dms2_fracsurvive.html#dms2-fracsurvive"><span class="std std-ref">dms2_fracsurvive</span></a> / <a class="reference internal" href="dms2_batch_fracsurvive.html#dms2-batch-fracsurvive"><span class="std std-ref">dms2_batch_fracsurvive</span></a> as the fraction of variants with the mutation surviving the selection (denoted as <cite>mutfracsurvive</cite>).
+If you are using <code class="docutils literal notranslate"><span class="pre">--chartype</span></code> of <code class="docutils literal notranslate"><span class="pre">codon_to_aa</span></code>, the counts for amino acids are aggregated <strong>before</strong> doing the calculations above.</p>
+<p>If the mutation has no effect on whether or not a variant survives the selection, then we expect <span class="math notranslate nohighlight">\(\rho_{r,x}^{\rm{selected}} = \rho_{r,x}^{\rm{mock}}\)</span>.
+On the other hand, if the mutation makes the variant more likely to survive the selection, then we expected <span class="math notranslate nohighlight">\(\rho_{r,x}^{\rm{selected}} &gt; \rho_{r,x}^{\rm{mock}}\)</span>.
+If the <strong>only</strong> variants that survive have the mutation, then we expect <span class="math notranslate nohighlight">\(\rho_{r,x}^{\rm{selected}} = 1\)</span> and the total fraction of the library <span class="math notranslate nohighlight">\(\gamma\)</span> that survives to just be equal to the unselected frequency of this mutation, <span class="math notranslate nohighlight">\(\gamma = \rho_{r,x}^{\rm{mock}}\)</span>.
+More generally, the fraction of variants with mutation of <span class="math notranslate nohighlight">\(r\)</span> to <span class="math notranslate nohighlight">\(x\)</span> that survive the selection is</p>
+<div class="math notranslate nohighlight" id="equation-fracsurvive">
+<span class="eqno">(30)<a class="headerlink" href="#equation-fracsurvive" title="Permalink to this equation">¶</a></span>\[F_{r,x} = \frac{\gamma \times \rho_{r,x}^{\rm{selected}}}{\rho_{r,x}^{\rm{mock}}}.\]</div>
+<p>It is this quantity <span class="math notranslate nohighlight">\(F_{r,x}\)</span> that is reported by <a class="reference internal" href="dms2_fracsurvive.html#dms2-fracsurvive"><span class="std std-ref">dms2_fracsurvive</span></a> / <a class="reference internal" href="dms2_batch_fracsurvive.html#dms2-batch-fracsurvive"><span class="std std-ref">dms2_batch_fracsurvive</span></a> as the fraction of variants with the mutation surviving the selection (denoted as <cite>mutfracsurvive</cite>).
 Note that this quantity is calculated for the wildtype character at each site as well as all mutant characters.</p>
 <p>In addition, these programs report two site-wise measures.
 These measures are calculated over all <strong>non</strong>-wildtype characters at each site:</p>
 <blockquote>
 <div><ul class="simple">
-<li>The <cite>avgfracsurvive</cite> which is simply the average over all non-wildtype characters of the <cite>mutfracsurvive</cite> values at a site. If some <cite>mutfracsurvive</cite> values are <cite>NaN</cite> (which can happen if you use the <code class="docutils literal"><span class="pre">--mincounts</span></code> option), they are <strong>not</strong> included in the average.</li>
+<li>The <cite>avgfracsurvive</cite> which is simply the average over all non-wildtype characters of the <cite>mutfracsurvive</cite> values at a site. If some <cite>mutfracsurvive</cite> values are <cite>NaN</cite> (which can happen if you use the <code class="docutils literal notranslate"><span class="pre">--mincounts</span></code> option), they are <strong>not</strong> included in the average.</li>
 <li>The <cite>maxfracsurvive</cite> which is simply the <strong>maximum</strong> <cite>mutfracsurvive</cite> over all non-wildtype characters at a site.</li>
 </ul>
 </div></blockquote>
 <div class="section" id="fraction-surviving-above-average">
 <h3><a class="toc-backref" href="#id4">Fraction surviving above average</a><a class="headerlink" href="#fraction-surviving-above-average" title="Permalink to this headline">¶</a></h3>
-<p>In the section above, <span class="math">\(F_{r,x}\)</span> is defined in Equation <a class="reference internal" href="#equation-fracsurvive">(2)</a> as the fraction of variants that survive given that they have the mutation of site <span class="math">\(r\)</span> to <span class="math">\(x\)</span>.
-Note also that <span class="math">\(\gamma\)</span> is the total fraction of the library that survives selection, or equivalently the average fraction that survives weighted over the variant frequencies.</p>
+<p>In the section above, <span class="math notranslate nohighlight">\(F_{r,x}\)</span> is defined in Equation <a class="reference internal" href="#equation-fracsurvive">(30)</a> as the fraction of variants that survive given that they have the mutation of site <span class="math notranslate nohighlight">\(r\)</span> to <span class="math notranslate nohighlight">\(x\)</span>.
+Note also that <span class="math notranslate nohighlight">\(\gamma\)</span> is the total fraction of the library that survives selection, or equivalently the average fraction that survives weighted over the variant frequencies.</p>
 <p>In some cases, it is more useful to show that average fraction of variants that survive <strong>above this library average.</strong>
 To do this, we calculate the average fraction that survives above average as</p>
-<div class="math" id="equation-fracsurviveaboveavg">
-<span class="eqno">(3)<a class="headerlink" href="#equation-fracsurviveaboveavg" title="Permalink to this equation">¶</a></span>\[F_{r,x}^{\rm{aboveavg}} = \max\left(0, F_{r,x} - \gamma\right).\]</div>
-<p>If you call <a class="reference internal" href="dms2_fracsurvive.html#dms2-fracsurvive"><span class="std std-ref">dms2_fracsurvive</span></a> or <a class="reference internal" href="dms2_batch_fracsurvive.html#dms2-batch-fracsurvive"><span class="std std-ref">dms2_batch_fracsurvive</span></a> with the <code class="docutils literal"><span class="pre">--aboveavg</span> <span class="pre">yes</span></code> option then all results use these <span class="math">\(F_{r,x}^{\rm{aboveavg}}\)</span> in place of <span class="math">\(F_{r,x}\)</span> values.</p>
+<div class="math notranslate nohighlight" id="equation-fracsurviveaboveavg">
+<span class="eqno">(31)<a class="headerlink" href="#equation-fracsurviveaboveavg" title="Permalink to this equation">¶</a></span>\[F_{r,x}^{\rm{aboveavg}} = \max\left(0, F_{r,x} - \gamma\right).\]</div>
+<p>If you call <a class="reference internal" href="dms2_fracsurvive.html#dms2-fracsurvive"><span class="std std-ref">dms2_fracsurvive</span></a> or <a class="reference internal" href="dms2_batch_fracsurvive.html#dms2-batch-fracsurvive"><span class="std std-ref">dms2_batch_fracsurvive</span></a> with the <code class="docutils literal notranslate"><span class="pre">--aboveavg</span> <span class="pre">yes</span></code> option then all results use these <span class="math notranslate nohighlight">\(F_{r,x}^{\rm{aboveavg}}\)</span> in place of <span class="math notranslate nohighlight">\(F_{r,x}\)</span> values.</p>
 <p>The distinction is as follows.
-If you want your results to reflect the average fraction of variants with each mutation that survive, then use the default <code class="docutils literal"><span class="pre">--aboveavg</span> <span class="pre">no</span></code> option.
+If you want your results to reflect the average fraction of variants with each mutation that survive, then use the default <code class="docutils literal notranslate"><span class="pre">--aboveavg</span> <span class="pre">no</span></code> option.
 In this case, you expect the fraction surviving to be &gt; 0 for most variants, since a bit of your library probably gets through the selection even without an advantageous mutation.
-On the other hand, if you just want to look for mutations that are enhancing how variants perform above the average, then use the <code class="docutils literal"><span class="pre">--aboveavg</span> <span class="pre">yes</span></code> option.
+On the other hand, if you just want to look for mutations that are enhancing how variants perform above the average, then use the <code class="docutils literal notranslate"><span class="pre">--aboveavg</span> <span class="pre">yes</span></code> option.
 Then you only see fraction surviving &gt; 0 for variants that are favored during the selection – but the quantitative values of this fraction surviving are no longer directly interpretable as the true fraction surviving, since they are in reference to the library average baseline.</p>
 </div>
 <div class="section" id="error-correction">
 <h3><a class="toc-backref" href="#id5">Error correction</a><a class="headerlink" href="#error-correction" title="Permalink to this headline">¶</a></h3>
-<p>You can optionally correct for the potential inflation of some counts by sequencing errors by using the <code class="docutils literal"><span class="pre">--err</span></code> option to <a class="reference internal" href="dms2_fracsurvive.html#dms2-fracsurvive"><span class="std std-ref">dms2_fracsurvive</span></a> / <a class="reference internal" href="dms2_batch_fracsurvive.html#dms2-batch-fracsurvive"><span class="std std-ref">dms2_batch_fracsurvive</span></a>.
+<p>You can optionally correct for the potential inflation of some counts by sequencing errors by using the <code class="docutils literal notranslate"><span class="pre">--err</span></code> option to <a class="reference internal" href="dms2_fracsurvive.html#dms2-fracsurvive"><span class="std std-ref">dms2_fracsurvive</span></a> / <a class="reference internal" href="dms2_batch_fracsurvive.html#dms2-batch-fracsurvive"><span class="std std-ref">dms2_batch_fracsurvive</span></a>.
 To do this, you should use some control where the <strong>only</strong> mutations will come from sequencing / library-prep-induced errors that are presumed to occur at the same rate as the actual samples being analyzed.
 Typically, this would be deep sequencing of a wildtype control.</p>
 <p>With an error control, the counts are adjusted as follows.
-Let <span class="math">\(n_{r,x}\)</span> be the counts for character <span class="math">\(x\)</span> at site <span class="math">\(r\)</span> in the <em>mock</em> or <em>selected</em> sample.
-Let <span class="math">\(n^{\rm{err}}_{r,x}\)</span> be the number of counts of <span class="math">\(x\)</span> at site <span class="math">\(r\)</span> in the error control.
+Let <span class="math notranslate nohighlight">\(n_{r,x}\)</span> be the counts for character <span class="math notranslate nohighlight">\(x\)</span> at site <span class="math notranslate nohighlight">\(r\)</span> in the <em>mock</em> or <em>selected</em> sample.
+Let <span class="math notranslate nohighlight">\(n^{\rm{err}}_{r,x}\)</span> be the number of counts of <span class="math notranslate nohighlight">\(x\)</span> at site <span class="math notranslate nohighlight">\(r\)</span> in the error control.
 Define</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\epsilon_{r,x} = \left(n^{\rm{err}}_{r,x}\right) / \left(\sum_y n^{\rm{err}}_{r,y}\right).\]</div>
-<p>When <span class="math">\(x \ne \operatorname{wt}\left(r\right)\)</span> then <span class="math">\(\epsilon_{r,x}\)</span> is the rate of errors to <span class="math">\(x\)</span> at site <span class="math">\(r\)</span>, and when <span class="math">\(x = \operatorname{wt}\left(r\right)\)</span> then <span class="math">\(\epsilon_{r,x}\)</span> is one minus the rate of errors away from the wildtype at site <span class="math">\(r\)</span>.</p>
-<p>We then adjust observed counts <span class="math">\(n_{r,x}\)</span> to the error-corrected counts <span class="math">\(\hat{n}_{r,x}\)</span> by</p>
-<div class="math">
+<p>When <span class="math notranslate nohighlight">\(x \ne \operatorname{wt}\left(r\right)\)</span> then <span class="math notranslate nohighlight">\(\epsilon_{r,x}\)</span> is the rate of errors to <span class="math notranslate nohighlight">\(x\)</span> at site <span class="math notranslate nohighlight">\(r\)</span>, and when <span class="math notranslate nohighlight">\(x = \operatorname{wt}\left(r\right)\)</span> then <span class="math notranslate nohighlight">\(\epsilon_{r,x}\)</span> is one minus the rate of errors away from the wildtype at site <span class="math notranslate nohighlight">\(r\)</span>.</p>
+<p>We then adjust observed counts <span class="math notranslate nohighlight">\(n_{r,x}\)</span> to the error-corrected counts <span class="math notranslate nohighlight">\(\hat{n}_{r,x}\)</span> by</p>
+<div class="math notranslate nohighlight">
 \[\begin{split}\hat{n}_{r,x} = \begin{cases}
 \max\left[\left(\sum_y n_{r,y}\right) \left(\frac{n_{r,x}}{\sum_y n_{r,y}} - \epsilon_{r,x}\right), 0\right] &amp; \mbox{if } x \ne \operatorname{wt}\left(r\right) \\
 n_{r,x} / \epsilon_{r,x} &amp; \mbox{if } x = \operatorname{wt}\left(r\right) \\
 \end{cases}\end{split}\]</div>
-<p>These adjusted counts are then used in place of the un-adjusted counts in Equation <a class="reference internal" href="#equation-fracsurvive_rho">(1)</a> above.</p>
+<p>These adjusted counts are then used in place of the un-adjusted counts in Equation <a class="reference internal" href="#equation-fracsurvive-rho">(29)</a> above.</p>
 </div>
 </div>
 <div class="section" id="programs-and-examples">
@@ -176,6 +169,7 @@ n_{r,x} / \epsilon_{r,x} &amp; \mbox{if } x = \operatorname{wt}\left(r\right) \\
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -246,12 +240,14 @@ n_{r,x} / \epsilon_{r,x} &amp; \mbox{if } x = \operatorname{wt}\left(r\right) \\
 </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -262,8 +258,8 @@ n_{r,x} / \epsilon_{r,x} &amp; \mbox{if } x = \operatorname{wt}\left(r\right) \\
       &copy;2017, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |
       <a href="_sources/fracsurvive.rst.txt"
