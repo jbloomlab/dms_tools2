@@ -637,7 +637,7 @@ class MutationConsensus:
          is `math.nan`.
 
       2. If there are less then `n_mut` :class:`Mutations` passed,
-         and it has no mutations, call as wildtype.
+         and they have no mutations, call as wildtype.
 
       3. If there are less than `n_mut` :class:`Mutations`
          passed and some have mutations, call as ambiguous.
@@ -788,7 +788,7 @@ class MutationConsensus:
     'A1G_mixed'
     """
 
-    def __init__(self, *, n_mut=2, min_acc=0.95, min_mut_frac=0.8,
+    def __init__(self, *, n_mut=2, min_acc=0.99, min_mut_frac=0.8,
             max_mut_frac_for_wt=0.2, group_indel_frac=0.8):
         """See main class doc string."""
         self.n_mut = n_mut
