@@ -676,6 +676,18 @@ class MutationConsensus:
             group them together as the most common indel.
             Designed to handle this case where alignment issues
             slightly change called boundaries of long indels.
+        `homopolymer_calling` (dict)
+            More stringent calling of **single-nucleotide**
+            indels in hompolymers, which are defined as runs of
+            >= 3 consecutive nucleotides. Rationale
+            is that main mode of PacBio sequencing errors is
+            short indels in homopolymers. Can contain entries
+            keyed by "n_mut", "min_mut_frac", and "max_mut_frac_for_wt".
+            Then for single-nucleotide indels in >= 3 nt homopolymers,
+            increases calling stringency to these new parameters.
+            If no entry in dict, just uses main values set for
+            other mutations, so supply empty dict if you want to
+            no homopolymer correction.
 
     Mutations are called from the list of :class:`Mutations`
     passed to :class:`MutationConsensus.callConsensus` as follows:
@@ -697,12 +709,12 @@ class MutationConsensus:
       5. If there are at least `n_mut` :class:`Mutations`
          that contain a specific mutation
          **and** the fraction of :class:`Mutations` that
-         have this mutation is > `min_mut_frac`, then call
+         have this mutation is >= `min_mut_frac`, then call
          the sequence as having the mutation.
 
       6. If the conditions in (5) above are met **except** that
          the fraction of :class:`Mutations` that have
-         this mutation is :math:`\le` `min_mut_frac` but is >
+         this mutation is < `min_mut_frac` but is >
          `max_mut_frac_for_wt`, then call as having the mutation
          in a mix.
 
@@ -816,7 +828,7 @@ class MutationConsensus:
     >>> m_overlaplongdel = Mutations(
     ...         substitution_tuples=[],
     ...         insertion_tuples=[],
-    ...         deletion_tuples=[(9, 17, math.nan)])
+    ...         deletion_tuples=[(9, 17, math.nan, 1)])
     >>> mutcons.callConsensus([m_longdel, m_shortdel], 'deletions')
     ''
     >>> mutcons.callConsensus([m_wt, m_longdel] + [m_overlaplongdel] * 4,
@@ -834,17 +846,59 @@ class MutationConsensus:
     ''
     >>> mutcons_no_min_acc.callConsensus([m_wt, m_A1G_low_acc] * 6, 'substitutions')
     'A1G_mixed'
+
+    Demonstrate `homopolymer_calling`:
+
+    >>> m_homopolymer_indel = Mutations(
+    ...         substitution_tuples=[],
+    ...         insertion_tuples=[(13, 1, math.nan, 3)],
+    ...         deletion_tuples=[(9, 10, math.nan, 3),
+    ...                          (5, 5, math.nan, 3)])
+    >>> mutcons.callConsensus([m_homopolymer_indel] * 2, 'insertions')
+    ''
+    >>> mutcons.callConsensus([m_homopolymer_indel] * 2, 'deletions')
+    'del9to10'
+    >>> mutcons.callConsensus([m_homopolymer_indel] * 3, 'insertions')
+    'ins13len1'
+    >>> mutcons.callConsensus([m_homopolymer_indel] * 3, 'deletions')
+    'del5to5 del9to10'
+    >>> mutcons.callConsensus([m_homopolymer_indel] * 3 + [m_wt] * 4, 'deletions')
+    'del9to10_mixed'
+    >>> mutcons.callConsensus([m_homopolymer_indel] * 3 + [m_wt] * 2, 'deletions')
+    'del5to5_mixed del9to10_mixed'
     """
 
     def __init__(self, *, n_mut=2, min_acc=0.999, min_mut_frac=0.75,
-            max_mut_frac_for_wt=0.25, group_indel_frac=0.8):
+            max_mut_frac_for_wt=0.25, group_indel_frac=0.8,
+            homopolymer_calling={'n_mut':3, 'min_mut_frac':0.9,
+            'max_mut_frac_for_wt':0.5}
+            ):
         """See main class doc string."""
         self.n_mut = n_mut
         self.min_acc = min_acc
         self.min_mut_frac = min_mut_frac
         self.max_mut_frac_for_wt = max_mut_frac_for_wt
+
+        homopolymer_params = {'n_mut', 'max_mut_frac_for_wt',
+                'min_mut_frac'}
+        if not (set(homopolymer_calling.keys()) <= homopolymer_params):
+            raise ValueError("invalid entries in `homopolymer_calling`")
+        for p in homopolymer_params:
+            val_all = getattr(self, p)
+            p_homopolymer = 'homopolymer_' + p
+            if p in homopolymer_calling:
+                val_homopolymer = homopolymer_calling[p]
+                if val_homopolymer < val_all:
+                    raise ValueError("`homopolymer_calling` sets less "
+                            "stringent value for {0}, which makes no "
+                            "sense.".format(p))
+                setattr(self, p_homopolymer, val_homopolymer)
+            else:
+                setattr(self, p_homopolymer, val_all)
+
         if min_mut_frac <= max_mut_frac_for_wt:
             raise ValueError('min_mut_frac < max_mut_frac_for_wt')
+
         self.group_indel_frac = group_indel_frac
 
 
@@ -896,12 +950,26 @@ class MutationConsensus:
         if nseqs < self.n_mut:
             return 'unknown' # not enough sequences to call mutations
 
+        # is mutation a short indel in homopolymer?
+        homopolymer_indel = collections.defaultdict(bool)
+
         if mutation_type in {'insertions', 'deletions'}:
 
             lengths = [func(m, returnval='length', min_acc=self.min_acc,
                     min_acc_filter_nan=False) for m in mutationlist]
             flatlengths = numpy.array([l for ll in lengths for l in ll])
             assert len(flatlengths) == len(flatmuts)
+            homopolymerlengths = [func(m, returnval='homopolymer_length',
+                    min_acc=self.min_acc,
+                    min_acc_filter_nan=False) for m in mutationlist]
+            flathomopolymerlengths = numpy.array([l for ll in
+                    homopolymerlengths for l in ll])
+            assert len(flathomopolymerlengths) == len(flatmuts)
+
+            # get indels in hompolymers of length >= 3
+            for m in set(flatmuts[(flatlengths == 1) &
+                    (flathomopolymerlengths >= 3)]):
+                homopolymer_indel[m] = True
 
             # group sufficiently overlapping indels
             indelcounts = collections.Counter(flatmuts)
@@ -932,7 +1000,8 @@ class MutationConsensus:
 
         # get counts of all mutations with adequate counts
         mutcounts = {m:n for m, n in collections.Counter(flatmuts)
-                .items() if n >= self.n_mut}
+                .items() if (not homopolymer_indel[m] and n >= self.n_mut)
+                or n >= self.homopolymer_n_mut}
 
         if not mutcounts:
             return '' # no mutations with enough counts, call wildtype
@@ -941,9 +1010,12 @@ class MutationConsensus:
         for m, n in sorted(mutcounts.items(),
                 key=lambda tup: (tup[1], tup[0])):
             f = n / nseqs
-            if f > self.min_mut_frac:
+            if ((not homopolymer_indel[m] and f >= self.min_mut_frac)
+                    or f >= self.homopolymer_min_mut_frac):
                 mutlist.append(m)
-            elif f > self.max_mut_frac_for_wt:
+            elif ((not homopolymer_indel[m] and
+                    f > self.max_mut_frac_for_wt) or
+                    f > self.homopolymer_max_mut_frac_for_wt):
                 mutlist.append(m + '_mixed')
             else:
                 pass # consider wildtype
