@@ -163,22 +163,29 @@ class Mutations:
             number, `mut` is the mutant nucleotide, and `q`
             is the Q-value.
         `insertion_tuples` (list)
-            Lists insertions `(i, ins_len, q)` where `i` is
+            Lists insertions `(i, ins_len, q, hplen)` where `i` is
             site immediately **after** insertion, `inslen` is
-            insertion length, and `qs` is numpy array of Q-values.
+            insertion length, `qs` is numpy array of Q-values,
+            and `hplen` is length of homopolymer in which
+            insertion occurs.
         `deletion_tuples` (list)
-            Lists deletions `(istart, iend, q)` where
+            Lists deletions `(istart, iend, q, hplen)` where
             `istart` is first site of deletion, `iend` is
             last site of deletion (so a single nucleotide
             deletion has `istart == iend`), and `q` is the
             Q-value of the site immediately **after** the
             deletion, which is in accordance with
             `PacBio CCS <https://github.com/PacificBiosciences/unanimity/blob/develop/doc/PBCCS.md#interpretting-qual-values>`_
-            specification.
+            specification, and `hplen` is length of homopolymer
+            in which deletion occurs.
 
     After intialization, use the methods described below to get
     information about the mutations. All of the methods that
     return lists of mutations do them ordered by site (first to last).
+
+    We keep track of the length of the homopolymers in which
+    indels are found because the main error mode of PacBio
+    sequencing is indels in homopolymers.
 
     Here is an example. Note that Q-value of 20 indicates an accuracy
     of 0.99, and a Q-value of 30 indicates an accuracy of 0.999:
@@ -186,8 +193,8 @@ class Mutations:
     >>> muts = Mutations(
     ...         substitution_tuples=[(1, 'A', 'T', math.nan),
     ...             (15, 'C', 'A', 30), (13, 'G', 'A', 20)],
-    ...         insertion_tuples=[(5, 2, [20, 30])],
-    ...         deletion_tuples=[(8, 10, 20)])
+    ...         insertion_tuples=[(5, 2, [20, 30], 1)],
+    ...         deletion_tuples=[(8, 10, 20, 2)])
     >>> muts.substitutions()
     ['A1T', 'G13A', 'C15A']
     >>> muts.insertions()
@@ -288,6 +295,9 @@ class Mutations:
                   mutation. Accuracy of insertion is averaged
                   over its length.
 
+                - "homopolymer_length": Integers giving length
+                  of homopolymer in which insertion is found.
+
         Returns:
             List of mutations or other value specified by `returnval`.
         """
@@ -306,6 +316,8 @@ class Mutations:
         elif returnval == 'accuracy':
             return [dms_tools2.pacbio.qvalsToAccuracy(tup[2])
                     for tup in instups]
+        elif returnval == 'homopolymer_length':
+            return [tup[3] for tup in instups]
         else:
             raise ValueError("invalid `returnval` {0}".format(returnval))
 
@@ -333,6 +345,9 @@ class Mutations:
                   mutation. Accuracy is for first nucleotide **after**
                   deletion.
 
+                - "homopolymer_length": Integers giving length
+                  of homopolymer in which deletion is found.
+
         Returns:
             List of mutations or other value specified by `returnval`.
         """
@@ -351,6 +366,8 @@ class Mutations:
         elif returnval == 'accuracy':
             return [dms_tools2.pacbio.qvalsToAccuracy(tup[2])
                     for tup in deltups]
+        elif returnval == 'homopolymer_length':
+            return [tup[3] for tup in deltups]
         else:
             raise ValueError("invalid `returnval` {0}".format(returnval))
 
@@ -359,6 +376,8 @@ class MutationCaller:
     """Call :class:`Mutations` from :class:`Alignment`.
 
     Attributes:
+        `mapper` (:class:`Mapper`)
+            The :class:`Mapper` used to create the alignments.
         `targetindex` (int)
             Number assigned to first nucleotide of target in
             mutation names. A value of 1 means that the first
@@ -378,9 +397,14 @@ class MutationCaller:
     Here is an example. First, create an :class:`Alignment`
     that corresponds to the following::
 
-        target: --ATGCATGAAT--CGAAA
+        target: --ATGCATGAAT--CGAAT
         query:  cgATGaAcG--TatCt---
 
+    >>> TempFile = functools.partial(tempfile.NamedTemporaryFile, mode='w')
+    >>> with TempFile() as targetfile:
+    ...         _ = targetfile.write('>target\\nATGCATGGATCGAAT')
+    ...         targetfile.flush()
+    ...         mapper = Mapper(targetfile.name, OPTIONS_CODON_DMS)
     >>> a = Alignment(q_st=2, q_en=14, q_len=14, strand=1,
     ...         r_st=0, r_en=12, r_len=15, score=16, target='target',
     ...         cigar_str='=ATG*ca=A*tc=G-aa=T+at=C*gt', additional=[])
@@ -395,7 +419,7 @@ class MutationCaller:
     Now call mutations using default (target indexing starts at 1,
     no ignoring of termini):
 
-    >>> mutcaller = MutationCaller()
+    >>> mutcaller = MutationCaller(mapper)
     >>> muts = mutcaller.call(a, qvals)
     >>> muts.substitutions()
     ['C4A', 'T6C', 'G12T']
@@ -403,6 +427,13 @@ class MutationCaller:
     ['del8to9', 'del13to15']
     >>> muts.insertions()
     ['ins1len2', 'ins11len2']
+
+    Check that homo-polymer lengths are correct:
+
+    >>> muts.deletions(returnval='homopolymer_length')
+    [2, 2]
+    >>> muts.insertions(returnval='homopolymer_length')
+    [1, 1]
 
     Check that Q-values are also correct:
 
@@ -418,7 +449,7 @@ class MutationCaller:
 
     Illustrate `targetindex` by re-calling with 0-based idexing:
 
-    >>> mutcaller_index0 = MutationCaller(targetindex=0)
+    >>> mutcaller_index0 = MutationCaller(mapper, targetindex=0)
     >>> muts_index0 = mutcaller_index0.call(a, qvals)
     >>> muts_index0.substitutions()
     ['C3A', 'T5C', 'G11T']
@@ -429,7 +460,7 @@ class MutationCaller:
 
     Use `target_clip` to ignore mutations near target termini:
 
-    >>> mutcaller_targetclip2 = MutationCaller(target_clip=2)
+    >>> mutcaller_targetclip2 = MutationCaller(mapper, target_clip=2)
     >>> muts_targetclip2 = mutcaller_targetclip2.call(a, qvals)
     >>> muts_targetclip2.substitutions()
     ['C4A', 'T6C', 'G12T']
@@ -437,7 +468,7 @@ class MutationCaller:
     ['del8to9', 'del13to15']
     >>> muts_targetclip2.insertions()
     ['ins11len2']
-    >>> mutcaller_targetclip4 = MutationCaller(target_clip=4)
+    >>> mutcaller_targetclip4 = MutationCaller(mapper, target_clip=4)
     >>> muts_targetclip4 = mutcaller_targetclip4.call(a, qvals)
     >>> muts_targetclip4.substitutions()
     ['T6C']
@@ -448,7 +479,7 @@ class MutationCaller:
 
     Use `query_softclip` to ignore clipped regions in query:
 
-    >>> mutcaller_querysoftclip = MutationCaller(query_softclip=3)
+    >>> mutcaller_querysoftclip = MutationCaller(mapper, query_softclip=3)
     >>> muts_querysoftclip = mutcaller_querysoftclip.call(a, qvals)
     >>> muts_querysoftclip.substitutions()
     ['C4A', 'T6C', 'G12T']
@@ -458,9 +489,10 @@ class MutationCaller:
     ['ins11len2']
     """
 
-    def __init__(self, *, targetindex=1, target_clip=0,
+    def __init__(self, mapper, *, targetindex=1, target_clip=0,
             query_softclip=0):
         """See main class docstring."""
+        self.mapper = mapper
         self.targetindex = targetindex
 
         if (not isinstance(target_clip, int)) or (
@@ -583,6 +615,22 @@ class MutationCaller:
                     if not (tup[0] < i_first or tup[0] >= i_last)]
             deletion_tuples = [tup for tup in deletion_tuples
                     if not (tup[1] < i_first or tup[0] >= i_last)]
+
+        # add homopolymer lengths for indels
+        def _hpLen(j, targetseq):
+            """Homopolymer length."""
+            j -= self.targetindex
+            nt = targetseq[j]
+            mstart = re.compile('^{0}+'.format(nt))
+            mend = re.compile('{0}+$'.format(nt))
+            return (len(mstart.search(targetseq[j : ]).group(0)) +
+                    len(mend.search(targetseq[ : j + 1]).group(0)) - 1)
+
+        targetseq = self.mapper.targetseqs[a.target]
+        insertion_tuples = [(i, ins_len, q, _hpLen(i, targetseq))
+                for i, ins_len, q in insertion_tuples]
+        deletion_tuples = [(istart, iend, q, _hpLen(istart, targetseq))
+                for istart, iend, q in deletion_tuples]
 
         return Mutations(substitution_tuples=substitution_tuples,
                          insertion_tuples=insertion_tuples,
@@ -756,11 +804,11 @@ class MutationConsensus:
     >>> m_shortdel = Mutations(
     ...         substitution_tuples=[],
     ...         insertion_tuples=[],
-    ...         deletion_tuples=[(8, 9, math.nan)])
+    ...         deletion_tuples=[(8, 9, math.nan, 1)])
     >>> m_longdel = Mutations(
     ...         substitution_tuples=[],
     ...         insertion_tuples=[],
-    ...         deletion_tuples=[(8, 18, math.nan)])
+    ...         deletion_tuples=[(8, 18, math.nan, 1)])
     >>> mutcons.callConsensus([m_shortdel] * 2, 'deletions')
     'del8to9'
     >>> mutcons.callConsensus([m_longdel] * 2, 'deletions')
@@ -788,8 +836,8 @@ class MutationConsensus:
     'A1G_mixed'
     """
 
-    def __init__(self, *, n_mut=2, min_acc=0.99, min_mut_frac=0.8,
-            max_mut_frac_for_wt=0.2, group_indel_frac=0.8):
+    def __init__(self, *, n_mut=2, min_acc=0.999, min_mut_frac=0.75,
+            max_mut_frac_for_wt=0.25, group_indel_frac=0.8):
         """See main class doc string."""
         self.n_mut = n_mut
         self.min_acc = min_acc
