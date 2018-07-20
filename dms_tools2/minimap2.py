@@ -811,6 +811,12 @@ class MutationConsensus:
     ...         'substitutions')
     'A1G'
 
+    Use the `include_stats` option to get more detailed output:
+
+    >>> mutcons.callConsensus([m_A1G_T2A_high_acc, m_A1G_T2A_high_acc,
+    ...         m_A1G_high_acc, m_wt], 'substitutions', include_stats=True)
+    'A1G (3/4) T2A_mixed (2/4)'
+
     Group sufficiently overlapping indels:
 
     >>> m_shortdel = Mutations(
@@ -902,7 +908,8 @@ class MutationConsensus:
         self.group_indel_frac = group_indel_frac
 
 
-    def callConsensus(self, mutationlist, mutation_type):
+    def callConsensus(self, mutationlist, mutation_type, *,
+            include_stats=False):
         """Calls consensus from :class:`Mutations`.
 
         The calling is done using the criteria described in the
@@ -915,6 +922,9 @@ class MutationConsensus:
             `mutation_type` (str)
                 Type of mutation to call. Should be one of
                 'substitutions', 'insertions', or 'deletions'.
+            `include_stats` (bool)
+                Include statistics on number of CCSs that have
+                mutation for each called mutation.
 
         Returns:
             A str giving the result. If consensus of mutations
@@ -923,7 +933,9 @@ class MutationConsensus:
             or a string giving the mutations separated by spaces
             the same way they are returned by the methods of
             :class:`Mutations`. If a mutation is considered
-            mixed, the string is suffixed with "_mixed".
+            mixed, the string is suffixed with "_mixed". In each
+            string, mutations are sorted first by number of
+            times observed, and then alphabetically.
         """
         nseqs = len(mutationlist)
         if nseqs < 1:
@@ -1007,18 +1019,22 @@ class MutationConsensus:
             return '' # no mutations with enough counts, call wildtype
 
         mutlist = []
-        for m, n in sorted(mutcounts.items(),
-                key=lambda tup: (tup[1], tup[0])):
+        for m, n in sorted(sorted(mutcounts.items()),
+                key=lambda tup: tup[1], reverse=True):
             f = n / nseqs
             if ((not homopolymer_indel[m] and f >= self.min_mut_frac)
                     or f >= self.homopolymer_min_mut_frac):
-                mutlist.append(m)
+                mstring = m
             elif ((not homopolymer_indel[m] and
                     f > self.max_mut_frac_for_wt) or
                     f > self.homopolymer_max_mut_frac_for_wt):
-                mutlist.append(m + '_mixed')
+                mstring = m + '_mixed'
             else:
-                pass # consider wildtype
+                mstring = None # consider wildtype
+            if mstring:
+                if include_stats:
+                    mstring = '{0} ({1}/{2})'.format(mstring, n, nseqs)
+                mutlist.append(mstring)
         return ' '.join(mutlist)
 
 
