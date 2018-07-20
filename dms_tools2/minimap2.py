@@ -815,7 +815,7 @@ class MutationConsensus:
 
     >>> mutcons.callConsensus([m_A1G_T2A_high_acc, m_A1G_T2A_high_acc,
     ...         m_A1G_high_acc, m_wt], 'substitutions', include_stats=True)
-    'A1G (3/4) T2A_mixed (2/4)'
+    'A1G_(3/4) T2A_mixed_(2/4)'
 
     Group sufficiently overlapping indels:
 
@@ -1033,7 +1033,7 @@ class MutationConsensus:
                 mstring = None # consider wildtype
             if mstring:
                 if include_stats:
-                    mstring = '{0} ({1}/{2})'.format(mstring, n, nseqs)
+                    mstring = '{0}_({1}/{2})'.format(mstring, n, nseqs)
                 mutlist.append(mstring)
         return ' '.join(mutlist)
 
