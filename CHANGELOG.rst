@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.2.dev8
+--------
+* Cleaned up organization of examples and added `Dingens2018` and `Lee2018`.
+
 2.2.7
 -------
 * Make `diffsel` and `fracsurvive` compatible with `this pandas 0.23 update <https://pandas.pydata.org/pandas-docs/stable/whatsnew.html#assign-accepts-dependent-arguments>`_
