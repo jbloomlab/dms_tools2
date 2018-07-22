@@ -287,8 +287,8 @@ def plotDepth(names, countsfiles, plotfile, maxcol=4, charlist=CODONS):
     nrow = math.ceil(len(names) / float(ncol))
 
     # make name a category to preserve order
-    counts['name'] = counts['name'].astype('category', 
-            categories=names)
+    counts['name'] = counts['name'].astype(
+            pandas.api.types.CategoricalDtype(categories=names))
 
     p = (ggplot(counts, aes(x='site', y='number of counts'))
             + geom_step(size=0.4)
@@ -327,8 +327,8 @@ def plotMutFreq(names, countsfiles, plotfile, maxcol=4):
     nrow = math.ceil(len(names) / float(ncol))
 
     # make name a category to preserve order
-    counts['name'] = counts['name'].astype('category', 
-            categories=names)
+    counts['name'] = counts['name'].astype(
+            pandas.api.types.CategoricalDtype(categories=names))
 
     p = (ggplot(counts, aes(x='site', y='mutation frequency'))
             + geom_step(size=0.4)
@@ -399,7 +399,8 @@ def plotCumulMutCounts(names, countsfiles, plotfile, chartype,
     df = pandas.concat([codonmelt, aamelt], ignore_index=True)
 
     # make name a category to preserve order
-    df['name'] = df['name'].astype('category', categories=names)
+    df['name'] = df['name'].astype(
+            pandas.api.types.CategoricalDtype(categories=names))
 
     ncol = min(maxcol, len(names))
     nrow = math.ceil(len(names) / float(ncol))
@@ -749,8 +750,8 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
     nrow = math.ceil(len(names) / float(ncol))
 
     # make name a category to preserve order
-    diffsel['name'] = diffsel['name'].astype('category', 
-            categories=names)
+    diffsel['name'] = diffsel['name'].astype(
+            pandas.api.types.CategoricalDtype(categories=names))
 
     (xbreaks, xlabels) = breaksAndLabels(diffsel['siteindex'].unique(), 
             diffsel['site'].unique(), n=6)
