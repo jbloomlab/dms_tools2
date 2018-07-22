@@ -7,6 +7,8 @@ Change Log
 
 * Do not set `pdf` backend for `matplotlib`, as this was causing problems.
 
+* Use loose versions in `sra`.
+
 2.2.7
 -------
 * Make `diffsel` and `fracsurvive` compatible with `this pandas 0.23 update <https://pandas.pydata.org/pandas-docs/stable/whatsnew.html#assign-accepts-dependent-arguments>`_
