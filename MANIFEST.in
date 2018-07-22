@@ -1,3 +1,2 @@
 include LICENSE.txt
 include CHANGELOG.rst
-recursive-include minimap2_source *

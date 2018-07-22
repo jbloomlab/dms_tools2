@@ -5,12 +5,6 @@ minimap2
 
 Runs `minimap2 <https://lh3.github.io/minimap2/>`_
 aligner.
-
-This module is tested to work with the version of
-``minimap2`` installed internally with `dms_tools2` (the
-default when you initialize a :class:`Mapper` object
-with `prog=None`). If you use that version of ``minimap2``,
-you do not need to install ``minimap2`` separately.
 """
 
 
@@ -25,6 +19,7 @@ import tempfile
 import collections
 import random
 
+import packaging.version
 import numpy
 import Bio.SeqIO
 
@@ -1054,10 +1049,9 @@ class Mapper:
                 - :data:`OPTIONS_VIRUS_W_DEL`
 
         `prog` (str or `None`)
-            Path to ``minimap2`` executable. `None` uses the
-            version of ``minimap2`` installed internally with
-            `dms_tools2`. This is recommended unless you have
-            some other preferred version.
+            Path to ``minimap2`` executable. Class is only
+            tested against version 2.11 but may work with
+            other versions too.
         `target_isoforms` (dict)
             Sometimes targets might be be isoforms of each
             other. You can specify that with this dict, which
@@ -1164,7 +1158,7 @@ class Mapper:
     True
     """
 
-    def __init__(self, targetfile, options, *, prog=None,
+    def __init__(self, targetfile, options, *, prog='minimap2',
             target_isoforms={}):
         """See main :class:`Mapper` doc string."""
         if prog is None:
@@ -1177,6 +1171,11 @@ class Mapper:
         except:
             raise ValueError("Can't execute `prog` {0}".format(prog))
         self.version = version.strip().decode('utf-8')
+        min_version = packaging.version.parse('2.11')
+        if packaging.version.parse(self.version) < min_version:
+            raise ValueError("You have `minimap2` version {0}, but "
+                    "need at least {1}".format(self.version, min_version))
+
         self.prog = prog
         self.options = options
         assert os.path.isfile(targetfile), \

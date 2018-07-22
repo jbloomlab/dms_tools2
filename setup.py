@@ -37,18 +37,6 @@ for dataname in ['version', 'author', 'author_email', 'url']:
 with open('README.rst') as f:
     readme = f.read()
 
-# compile `minimap2` and put in `dms_tools2` subdirectory
-minimap2_src = 'minimap2_source'
-minimap2_prog = 'minimap2_prog'
-basedir = os.getcwd()
-os.chdir(minimap2_src)
-_ = subprocess.check_call(['make', 'clean'])
-_ = subprocess.check_call(['make'])
-os.rename('minimap2', os.path.join(basedir, 'dms_tools2', minimap2_prog))
-_ = subprocess.check_call(['make', 'clean'])
-os.chdir(basedir)
-
-
 # main setup command
 setup(
     name = 'dms_tools2', 
@@ -78,6 +66,7 @@ setup(
         'phydms>=2.1.4',
         'statsmodels>=0.8',
         'regex>=2.4',
+        'packaging',
         ],
     extras_require = {
         'rplot':[
@@ -88,7 +77,7 @@ setup(
     platforms = 'Linux and Mac OS X.',
     packages = ['dms_tools2'],
     package_dir = {'dms_tools2':'dms_tools2'},
-    package_data = {'dms_tools2':['rplot_Rcode.R', minimap2_prog]},
+    package_data = {'dms_tools2':['rplot_Rcode.R']},
     scripts = [
             'scripts/dms2_bcsubamp',
             'scripts/dms2_batch_bcsubamp',
