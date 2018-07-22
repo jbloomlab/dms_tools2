@@ -637,11 +637,8 @@ class MutationConsensus:
 
     Designed for when you have called :class:`Mutations`
     for several sequences thought to represent the same template.
-    Determines whether we think mutations are real, aren't really
-    present, or if sequences appear to arise from a mix of wildtype
-    and mutant templates (e.g., not really just one template). The
-    method make some use of statistical information in the
-    accuracies computed from quality scores, but is largely heuristic.
+    The method make some use of statistical information in the
+    accuracies computed from quality scores, but is heuristic.
     This is because it is designed for cases where causes other than
     simple sequencing error (e.g., mis-assigned sequences, true mix
     of templates, errors during library preparation) may be present.
@@ -661,10 +658,7 @@ class MutationConsensus:
             mutations with an accuracy of NaN (`math.nan`).
         `min_mut_frac` (float)
             More than this fraction of sequences must have
-            mutation to call it as present in consensus.
-        `max_mut_frac_for_wt` (float)
-            No more than this fraction of sequences can have
-            mutation to call it as absent in consensus.
+            mutation to call it as present.
         `group_indel_frac` (float)
             If other overlap by >= this fraction of their
             total net length with the most common indel,
@@ -677,7 +671,7 @@ class MutationConsensus:
             >= 3 consecutive nucleotides. Rationale
             is that main mode of PacBio sequencing errors is
             short indels in homopolymers. Can contain entries
-            keyed by "n_mut", "min_mut_frac", and "max_mut_frac_for_wt".
+            keyed by "n_mut" and "min_mut_frac".
             Then for single-nucleotide indels in >= 3 nt homopolymers,
             increases calling stringency to these new parameters.
             If no entry in dict, just uses main values set for
@@ -707,13 +701,7 @@ class MutationConsensus:
          have this mutation is >= `min_mut_frac`, then call
          the sequence as having the mutation.
 
-      6. If the conditions in (5) above are met **except** that
-         the fraction of :class:`Mutations` that have
-         this mutation is < `min_mut_frac` but is >
-         `max_mut_frac_for_wt`, then call as having the mutation
-         in a mix.
-
-      7. Otherwise call as wildtype.
+      6. Otherwise call as wildtype.
 
     Here is an example.
 
@@ -771,21 +759,15 @@ class MutationConsensus:
     >>> mutcons.callConsensus([m_A1G_low_acc, m_A1G_low_acc], 'substitutions')
     ''
 
-    Having both mutation calls and wildtype calls give mixed:
+    Having two mutation calls and one wildtype call gives mutation:
 
     >>> mutcons.callConsensus([m_A1G_high_acc, m_A1G_high_acc, m_wt],
     ...         'substitutions')
-    'A1G_mixed'
-
-    Unless the mutation calls are in sufficient excess:
-
-    >>> mutcons.callConsensus([m_A1G_high_acc] * 5 + [m_wt],
-    ...         'substitutions')
     'A1G'
 
-    Or the wildtype is in sufficient excess:
+    Unless the wildtype is in sufficient excess:
 
-    >>> mutcons.callConsensus([m_A1G_high_acc] * 2 + [m_wt] * 9,
+    >>> mutcons.callConsensus([m_A1G_high_acc] * 2 + [m_wt] * 8,
     ...         'substitutions')
     ''
 
@@ -810,7 +792,7 @@ class MutationConsensus:
 
     >>> mutcons.callConsensus([m_A1G_T2A_high_acc, m_A1G_T2A_high_acc,
     ...         m_A1G_high_acc, m_wt], 'substitutions', include_stats=True)
-    'A1G_(3/4) T2A_mixed_(2/4)'
+    'A1G_(3/4) T2A_(2/4)'
 
     Group sufficiently overlapping indels:
 
@@ -835,10 +817,6 @@ class MutationConsensus:
     >>> mutcons.callConsensus([m_wt, m_longdel] + [m_overlaplongdel] * 4,
     ...         'deletions')
     'del9to17'
-    >>> mutcons_nogroupindel = MutationConsensus(group_indel_frac=1)
-    >>> mutcons_nogroupindel.callConsensus(
-    ...         [m_wt, m_longdel] + [m_overlaplongdel] * 4, 'deletions')
-    'del9to17_mixed'
 
     Demonstrate `min_acc` filter:
 
@@ -846,7 +824,7 @@ class MutationConsensus:
     >>> mutcons.callConsensus([m_wt, m_A1G_low_acc] * 6, 'substitutions')
     ''
     >>> mutcons_no_min_acc.callConsensus([m_wt, m_A1G_low_acc] * 6, 'substitutions')
-    'A1G_mixed'
+    'A1G'
 
     Demonstrate `homopolymer_calling`:
 
@@ -864,24 +842,21 @@ class MutationConsensus:
     >>> mutcons.callConsensus([m_homopolymer_indel] * 3, 'deletions')
     'del5to5 del9to10'
     >>> mutcons.callConsensus([m_homopolymer_indel] * 3 + [m_wt] * 4, 'deletions')
-    'del9to10_mixed'
+    'del9to10'
     >>> mutcons.callConsensus([m_homopolymer_indel] * 3 + [m_wt] * 2, 'deletions')
-    'del5to5_mixed del9to10_mixed'
+    'del5to5 del9to10'
     """
 
-    def __init__(self, *, n_mut=2, min_acc=0.999, min_mut_frac=0.75,
-            max_mut_frac_for_wt=0.25, group_indel_frac=0.8,
-            homopolymer_calling={'n_mut':3, 'min_mut_frac':0.9,
-            'max_mut_frac_for_wt':0.5}
+    def __init__(self, *, n_mut=2, min_acc=0.999, min_mut_frac=0.3,
+            group_indel_frac=0.8,
+            homopolymer_calling={'n_mut':3, 'min_mut_frac':0.5},
             ):
         """See main class doc string."""
         self.n_mut = n_mut
         self.min_acc = min_acc
         self.min_mut_frac = min_mut_frac
-        self.max_mut_frac_for_wt = max_mut_frac_for_wt
 
-        homopolymer_params = {'n_mut', 'max_mut_frac_for_wt',
-                'min_mut_frac'}
+        homopolymer_params = {'n_mut', 'min_mut_frac'}
         if not (set(homopolymer_calling.keys()) <= homopolymer_params):
             raise ValueError("invalid entries in `homopolymer_calling`")
         for p in homopolymer_params:
@@ -896,9 +871,6 @@ class MutationConsensus:
                 setattr(self, p_homopolymer, val_homopolymer)
             else:
                 setattr(self, p_homopolymer, val_all)
-
-        if min_mut_frac <= max_mut_frac_for_wt:
-            raise ValueError('min_mut_frac < max_mut_frac_for_wt')
 
         self.group_indel_frac = group_indel_frac
 
@@ -927,10 +899,8 @@ class MutationConsensus:
             Otherwise returns empty string if no consensus mutations,
             or a string giving the mutations separated by spaces
             the same way they are returned by the methods of
-            :class:`Mutations`. If a mutation is considered
-            mixed, the string is suffixed with "_mixed". In each
-            string, mutations are sorted first by number of
-            times observed, and then alphabetically.
+            :class:`Mutations`. Mutations are sorted first by
+            number of times observed, and then alphabetically.
         """
         nseqs = len(mutationlist)
         if nseqs < 1:
@@ -990,7 +960,7 @@ class MutationConsensus:
                         top_indel in top_indels]
                 top_indel = sorted(zip(top_lengths, top_indels))[-1][1]
             overlapping_indels = []
-            startmatch = re.compile('^(ins|del)(?P<start>\d+)(to|len)')
+            startmatch = re.compile('^(ins|del)(?P<start>\-{0,1}\d+)(to|len)')
             top_length = flatlengths[flatmuts == top_indel][0]
             top_start = int(startmatch.match(top_indel).group('start'))
             for m in set(flatmuts):
@@ -1020,10 +990,6 @@ class MutationConsensus:
             if ((not homopolymer_indel[m] and f >= self.min_mut_frac)
                     or f >= self.homopolymer_min_mut_frac):
                 mstring = m
-            elif ((not homopolymer_indel[m] and
-                    f > self.max_mut_frac_for_wt) or
-                    f > self.homopolymer_max_mut_frac_for_wt):
-                mstring = m + '_mixed'
             else:
                 mstring = None # consider wildtype
             if mstring:
