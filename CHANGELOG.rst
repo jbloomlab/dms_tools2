@@ -5,6 +5,8 @@ Change Log
 --------
 * Cleaned up organization of examples and added `Dingens2018` and `Lee2018`.
 
+* Do not set `pdf` backend for `matplotlib`, as this was causing problems.
+
 2.2.7
 -------
 * Make `diffsel` and `fracsurvive` compatible with `this pandas 0.23 update <https://pandas.pydata.org/pandas-docs/stable/whatsnew.html#assign-accepts-dependent-arguments>`_

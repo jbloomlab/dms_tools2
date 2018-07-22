@@ -22,7 +22,6 @@ import scipy.optimize
 from statsmodels.sandbox.stats.multicomp import multipletests
 
 import matplotlib
-matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 
 from plotnine import *
