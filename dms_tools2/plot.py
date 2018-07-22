@@ -21,8 +21,16 @@ import scipy.stats
 import scipy.optimize
 from statsmodels.sandbox.stats.multicomp import multipletests
 
+# complicated backend setting: we typically want PDF,
+# but this causes problem when loading from iPython / Jupyter
 import matplotlib
-import matplotlib.pyplot as plt
+backend = matplotlib.get_backend()
+try:
+    matplotlib.use('pdf', warn=False)
+    import matplotlib.pyplot as plt
+except:
+    matplotlib.use(backend, warn=False, force=True)
+    import matplotlib.pyplot as plt
 
 from plotnine import *
 # set ggplot theme

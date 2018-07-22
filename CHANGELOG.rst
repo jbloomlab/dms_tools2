@@ -5,7 +5,7 @@ Change Log
 --------
 * Cleaned up organization of examples and added `Dingens2018` and `Lee2018`.
 
-* Do not set `pdf` backend for `matplotlib`, as this was causing problems.
+* Fix setting of `matplotlib` backend, which was causing errors.
 
 * Use loose versions in `sra`.
 
