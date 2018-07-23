@@ -45,6 +45,18 @@ Haddox et al (2018)
  - **Citation**: `Haddox et al (2018)`_
  - **Jupyter notebook**: `Haddox2018 example`_.
 
+Dingens et al (2018)
++++++++++++++++++++++
+ - **Summary**: Mutational antigenic profiling of HIV Env against fusion-peptide antibodies usring :ref:`bcsubamp`, then estimation of the :ref:`diffsel`.
+ - **Citations**: `Dingens et al (2018)`_
+ - **Jupyter notebook**: `Dingens2018 example`_
+
+Lee et al (2018)
++++++++++++++++++
+ - **Summary**: Deep mutational scanning of H3 influenza hemagglutinin using :ref:`bcsubamp`, then estimation of the :ref:`prefs`.
+ - **Citations**: `Lee et al (2018)`_
+ - **Jupyter notebook**: `Lee2018 example`_
+
 Running the examples
 -------------------------------------------------
 `Navigate here <https://github.com/jbloomlab/dms_tools2/tree/master/examples>`_ to access the example analyses and require input data.

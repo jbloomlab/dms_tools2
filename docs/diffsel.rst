@@ -37,13 +37,6 @@ The `dms_tools2`_ software contains programs to estimate the differential select
 Typically you would want to estimate the differential selection using :ref:`dms2_batch_diffsel`, which in turn calls :ref:`dms2_diffsel`.
 These programs create visualizations of the results, and you can also visualize the differential selection with :ref:`dms2_logoplot` as in :numref:`diffselsnippetfig`.
 
-The :ref:`examples` include some analyses of this type; for instance see:
-
-  * `Doud2017 example`_
-
-  * `Dingens2017 example`_
-
-
 Definition of differential selection
 ---------------------------------------------
 The definition of *differential selection* used here was originally introduced in `Doud et al (2017)`_.
@@ -204,6 +197,8 @@ Here are some example analyses:
     * `Doud2017 example`_
 
     * `Dingens2017 example`_
+
+    * `Dingens2018 example`_
 
 
 .. include:: weblinks.txt
