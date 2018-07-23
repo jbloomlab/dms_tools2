@@ -34,8 +34,10 @@
 .. _`Doud2016 example`: https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2016/analysis_notebook.ipynb
 .. _`Doud2017 example`: https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2017/analysis_notebook.ipynb
 .. _`Dingens2017 example`: https://github.com/jbloomlab/dms_tools2/blob/master/examples/Dingens2017/analysis_notebook.ipynb
+.. _`Dingens2018 example`: https://github.com/jbloomlab/dms_tools2/blob/master/examples/Dingens2018/analysis_notebook.ipynb
 .. _`Doud2018 example`: https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2018/analysis_notebook.ipynb
 .. _`Haddox2018 example`: https://github.com/jbloomlab/dms_tools2/tree/master/examples/Haddox2018
+.. _`Lee2018 example`: https://github.com/jbloomlab/dms_tools2/tree/master/examples/Lee2018
 .. _`Jupyter notebook`: https://ipython.org/notebook.html
 .. _`fastq-dump`: https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?view=toolkit_doc&f=fastq-dump
 .. _`Sequence Read Archive`: https://www.ncbi.nlm.nih.gov/sra
@@ -46,6 +48,8 @@
 .. _`Jabara et al (2011)`: http://www.pnas.org/content/108/50/20166.short
 .. _`Wu et al (2014)`: https://www.ncbi.nlm.nih.gov/pubmed/24820965
 .. _`Zhang et al (2016)`: https://www.ncbi.nlm.nih.gov/pubmed/26868371
+.. _`Dingens et al (2018)`: https://doi.org/10.1371/journal.ppat.1007159
+.. _`Lee et al (2018)`: http://dx.doi.org/10.1101/298364
 .. _`Dingens et al (2017)`: http://dx.doi.org/10.1016/j.chom.2017.05.003
 .. _`Haddox et al (2016)`: http://dx.doi.org/10.1371/journal.ppat.1006114
 .. _`Doud et al (2017)`: http://journals.plos.org/plospathogens/article?id=10.1371/journal.ppat.1006271

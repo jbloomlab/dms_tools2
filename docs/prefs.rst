@@ -106,6 +106,8 @@ Here are some example analyses:
 
     * `Haddox2018 example`_
 
+    * `Lee2018 example`_
+
 
 Algorithm to infer preferences when using ``--method bayesian`` 
 ----------------------------------------------------------------------------

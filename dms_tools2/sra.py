@@ -77,8 +77,8 @@ def fastqFromSRA(samples, fastq_dump, fastqdir, aspera=None,
     fastq_dump_version = (subprocess.check_output([fastq_dump, '--version'])
             .decode('utf-8').split(':')[1].strip())
     fastq_dump_minversion = '2.8'
-    if not (distutils.version.StrictVersion(fastq_dump_version) >=
-            distutils.version.StrictVersion(fastq_dump_minversion)):
+    if not (distutils.version.LooseVersion(fastq_dump_version) >=
+            distutils.version.LooseVersion(fastq_dump_minversion)):
         raise RuntimeError("fastq-dump version {0} is installed. You need "
             "at least version {1}".format(fastq_dump_version, 
             fastq_dump_minversion))
