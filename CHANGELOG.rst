@@ -1,7 +1,7 @@
 Change Log
 ===========
 
-2.2.dev8
+2.2.8
 --------
 * Cleaned up organization of examples and added `Dingens2018` and `Lee2018`.
 
