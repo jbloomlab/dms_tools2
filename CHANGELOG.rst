@@ -5,7 +5,7 @@ Change Log
 --------
 * Require Python 3.5 or greater.
 
-* added `pacbio` and `minimap2` modules.
+* added `pacbio`, `minimap2`, and `seqnumbering` modules.
 
 * ``import dms_tools2`` now imports all non-optional modules in the package
 
