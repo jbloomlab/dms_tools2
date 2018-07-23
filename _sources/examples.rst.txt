@@ -9,48 +9,59 @@ Examples
 
 Example analyses
 ------------------
-Each analysis is in a `Jupyter notebook`_ in its own subdirectory `on GitHub <https://github.com/jbloomlab/dms_tools2/tree/master/examples>`_.
-Specifically:
+Each example analysis is a published study by the `Bloom lab`_.
+Each analysis is in its own subdirectory `in the examples folder on GitHub <https://github.com/jbloomlab/dms_tools2/tree/master/examples>`_.
+Typically there is a `Jupyter notebook`_ that performs the analysis.
 
-Deep mutational scanning of influenza hemagglutinin by Doud and Bloom (2016)
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-`Doud and Bloom (2016)`_ performed deep mutational scanning of influenza hemagglutinin using :ref:`bcsubamp` to obtain high sequencing accuracy, and then estimating the :ref:`prefs`.
-You can see a `Jupyter notebook`_ that analyzes their data by clicking here: `Doud2016 example`_.
+Here are the analyses:
 
-Mutational antigenic profiling of influenza hemagglutinin by Doud et al (2017)
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-`Doud et al (2017)`_ performed mutational antigenic profiling of influenza hemagglutinin against a set of strain-specific antibodies, using :ref:`bcsubamp` to obtain high sequencing accuracy, and then estimating the :ref:`diffsel` from each antibody.
-You can see a `Jupyter notebook`_ that analyzes their data by clicking here: `Doud2017 example`_.
+Doud and Bloom (2016)
++++++++++++++++++++++++
+ - **Summary**: Deep mutational scanning of influenza hemagglutinin using :ref:`bcsubamp`, then estimation of the :ref:`prefs`.
+ - **Citation**: `Doud and Bloom (2016)`_
+ - **Jupyter notebook**: `Doud2016 example`_
 
-Mutational antigenic profiling of the BF520 HIV Env against PGT151 by Dingens et al (2017)
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-`Dingens et al (2017)`_ performed mutational antigenic profiling of HIV Env (BF520 strain) against the PGT151 broadly neutralizing antibody, using :ref:`bcsubamp` to obtain high sequencing accuracy, and then estimating the :ref:`diffsel` from PGT151 on each mutation.
-You can see a `Jupyter notebook`_ that analyzes their data by clicking here: `Dingens2017 example`_.
+Doud et al (2017)
+++++++++++++++++++++++
+ - **Summary**: Mutational antigenic profiling of influenza hemagglutinin against strain-specific antibodies using :ref:`bcsubamp`, then estimation of the :ref:`diffsel` from each antibody
+ - **Citation**: `Doud et al (2017)`_
+ - **Jupyter notebook**:`Doud2017 example`_.
 
-Mutational antigenic profiling of broad and narrow antibodies to influenza hemagglutinin by Doud et al (2018)
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-`Doud et al (2018)`_ performed mutational antigenic profiling of influenza hemagglutinin using broadly neutralizing and strain-specific antibodies, using :ref:`bcsubamp` to obtain high sequencing accuracy, and then estimating the :ref:`fracsurvive` for each mutation.
-You can see a `Jupyter notebook`_ that analyzes their data by clicking here: `Doud2018 example`_.
+Dingens et al (2017)
+++++++++++++++++++++++
+ - **Summary**: Mutational antigenic profiling of HIV Env (BF520 strain) against PGT151 antibody using :ref:`bcsubamp`, and then estimation of the :ref:`diffsel`.
+ - **Citation**: `Dingens et al (2017)`_
+ - **Jupyter notebook**: `Dingens2017 example`_.
 
-Deep mutational scanning of two HIV Envs by Haddox et al (2018)
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-`Haddox et al (2018)`_ performed deep mutational scanning of two HIV Envs, and then compared the :ref:`prefs` between Envs.
-They used :ref:`bcsubamp` to achieve high sequencing accuracy.
-You can see a `Jupyter notebook`_ that analyzes their data by clicking here: `Haddox2018 example`_.
+Doud et al (2018)
++++++++++++++++++++
+ - **Summary**: Mutational antigenic profiling of influenza hemagglutinin against broadly neutralizing and strain-specific antibodies using :ref:`bcsubamp`, then estimation of the :ref:`fracsurvive`.
+ - **Citation**: `Doud et al (2018)`_
+ - **Jupyter notebook**: `Doud2018 example`_.
 
-Downloading and running the example notebooks
+Haddox et al (2018)
++++++++++++++++++++++
+ - **Summary**: Deep mutational scanning of two HIV Envs using :ref:`bcsubamp`, then comparison of the :ref:`prefs`.
+ - **Citation**: `Haddox et al (2018)`_
+ - **Jupyter notebook**: `Haddox2018 example`_.
+
+Dingens et al (2018)
++++++++++++++++++++++
+ - **Summary**: Mutational antigenic profiling of HIV Env against fusion-peptide antibodies usring :ref:`bcsubamp`, then estimation of the :ref:`diffsel`.
+ - **Citations**: `Dingens et al (2018)`_
+ - **Jupyter notebook**: `Dingens2018 example`_
+
+Lee et al (2018)
++++++++++++++++++
+ - **Summary**: Deep mutational scanning of H3 influenza hemagglutinin using :ref:`bcsubamp`, then estimation of the :ref:`prefs`.
+ - **Citations**: `Lee et al (2018)`_
+ - **Jupyter notebook**: `Lee2018 example`_
+
+Running the examples
 -------------------------------------------------
-Each example analysis is available on the GitHub repository that hosts the `dms_tools2 source code`_. 
-Each analysis is in the form of a `Jupyter notebook`_, and other necessary input data is also provided.
-`Navigate here <https://github.com/jbloomlab/dms_tools2/tree/master/examples>`_ to access these notebooks and the associated data.
+`Navigate here <https://github.com/jbloomlab/dms_tools2/tree/master/examples>`_ to access the example analyses and require input data.
 
-To run an example `Jupyter notebook`_, you will need to install ``jupyter`` for Python 3.
-If you don't have that already installed, you can install it via::
-
-    pip install jupyter --user
-
-assuming that you have already set up your paths as described for the :ref:`installation` of `dms_tools2`_.
-Note that as for :ref:`installation` of `dms_tools2`_, if ``pip`` points to the Python 2 version on your computer, then you need to use ``pip3``.
+To run a `Jupyter notebook`_, you need to install ``jupyter``.
 Most of the notebooks also have other requirements (such as `fastq-dump`_ to download the deep sequencing data from the `Sequence Read Archive`_), and these dependencies are described in the notebooks.
 
 To run a notebook interactively, type::

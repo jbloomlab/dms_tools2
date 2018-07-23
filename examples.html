@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Examples &#8212; dms_tools2 2.2.7 documentation</title>
+    <title>Examples &#8212; dms_tools2 2.2.8 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -38,60 +38,100 @@
 <span id="id1"></span><h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
-<li><a class="reference internal" href="#example-analyses" id="id2">Example analyses</a><ul>
-<li><a class="reference internal" href="#deep-mutational-scanning-of-influenza-hemagglutinin-by-doud-and-bloom-2016" id="id3">Deep mutational scanning of influenza hemagglutinin by Doud and Bloom (2016)</a></li>
-<li><a class="reference internal" href="#mutational-antigenic-profiling-of-influenza-hemagglutinin-by-doud-et-al-2017" id="id4">Mutational antigenic profiling of influenza hemagglutinin by Doud et al (2017)</a></li>
-<li><a class="reference internal" href="#mutational-antigenic-profiling-of-the-bf520-hiv-env-against-pgt151-by-dingens-et-al-2017" id="id5">Mutational antigenic profiling of the BF520 HIV Env against PGT151 by Dingens et al (2017)</a></li>
-<li><a class="reference internal" href="#mutational-antigenic-profiling-of-broad-and-narrow-antibodies-to-influenza-hemagglutinin-by-doud-et-al-2018" id="id6">Mutational antigenic profiling of broad and narrow antibodies to influenza hemagglutinin by Doud et al (2018)</a></li>
-<li><a class="reference internal" href="#deep-mutational-scanning-of-two-hiv-envs-by-haddox-et-al-2018" id="id7">Deep mutational scanning of two HIV Envs by Haddox et al (2018)</a></li>
+<li><a class="reference internal" href="#example-analyses" id="id9">Example analyses</a><ul>
+<li><a class="reference internal" href="#doud-and-bloom-2016" id="id10">Doud and Bloom (2016)</a></li>
+<li><a class="reference internal" href="#doud-et-al-2017" id="id11">Doud et al (2017)</a></li>
+<li><a class="reference internal" href="#dingens-et-al-2017" id="id12">Dingens et al (2017)</a></li>
+<li><a class="reference internal" href="#doud-et-al-2018" id="id13">Doud et al (2018)</a></li>
+<li><a class="reference internal" href="#haddox-et-al-2018" id="id14">Haddox et al (2018)</a></li>
+<li><a class="reference internal" href="#dingens-et-al-2018" id="id15">Dingens et al (2018)</a></li>
+<li><a class="reference internal" href="#lee-et-al-2018" id="id16">Lee et al (2018)</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#downloading-and-running-the-example-notebooks" id="id8">Downloading and running the example notebooks</a></li>
+<li><a class="reference internal" href="#running-the-examples" id="id17">Running the examples</a></li>
 </ul>
 </div>
 <div class="section" id="example-analyses">
-<h2><a class="toc-backref" href="#id2">Example analyses</a><a class="headerlink" href="#example-analyses" title="Permalink to this headline">¶</a></h2>
-<p>Each analysis is in a <a class="reference external" href="https://ipython.org/notebook.html">Jupyter notebook</a> in its own subdirectory <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/tree/master/examples">on GitHub</a>.
-Specifically:</p>
-<div class="section" id="deep-mutational-scanning-of-influenza-hemagglutinin-by-doud-and-bloom-2016">
-<h3><a class="toc-backref" href="#id3">Deep mutational scanning of influenza hemagglutinin by Doud and Bloom (2016)</a><a class="headerlink" href="#deep-mutational-scanning-of-influenza-hemagglutinin-by-doud-and-bloom-2016" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="http://www.mdpi.com/1999-4915/8/6/155">Doud and Bloom (2016)</a> performed deep mutational scanning of influenza hemagglutinin using <a class="reference internal" href="bcsubamp.html#bcsubamp"><span class="std std-ref">Barcoded-subamplicon sequencing</span></a> to obtain high sequencing accuracy, and then estimating the <a class="reference internal" href="prefs.html#prefs"><span class="std std-ref">Amino-acid preferences</span></a>.
-You can see a <a class="reference external" href="https://ipython.org/notebook.html">Jupyter notebook</a> that analyzes their data by clicking here: <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2016/analysis_notebook.ipynb">Doud2016 example</a>.</p>
+<h2><a class="toc-backref" href="#id9">Example analyses</a><a class="headerlink" href="#example-analyses" title="Permalink to this headline">¶</a></h2>
+<p>Each example analysis is a published study by the <a class="reference external" href="https://research.fhcrc.org/bloom/en.html">Bloom lab</a>.
+Each analysis is in its own subdirectory <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/tree/master/examples">in the examples folder on GitHub</a>.
+Typically there is a <a class="reference external" href="https://ipython.org/notebook.html">Jupyter notebook</a> that performs the analysis.</p>
+<p>Here are the analyses:</p>
+<div class="section" id="doud-and-bloom-2016">
+<h3><a class="toc-backref" href="#id10">Doud and Bloom (2016)</a><a class="headerlink" href="#doud-and-bloom-2016" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><strong>Summary</strong>: Deep mutational scanning of influenza hemagglutinin using <a class="reference internal" href="bcsubamp.html#bcsubamp"><span class="std std-ref">Barcoded-subamplicon sequencing</span></a>, then estimation of the <a class="reference internal" href="prefs.html#prefs"><span class="std std-ref">Amino-acid preferences</span></a>.</li>
+<li><strong>Citation</strong>: <a class="reference external" href="http://www.mdpi.com/1999-4915/8/6/155">Doud and Bloom (2016)</a></li>
+<li><strong>Jupyter notebook</strong>: <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2016/analysis_notebook.ipynb">Doud2016 example</a></li>
+</ul>
+</div></blockquote>
 </div>
-<div class="section" id="mutational-antigenic-profiling-of-influenza-hemagglutinin-by-doud-et-al-2017">
-<h3><a class="toc-backref" href="#id4">Mutational antigenic profiling of influenza hemagglutinin by Doud et al (2017)</a><a class="headerlink" href="#mutational-antigenic-profiling-of-influenza-hemagglutinin-by-doud-et-al-2017" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="http://journals.plos.org/plospathogens/article?id=10.1371/journal.ppat.1006271">Doud et al (2017)</a> performed mutational antigenic profiling of influenza hemagglutinin against a set of strain-specific antibodies, using <a class="reference internal" href="bcsubamp.html#bcsubamp"><span class="std std-ref">Barcoded-subamplicon sequencing</span></a> to obtain high sequencing accuracy, and then estimating the <a class="reference internal" href="diffsel.html#diffsel"><span class="std std-ref">Differential selection</span></a> from each antibody.
-You can see a <a class="reference external" href="https://ipython.org/notebook.html">Jupyter notebook</a> that analyzes their data by clicking here: <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2017/analysis_notebook.ipynb">Doud2017 example</a>.</p>
+<div class="section" id="doud-et-al-2017">
+<h3><a class="toc-backref" href="#id11">Doud et al (2017)</a><a class="headerlink" href="#doud-et-al-2017" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><strong>Summary</strong>: Mutational antigenic profiling of influenza hemagglutinin against strain-specific antibodies using <a class="reference internal" href="bcsubamp.html#bcsubamp"><span class="std std-ref">Barcoded-subamplicon sequencing</span></a>, then estimation of the <a class="reference internal" href="diffsel.html#diffsel"><span class="std std-ref">Differential selection</span></a> from each antibody</li>
+<li><strong>Citation</strong>: <a class="reference external" href="http://journals.plos.org/plospathogens/article?id=10.1371/journal.ppat.1006271">Doud et al (2017)</a></li>
+<li><strong>Jupyter notebook</strong>:<a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2017/analysis_notebook.ipynb">Doud2017 example</a>.</li>
+</ul>
+</div></blockquote>
 </div>
-<div class="section" id="mutational-antigenic-profiling-of-the-bf520-hiv-env-against-pgt151-by-dingens-et-al-2017">
-<h3><a class="toc-backref" href="#id5">Mutational antigenic profiling of the BF520 HIV Env against PGT151 by Dingens et al (2017)</a><a class="headerlink" href="#mutational-antigenic-profiling-of-the-bf520-hiv-env-against-pgt151-by-dingens-et-al-2017" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="http://dx.doi.org/10.1016/j.chom.2017.05.003">Dingens et al (2017)</a> performed mutational antigenic profiling of HIV Env (BF520 strain) against the PGT151 broadly neutralizing antibody, using <a class="reference internal" href="bcsubamp.html#bcsubamp"><span class="std std-ref">Barcoded-subamplicon sequencing</span></a> to obtain high sequencing accuracy, and then estimating the <a class="reference internal" href="diffsel.html#diffsel"><span class="std std-ref">Differential selection</span></a> from PGT151 on each mutation.
-You can see a <a class="reference external" href="https://ipython.org/notebook.html">Jupyter notebook</a> that analyzes their data by clicking here: <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Dingens2017/analysis_notebook.ipynb">Dingens2017 example</a>.</p>
+<div class="section" id="dingens-et-al-2017">
+<h3><a class="toc-backref" href="#id12">Dingens et al (2017)</a><a class="headerlink" href="#dingens-et-al-2017" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><strong>Summary</strong>: Mutational antigenic profiling of HIV Env (BF520 strain) against PGT151 antibody using <a class="reference internal" href="bcsubamp.html#bcsubamp"><span class="std std-ref">Barcoded-subamplicon sequencing</span></a>, and then estimation of the <a class="reference internal" href="diffsel.html#diffsel"><span class="std std-ref">Differential selection</span></a>.</li>
+<li><strong>Citation</strong>: <a class="reference external" href="http://dx.doi.org/10.1016/j.chom.2017.05.003">Dingens et al (2017)</a></li>
+<li><strong>Jupyter notebook</strong>: <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Dingens2017/analysis_notebook.ipynb">Dingens2017 example</a>.</li>
+</ul>
+</div></blockquote>
 </div>
-<div class="section" id="mutational-antigenic-profiling-of-broad-and-narrow-antibodies-to-influenza-hemagglutinin-by-doud-et-al-2018">
-<h3><a class="toc-backref" href="#id6">Mutational antigenic profiling of broad and narrow antibodies to influenza hemagglutinin by Doud et al (2018)</a><a class="headerlink" href="#mutational-antigenic-profiling-of-broad-and-narrow-antibodies-to-influenza-hemagglutinin-by-doud-et-al-2018" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://www.nature.com/articles/s41467-018-03665-3">Doud et al (2018)</a> performed mutational antigenic profiling of influenza hemagglutinin using broadly neutralizing and strain-specific antibodies, using <a class="reference internal" href="bcsubamp.html#bcsubamp"><span class="std std-ref">Barcoded-subamplicon sequencing</span></a> to obtain high sequencing accuracy, and then estimating the <a class="reference internal" href="fracsurvive.html#fracsurvive"><span class="std std-ref">Fraction surviving</span></a> for each mutation.
-You can see a <a class="reference external" href="https://ipython.org/notebook.html">Jupyter notebook</a> that analyzes their data by clicking here: <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2018/analysis_notebook.ipynb">Doud2018 example</a>.</p>
+<div class="section" id="doud-et-al-2018">
+<h3><a class="toc-backref" href="#id13">Doud et al (2018)</a><a class="headerlink" href="#doud-et-al-2018" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><strong>Summary</strong>: Mutational antigenic profiling of influenza hemagglutinin against broadly neutralizing and strain-specific antibodies using <a class="reference internal" href="bcsubamp.html#bcsubamp"><span class="std std-ref">Barcoded-subamplicon sequencing</span></a>, then estimation of the <a class="reference internal" href="fracsurvive.html#fracsurvive"><span class="std std-ref">Fraction surviving</span></a>.</li>
+<li><strong>Citation</strong>: <a class="reference external" href="https://www.nature.com/articles/s41467-018-03665-3">Doud et al (2018)</a></li>
+<li><strong>Jupyter notebook</strong>: <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2018/analysis_notebook.ipynb">Doud2018 example</a>.</li>
+</ul>
+</div></blockquote>
 </div>
-<div class="section" id="deep-mutational-scanning-of-two-hiv-envs-by-haddox-et-al-2018">
-<h3><a class="toc-backref" href="#id7">Deep mutational scanning of two HIV Envs by Haddox et al (2018)</a><a class="headerlink" href="#deep-mutational-scanning-of-two-hiv-envs-by-haddox-et-al-2018" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://elifesciences.org/articles/34420">Haddox et al (2018)</a> performed deep mutational scanning of two HIV Envs, and then compared the <a class="reference internal" href="prefs.html#prefs"><span class="std std-ref">Amino-acid preferences</span></a> between Envs.
-They used <a class="reference internal" href="bcsubamp.html#bcsubamp"><span class="std std-ref">Barcoded-subamplicon sequencing</span></a> to achieve high sequencing accuracy.
-You can see a <a class="reference external" href="https://ipython.org/notebook.html">Jupyter notebook</a> that analyzes their data by clicking here: <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/tree/master/examples/Haddox2018">Haddox2018 example</a>.</p>
+<div class="section" id="haddox-et-al-2018">
+<h3><a class="toc-backref" href="#id14">Haddox et al (2018)</a><a class="headerlink" href="#haddox-et-al-2018" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><strong>Summary</strong>: Deep mutational scanning of two HIV Envs using <a class="reference internal" href="bcsubamp.html#bcsubamp"><span class="std std-ref">Barcoded-subamplicon sequencing</span></a>, then comparison of the <a class="reference internal" href="prefs.html#prefs"><span class="std std-ref">Amino-acid preferences</span></a>.</li>
+<li><strong>Citation</strong>: <a class="reference external" href="https://elifesciences.org/articles/34420">Haddox et al (2018)</a></li>
+<li><strong>Jupyter notebook</strong>: <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/tree/master/examples/Haddox2018">Haddox2018 example</a>.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="dingens-et-al-2018">
+<h3><a class="toc-backref" href="#id15">Dingens et al (2018)</a><a class="headerlink" href="#dingens-et-al-2018" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><strong>Summary</strong>: Mutational antigenic profiling of HIV Env against fusion-peptide antibodies usring <a class="reference internal" href="bcsubamp.html#bcsubamp"><span class="std std-ref">Barcoded-subamplicon sequencing</span></a>, then estimation of the <a class="reference internal" href="diffsel.html#diffsel"><span class="std std-ref">Differential selection</span></a>.</li>
+<li><strong>Citations</strong>: <a class="reference external" href="https://doi.org/10.1371/journal.ppat.1007159">Dingens et al (2018)</a></li>
+<li><strong>Jupyter notebook</strong>: <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Dingens2018/analysis_notebook.ipynb">Dingens2018 example</a></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="lee-et-al-2018">
+<h3><a class="toc-backref" href="#id16">Lee et al (2018)</a><a class="headerlink" href="#lee-et-al-2018" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><strong>Summary</strong>: Deep mutational scanning of H3 influenza hemagglutinin using <a class="reference internal" href="bcsubamp.html#bcsubamp"><span class="std std-ref">Barcoded-subamplicon sequencing</span></a>, then estimation of the <a class="reference internal" href="prefs.html#prefs"><span class="std std-ref">Amino-acid preferences</span></a>.</li>
+<li><strong>Citations</strong>: <a class="reference external" href="http://dx.doi.org/10.1101/298364">Lee et al (2018)</a></li>
+<li><strong>Jupyter notebook</strong>: <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/tree/master/examples/Lee2018">Lee2018 example</a></li>
+</ul>
+</div></blockquote>
 </div>
 </div>
-<div class="section" id="downloading-and-running-the-example-notebooks">
-<h2><a class="toc-backref" href="#id8">Downloading and running the example notebooks</a><a class="headerlink" href="#downloading-and-running-the-example-notebooks" title="Permalink to this headline">¶</a></h2>
-<p>Each example analysis is available on the GitHub repository that hosts the <a class="reference external" href="https://github.com/jbloomlab/dms_tools2">dms_tools2 source code</a>.
-Each analysis is in the form of a <a class="reference external" href="https://ipython.org/notebook.html">Jupyter notebook</a>, and other necessary input data is also provided.
-<a class="reference external" href="https://github.com/jbloomlab/dms_tools2/tree/master/examples">Navigate here</a> to access these notebooks and the associated data.</p>
-<p>To run an example <a class="reference external" href="https://ipython.org/notebook.html">Jupyter notebook</a>, you will need to install <code class="docutils literal notranslate"><span class="pre">jupyter</span></code> for Python 3.
-If you don’t have that already installed, you can install it via:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">jupyter</span> <span class="o">--</span><span class="n">user</span>
-</pre></div>
-</div>
-<p>assuming that you have already set up your paths as described for the <a class="reference internal" href="installation.html#installation"><span class="std std-ref">Installation</span></a> of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a>.
-Note that as for <a class="reference internal" href="installation.html#installation"><span class="std std-ref">Installation</span></a> of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a>, if <code class="docutils literal notranslate"><span class="pre">pip</span></code> points to the Python 2 version on your computer, then you need to use <code class="docutils literal notranslate"><span class="pre">pip3</span></code>.
+<div class="section" id="running-the-examples">
+<h2><a class="toc-backref" href="#id17">Running the examples</a><a class="headerlink" href="#running-the-examples" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://github.com/jbloomlab/dms_tools2/tree/master/examples">Navigate here</a> to access the example analyses and require input data.</p>
+<p>To run a <a class="reference external" href="https://ipython.org/notebook.html">Jupyter notebook</a>, you need to install <code class="docutils literal notranslate"><span class="pre">jupyter</span></code>.
 Most of the notebooks also have other requirements (such as <a class="reference external" href="https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?view=toolkit_doc&amp;f=fastq-dump">fastq-dump</a> to download the deep sequencing data from the <a class="reference external" href="https://www.ncbi.nlm.nih.gov/sra">Sequence Read Archive</a>), and these dependencies are described in the notebooks.</p>
 <p>To run a notebook interactively, type:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">jupyter</span> <span class="n">notebook</span> <span class="n">analysis_notebook</span><span class="o">.</span><span class="n">ipynb</span>
@@ -166,7 +206,7 @@ Most of the notebooks also have other requirements (such as <a class="reference 
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#example-analyses">Example analyses</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#downloading-and-running-the-example-notebooks">Downloading and running the example notebooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-the-examples">Running the examples</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
