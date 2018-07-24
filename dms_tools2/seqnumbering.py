@@ -21,7 +21,12 @@ class transcriptConverter:
     to the corresponding numbers in the entire chromosome 
     (gene segment in case of a segmented virus, or entire
     viral genome in the case of a non-segmented virus), or
-    to CDSs encoded on that chromosome. 
+    to CDSs encoded on that chromosome.
+
+    For all site numbers used as input and output for this
+    class, numbering is assumed to be 1, 2, .... Note that
+    this is different than the 0, 1, ... numbering used
+    by Python for strings.
 
     Args:
         `genbankfile` (str)
@@ -30,19 +35,14 @@ class transcriptConverter:
             of relevance are called `mRNA` and `CDS`.
             Each of these features should have a qualifier
             called `name` that gives its name. 
-        `indexstart` (int)
-            Number assigned to first nucleotide in feature.
-            Although Python uses 0-based indexing, you may
-            want to set to 1 as sequences are normally
-            numbered starting at 1.
         `ignore_other_features` (bool)
             If `genbankfile` contains features not `mRNA`
             or `CDS`, ignore them or raise error?
+        `to_upper` (bool)
+            Convert all sequences to upper case letters?
 
     Attributes:
-        `indexstart` (int)
-            Value set at initialization.
-        `chromosomes` (list)
+        `chromosomes` (dict)
             Keyed by chromosome names, values are
             `Bio.SeqRecord.SeqRecord` for chromosomes.
         `mRNAs` (dict)
@@ -115,15 +115,33 @@ class transcriptConverter:
     'fluNS'
     >>> converter.chromosome_CDSs['fluNS']
     ['fluNS1', 'fluNS2']
-    
 
+    Get site in chromosome (`fluNS`) that corresponds to a
+    position in the `fluNS1` mRNA, and then do the same for
+    the `fluNS2` mRNA:
+
+    >>> converter.i_mRNAtoChromosome('fluNS1', 60)
+    61
+    >>> converter.ntIdentity('fluNS', 61)
+    'A'
+    >>> converter.i_mRNAtoChromosome('fluNS2', 58)
+    531
+    >>> converter.ntIdentity('fluNS', 531)
+    'C'
+
+    Do the same for substrings of `fluNS1` and `fluNS2`:
+
+    >>> converter.i_mRNAtoChromosome('fluNS1', 2, mRNAfragment='GATTGCTTTCT')
+    61
+    >>> converter.i_mRNAtoChromosome('fluNS2', 9, mRNAfragment='TTTCAGGACATACTGATG')
+    531
     """
 
-    def __init__(self, genbankfile, *, indexstart=1,
-            ignore_other_features=False):
+    def __init__(self, genbankfile, *,
+            ignore_other_features=False, to_upper=True):
         """See main class docstring."""
 
-        self.indexstart = indexstart
+        self.to_upper = to_upper
 
         self.chromosomes = {c.name:c for c in
                 Bio.SeqIO.parse(genbankfile, 'genbank')}
@@ -133,6 +151,8 @@ class transcriptConverter:
         self.mRNA_chromosome = {}
         self.chromosome_CDSs = collections.defaultdict(list)
         for c in self.chromosomes.values():
+            if to_upper:
+                c.seq = c.seq.upper()
             for feature in c.features:
                 if feature.type in {'mRNA', 'CDS'}:
                     name = feature.qualifiers['name']
@@ -155,7 +175,8 @@ class transcriptConverter:
                     raise ValueError("unrecognized feature type {0}"
                             .feature.type)
 
-    def i_mRNAtoChromosome(self, mRNA, i, mRNAfragment=None):
+
+    def i_mRNAtoChromosome(self, mRNA, i, *, mRNAfragment=None):
         """Convert site number in mRNA to number in chromosome.
 
         Args:
@@ -169,8 +190,62 @@ class transcriptConverter:
                 `mRNA`. Useful because sometimes mutations may
                 be called in a fragment of the full mRNA. Set
                 to `None` if `i` is site in full mRNA.
+
+        Returns:
+            Site number in chromosome that contains `mRNA`.
         """
-        raise RuntimeError('not yet implemented')
+        try:
+            chromosome = self.chromosomes[self.mRNA_chromosome[mRNA]]
+            mRNA_feature = self.mRNAs[mRNA]
+        except KeyError:
+            raise ValueError("invalid `mRNA` {0}".format(mRNA))
+
+        mRNA_seq = mRNA_feature.extract(chromosome).seq
+
+        if mRNAfragment:
+            if self.to_upper:
+                mRNAfragment = mRNAfragment.upper()
+            n = mRNA_seq.count(mRNAfragment)
+            if n == 1:
+                i += mRNA_seq.find(mRNAfragment)
+            elif n > 1:
+                raise ValueError("`mRNA` {0} does contains {1} "
+                        "copies of `mRNAfragment`".format(mRNA, n))
+            else:
+                raise ValueError("`mRNA` {0} does not contain "
+                        "specified `mRNAfragment`".format(mRNA))
+
+        mRNA_sites = list(mRNA_feature)
+        if not (1 <= i <= len(mRNA_sites)):
+            raise ValueError("`i` of {0} not valid site in `mRNA` {1}"
+                    .format(i, mRNA))
+
+        return mRNA_sites[i - 1] + 1
+
+
+    def ntIdentity(self, chromosome, i):
+        """Gets identity at site in chromosome.
+
+        Args:
+            `chromosome` (str)
+                Name of chromosome.
+            `i` (int)
+                Site in chromosome.
+
+        Returns:
+            Nucleotide in `chromosome` at site `i`.
+        """
+        try:
+            chromosome_seq = self.chromosomes[chromosome]
+        except KeyError:
+            raise ValueError("`chromosome` {0} does not exist"
+                    .format(chromosome))
+
+        if not (1 <= i <= len(chromosome_seq)):
+            raise ValueError("`i` of {0} not in `chromosome` {1}"
+                    .format(i, chromosome))
+
+        return str(chromosome_seq[i - 1])
 
 
 
