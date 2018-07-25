@@ -12,6 +12,7 @@ import tempfile
 import re
 
 import Bio.SeqIO
+import Bio.SeqUtils
 
 from dms_tools2 import NTS
 
@@ -147,15 +148,24 @@ class transcriptConverter:
     output with 3 or 1-letter amino-acid codes:
 
     >>> converter.aaSubstitutions('fluNS', 'A61T')
-    'fluNS1-Asp11Val'
+    'fluNS1-Asp12Val'
     >>> converter.aaSubstitutions('fluNS', ('A', 61, 'T'))
-    'fluNS1-Asp11Val'
+    'fluNS1-Asp12Val'
     >>> converter.aaSubstitutions('fluNS', 'A61T', aa_3letter=False)
-    'fluNS1-D11V'
+    'fluNS1-D12V'
 
-    Now look at a point mutation that causes amino-acid
-    substitutions in two proteins:
+    Now look at a point mutation that affects `fluNS1` and `fluNS2`, but
+    only causes an amino-acid substitution in the former (is synonymous
+    in the latter):
 
+    >>> converter.aaSubstitutions('fluNS', 'C531T')
+    'fluNS1-His169Tyr'
+
+    Now mutation that causes amino-acid substitutions in
+    `fluNS1` and `fluNS2`:
+
+    >>> converter.aaSubstitutions('fluNS', 'A532T')
+    'fluNS1-His169Leu_fluNS2-Ile12Leu'
 
     """
 
@@ -292,11 +302,10 @@ class transcriptConverter:
             
                 - If no mutations, returns empty str.
                 
-                - If one mutation, will be str like...
+                - If one mutation, will be str like 'fluNS1-Asp12Val'.
 
-                - If several mutations, will be str like...
-
-        >>> complete docs
+                - If several mutations, will be str like
+                  'fluNS1-His169Leu_fluNS2-Ile12Leu'.
         """
         try:
             cds_names = self.chromosome_CDSs[chromosome]
@@ -343,13 +352,17 @@ class transcriptConverter:
                     mut_chromosome[i - 1] = mut
                 wtprot = cds.extract(chromosome_seq).translate()
                 mutprot = cds.extract(mut_chromosome).translate()
-                aa_mut = [(wt, r + 1, mut) for r, (wt, mut) in
+                aa_mut = [(wt, r0 + 1, mut) for r0, (wt, mut) in
                         enumerate(zip(wtprot, mutprot)) if wt != mut]
                 if len(aa_mut) > 1:
                     raise ValueError(">1 amino-acid mutation")
-                wt_aa, r, mut_aa = aa_mut[0]
-                mutstring.append('{0}-{1}{2}{3}'.format(cds_name,
-                        wt_aa, r, mut_aa))
+                elif aa_mut:
+                    wt_aa, r, mut_aa = aa_mut[0]
+                    if aa_3letter:
+                        wt_aa = Bio.SeqUtils.seq3(wt_aa)
+                        mut_aa = Bio.SeqUtils.seq3(mut_aa)
+                    mutstring.append('{0}-{1}{2}{3}'.format(cds_name,
+                            wt_aa, r, mut_aa))
 
         return '_'.join(mutstring)
 
