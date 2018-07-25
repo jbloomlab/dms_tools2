@@ -9,8 +9,11 @@ Deals with sequence numbering conversions.
 
 import collections
 import tempfile
+import re
 
 import Bio.SeqIO
+
+from dms_tools2 import NTS
 
 
 class transcriptConverter:
@@ -118,7 +121,10 @@ class transcriptConverter:
 
     Get site in chromosome (`fluNS`) that corresponds to a
     position in the `fluNS1` mRNA, and then do the same for
-    the `fluNS2` mRNA:
+    the `fluNS2` mRNA, using
+    :class:`transcriptConverter.i_mRNAtoChromosome`. Then
+    check nucleotide identities with
+    :class:`transcriptConverter.ntIdentity`:
 
     >>> converter.i_mRNAtoChromosome('fluNS1', 60)
     61
@@ -135,6 +141,22 @@ class transcriptConverter:
     61
     >>> converter.i_mRNAtoChromosome('fluNS2', 9, mRNAfragment='TTTCAGGACATACTGATG')
     531
+
+    Get amino-acid substitutions caused by chromosome point mutation.
+    We can specify point mutation as string or tuple, and get
+    output with 3 or 1-letter amino-acid codes:
+
+    >>> converter.aaSubstitutions('fluNS', 'A61T')
+    'fluNS1-Asp11Val'
+    >>> converter.aaSubstitutions('fluNS', ('A', 61, 'T'))
+    'fluNS1-Asp11Val'
+    >>> converter.aaSubstitutions('fluNS', 'A61T', aa_3letter=False)
+    'fluNS1-D11V'
+
+    Now look at a point mutation that causes amino-acid
+    substitutions in two proteins:
+
+
     """
 
     def __init__(self, genbankfile, *,
@@ -246,6 +268,90 @@ class transcriptConverter:
                     .format(i, chromosome))
 
         return str(chromosome_seq[i - 1])
+
+
+    def aaSubstitutions(self, chromosome, mutation, *,
+            aa_3letter=True):
+        """Amino-acid substitutions from point mutation to chromosome.
+
+        Gets all amino-acid substitutions in CDSs caused by a
+        point mutation to a chromosome.
+
+        Args:
+            `chromosome` (str)
+                Name of chromosome.
+            `mutation` (str or 3-tuple)
+                Point mutation in chromosome based numbering. A str
+                like "A50T", or tuple `(wt, i, mut)` where `wt` is
+                wildtype nt, `i` is site, and `mut` is mutant nt.
+            `aa_3letter` (bool)
+                Use 3-letter rather than 1-letter amino-acid codes?
+
+        Returns:
+            A string giving the amino-acid mutations:
+            
+                - If no mutations, returns empty str.
+                
+                - If one mutation, will be str like...
+
+                - If several mutations, will be str like...
+
+        >>> complete docs
+        """
+        try:
+            cds_names = self.chromosome_CDSs[chromosome]
+            chromosome_seq = self.chromosomes[chromosome].seq
+        except KeyError:
+            raise ValueError("invalid `chromosome` {0}".format(chromosome))
+
+        if isinstance(mutation, str):
+            m = re.match('^(?P<wt>[{0}])(?P<i>\d+)(?P<mut>[{0}])$'
+                    .format(''.join(NTS)), mutation)
+            if not m:
+                raise ValueError("cannot parse mutation {0}"
+                        .format(mutation))
+            mutation = (m.group('wt'), int(m.group('i')), m.group('mut'))
+
+        if (len(mutation) != 3) or (mutation[0] not in NTS
+                    ) or (mutation[2] not in NTS):
+            raise ValueError("invalid mutation {0}".format(mutation))
+
+        (wt, i, mut) = mutation
+
+        if not (1 <= i <= len(chromosome_seq)):
+            raise ValueError("`i` of {0} is not valid site in "
+                    "`chromosome` {1}".format(i, chromosome))
+
+        if wt != self.ntIdentity(chromosome, i):
+            raise ValueError("Invalid wildtype nucleotide at site "
+                    "{0} of {1}. Specified {2}, should be {3}".format(
+                    i, chromosome, i, self.ntIdentity(chromosome, i)))
+        
+        if wt == mut:
+            raise ValueError("wildtype and mutant nt are the same")
+
+        cds_w_mut = [cds for cds in [self.CDSs[cds_name]
+                for cds_name in cds_names] if (i - 1) in cds]
+
+        mutstring = []
+        mut_chromosome = None
+        for cds_name in cds_names:
+            cds = self.CDSs[cds_name]
+            if (i - 1) in cds:
+                if mut_chromosome is None:
+                    mut_chromosome = chromosome_seq.tomutable()
+                    mut_chromosome[i - 1] = mut
+                wtprot = cds.extract(chromosome_seq).translate()
+                mutprot = cds.extract(mut_chromosome).translate()
+                aa_mut = [(wt, r + 1, mut) for r, (wt, mut) in
+                        enumerate(zip(wtprot, mutprot)) if wt != mut]
+                if len(aa_mut) > 1:
+                    raise ValueError(">1 amino-acid mutation")
+                wt_aa, r, mut_aa = aa_mut[0]
+                mutstring.append('{0}-{1}{2}{3}'.format(cds_name,
+                        wt_aa, r, mut_aa))
+
+        return '_'.join(mutstring)
 
 
 
