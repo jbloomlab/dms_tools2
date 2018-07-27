@@ -757,11 +757,11 @@ class MutationConsensus:
     ...         insertion_tuples=[],
     ...         deletion_tuples=[])
     >>> m_A1G_high_acc = Mutations(
-    ...         substitution_tuples=[(1, 'A', 'G', 30)],
+    ...         substitution_tuples=[(1, 'A1G', 30)],
     ...         insertion_tuples=[],
     ...         deletion_tuples=[])
     >>> m_A1G_low_acc = Mutations(
-    ...         substitution_tuples=[(1, 'A', 'G', 9)],
+    ...         substitution_tuples=[(1, 'A1G', 9)],
     ...         insertion_tuples=[],
     ...         deletion_tuples=[])
 
@@ -819,7 +819,7 @@ class MutationConsensus:
     Example with two substitutions:
 
     >>> m_A1G_T2A_high_acc = Mutations(
-    ...         substitution_tuples=[(1, 'A', 'G', 30), (2, 'T', 'A', 30)],
+    ...         substitution_tuples=[(1, 'A1G', 30), (2, 'T2A', 30)],
     ...         insertion_tuples=[],
     ...         deletion_tuples=[])
     >>> mutcons.callConsensus([m_A1G_T2A_high_acc, m_A1G_T2A_high_acc],
@@ -844,11 +844,11 @@ class MutationConsensus:
     >>> m_shortdel = Mutations(
     ...         substitution_tuples=[],
     ...         insertion_tuples=[],
-    ...         deletion_tuples=[(8, 9, math.nan, 1)])
+    ...         deletion_tuples=[(8, 9, 'del8to9', math.nan, 1)])
     >>> m_longdel = Mutations(
     ...         substitution_tuples=[],
     ...         insertion_tuples=[],
-    ...         deletion_tuples=[(8, 18, math.nan, 1)])
+    ...         deletion_tuples=[(8, 18, 'del8to18', math.nan, 1)])
     >>> mutcons.callConsensus([m_shortdel] * 2, 'deletions')
     'del8to9'
     >>> mutcons.callConsensus([m_longdel] * 2, 'deletions')
@@ -856,7 +856,7 @@ class MutationConsensus:
     >>> m_overlaplongdel = Mutations(
     ...         substitution_tuples=[],
     ...         insertion_tuples=[],
-    ...         deletion_tuples=[(9, 17, math.nan, 1)])
+    ...         deletion_tuples=[(9, 17, 'del9to17', math.nan, 1)])
     >>> mutcons.callConsensus([m_longdel, m_shortdel], 'deletions')
     ''
     >>> mutcons.callConsensus([m_wt, m_longdel] + [m_overlaplongdel] * 4,
@@ -875,9 +875,9 @@ class MutationConsensus:
 
     >>> m_homopolymer_indel = Mutations(
     ...         substitution_tuples=[],
-    ...         insertion_tuples=[(13, 1, math.nan, 3)],
-    ...         deletion_tuples=[(9, 10, math.nan, 3),
-    ...                          (5, 5, math.nan, 3)])
+    ...         insertion_tuples=[(13, 1, 'ins13len1', math.nan, 3)],
+    ...         deletion_tuples=[(9, 10, 'del9to10', math.nan, 3),
+    ...                          (5, 5, 'del5to5', math.nan, 3)])
     >>> mutcons.callConsensus([m_homopolymer_indel] * 2, 'insertions')
     ''
     >>> mutcons.callConsensus([m_homopolymer_indel] * 2, 'deletions')
@@ -987,6 +987,9 @@ class MutationConsensus:
             flathomopolymerlengths = numpy.array([l for ll in
                     homopolymerlengths for l in ll])
             assert len(flathomopolymerlengths) == len(flatmuts)
+            starts = [func(m, returnval='site', min_acc=self.min_acc,
+                    min_acc_filter_nan=False) for m in mutationlist]
+            flatstarts = numpy.array([s for sl in starts for s in sl])
 
             # get indels in hompolymers of length >= 3
             for m in set(flatmuts[(flatlengths == 1) &
@@ -1005,12 +1008,11 @@ class MutationConsensus:
                         top_indel in top_indels]
                 top_indel = sorted(zip(top_lengths, top_indels))[-1][1]
             overlapping_indels = []
-            startmatch = re.compile('^(ins|del)(?P<start>\-{0,1}\d+)(to|len)')
             top_length = flatlengths[flatmuts == top_indel][0]
-            top_start = int(startmatch.match(top_indel).group('start'))
+            top_start = flatstarts[flatmuts == top_indel][0]
             for m in set(flatmuts):
                 length = flatlengths[flatmuts == m][0]
-                start = int(startmatch.match(m).group('start'))
+                start = flatstarts[flatmuts == m][0]
                 tot_len = (max(top_start + top_length, start + length)
                         - min(top_start, start))
                 overlap_len = (min(top_start + top_length, start + length)
