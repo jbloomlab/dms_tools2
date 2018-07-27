@@ -153,23 +153,22 @@ class Mutations:
 
     Args:
         `substitution_tuples` (list)
-            Lists substitutions `(i, wt, mut, q)` where
-            `wt` is the wildtype nucleotide, `i` is the site
-            number, `mut` is the mutant nucleotide, and `q`
-            is the Q-value.
+            Substitutions `(i, mut_str, q)` where
+            `i` is the site number, `mut_str` is a string
+            describing substitution, and `q` is the Q-value.
         `insertion_tuples` (list)
-            Lists insertions `(i, ins_len, q, hplen)` where `i` is
-            site immediately **after** insertion, `inslen` is
-            insertion length, `qs` is numpy array of Q-values,
-            and `hplen` is length of homopolymer in which
-            insertion occurs.
+            Insertions `(i, ins_len, mut_str, q, hplen)` where `i`
+            is site **after** insertion, `inslen` is insertion length,
+            `mut_str` is string describing insertion, `qs` is
+            numpy array of Q-values, and `hplen` is length of homopolymer
+            in which insertion occurs.
         `deletion_tuples` (list)
-            Lists deletions `(istart, iend, q, hplen)` where
+            Deletions `(istart, iend, mut_str`, q, hplen)` where
             `istart` is first site of deletion, `iend` is
             last site of deletion (so a single nucleotide
-            deletion has `istart == iend`), and `q` is the
-            Q-value of the site immediately **after** the
-            deletion, which is in accordance with
+            deletion has `istart == iend`), `mut_str` is string
+            describing deletion , `q` is the Q-value of the
+            site immediately **after** the deletion in accordance with
             `PacBio CCS <https://github.com/PacificBiosciences/unanimity/blob/develop/doc/PBCCS.md#interpretting-qual-values>`_
             specification, and `hplen` is length of homopolymer
             in which deletion occurs.
@@ -186,16 +185,22 @@ class Mutations:
     of 0.99, and a Q-value of 30 indicates an accuracy of 0.999:
 
     >>> muts = Mutations(
-    ...         substitution_tuples=[(1, 'A', 'T', math.nan),
-    ...             (15, 'C', 'A', 30), (13, 'G', 'A', 20)],
-    ...         insertion_tuples=[(5, 2, [20, 30], 1)],
-    ...         deletion_tuples=[(8, 10, 20, 2)])
+    ...         substitution_tuples=[(1, 'A1T', math.nan),
+    ...             (15, 'C15A', 30), (13, 'G13A', 20)],
+    ...         insertion_tuples=[(5, 2, 'ins5len2', [20, 30], 1)],
+    ...         deletion_tuples=[(8, 10, 'del8to10', 20, 2)])
     >>> muts.substitutions()
     ['A1T', 'G13A', 'C15A']
+    >>> muts.substitutions(returnval='site')
+    [1, 13, 15]
     >>> muts.insertions()
     ['ins5len2']
+    >>> muts.insertions(returnval='site')
+    [5]
     >>> muts.deletions()
     ['del8to10']
+    >>> muts.deletions(returnval='site')
+    [8]
 
     Now with some filtering on accuracy:
 
@@ -218,6 +223,13 @@ class Mutations:
     [3]
     >>> muts.insertions(returnval='length')
     [2]
+
+    Get homopolymer lengths:
+
+    >>> muts.deletions(returnval='homopolymer_length')
+    [2]
+    >>> muts.insertions(returnval='homopolymer_length')
+    [1]
     """
 
     def __init__(self, *, substitution_tuples, insertion_tuples,
@@ -244,6 +256,8 @@ class Mutations:
                 - "mutation": Strings giving mutations, where
                   "A1T" means site 1 is mutated from A to T.
 
+                - "site": Sites of substitutions.
+
                 - "accuracy": Numbers giving accuracy of each
                   mutation.
 
@@ -253,15 +267,17 @@ class Mutations:
         if min_acc is None:
             subtups = self._substitution_tuples
         else:
-            accs = [dms_tools2.pacbio.qvalsToAccuracy(tup[3])
+            accs = [dms_tools2.pacbio.qvalsToAccuracy(tup[2])
                     for tup in self._substitution_tuples]
             subtups = [tup for tup, a in zip(self._substitution_tuples, accs) if
                     (a >= min_acc) or ((not min_acc_filter_nan) and math.isnan(a))]
 
         if returnval == 'mutation':
-            return ['{1}{0}{2}'.format(*tup) for tup in subtups]
+            return [tup[1] for tup in subtups]
+        elif returnval == 'site':
+            return [tup[0] for tup in subtups]
         elif returnval == 'accuracy':
-            return [dms_tools2.pacbio.qvalsToAccuracy(tup[3])
+            return [dms_tools2.pacbio.qvalsToAccuracy(tup[2])
                     for tup in subtups]
         else:
             raise ValueError("invalid `returnval` {0}".format(returnval))
@@ -284,6 +300,8 @@ class Mutations:
                   "ins10len20" means insertion of length 20
                   immediately before site 10.
 
+                - "site": Sites of insertions.
+
                 - "length": Integers giving insertion lengths.
 
                 - "accuracy": Numbers giving accuracy of each
@@ -299,20 +317,22 @@ class Mutations:
         if min_acc is None:
             instups = self._insertion_tuples
         else:
-            accs = [dms_tools2.pacbio.qvalsToAccuracy(tup[2])
+            accs = [dms_tools2.pacbio.qvalsToAccuracy(tup[3])
                     for tup in self._insertion_tuples]
             instups = [tup for tup, a in zip(self._insertion_tuples, accs) if
                     (a >= min_acc) or ((not min_acc_filter_nan) and math.isnan(a))]
 
         if returnval == 'mutation':
-            return ['ins{0}len{1}'.format(*tup) for tup in instups]
+            return [tup[2] for tup in instups]
+        elif returnval == 'site':
+            return [tup[0] for tup in instups]
         elif returnval == 'length':
             return [tup[1] for tup in instups]
         elif returnval == 'accuracy':
-            return [dms_tools2.pacbio.qvalsToAccuracy(tup[2])
+            return [dms_tools2.pacbio.qvalsToAccuracy(tup[3])
                     for tup in instups]
         elif returnval == 'homopolymer_length':
-            return [tup[3] for tup in instups]
+            return [tup[4] for tup in instups]
         else:
             raise ValueError("invalid `returnval` {0}".format(returnval))
 
@@ -334,6 +354,8 @@ class Mutations:
                   "del12to13" means deletion of nucleotides 12
                   to 13, inclusive.
 
+                - "site": Sites of where deletions start.
+
                 - "length": Integers giving deletion lengths.
 
                 - "accuracy": Numbers giving accuracy of each
@@ -349,20 +371,22 @@ class Mutations:
         if min_acc is None:
             deltups = self._deletion_tuples
         else:
-            accs = [dms_tools2.pacbio.qvalsToAccuracy(tup[2])
+            accs = [dms_tools2.pacbio.qvalsToAccuracy(tup[3])
                     for tup in self._deletion_tuples]
             deltups = [tup for tup, a in zip(self._deletion_tuples, accs) if
                     (a >= min_acc) or ((not min_acc_filter_nan) and math.isnan(a))]
 
         if returnval == 'mutation':
-            return ['del{0}to{1}'.format(*tup) for tup in deltups]
+            return [tup[2] for tup in deltups]
+        elif returnval == 'site':
+            return [tup[0] for tup in deltups]
         elif returnval == 'length':
             return [tup[1] - tup[0] + 1 for tup in deltups]
         elif returnval == 'accuracy':
-            return [dms_tools2.pacbio.qvalsToAccuracy(tup[2])
+            return [dms_tools2.pacbio.qvalsToAccuracy(tup[3])
                     for tup in deltups]
         elif returnval == 'homopolymer_length':
-            return [tup[3] for tup in deltups]
+            return [tup[4] for tup in deltups]
         else:
             raise ValueError("invalid `returnval` {0}".format(returnval))
 
