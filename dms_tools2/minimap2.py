@@ -442,10 +442,16 @@ class MutationCaller:
     >>> muts = mutcaller.call(a, qvals)
     >>> muts.substitutions()
     ['C4A', 'T6C', 'G12T']
+    >>> muts.substitutions(returnval='site')
+    [4, 6, 12]
     >>> muts.deletions()
     ['del8to9', 'del13to15']
+    >>> muts.deletions(returnval='site')
+    [8, 13]
     >>> muts.insertions()
     ['ins1len2', 'ins11len2']
+    >>> muts.insertions(returnval='site')
+    [1, 11]
 
     Check that homo-polymer lengths are correct:
 
@@ -557,15 +563,21 @@ class MutationCaller:
 
         # deletions / insertions before alignment
         if a.r_st > 0:
-            deletion_tuples.append((self.targetindex,
-                    self.targetindex + a.r_st,
+            istart = self.targetindex
+            iend = self.targetindex + a.r_st
+            deletion_tuples.append((istart,
+                    iend,
+                    'del{0}to{1}'.format(istart, iend),
                     _get_qval(self.targetindex + a.r_st)))
         if a.q_st > self.query_softclip:
             if qvals is None:
                 i_qvals = None
             else:
                 i_qvals = [qvals[j] for j in range(a.q_st)]
-            insertion_tuples.append((self.targetindex, a.q_st, i_qvals))
+            i = self.targetindex
+            ins_len = a.q_st
+            insertion_tuples.append((i, ins_len,
+                    'ins{0}len{1}'.format(i, ins_len), i_qvals))
 
         # mutations in alignment
         itarget = a.r_st + self.targetindex
@@ -579,12 +591,16 @@ class MutationCaller:
             elif m.group()[0] == '*':
                 assert len(m.group()) == 3
                 substitution_tuples.append((itarget,
-                        m.group()[1].upper(), m.group()[2].upper(),
+                        '{0}{1}{2}'.format(m.group()[1].upper(),
+                                itarget, m.group()[2].upper()),
                         _get_qval(itarget)))
                 itarget += 1
             elif m.group()[0] == '-':
                 n = len(m.group()) - 1
-                deletion_tuples.append((itarget, itarget + n - 1,
+                istart = itarget
+                iend = itarget + n - 1
+                deletion_tuples.append((istart, iend,
+                        'del{0}to{1}'.format(istart, iend),
                         _get_qval(itarget + n)))
                 itarget += n
             elif m.group()[0] == '+':
@@ -597,7 +613,8 @@ class MutationCaller:
                         i_qvals = None
                     else:
                         i_qvals = [qvals[i - 1 - j] for j in range(n)]
-                insertion_tuples.append((itarget, n, i_qvals))
+                insertion_tuples.append((itarget, n,
+                        'ins{0}len{1}'.format(itarget, n), i_qvals))
             elif m.group()[0] == '~':
                 raise ValueError("Cannot handle intron operations")
             else:
@@ -611,9 +628,12 @@ class MutationCaller:
 
         # deletions / insertions after alignment
         if a.r_en < a.r_len:
+            istart = self.targetindex + a.r_en
+            iend = self.targetindex + a. r_len - 1
             deletion_tuples.append((
-                    self.targetindex + a.r_en,
-                    self.targetindex + a.r_len - 1,
+                    istart,
+                    iend,
+                    'del{0}to{1}'.format(istart, iend),
                     math.nan))
         if a.q_en < a.q_len - self.query_softclip:
             n = a.q_len - a.q_en
@@ -621,8 +641,9 @@ class MutationCaller:
                 i_qvals = None
             else:
                 i_qvals = [qvals[j] for j in range(a.q_en, a.q_len)]
+            i = self.targetindex + a.r_en
             insertion_tuples.append((
-                    self.targetindex + a.r_en, n, i_qvals))
+                    i, n, 'ins{0}len{1}'.format(i, n), i_qvals))
 
         # filter away mutations too near target termini
         if self.target_clip:
@@ -646,10 +667,10 @@ class MutationCaller:
                     len(mend.search(targetseq[ : j + 1]).group(0)) - 1)
 
         targetseq = self.mapper.targetseqs[a.target]
-        insertion_tuples = [(i, ins_len, q, _hpLen(i, targetseq))
-                for i, ins_len, q in insertion_tuples]
-        deletion_tuples = [(istart, iend, q, _hpLen(istart, targetseq))
-                for istart, iend, q in deletion_tuples]
+        insertion_tuples = [(i, ins_len, mut_str, q, _hpLen(i, targetseq))
+                for i, ins_len, mut_str, q in insertion_tuples]
+        deletion_tuples = [(istart, iend, mut_str, q, _hpLen(istart, targetseq))
+                for istart, iend, mut_str, q in deletion_tuples]
 
         return Mutations(substitution_tuples=substitution_tuples,
                          insertion_tuples=insertion_tuples,
