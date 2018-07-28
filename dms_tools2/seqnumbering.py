@@ -17,7 +17,7 @@ import Bio.SeqUtils
 from dms_tools2 import NTS
 
 
-class transcriptConverter:
+class TranscriptConverter:
     """Convert sites in mRNA transcript to chromosome or CDS sites.
 
     In mRNA sequencing, we identify mutations with respect
@@ -96,15 +96,15 @@ class transcriptConverter:
     ... //
     ... '''
 
-    Now initialize a :class:`transcriptConverter`:
+    Now initialize a :class:`TranscriptConverter`:
 
     >>> with tempfile.NamedTemporaryFile(mode='r+') as genbankfile:
     ...     _ = genbankfile.write(genbank_text)
     ...     genbankfile.flush()
     ...     _ = genbankfile.seek(0)
-    ...     converter = transcriptConverter(genbankfile)
+    ...     converter = TranscriptConverter(genbankfile)
 
-    Confirm resulting :class:`transcriptConverter` contains one
+    Confirm resulting :class:`TranscriptConverter` contains one
     chromosome (`fluNS`) with the expected to mRNAs and CDSs:
 
     >>> list(converter.chromosomes.keys())
@@ -123,9 +123,9 @@ class transcriptConverter:
     Get site in chromosome (`fluNS`) that corresponds to a
     position in the `fluNS1` mRNA, and then do the same for
     the `fluNS2` mRNA, using
-    :class:`transcriptConverter.i_mRNAtoChromosome`. Then
+    :class:`TranscriptConverter.i_mRNAtoChromosome`. Then
     check nucleotide identities with
-    :class:`transcriptConverter.ntIdentity`:
+    :class:`TranscriptConverter.ntIdentity`:
 
     >>> converter.i_mRNAtoChromosome('fluNS1', 60)
     61

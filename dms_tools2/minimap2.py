@@ -25,6 +25,7 @@ import Bio.SeqIO
 
 from dms_tools2 import NTS
 import dms_tools2.pacbio
+import dms_tools2.seqnumbering
 
 #: `options` argument to :class:`Mapper` that works well
 #: for codon-mutant libraries such as those created for
@@ -397,9 +398,17 @@ class MutationCaller:
     Attributes:
         `mapper` (:class:`Mapper`)
             The :class:`Mapper` used to create the alignments.
+        `transcriptconverter` (:class:`dms_tools2.seqnumbering.TranscriptConverter` or `None`)
+            Use if the alignments made by `mapper` are to transcripts
+            (or partial transcripts) and you want to convert the numbering
+            of mutations to 1, 2, ... numbering of the chromosomes
+            containing these transcripts, plus indicate amino-acid
+            substitutions in any CDSs. The target names in `mapper` should
+            match the mRNA names in `transcriptconverter`. If you
+            use a `transcriptconverter`, `targetindex` must be 1.
         `targetindex` (int)
-            Number assigned to first nucleotide of target in
-            mutation names. A value of 1 means that the first
+            Number assigned to first nucleotide of target when
+            numbering mutations. A value of 1 means that the first
             nucleotide of the target is position 1.
         `target_clip` (int)
             Ignore any mutations that occur within this many
@@ -419,8 +428,7 @@ class MutationCaller:
         target: --ATGCATGAAT--CGAAT
         query:  cgATGaAcG--TatCt---
 
-    >>> TempFile = functools.partial(tempfile.NamedTemporaryFile, mode='w')
-    >>> with TempFile() as targetfile:
+    >>> with tempfile.NamedTemporaryFile(mode='w') as targetfile:
     ...         _ = targetfile.write('>target\\nATGCATGGATCGAAT')
     ...         targetfile.flush()
     ...         mapper = Mapper(targetfile.name, OPTIONS_CODON_DMS)
@@ -435,8 +443,7 @@ class MutationCaller:
 
     >>> qvals = numpy.array([50, 50, 1, 2, 3, 4, 5, 6, 7, 10, 50, 50, 11, 12])
 
-    Now call mutations using default (target indexing starts at 1,
-    no ignoring of termini):
+    Now call mutations using :class:`MutationCaller.call`:
 
     >>> mutcaller = MutationCaller(mapper)
     >>> muts = mutcaller.call(a, qvals)
@@ -512,13 +519,60 @@ class MutationCaller:
     ['del8to9', 'del13to15']
     >>> muts_querysoftclip.insertions()
     ['ins11len2']
+
+    Now use `transcriptconverter` to get mutations numbered in
+    chromosome coordinates along with amino-acid substitutions.
+    First, initialize a :class:`dms_tools2.seqnumbering.TranscriptConverter`:
+
+    >>> with tempfile.NamedTemporaryFile(mode='r+') as genbankfile:
+    ...     _ = genbankfile.write('''
+    ... LOCUS       chromosome                17 bp    DNA              UNK 01-JAN-1980
+    ... FEATURES             Location/Qualifiers
+    ...      mRNA            3..17
+    ...                      /name="target"
+    ...      CDS             3..14
+    ...                      /name="prot"
+    ... ORIGIN
+    ...         1 CAATGCATGG ATCGAAT
+    ... //
+    ... ''')
+    ...     genbankfile.flush()
+    ...     _ = genbankfile.seek(0)
+    ...     transcriptconverter = dms_tools2.seqnumbering.TranscriptConverter(genbankfile)
+
+    Now create a :class:`MutationCaller` that uses `transcriptconverter`:
+
+    >>> mutcaller_tc = MutationCaller(mapper, transcriptconverter=transcriptconverter)
+
+    Use it to call the mutations in chromosome coordinates. Note that
+    the amino-acid substitutions that result from a nucleotide point
+    substitution are also indicated in the results:
+
+    >>> muts_tc = mutcaller_tc.call(a, qvals)
+    >>> muts_tc.substitutions()
+    ['chromosome-C6A_prot-His2Asn', 'chromosome-T8C', 'chromosome-G14T']
+    >>> muts_tc.substitutions(returnval='site')
+    [6, 8, 14]
+    >>> muts_tc.deletions()
+    ['chromosome-del10to11', 'chromosome-del15to17']
+    >>> muts_tc.deletions(returnval='site')
+    [10, 15]
+    >>> muts_tc.insertions()
+    ['chromosome-ins3len2', 'chromosome-ins13len2']
+    >>> muts_tc.insertions(returnval='site')
+    [3, 13]
     """
 
-    def __init__(self, mapper, *, targetindex=1, target_clip=0,
-            query_softclip=0):
+    def __init__(self, mapper, *, transcriptconverter=None,
+            targetindex=1, target_clip=0, query_softclip=0):
         """See main class docstring."""
         self.mapper = mapper
+        self.transcriptconverter = transcriptconverter
         self.targetindex = targetindex
+
+        if (self.transcriptconverter is not None) and self.targetindex != 1:
+            raise ValueError("If using `transcriptconverter`, then "
+                    "`targetindex` must be 1")
 
         if (not isinstance(target_clip, int)) or (
                 target_clip < 0):
@@ -541,8 +595,29 @@ class MutationCaller:
                 Array of Q-values for the **entire** query used
                 to build alignment, not just aligned region.
 
-        Return:
+        Returns:
             A :class:`Mutations` object holding the mutations.
+            If you are **not** using `transcriptconverter`,
+            mutations are named like this:
+
+                - "A60T" for substitution (at site 60)
+                - "ins5len10" for insertion (starts at 5, length 10)
+                - "del12to14" for deletion (12, 13, and 14 deleted)
+
+            where the number refers to the alignment target in
+            `mapper`.
+
+            If you are using `transcriptconverter`, then mutations are
+            named like this:
+
+                - "fluNS-A61T_fluNS1-Asp12Val" indicating
+                  substitution at site 61 in the "fluNS" chromosome
+                  causing amino-acid substitution Asp12Val in
+                  the "fluNS1" CDS. If there is no amino-acid
+                  substitution, the name will just be "fluNS-A61T".
+                - "fluNS-ins4len10" for insertion (again, now
+                  in coordinates of the chromosome, which is "fluNS".
+                - "fluNS-del11to13" for deletion.
         """
 
         def _get_qval(i):
@@ -671,6 +746,63 @@ class MutationCaller:
                 for i, ins_len, mut_str, q in insertion_tuples]
         deletion_tuples = [(istart, iend, mut_str, q, _hpLen(istart, targetseq))
                 for istart, iend, mut_str, q in deletion_tuples]
+
+        if self.transcriptconverter is not None:
+            chrom = self.transcriptconverter.mRNA_chromosome[a.target]
+
+            new_substitution_tuples = []
+            for i, mut_str, q in substitution_tuples:
+                i_chrom = self.transcriptconverter.i_mRNAtoChromosome(
+                        a.target, i, mRNAfragment=targetseq)
+                m = re.match('^(?P<wt_nt>[{0}])(?P<site>\d+)(?P<mut_nt>[{0}])$'
+                        .format(''.join(NTS)), mut_str)
+                assert m, "can't match {0}".format(mut_str)
+                assert i == int(m.group('site'))
+                wt_nt = m.group('wt_nt')
+                mut_nt = m.group('mut_nt')
+                if wt_nt != self.transcriptconverter.ntIdentity(chrom, i_chrom):
+                    raise ValueError("wrong wildtype in `transcriptconverter`")
+                aasubs = self.transcriptconverter.aaSubstitutions(chrom,
+                        (wt_nt, i_chrom, mut_nt))
+                if aasubs:
+                    aasubs = '_' + aasubs
+                new_substitution_tuples.append((
+                        i_chrom,
+                        '{0}-{1}{2}{3}{4}'.format(
+                            chrom, wt_nt, i_chrom, mut_nt, aasubs),
+                        q))
+            substitution_tuples = new_substitution_tuples
+
+            new_insertion_tuples = []
+            for i, ins_len, mut_str, q, hplen in insertion_tuples:
+                i_chrom = self.transcriptconverter.i_mRNAtoChromosome(
+                        a.target, i, mRNAfragment=targetseq)
+                m = re.match('^ins(?P<i>\d+)len(?P<len>\d+)$',
+                        mut_str)
+                assert m, "can't match {0}".format(mut_str)
+                assert i == int(m.group('i'))
+                new_insertion_tuples.append((
+                        i_chrom,
+                        ins_len,
+                        '{0}-ins{1}len{2}'.format(chrom, i_chrom, m.group('len')),
+                        q,
+                        hplen))
+            insertion_tuples = new_insertion_tuples
+
+            new_deletion_tuples = []
+            for istart, iend, mut_str, q, hplen in deletion_tuples:
+                istart_chrom = self.transcriptconverter.i_mRNAtoChromosome(
+                        a.target, istart, mRNAfragment=targetseq)
+                iend_chrom = self.transcriptconverter.i_mRNAtoChromosome(
+                        a.target, iend, mRNAfragment=targetseq)
+                new_deletion_tuples.append((
+                        istart_chrom,
+                        iend_chrom,
+                        '{0}-del{1}to{2}'.format(chrom, istart_chrom, iend_chrom),
+                        q,
+                        hplen))
+            deletion_tuples = new_deletion_tuples
+
 
         return Mutations(substitution_tuples=substitution_tuples,
                          insertion_tuples=insertion_tuples,
