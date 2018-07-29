@@ -205,7 +205,7 @@ class TranscriptConverter:
                     d[feature.name] = feature
                 elif not ignore_other_features:
                     raise ValueError("unrecognized feature type {0}"
-                            .feature.type)
+                            .format(feature.type))
 
 
     def i_mRNAtoChromosome(self, mRNA, i, *, mRNAfragment=None):

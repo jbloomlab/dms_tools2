@@ -833,9 +833,15 @@ class MutationConsensus:
             than this. Should be a threshold that just gets rid
             of really low-accuracy ones. Is **not** applied to
             mutations with an accuracy of NaN (`math.nan`).
-        `min_mut_frac` (float)
+        `min_sub_frac` (float)
             More than this fraction of sequences must have
-            mutation to call it as present.
+            substitution (point mutation) to call it as present.
+        `min_indel_frac` (float)
+            More than this fraction of sequences must have an
+            indel to call it as present. By default this is more
+            stringent than `min_sub_frac` because indel sequencing
+            errors are more common and deletions can be enriched
+            during PCR.
         `group_indel_frac` (float)
             If other overlap by >= this fraction of their
             total net length with the most common indel,
@@ -848,7 +854,7 @@ class MutationConsensus:
             >= 3 consecutive nucleotides. Rationale
             is that main mode of PacBio sequencing errors is
             short indels in homopolymers. Can contain entries
-            keyed by "n_mut" and "min_mut_frac".
+            keyed by "n_mut" and "min_indel_frac".
             Then for single-nucleotide indels in >= 3 nt homopolymers,
             increases calling stringency to these new parameters.
             If no entry in dict, just uses main values set for
@@ -875,7 +881,8 @@ class MutationConsensus:
       5. If there are at least `n_mut` :class:`Mutations`
          that contain a specific mutation
          **and** the fraction of :class:`Mutations` that
-         have this mutation is >= `min_mut_frac`, then call
+         have this mutation is >= `min_sub_frac` (for point
+         mutations) or `min_indel_frac` (for indels), then call
          the sequence as having the mutation.
 
       6. Otherwise call as wildtype.
@@ -1019,21 +1026,22 @@ class MutationConsensus:
     >>> mutcons.callConsensus([m_homopolymer_indel] * 3, 'deletions')
     'del5to5 del9to10'
     >>> mutcons.callConsensus([m_homopolymer_indel] * 3 + [m_wt] * 4, 'deletions')
-    'del9to10'
+    ''
     >>> mutcons.callConsensus([m_homopolymer_indel] * 3 + [m_wt] * 2, 'deletions')
     'del5to5 del9to10'
     """
 
-    def __init__(self, *, n_mut=2, min_acc=0.999, min_mut_frac=0.3,
-            group_indel_frac=0.8,
-            homopolymer_calling={'n_mut':3, 'min_mut_frac':0.5},
+    def __init__(self, *, n_mut=2, min_acc=0.999, min_sub_frac=0.3,
+            min_indel_frac=0.5, group_indel_frac=0.9,
+            homopolymer_calling={'n_mut':3},
             ):
         """See main class doc string."""
         self.n_mut = n_mut
         self.min_acc = min_acc
-        self.min_mut_frac = min_mut_frac
+        self.min_sub_frac = min_sub_frac
+        self.min_indel_frac = min_indel_frac
 
-        homopolymer_params = {'n_mut', 'min_mut_frac'}
+        homopolymer_params = {'n_mut', 'min_indel_frac'}
         if not (set(homopolymer_calling.keys()) <= homopolymer_params):
             raise ValueError("invalid entries in `homopolymer_calling`")
         for p in homopolymer_params:
@@ -1163,11 +1171,19 @@ class MutationConsensus:
             return '' # no mutations with enough counts, call wildtype
 
         mutlist = []
+        if mutation_type == 'substitutions':
+            min_mut_frac = self.min_sub_frac
+            homopolymer_min_mut_frac = self.min_sub_frac
+        elif mutation_type in {'insertions', 'deletions'}:
+            min_mut_frac = self.min_indel_frac
+            homopolymer_min_mut_frac = self.homopolymer_min_indel_frac
+        else:
+            raise ValueError("invalid `mutation_type` {0}".format(mutation_type))
         for m, n in sorted(sorted(mutcounts.items()),
                 key=lambda tup: tup[1], reverse=True):
             f = n / nseqs
-            if ((not homopolymer_indel[m] and f >= self.min_mut_frac)
-                    or f >= self.homopolymer_min_mut_frac):
+            if ((not homopolymer_indel[m] and f >= min_mut_frac)
+                    or f >= homopolymer_min_mut_frac):
                 mstring = m
             else:
                 mstring = None # consider wildtype
