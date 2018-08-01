@@ -349,7 +349,7 @@ def matchAndAlignCCS(ccslist, mapper, *,
           aligned using `mapper`. It is `False` otherwise.
 
         - `gene_aligned_alignment`, `gene_aligned_target`,
-          ``gene_aligned_n_trimmed_query_start`,
+          `gene_aligned_n_trimmed_query_start`,
           `gene_aligned_n_trimmed_query_end`,
           `gene_aligned_n_trimmed_target_start`,
           `gene_aligned_n_trimmed_target_end`,
