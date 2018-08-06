@@ -1077,7 +1077,7 @@ def findSigSel(df, valcol, plotfile, fdr=0.05, title=None):
 
 
 def plotColCorrs(df, plotfile, cols, *, lower_filter=None,
-        title=None):
+        title=None, shrink_threshold=25):
     """Plots correlation among columns in pandas Data Frame.
 
     Plots distribution of each variable and pairwise correlations.
@@ -1095,6 +1095,8 @@ def plotColCorrs(df, plotfile, cols, *, lower_filter=None,
             data for which this query is `True`.
         `title` (`None` or str)
             Title of plot.
+        `shrink_threshold` (float)
+            See argument of same name to :meth:`hist_bins_intsafe`.
     """
     if not set(cols).issubset(set(df.columns)):
         raise ValueError("`cols` specifies columns not in `df`")
@@ -1109,7 +1111,7 @@ def plotColCorrs(df, plotfile, cols, *, lower_filter=None,
     def hist1d(x, color, **kwargs):
         """1D histogram for diagonal elements."""
         bins=dms_tools2.plot.hist_bins_intsafe(x,
-                shrink_threshold=50)
+                shrink_threshold=shrink_threshold)
         plt.hist(x, color=color_all, bins=bins, **kwargs)
         if lower_filter:
             plt.hist(x.ix[filter_indices], color=color_filter,
@@ -1118,7 +1120,7 @@ def plotColCorrs(df, plotfile, cols, *, lower_filter=None,
     def hist2d(x, y, color, filterdata, **kwargs):
         """2D histogram for off-diagonal elements."""
         bins = [dms_tools2.plot.hist_bins_intsafe(a,
-                shrink_threshold=50) for a in [x, y]]
+                shrink_threshold=shrink_threshold) for a in [x, y]]
         if filterdata:
             color = color_filter
             x = x.ix[filter_indices]
