@@ -38,7 +38,7 @@ class TranscriptConverter:
             should be a separate chromosome. The features
             of relevance are called `mRNA` and `CDS`.
             Each of these features should have a qualifier
-            called `name` that gives its name. 
+            called `label` that gives its name. 
         `ignore_other_features` (bool)
             If `genbankfile` contains features not `mRNA`
             or `CDS`, ignore them or raise error?
@@ -70,13 +70,13 @@ class TranscriptConverter:
     ... LOCUS       fluNS                    890 bp    DNA              UNK 01-JAN-1980
     ... FEATURES             Location/Qualifiers
     ...      mRNA            2..868
-    ...                      /name="fluNS1"
+    ...                      /label="fluNS1"
     ...      mRNA            join(2..56,529..868)
-    ...                      /name="fluNS2"
+    ...                      /label="fluNS2"
     ...      CDS             27..719
-    ...                      /name="fluNS1"
+    ...                      /label="fluNS1"
     ...      CDS             join(27..56,529..864)
-    ...                      /name="fluNS2"
+    ...                      /label="fluNS2"
     ... ORIGIN
     ...         1 agcaaaagca gggtgacaaa gacataatgg atccaaacac tgtgtcaagc tttcaggtag
     ...        61 attgctttct ttggcatgtc cgcaaaagag ttgcagacca agaactaggt gatgccccat
@@ -187,9 +187,9 @@ class TranscriptConverter:
                 c.seq = c.seq.upper()
             for feature in c.features:
                 if feature.type in {'mRNA', 'CDS'}:
-                    name = feature.qualifiers['name']
+                    name = feature.qualifiers['label']
                     if len(name) != 1:
-                        raise ValueError("multiple names")
+                        raise ValueError("multiple 'label' qualifiers")
                     feature.name = name[0]
                     if feature.type == 'mRNA':
                         d = self.mRNAs

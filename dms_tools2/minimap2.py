@@ -529,9 +529,9 @@ class MutationCaller:
     ... LOCUS       chromosome                17 bp    DNA              UNK 01-JAN-1980
     ... FEATURES             Location/Qualifiers
     ...      mRNA            3..17
-    ...                      /name="target"
+    ...                      /label="target"
     ...      CDS             3..14
-    ...                      /name="prot"
+    ...                      /label="prot"
     ... ORIGIN
     ...         1 CAATGCATGG ATCGAAT
     ... //
