@@ -3,7 +3,7 @@ Change Log
 
 2.3.dev0
 --------
-* Require Python 3.5 or greater.
+* Require Python 3.6 or greater.
 
 * added `pacbio`, `minimap2`, and `seqnumbering` modules.
 

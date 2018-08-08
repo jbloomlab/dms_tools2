@@ -10,7 +10,7 @@ If you use `dms_tools2`_ in your research, **please cite the following reference
 
 **Bloom JD.** `"Software for the analysis and visualization of deep mutational scanning data." <http://www.biomedcentral.com/content/pdf/s12859-015-0590-4.pdf>`_. *BMC Bioinformatics*, 16:168 (2015).
 
-    - This citation is not an up-to-date description of the current capabilities of `dms_tools2`_ (for that, see these docs) -- in fact, the citation actually describes the older `dms_tools <https://github.com/jbloom/dms_tools>`_ software. However, it is the scientific citation for `dms_tools2`_ -- and our ability to know if people are using `dms_tools2`_ depends on citations. So **please cite this paper!**
+    - This citation is not an up-to-date description of the current capabilities of `dms_tools2`_ (for that, see these docs) -- in fact, the citation actually describes the older `dms_tools <https://github.com/jbloom/dms_tools>`_ software. However, it is the scientific citation for `dms_tools2`_ since we are not trying to keep the citations up-to-date with the rapidly developing software. So **please cite this paper!**
 
 Also, consider citing these papers if you use the relevant functionality:
 
