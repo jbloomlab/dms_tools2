@@ -426,18 +426,22 @@ def matchAndAlignCCS(ccslist, mapper, *,
                 )
 
     # build match_str
-    match_str = ''
+    match_str = collections.OrderedDict()
     if termini5 is not None:
-        match_str += f'(?P<termini5>{termini5}){{e<={termini5_fuzziness}}}'
-    match_str += f'(?P<gene>{gene}){{e<={gene_fuzziness}}}'
+        match_str['termini5'] = \
+                f'(?P<termini5>{termini5}){{e<={termini5_fuzziness}}}'
+    match_str['gene'] = f'(?P<gene>{gene}){{e<={gene_fuzziness}}}'
     if spacer is not None:
-        match_str += f'(?P<spacer>{spacer}){{e<={spacer_fuzziness}}}'
+        match_str['spacer'] = \
+                f'(?P<spacer>{spacer}){{e<={spacer_fuzziness}}}'
     if umi is not None:
-        match_str += f'(?P<UMI>{umi}){{e<={umi_fuzziness}}}'
+        match_str['umi'] = f'(?P<UMI>{umi}){{e<={umi_fuzziness}}}'
     if barcode is not None:
-        match_str += f'(?P<barcode>{barcode}){{e<={barcode_fuzziness}}}'
+        match_str['barcode'] = \
+                f'(?P<barcode>{barcode}){{e<={barcode_fuzziness}}}'
     if termini3 is not None:
-        match_str += f'(?P<termini3>{termini3}){{e<={termini3_fuzziness}}}'
+        match_str['termini3'] = \
+                f'(?P<termini3>{termini3}){{e<={termini3_fuzziness}}}'
 
     # now create df
     df = (
@@ -445,25 +449,25 @@ def matchAndAlignCCS(ccslist, mapper, *,
 
         # match barcoded sequences
         .pipe(dms_tools2.pacbio.matchSeqs,
-              match_str=match_str,
+              match_str=''.join(match_str.values()),
               col_to_match='CCS',
               match_col='barcoded')
     
         # look for just termini or spacer
         .pipe(dms_tools2.pacbio.matchSeqs, 
-              match_str=termini5,
+              match_str=match_str['termini5'],
               col_to_match='CCS',
               match_col='has_termini5',
               add_polarity=False,
               add_group_cols=False)
         .pipe(dms_tools2.pacbio.matchSeqs, 
-              match_str=termini3,
+              match_str=match_str['termini3'],
               col_to_match='CCS',
               match_col='has_termini3',
               add_polarity=False,
               add_group_cols=False)
         .pipe(dms_tools2.pacbio.matchSeqs, 
-              match_str=spacer,
+              match_str=match_str['spacer'],
               col_to_match='CCS',
               match_col='has_spacer',
               add_polarity=False,
