@@ -262,6 +262,9 @@ class CCS:
 
 def matchAndAlignCCS(ccslist, mapper, *,
         termini5, gene, spacer, umi, barcode, termini3,
+        termini5_fuzziness=0, gene_fuzziness=0,
+        spacer_fuzziness=0, umi_fuzziness=0,
+        barcode_fuzziness=0, termini3_fuzziness=0,
         targetvariants=None, mutationcaller=None,
         rc_barcode_umi=True):
     """Identify CCSs that match pattern and align them.
@@ -293,8 +296,7 @@ def matchAndAlignCCS(ccslist, mapper, *,
             to `regex` object. Passed through :meth:`re_expandIUPAC`.
             For instance, make it 'ATG|CTG' if the sequence might
             start with either `ATG` or `CTG`. Set to `None` if
-            no expected 5' termini. Note that we use `regex`
-            rather than `re`, so fuzzy matching is enabled.
+            no expected 5' termini.
         `gene` (str)
             Like `termini5` but gives the gene to match. For instance,
             'N+' if the gene can be arbitrary sequence and length.
@@ -307,6 +309,12 @@ def matchAndAlignCCS(ccslist, mapper, *,
             if 10-nucleotide barcode.
         `termini3` (str or `None`)
             Like `termini5`, but for termini3.
+        `termini5_fuzziness`, ..., `termini3_fuzziness` (int)
+            The matching for the sequence patterns uses `regex`,
+            which enables fuzzy matching. Set `termini5_fuzziness`
+            to enable a specific number of differences (can be
+            insertion, deletion, or mismatch) when matching
+            `termini5`. Likewise for `gene_fuzziness`, etc.
         `targetvariants` (:class:`dms_tools2.minimap2.TargetVariants`)
             Call target variants. See docs for same argument to
             :meth:`alignSeqs`.
@@ -420,16 +428,16 @@ def matchAndAlignCCS(ccslist, mapper, *,
     # build match_str
     match_str = ''
     if termini5 is not None:
-        match_str += '(?P<termini5>{0})'.format(termini5)
-    match_str += '(?P<gene>{0})'.format(gene)
+        match_str += f'(?P<termini5>{termini5}){{e<={termini5_fuzziness}}}'
+    match_str += f'(?P<gene>{gene}){{e<={gene_fuzziness}}}'
     if spacer is not None:
-        match_str += '(?P<spacer>{0})'.format(spacer)
+        match_str += f'(?P<spacer>{spacer}){{e<={spacer_fuzziness}}}'
     if umi is not None:
-        match_str += '(?P<UMI>{0})'.format(umi)
+        match_str += f'(?P<UMI>{umi}){{e<={umi_fuzziness}}}'
     if barcode is not None:
-        match_str += '(?P<barcode>{0})'.format(barcode)
+        match_str += f'(?P<barcode>{barcode}){{e<={barcode_fuzziness}}}'
     if termini3 is not None:
-        match_str += '(?P<termini3>{0})'.format(termini3)
+        match_str += f'(?P<termini3>{termini3}){{e<={termini3_fuzziness}}}'
 
     # now create df
     df = (
