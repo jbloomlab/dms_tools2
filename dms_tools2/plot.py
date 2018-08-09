@@ -1131,7 +1131,7 @@ def plotColCorrs(df, plotfile, cols, *, lower_filter=None,
         plt.hist2d(x, y, bins=bins, cmap=cmap, **kwargs)
 
     g = (dms_tools2.plot.AugmentedPairGrid(df, vars=cols,
-            diag_sharey=False, size=3)
+            diag_sharey=False, height=3)
          .map_diag(hist1d)
          .map_upper(hist2d, filterdata=False)
          .map_lower(hist2d, filterdata=(lower_filter is not None))
@@ -1293,7 +1293,7 @@ def plotRarefactionCurves(df, rarefy_col, plotfile,
     plt.close()
 
 
-def hist_bins_intsafe(x, method='fd', shrink_threshold=None):
+def hist_bins_intsafe(x, method='fd', shrink_threshold=None, maxbins=100):
     """Histogram bins that work for integer data.
 
     You can auto-choose bins using `numpy.histogram`.
@@ -1313,6 +1313,8 @@ def hist_bins_intsafe(x, method='fd', shrink_threshold=None):
             apply a heuristic threshold to slow
             the growth in number of bins if they
             exceed this number.
+        `maxbins` (int)
+            Maximum number of bins.
 
     Returns:
         The bin edges as returned in the second
@@ -1343,6 +1345,8 @@ def hist_bins_intsafe(x, method='fd', shrink_threshold=None):
     True
     """
     bin_edges = numpy.histogram(x, bins='fd')[1]
+    if len(bin_edges) > maxbins:
+        bin_edges = numpy.histogram(x, min(maxbins, len(bin_edges) - 1))[1]
     if shrink_threshold is None:
         corr = 1
     else:
