@@ -315,6 +315,8 @@ def matchAndAlignCCS(ccslist, mapper, *,
             to enable a specific number of differences (can be
             insertion, deletion, or mismatch) when matching
             `termini5`. Likewise for `gene_fuzziness`, etc.
+            Note that the fuzzy matching uses the *BESTMATCH*
+            flag to try to find the best fuzzy match.
         `targetvariants` (:class:`dms_tools2.minimap2.TargetVariants`)
             Call target variants. See docs for same argument to
             :meth:`alignSeqs`.
@@ -429,19 +431,19 @@ def matchAndAlignCCS(ccslist, mapper, *,
     match_str = collections.OrderedDict()
     if termini5 is not None:
         match_str['termini5'] = \
-                f'(?P<termini5>{termini5}){{e<={termini5_fuzziness}}}'
-    match_str['gene'] = f'(?P<gene>{gene}){{e<={gene_fuzziness}}}'
+                f'(?b)(?P<termini5>{termini5}){{e<={termini5_fuzziness}}}'
+    match_str['gene'] = f'(?b)(?P<gene>{gene}){{e<={gene_fuzziness}}}'
     if spacer is not None:
         match_str['spacer'] = \
-                f'(?P<spacer>{spacer}){{e<={spacer_fuzziness}}}'
+                f'(?b)(?P<spacer>{spacer}){{e<={spacer_fuzziness}}}'
     if umi is not None:
-        match_str['umi'] = f'(?P<UMI>{umi}){{e<={umi_fuzziness}}}'
+        match_str['umi'] = f'(?b)(?P<UMI>{umi}){{e<={umi_fuzziness}}}'
     if barcode is not None:
         match_str['barcode'] = \
-                f'(?P<barcode>{barcode}){{e<={barcode_fuzziness}}}'
+                f'(?b)(?P<barcode>{barcode}){{e<={barcode_fuzziness}}}'
     if termini3 is not None:
         match_str['termini3'] = \
-                f'(?P<termini3>{termini3}){{e<={termini3_fuzziness}}}'
+                f'(?b)(?P<termini3>{termini3}){{e<={termini3_fuzziness}}}'
 
     # now create df
     df = (
