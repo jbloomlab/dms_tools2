@@ -289,12 +289,18 @@ class TerminiVariantTagCaller:
         `variants` (list)
             List of variant names, must have nucleotide for
             variant specified in qualifier for each variant tag.
+        `trim_termini` (int)
+            The amount trimmed from the 5' termini of `termini5`
+            and the 3' termini of `termini3` when these are
+            passed to :class:`TerminiTagVariantCaller.call`.
     
     Attributes:
         `variant_tags` (list)
             List of :class:`TerminiVariantTag` objects.
         `variants` (list)
             List of variant names set on initialization.
+        `trim_termini` (int)
+            Value set as argument on initialization.
         `termini5` (Bio.SeqFeature.SeqFeature)
             The 5' termini in `features`
         `termini3` (Bio.SeqFeature.SeqFeature)
@@ -316,7 +322,7 @@ class TerminiVariantTagCaller:
     ...     ]
 
     Now initialize the :class:`TerminiVariantTagCaller`:
->>> caller = TerminiVariantTagCaller(features)
+    >>> caller = TerminiVariantTagCaller(features, trim_termini=4)
     >>> caller.variants
     ['variant_1', 'variant_2']
     >>> int(caller.termini5.location.start)
@@ -345,26 +351,25 @@ class TerminiVariantTagCaller:
     Do some example variant calling:
 
     >>> caller.call({'termini5':'GGCGTCACACTTTGCTATGCCATAGCATATTTATCC',
-    ...              'termini3':'AGATCGGTAGAGCGTCGTGTAGGGAAAGAGTGTGG'},
-    ...             trim_termini=4)
+    ...              'termini3':'AGATCGGTAGAGCGTCGTGTAGGGAAAGAGTGTGG'})
     'variant_1'
     >>> caller.call({'termini5':'GGCGTCACACTTTGCTATGCCATAGCATGTTTATCC',
-    ...              'termini3':'AGATCGGCAGAGCGTCGTGTAGGGAAAGAGTGTGG'},
-    ...             trim_termini=4)
+    ...              'termini3':'AGATCGGCAGAGCGTCGTGTAGGGAAAGAGTGTGG'})
     'variant_2'
     >>> caller.call({'termini5':'GGCGTCACACTTTGCTATGCCATAGCATGTTTATCC',
-    ...              'termini3':'AGATCGGTAGAGCGTCGTGTAGGGAAAGAGTGTGG'},
-    ...             trim_termini=4)
+    ...              'termini3':'AGATCGGTAGAGCGTCGTGTAGGGAAAGAGTGTGG'})
     'mixed'
     >>> caller.call({'termini5':'CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC',
-    ...              'termini3':'AGATCGGTAGAGCGTCGTGTAGGGAAAGAGTGTGG'},
-    ...             trim_termini=4)
+    ...              'termini3':'AGATCGGTAGAGCGTCGTGTAGGGAAAGAGTGTGG'})
     'invalid'
-    >>> caller.call({}, trim_termini=4)
+    >>> caller.call({'termini5':'GGC', 'termini3':'AGAT'})
+    'unknown'
+    >>> caller.call({})
     'unknown'
     """
 
-    def __init__(self, features, *, variants=['variant_1', 'variant_2']):
+    def __init__(self, features, *, variants=['variant_1', 'variant_2'],
+            trim_termini):
         """See main class docs."""
         features_dict = collections.defaultdict(list)
         for feature in features:
@@ -377,6 +382,10 @@ class TerminiVariantTagCaller:
 
         if len(features_dict['variant_tag']) < 1:
             raise ValueError("no `variant_tag`s specified")
+
+        self.trim_termini = trim_termini
+        if trim_termini < 0:
+            raise ValueError("trim_termini must be >= 0")
 
         self.variants = variants
         if len(self.variants) < 1:
@@ -422,16 +431,17 @@ class TerminiVariantTagCaller:
                     for variant_nt in variant_tag.nucleotides.keys()):
                 raise ValueError(f"Nucleotide {nt} invalid for {variant_tag}")
 
-    def call(self, termini_seqs, trim_termini):
+    def call(self, termini_seqs):
         """Call variant identity.
 
         Args:
             `termini_seqs` (dict, namedtuple, pandas row)
                 Some object that has attributes that can be
-                accessed as `termini5` and `termini3`.
-            `trim_termini` (int)
-                Amount trimmed from 5' end of termini5 and
-                3' end of termini3 in `termini_seqs`.
+                accessed as `termini5` and `termini3`. These
+                termini are assumed to have the amount specified
+                by :class:`TerminiVariantTagCaller.trim_termini`
+                trimmed from the 5' termini of `termini5` and
+                the 3' termini of `termini3`.
 
         Returns:
             A str that can be any of the following:
@@ -442,7 +452,8 @@ class TerminiVariantTagCaller:
                   return "mixed".
                 - If any tag sites have a nucleotide that matches no
                   known variants, return "invalid".
-                - If `termini_seqs` lacks either termini, return
+                - If `termini_seqs` lacks a termini or has a termini
+                  that is too short to contain the tag sites, return
                   "unknown".
         """
         if not ('termini5' in termini_seqs and 'termini3' in termini_seqs):
@@ -452,7 +463,9 @@ class TerminiVariantTagCaller:
         for variant_tag in self.variant_tags:
             i = variant_tag.site
             if variant_tag.termini == 'termini5':
-                i -= trim_termini
+                i -= self.trim_termini
+            if len(termini_seqs[variant_tag.termini]) <= i:
+                return 'unknown'
             nt = termini_seqs[variant_tag.termini][i]
             if nt in variant_tag.nucleotides:
                 variants.append(variant_tag.nucleotides[nt])
@@ -464,13 +477,13 @@ class TerminiVariantTagCaller:
             return 'mixed'
 
 
-
 def matchAndAlignCCS(ccslist, mapper, *,
         termini5, gene, spacer, umi, barcode, termini3,
         termini5_fuzziness=0, gene_fuzziness=0,
         spacer_fuzziness=0, umi_fuzziness=0,
         barcode_fuzziness=0, termini3_fuzziness=0,
         targetvariants=None, mutationcaller=None,
+        terminiVariantTagCaller=None,
         rc_barcode_umi=True):
     """Identify CCSs that match pattern and align them.
 
@@ -527,6 +540,8 @@ def matchAndAlignCCS(ccslist, mapper, *,
             :meth:`alignSeqs`.
         `mutationcaller` (:class:`dms_tools2.minimap2.MutationCaller`)
             Call mutations. See docs for same argument to :meth:`alignSeqs`.
+        `terminiVariantTagCaller (:class:`TerminiVariantTagCaller`)
+            Call variants in termini.
         `rc_barcode_umi` (bool)
             Do we reverse complement the `barcode` and `UMI` in the
             returned data frame relative to the orientation of
@@ -697,6 +712,10 @@ def matchAndAlignCCS(ccslist, mapper, *,
         .pipe(_align_CCS_both_orientations,
               mapper=mapper)
         )
+
+    if terminiVariantTagCaller is not None:
+        df = df.assign(termini_variant=lambda x: x.apply(
+                terminiVariantTagCaller.call, axis=1))
 
     # reverse complement barcode and UMI
     if rc_barcode_umi:
