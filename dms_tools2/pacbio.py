@@ -292,7 +292,7 @@ class TerminiVariantTagCaller:
         `trim_termini` (int)
             The amount trimmed from the 5' termini of `termini5`
             and the 3' termini of `termini3` when these are
-            passed to :class:`TerminiTagVariantCaller.call`.
+            passed to :class:`TerminiVariantTagCaller.call`.
     
     Attributes:
         `variant_tags` (list)
@@ -322,6 +322,7 @@ class TerminiVariantTagCaller:
     ...     ]
 
     Now initialize the :class:`TerminiVariantTagCaller`:
+
     >>> caller = TerminiVariantTagCaller(features, trim_termini=4)
     >>> caller.variants
     ['variant_1', 'variant_2']
@@ -540,7 +541,7 @@ def matchAndAlignCCS(ccslist, mapper, *,
             :meth:`alignSeqs`.
         `mutationcaller` (:class:`dms_tools2.minimap2.MutationCaller`)
             Call mutations. See docs for same argument to :meth:`alignSeqs`.
-        `terminiVariantTagCaller (:class:`TerminiVariantTagCaller`)
+        `terminiVariantTagCaller` (:class:`TerminiVariantTagCaller`)
             Call variants in termini.
         `rc_barcode_umi` (bool)
             Do we reverse complement the `barcode` and `UMI` in the
