@@ -8,6 +8,7 @@ Tools for processing PacBio sequencing data.
 
 
 import os
+import re
 import io
 import math
 import subprocess
@@ -19,6 +20,7 @@ import regex
 import numpy
 import pandas
 import pysam
+import Bio.SeqFeature
 
 # import dms_tools2.plot to set plotting contexts / themes
 import dms_tools2
@@ -260,6 +262,209 @@ class CCS:
                 "qvals not correct length"
 
 
+TerminiVariantTag = collections.namedtuple(
+        'TerminiVariantTag', ['termini', 'site', 'nucleotides'])
+TerminiVariantTag.__doc__ = "Variant tag at termini."
+TerminiVariantTag.termini.__doc__ = \
+        "Location of tag: `termini5` or `termini3`."
+TerminiVariantTag.site.__doc__ = \
+        "Site of tag in termini (0, 1, ... numbering)."
+TerminiVariantTag.nucleotides.__doc__ = \
+        "A dict keyed variant nucleotides, values variant name."
+
+
+class TerminiVariantTagCaller:
+    """Call variant tags at termini of CCSs.
+
+    Args:
+        `features` (list)
+            List of BioPython `SeqFeature` objects. Any
+            features with a type attribute of `variant_tag`
+            are taken to specify variant tags. These should
+            consist of a single nucleotide, and have qualifiers
+            that give the nucleotide for each variant. The
+            features list should also have features with
+            type attributes `termini5` and `termini3` used
+            to determine which termin each tag falls in.
+        `variants` (list)
+            List of variant names, must have nucleotide for
+            variant specified in qualifier for each variant tag.
+    
+    Attributes:
+        `variant_tags` (list)
+            List of :class:`TerminiVariantTag` objects.
+        `variants` (list)
+            List of variant names set on initialization.
+        `termini5` (Bio.SeqFeature.SeqFeature)
+            The 5' termini in `features`
+        `termini3` (Bio.SeqFeature.SeqFeature)
+            The 3' termini in `features`
+
+    Here is an example. First, create list of features that has a
+    single-nucleotide variant tag for each of two possible variants
+    ('variant_1' and 'variant_2') in each termini:
+
+    >>> SeqFeature = Bio.SeqFeature.SeqFeature
+    >>> FeatureLocation = Bio.SeqFeature.FeatureLocation
+    >>> features = [
+    ...     SeqFeature(type='termini5', location=FeatureLocation(0, 147)),
+    ...     SeqFeature(type='termini3', location=FeatureLocation(1303, 1342)),
+    ...     SeqFeature(type='variant_tag', location=FeatureLocation(32, 33),
+    ...         qualifiers={'variant_1':['A'], 'variant_2':['G']}),
+    ...     SeqFeature(type='variant_tag', location=FeatureLocation(1310, 1311),
+    ...         qualifiers={'variant_1':['T'], 'variant_2':['C']})
+    ...     ]
+
+    Now initialize the :class:`TerminiVariantTagCaller`:
+>>> caller = TerminiVariantTagCaller(features)
+    >>> caller.variants
+    ['variant_1', 'variant_2']
+    >>> int(caller.termini5.location.start)
+    0
+    >>> int(caller.termini5.location.end)
+    147
+    >>> int(caller.termini3.location.start)
+    1303
+    >>> int(caller.termini3.location.end)
+    1342
+    >>> len(caller.variant_tags)
+    2
+    >>> caller.variant_tags[0].termini
+    'termini5'
+    >>> caller.variant_tags[0].site
+    32
+    >>> caller.variant_tags[0].nucleotides == {'A':'variant_1', 'G':'variant_2'}
+    True
+    >>> caller.variant_tags[1].termini
+    'termini3'
+    >>> caller.variant_tags[1].site
+    7
+    >>> caller.variant_tags[1].nucleotides == {'T':'variant_1', 'C':'variant_2'}
+    True
+
+    Do some example variant calling:
+
+    >>> caller.call({'termini5':'GGCGTCACACTTTGCTATGCCATAGCATATTTATCC',
+    ...              'termini3':'AGATCGGTAGAGCGTCGTGTAGGGAAAGAGTGTGG'},
+    ...             trim_termini=4)
+    'variant_1'
+    >>> caller.call({'termini5':'GGCGTCACACTTTGCTATGCCATAGCATGTTTATCC',
+    ...              'termini3':'AGATCGGCAGAGCGTCGTGTAGGGAAAGAGTGTGG'},
+    ...             trim_termini=4)
+    'variant_2'
+    >>> caller.call({'termini5':'GGCGTCACACTTTGCTATGCCATAGCATGTTTATCC',
+    ...              'termini3':'AGATCGGTAGAGCGTCGTGTAGGGAAAGAGTGTGG'},
+    ...             trim_termini=4)
+    'mixed'
+    >>> caller.call({'termini5':'CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC',
+    ...              'termini3':'AGATCGGTAGAGCGTCGTGTAGGGAAAGAGTGTGG'},
+    ...             trim_termini=4)
+    'invalid'
+    >>> caller.call({}, trim_termini=4)
+    'unknown'
+    """
+
+    def __init__(self, features, *, variants=['variant_1', 'variant_2']):
+        """See main class docs."""
+        features_dict = collections.defaultdict(list)
+        for feature in features:
+            features_dict[feature.type].append(feature)
+        for termini in ['termini5', 'termini3']:
+            if len(features_dict[termini]) != 1:
+                raise ValueError(f"Failed to find exactly one {termini}")
+            else:
+                setattr(self, termini, features_dict[termini][0])
+
+        if len(features_dict['variant_tag']) < 1:
+            raise ValueError("no `variant_tag`s specified")
+
+        self.variants = variants
+        if len(self.variants) < 1:
+            raise ValueError("no variants specified")
+
+        self.variant_tags = []
+        for variant_feature in features_dict['variant_tag']:
+            if len(variant_feature) != 1:
+                raise ValueError(f"variant not length 1: {variant_feature}")
+            termini = [f for f in [self.termini5, self.termini3] if
+                    variant_feature.location.start in f]
+            if len(termini) != 1:
+                raise ValueError("variant tag not in exactly one termini")
+            self.variant_tags.append(
+                    TerminiVariantTag(
+                        termini=termini[0].type,
+                        site=variant_feature.location.start - 
+                            termini[0].location.start,
+                        nucleotides={variant_feature.qualifiers[v][0]:v
+                            for v in self.variants})
+                    )
+
+    def checkTagNucleotides(self, amplicon):
+        """Check amplicon carrying tags has right ambiguous nucleotides.
+
+        Arguments:
+            `amplicon` (BioPython `SeqRecord`)
+                The full amplicon that contains the termini
+                and variant tags
+
+        This method checks that the `amplicon` correctly has
+        IUPAC ambiguous nucleotides that cover the possible
+        diversity at the site of each variant tag. If so,
+        it does nothing and returns `None`. If not, it raises
+        a `ValueError`.
+        """
+        for variant_tag in self.variant_tags:
+            termini = {'termini5':self.termini5,
+                       'termini3':self.termini3}[variant_tag.termini]
+            terminiseq = str(termini.location.extract(amplicon).seq)
+            nt = terminiseq[variant_tag.site]
+            if not all(re.match(dms_tools2.NT_TO_REGEXP[nt], variant_nt)
+                    for variant_nt in variant_tag.nucleotides.keys()):
+                raise ValueError(f"Nucleotide {nt} invalid for {variant_tag}")
+
+    def call(self, termini_seqs, trim_termini):
+        """Call variant identity.
+
+        Args:
+            `termini_seqs` (dict, namedtuple, pandas row)
+                Some object that has attributes that can be
+                accessed as `termini5` and `termini3`.
+            `trim_termini` (int)
+                Amount trimmed from 5' end of termini5 and
+                3' end of termini3 in `termini_seqs`.
+
+        Returns:
+            A str that can be any of the following:
+
+                - If all tag sites in termini match the same variant,
+                  return the name of that variant.
+                - If different tag sites match different variants,
+                  return "mixed".
+                - If any tag sites have a nucleotide that matches no
+                  known variants, return "invalid".
+                - If `termini_seqs` lacks either termini, return
+                  "unknown".
+        """
+        if not ('termini5' in termini_seqs and 'termini3' in termini_seqs):
+            return "unknown"
+
+        variants = []
+        for variant_tag in self.variant_tags:
+            i = variant_tag.site
+            if variant_tag.termini == 'termini5':
+                i -= trim_termini
+            nt = termini_seqs[variant_tag.termini][i]
+            if nt in variant_tag.nucleotides:
+                variants.append(variant_tag.nucleotides[nt])
+            else:
+                return 'invalid'
+        if len(set(variants)) == 1:
+            return variants[0]
+        else:
+            return 'mixed'
+
+
+
 def matchAndAlignCCS(ccslist, mapper, *,
         termini5, gene, spacer, umi, barcode, termini3,
         termini5_fuzziness=0, gene_fuzziness=0,
@@ -384,6 +589,11 @@ def matchAndAlignCCS(ccslist, mapper, *,
           :class:`dms_tools2.minimap2.Mutations` object returned
           by :class:`dms_tools2.minimap2.MutationCaller.call`,
           or `None` if there is no alignment.
+
+        - If `terminiVariantTagCaller` is not `None`, column
+          named `termini_variant` giving the termini variant
+          returned by :class:`TerminiVariantTagCaller.call`,
+          or the str "unknown" if both termini are not matched.
 
         - `CCS_aligned` is `True` if the CCS can be aligned
           using `mapper` even if a gene cannot be matched,
