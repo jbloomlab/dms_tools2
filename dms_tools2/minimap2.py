@@ -41,7 +41,7 @@ OPTIONS_CODON_DMS = ['--for-only',
                      '-O12',
                      '-E2',
                      '--secondary=no',
-                     '--end-bonus=8',
+                     '--end-bonus=13',
                     ]
 
 #: `options` argument to :class:`Mapper` that works well
