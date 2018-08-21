@@ -658,18 +658,33 @@ def matchAndAlignCCS(ccslist, mapper, *,
     if termini5 is not None:
         match_str['termini5'] = \
                 f'(?b)(?P<termini5>{termini5}){{e<={termini5_fuzziness}}}'
+    else:
+        match_str['termini5'] = None
+
     match_str['gene'] = f'(?b)(?P<gene>{gene}){{e<={gene_fuzziness}}}'
+
     if spacer is not None:
         match_str['spacer'] = \
                 f'(?b)(?P<spacer>{spacer}){{e<={spacer_fuzziness}}}'
+    else:
+        match_str['spacer'] = None
+
     if umi is not None:
         match_str['umi'] = f'(?b)(?P<UMI>{umi}){{e<={umi_fuzziness}}}'
+    else:
+        match_str['umi'] = None
+
     if barcode is not None:
         match_str['barcode'] = \
                 f'(?b)(?P<barcode>{barcode}){{e<={barcode_fuzziness}}}'
+    else:
+        match_str['barcode'] = None
+
     if termini3 is not None:
         match_str['termini3'] = \
                 f'(?b)(?P<termini3>{termini3}){{e<={termini3_fuzziness}}}'
+    else:
+        match_str['termini3'] = None
 
     # now create df
     df = (
@@ -677,7 +692,8 @@ def matchAndAlignCCS(ccslist, mapper, *,
 
         # match barcoded sequences
         .pipe(dms_tools2.pacbio.matchSeqs,
-              match_str=''.join(match_str.values()),
+              match_str=''.join(m for m in match_str.values()
+                    if m is not None),
               col_to_match='CCS',
               match_col='barcoded')
     
