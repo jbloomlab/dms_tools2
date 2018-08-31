@@ -5,6 +5,8 @@ Change Log
 -------
 * Improved appearance of histograms created by `findSigSel`
 
+* Fixed ymin for `dms2_logoplot` with small-valued fracsurvive
+
 2.2.8
 --------
 * Cleaned up organization of examples and added `Dingens2018` and `Lee2018`.

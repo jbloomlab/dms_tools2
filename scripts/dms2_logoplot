@@ -150,7 +150,7 @@ def main():
                     .sum(axis=1)
                     .max()
                     )
-            ymin = -0.001
+            ymin = -ymax / 100.0
             if args['fracsurvivemax'] is not None:
                 assert args['fracsurvivemax'] > 0, 'fracsurvivemax <= 0'
                 assert args['fracsurvivemax'] >= ymax, \
