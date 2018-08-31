@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.2.9
+-------
+* Improved appearance of histograms created by `findSigSel`
+
 2.2.8
 --------
 * Cleaned up organization of examples and added `Dingens2018` and `Lee2018`.
