@@ -9,6 +9,12 @@ Change Log
 
 * ``import dms_tools2`` now imports all non-optional modules in the package
 
+2.2.9
+-------
+* Improved appearance of histograms created by `findSigSel`
+
+* Fixed ymin for `dms2_logoplot` with small-valued fracsurvive
+
 2.2.8
 --------
 * Cleaned up organization of examples and added `Dingens2018` and `Lee2018`.

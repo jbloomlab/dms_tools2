@@ -1002,7 +1002,7 @@ def findSigSel(df, valcol, plotfile, fdr=0.05, title=None):
     # plot the histogram
     plt.figure(figsize=(5.5, 4))
     (heights, binedges, patches) = plt.hist(df[valcol],
-            bins=binedges, normed=True,
+            bins=binedges, normed=True, histtype='stepfilled',
             color=COLOR_BLIND_PALETTE[2])
 
     # initial guess gives correct mean and variance for
