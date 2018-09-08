@@ -721,15 +721,14 @@ class MutationCaller:
                     i, n, 'ins{0}len{1}'.format(i, n), i_qvals))
 
         # filter away mutations too near target termini
-        if self.target_clip:
-            i_first = self.targetindex + self.target_clip
-            i_last = a.r_len + self.targetindex - self.target_clip
-            substitution_tuples = [tup for tup in substitution_tuples
-                    if not (tup[0] < i_first or tup[0] >= i_last)]
-            insertion_tuples = [tup for tup in insertion_tuples
-                    if not (tup[0] < i_first or tup[0] >= i_last)]
-            deletion_tuples = [tup for tup in deletion_tuples
-                    if not (tup[1] < i_first or tup[0] >= i_last)]
+        i_first = self.targetindex + self.target_clip
+        i_last = a.r_len + self.targetindex - self.target_clip
+        substitution_tuples = [tup for tup in substitution_tuples
+            if not (tup[0] < i_first or tup[0] >= i_last)]
+        insertion_tuples = [tup for tup in insertion_tuples
+                if not (tup[0] < i_first or tup[0] >= i_last)]
+        deletion_tuples = [tup for tup in deletion_tuples
+                if not (tup[1] < i_first or tup[0] >= i_last)]
 
         # add homopolymer lengths for indels
         def _hpLen(j, targetseq):
