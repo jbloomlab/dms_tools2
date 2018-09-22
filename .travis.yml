@@ -11,6 +11,9 @@ before_install:
   - sudo apt-get -qq install texlive-latex-extra
   - sudo apt-get -qq install texlive-fonts-recommended
   - sudo apt-get -qq install samtools
+  - "wget https://github.com/lh3/minimap2/releases/download/v2.12/minimap2-2.12_x64-linux.tar.bz2"
+  - "tar xvf minimap2-2.12_x64-linux.tar.bz2"
+  - "export PATH=$PWD/minimap2-2.12_x64-linux:$PATH"
 
 addons:
   apt:

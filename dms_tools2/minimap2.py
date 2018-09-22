@@ -1210,7 +1210,7 @@ class Mapper:
 
         `prog` (str or `None`)
             Path to ``minimap2`` executable. Class is only
-            tested against version 2.11 but may work with
+            tested against version >=2.11 but may work with
             other versions too.
         `target_isoforms` (dict)
             Sometimes targets might be be isoforms of each
