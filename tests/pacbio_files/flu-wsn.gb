@@ -1,0 +1,539 @@
+LOCUS       fluPB2                  2341 bp    DNA              UNK 01-JAN-1980
+DEFINITION  PB2 vRNA from plasmid 30_pHW181-PB2.gb.
+ACCESSION   fluPB2
+VERSION     fluPB2
+KEYWORDS    .
+SOURCE      .
+  ORGANISM  .
+            .
+FEATURES             Location/Qualifiers
+     exon            1..2341
+                     /source="JesseBloom"
+                     /gene_id="fluPB2"
+                     /gene_name="fluPB2"
+                     /gene_biotype="vRNA"
+                     /transcript_id="fluPB2"
+                     /label="fluPB2"
+     mRNA            2..2320
+                     /source="JesseBloom"
+                     /label="fluPB2"
+                     /gene_biotype="protein_coding"
+     CDS             28..2307
+                     /source="JesseBloom"
+                     /label="fluPB2"
+                     /gene_biotype="CDS"
+                     /translation="MERIKELRNLMSQSRTREILTKTTVDHMAIIKKYTSGRQEKNPAL
+                     RMKWMMAMKYPITADKRITEMIPERNEQGQTLWSKMNDAGSDRVMVSPLAVTWWNRNGP
+                     VTSTVHYPKIYKTYFEKVERLKHGTFGPVHFRNQVKIRRRVDINPGHADLSAKEAQDVI
+                     MEVVFPNEVGARILTSESQLTTTKEKKEELQGCKISPLMVAYMLERELVRKTRFLPVAG
+                     GTSSVYIEVLHLTQGTCWEQMYTPGGEARNDDVDQSLIIAARNIVRRATVSADPLASLL
+                     EMCHSTQIGGIRMVNILRQNPTEEQAVDICKAAMGLRISSSFSFGGFTFKRTSGSSVKR
+                     EEEVLTGNLQTLKIRVHEGYEEFTMVGRRATAILRKATRRLIQLIVSGRDEQSIAEAII
+                     VAMVFSQEDCMIKAVRGDLNFVNRANQRLNPMHQLLRHFQKDAKVLFQNWGIESIDNVM
+                     GMIGILPDMTPSTEMSMRGVRISKMGVDEYSSAEKIVVSIDRFLRVRDQRGNVLLSPEE
+                     ISETQGTEKLTITYSSSMMWEINGPESVLVNTYQWIIRNWETVKIQWSQNPTMLYNKME
+                     FEPFQSLVPKAVRGQYSGFVRTLFQQMRDVLGTFDTAQIIKLLPFAAAPPKQSRTQFSS
+                     LTINVRGSGMRILVRGNSPVFNYNKTTKRLTVLGKDAGPLTEDPDEGTAGVESAVLRGF
+                     LILGKEDRRYGPALSINELSNLAKGEKANVLIGQGDVVLVMKRKRNSSILTDSQTATKR
+                     IRMAIN*"
+ORIGIN
+        1 agcgaaagca ggtcaattat attcaatatg gaaagaataa aagaactaag gaatctaatg
+       61 tcgcagtctc gcactcgcga gatactcaca aaaaccaccg tggaccatat ggccataatc
+      121 aagaagtaca catcaggaag acaggagaag aacccagcac ttaggatgaa atggatgatg
+      181 gcaatgaaat atccaattac agcagacaag aggataacgg aaatgattcc tgagagaaat
+      241 gagcagggac aaactttatg gagtaaaatg aatgacgccg gatcagaccg agtgatggta
+      301 tcacctctgg ctgtgacatg gtggaatagg aatggaccag tgacaagtac agttcattat
+      361 ccaaaaatct acaaaactta ttttgaaaaa gtcgaaaggt taaaacatgg aacctttggc
+      421 cctgtccatt ttagaaacca agtcaaaata cgtcgaagag ttgacataaa tcctggtcat
+      481 gcagatctca gtgccaaaga ggcacaggat gtaatcatgg aagttgtttt ccctaacgaa
+      541 gtgggagcca ggatactaac atcggaatcg caactaacga caaccaaaga gaagaaagaa
+      601 gaactccagg gttgcaaaat ttctcctctg atggtggcat acatgttgga gagagaactg
+      661 gtccgcaaaa cgagattcct cccagtggct ggtggaacaa gcagtgtgta cattgaagtg
+      721 ttgcatttga cccaaggaac atgctgggaa cagatgtaca ctccaggagg ggaggcgagg
+      781 aatgatgatg ttgatcaaag cttaattatt gctgctagaa acatagtaag aagagccaca
+      841 gtatcagcag atccactagc atctttattg gagatgtgcc acagcacgca gattggtgga
+      901 ataaggatgg taaacatcct taggcagaac ccaacagaag agcaagccgt ggatatttgc
+      961 aaggctgcaa tgggactgag aattagctca tccttcagtt ttggtggatt cacatttaag
+     1021 agaacaagcg gatcatcagt caagagagag gaagaggtgc ttacgggcaa tcttcagaca
+     1081 ttgaagataa gagtgcatga gggatatgaa gagttcacaa tggttgggag aagagcaaca
+     1141 gctatactca gaaaagcaac caggagattg attcagctga tagtgagtgg gagagacgaa
+     1201 cagtcgattg ccgaagcaat aattgtggcc atggtatttt cacaagagga ttgtatgata
+     1261 aaagcagtta gaggtgacct gaatttcgtc aatagggcga atcagcgatt gaatcccatg
+     1321 caccaacttt tgagacattt tcagaaggat gcaaaggtgc tctttcaaaa ttggggaatt
+     1381 gaatccatcg acaatgtgat gggaatgatc gggatattgc ccgacatgac tccaagcacc
+     1441 gagatgtcaa tgagaggagt gagaatcagc aaaatggggg tagatgagta ttccagcgcg
+     1501 gagaagatag tggtgagcat tgaccgtttt ttgagagtta gggaccaacg tgggaatgta
+     1561 ctactgtctc ccgaggagat cagtgaaaca cagggaacag agaaactgac aataacttac
+     1621 tcatcgtcaa tgatgtggga gattaatggt cctgaatcag tgttggtcaa tacctatcag
+     1681 tggatcatca gaaactggga aactgttaaa attcagtggt cccagaatcc tacaatgctg
+     1741 tacaataaaa tggaatttga gccatttcag tctttagttc caaaggccgt tagaggccaa
+     1801 tacagtgggt ttgtgagaac tctgttccaa caaatgaggg atgtgcttgg gacatttgat
+     1861 accgctcaga taataaaact tcttcccttc gcagccgctc caccaaagca aagtagaacg
+     1921 cagttctcct cattgactat aaatgtgagg ggatcaggaa tgagaatact tgtaaggggc
+     1981 aattctccag tattcaacta caacaagacc actaaaagac tcacagttct cggaaaggat
+     2041 gctggccctt taactgaaga cccagatgaa ggcacagctg gagttgagtc cgcagttctg
+     2101 agaggattcc tcattctggg caaagaagac aggagatatg gaccagcatt aagcataaat
+     2161 gaactgagca accttgcgaa aggagagaag gctaatgtgc taattgggca aggagacgtg
+     2221 gtgttggtaa tgaaacggaa acggaactct agcatactta ctgacagcca gacagcgacc
+     2281 aaaagaattc ggatggccat caattagtgt cgaatagttt aaaaacgacc ttgtttctac
+     2341 t
+//
+LOCUS       fluPB1                  2341 bp    DNA              UNK 01-JAN-1980
+DEFINITION  PB1 vRNA from plasmid 31_pHW182-PB1.gb.
+ACCESSION   fluPB1
+VERSION     fluPB1
+KEYWORDS    .
+SOURCE      .
+  ORGANISM  .
+            .
+FEATURES             Location/Qualifiers
+     exon            1..2341
+                     /source="JesseBloom"
+                     /gene_id="fluPB1"
+                     /gene_name="fluPB1"
+                     /gene_biotype="vRNA"
+                     /transcript_id="fluPB1"
+                     /label="fluPB1"
+     mRNA            2..2320
+                     /source="JesseBloom"
+                     /label="fluPB1"
+                     /gene_biotype="protein_coding"
+     CDS             25..2298
+                     /source="JesseBloom"
+                     /label="fluPB1"
+                     /gene_biotype="CDS"
+                     /translation="MDVNPTLLFLKVPAQNAISTTFPYTGDPPYSHGTGTGYTMDTVNR
+                     THQYSERGRWTTNTETGAPQLNPIDGPLPEDNEPSGYAQTDCVLEAMAFLEESHPGIFE
+                     TSCLETMEVVQQTRVDKLTQGRQTYDWTLNRNQPAATALANTIEVFRSNGLTANESGRL
+                     IDFLKDVMESMNKEEMEITTHFQRKRRVRDNMTKKMVTQRTIGKRKQRLNKRSYLIRAL
+                     TLNTMTKDAERGKLKRRAIATPGMQIRGFVYFVETLARSICEKLEQSGLPVGGNEKKAK
+                     LANVVRKMMTNSQDTEISFTITGDNTKWNENQNPRMFLAMITYITRNQPEWFRNVLSIA
+                     PIMFSNKMARLGKGYMFESKSMKIRTQIPAEMLASIDLKYFNDSTRKKIEKIRPLLIDG
+                     TASLSPGMMMGMFNMLSTVLGVSILNLGQKRHTKTTYWWDGLQSSDDFALIVNAPNHEG
+                     IQAGVNRFYRTCKLLGINMSKKKSYINRTGTFEFTSFFYRYGFVANFSMELPSFGVSGI
+                     NESADMSIGVTVIKNNMINNDLGPATAQMALQLFIKDYRYTYRCHRGDTQIQTRRSFEI
+                     KKLWEQTHSKAGLLVSDGGPNLYNIRNLHIPEVCLKWELMDEDYQGRLCNPLNPFVNHK
+                     DIESVNNAVIMPAHGPAKNMEYDAVATTHSWIPKRNRSILNTSQRGILEDEQMYQKCCN
+                     LFEKFFPSSSYRRPVGISSMVEAMVSRARIDARIDFESGRIKKEEFTEIMKICSTIEEL
+                     RRQK*"
+ORIGIN
+        1 agcgaaagca ggcaaaccat ttgaatggat gtcaatccga ctttactttt cttaaaagtg
+       61 ccagcacaaa atgctataag cacaactttc ccttatactg gagaccctcc ttacagccat
+      121 gggacaggaa caggatacac catggatact gtcaacagga cacatcagta ctcagaaagg
+      181 ggaagatgga caacaaacac cgaaactgga gcaccgcaac tcaacccgat tgatgggcca
+      241 ctgccagaag acaatgaacc aagtggttat gcccaaacag attgtgtatt ggaagcaatg
+      301 gccttccttg aggaatccca tcctggtatc tttgagacct cgtgtcttga aacgatggag
+      361 gttgttcagc aaacacgagt ggacaagctg acacaaggcc gacagaccta tgactggact
+      421 ctaaatagga accagcctgc tgcaacagca ttggccaaca caatagaagt gttcagatca
+      481 aatggcctca cggccaatga atctggaagg ctcatagact tccttaagga tgtaatggag
+      541 tcaatgaaca aagaagaaat ggagatcaca actcattttc agagaaagag acgagtgaga
+      601 gacaatatga ctaagaaaat ggtgacacag agaacaatag gtaaaaggaa gcagagattg
+      661 aacaaaagga gttatctaat tagggcatta accctgaaca caatgaccaa agatgctgag
+      721 agagggaagc taaaacggag agcaattgca accccaggga tgcaaataag ggggtttgta
+      781 tactttgttg agacactagc aaggagtata tgtgagaaac ttgaacaatc aggattgcca
+      841 gttggaggca atgagaagaa agcaaagttg gcaaatgttg taaggaagat gatgaccaat
+      901 tctcaggaca ctgaaatttc tttcaccatc actggagata acaccaaatg gaacgaaaat
+      961 cagaaccctc ggatgttttt ggccatgatc acatatataa ccagaaatca gcccgaatgg
+     1021 ttcagaaatg ttctaagtat tgctccaata atgttctcaa acaaaatggc gagactggga
+     1081 aaggggtaca tgtttgagag caagagtatg aaaattagaa ctcaaatacc tgcagaaatg
+     1141 ctagcaagca tcgatttgaa atacttcaat gattcaacta gaaagaagat tgaaaaaatc
+     1201 cggccgctct taatagatgg gactgcatca ttgagccctg gaatgatgat gggcatgttc
+     1261 aatatgttaa gtactgtatt aggcgtctcc atcctgaatc ttggacaaaa gagacacacc
+     1321 aagactactt actggtggga tggtcttcaa tcttctgatg attttgctct gattgtgaat
+     1381 gcacccaatc atgaagggat tcaagccgga gtcaacaggt tttatcgaac ctgtaagcta
+     1441 cttggaatta atatgagcaa gaaaaagtct tacataaaca gaacaggtac atttgaattc
+     1501 acaagttttt tctatcgtta tgggtttgtt gccaatttca gcatggagct tcccagcttt
+     1561 ggggtgtctg ggatcaacga gtctgcggac atgagtattg gagttactgt catcaaaaac
+     1621 aatatgataa acaatgatct tggtccagca accgctcaaa tggcccttca gctgttcatc
+     1681 aaagattaca ggtacacgta ccggtgccat agaggtgaca cacaaataca aacccgaaga
+     1741 tcatttgaaa taaagaaact gtgggagcaa acccattcca aagctggact gctggtctcc
+     1801 gacggaggcc caaatttata caacattaga aatctccaca ttcctgaagt ctgcttgaaa
+     1861 tgggaattaa tggatgagga ttaccagggg cgtttatgca acccactgaa cccatttgtc
+     1921 aaccataaag acattgaatc agtgaacaat gcagtgataa tgccagcaca tggtccagcc
+     1981 aaaaacatgg agtatgatgc tgttgcaaca acacactcct ggatccccaa aagaaatcga
+     2041 tccatcttga atacaagcca aagaggaata cttgaagatg aacaaatgta ccaaaagtgc
+     2101 tgcaacttat ttgaaaaatt cttccccagc agttcataca gaagaccagt cgggatatcc
+     2161 agtatggtgg aggctatggt ttccagagcc cgaattgatg cacgaattga tttcgaatct
+     2221 ggaaggataa agaaagagga gttcactgag atcatgaaga tctgttccac cattgaagag
+     2281 ctcagacggc aaaaatagtg aatttagctt gtccttcatg aaaaaatgcc ttgtttctac
+     2341 t
+//
+LOCUS       fluPA                   2233 bp    DNA              UNK 01-JAN-1980
+DEFINITION  PA vRNA from plasmid 32_pHW183-PA.gb.
+ACCESSION   fluPA
+VERSION     fluPA
+KEYWORDS    .
+SOURCE      .
+  ORGANISM  .
+            .
+FEATURES             Location/Qualifiers
+     exon            1..2233
+                     /source="JesseBloom"
+                     /gene_id="fluPA"
+                     /gene_name="fluPA"
+                     /gene_biotype="vRNA"
+                     /transcript_id="fluPA"
+                     /label="fluPA"
+     mRNA            2..2211
+                     /source="JesseBloom"
+                     /label="fluPA"
+                     /gene_biotype="protein_coding"
+     CDS             25..2175
+                     /source="JesseBloom"
+                     /label="fluPA"
+                     /gene_biotype="CDS"
+                     /translation="MEDFVRQCFNPMIVELAEKAMKEYGEDLKIETNKFAAICTHLEVC
+                     FMYSDFHFIDEQGESIVVELGDPNALLKHRFEIIEGRDRTIAWTVINSICNTTGAEKPK
+                     FLPDLYDYKKNRFIEIGVTRREVHIYYLEKANKIKSEKTHIHIFSFTGEEMATKADYTL
+                     DEESRARIKTRLFTIRQEMASRGLWDSFRQSERGEETIEERFEITGTMRKLADQSLPPN
+                     FSSLEKFRAYVDGFEPNGYIEGKLSQMSKEVNARIEPFLKSTPRPLRLPDGPPCSQRSK
+                     FLLMDALKLSIEDPSHEGEGIPLYDAIKCMRTFFGWKEPNVVKPHEKGINPNYLLSWKQ
+                     VLAELQDIENEEKIPRTKNMKKTSQLKWALGENMAPEKVDFDDCKDVGDLKQYDSDEPE
+                     LRSLASWIQNEFNKACELTDSSWIELDEIGEDAAPIEHIASMRRNYFTAEVSHCRATEY
+                     IMKGVYINTALLNASCAAMDDFQLIPMISKCRTKEGRRKTNLYGFIIKGRSHLRNDTDV
+                     VNFVSMEFSLTDPRLEPHKWEKYCVLEVGDMLLRSAIGHVSRPMFLYVRTNGTSKIKMK
+                     WGMEMRRCLLQSLQQIESMIEAESSVKEKDMTKEFFENKSETWPVGESPKGVEEGSIGK
+                     VCRTLLAKSVFNSLYASPQLEGFSAESRKLLLIVQALRDNLEPGTFDLGGLYEAIEECL
+                     INDPWVLLNASWFNSFLTHALR*"
+ORIGIN
+        1 agcgaaagca ggtactgatt caaaatggaa gattttgtgc gacaatgctt caatccgatg
+       61 attgtcgagc ttgcggaaaa ggcaatgaaa gagtatggag aggacctgaa aatcgaaaca
+      121 aacaaatttg cagcaatatg cactcacttg gaagtgtgct tcatgtattc agattttcac
+      181 ttcatcgatg agcaaggcga gtcaatagtc gtagaacttg gcgatccaaa tgcacttttg
+      241 aagcacagat ttgaaataat cgagggaaga gatcgcacaa tagcctggac agtaataaac
+      301 agtatttgca acactacagg ggctgagaaa ccaaagtttc taccagattt gtatgattac
+      361 aagaagaata gattcatcga aattggagta acaaggagag aagttcacat atactatctg
+      421 gaaaaggcca ataaaattaa atctgagaag acacacatcc acattttctc attcactggg
+      481 gaggaaatgg ccacaaaggc cgactacact ctcgatgaag aaagcagggc taggatcaaa
+      541 accaggctat tcaccataag acaagaaatg gctagcagag gcctctggga ttcctttcgt
+      601 cagtccgaga gaggcgaaga gacaattgaa gaaagatttg aaatcacagg aacaatgcgc
+      661 aagcttgccg accaaagtct cccgccaaac ttctccagcc ttgaaaaatt tagagcctat
+      721 gtggatggat tcgaaccgaa cggctacatt gagggcaagc tttctcaaat gtccaaagaa
+      781 gtaaatgcta gaattgaacc ttttttgaaa tcaacaccac gaccacttag acttccggat
+      841 gggcctccct gttctcagcg gtccaaattc ctgctgatgg atgccttaaa attaagcatt
+      901 gaggacccaa gtcatgaggg agaggggata ccgctatatg atgcaatcaa atgcatgaga
+      961 acattctttg gatggaagga acccaatgtt gttaaaccac acgaaaaggg aataaatcca
+     1021 aattatcttc tgtcatggaa gcaagtactg gcagaactgc aggacattga gaatgaggag
+     1081 aaaattccaa ggactaaaaa tatgaagaaa acgagtcagt taaagtgggc acttggtgag
+     1141 aacatggcac cagaaaaggt agactttgac gattgtaaag atgtaggcga tttgaagcaa
+     1201 tatgatagtg atgaaccaga attgaggtcg cttgcaagtt ggattcagaa tgagttcaac
+     1261 aaggcatgtg aactgaccga ttcaagctgg atagagctcg atgagattgg agaagatgcg
+     1321 gctccaattg aacacattgc aagcatgaga aggaattatt tcacagcaga ggtgtctcat
+     1381 tgcagagcca cagaatacat aatgaagggg gtgtacatca atactgcctt gcttaatgca
+     1441 tcctgtgcag caatggatga tttccaatta attccaatga taagcaagtg tagaactaag
+     1501 gagggaaggc gaaagaccaa tttgtacggt ttcatcataa aaggaagatc ccacttaagg
+     1561 aatgacaccg atgtggtaaa ctttgtgagc atggagtttt ccctcactga cccaagactt
+     1621 gaaccacaca aatgggagaa gtactgtgtt cttgaggtag gagatatgct tctaagaagt
+     1681 gccataggcc atgtgtcaag gcctatgttc ttgtatgtga ggacaaatgg aacctcaaaa
+     1741 attaaaatga aatgggggat ggaaatgagg cgttgcctcc ttcagtcact tcaacaaatc
+     1801 gagagtatga ttgaagctga gtcctctgtc aaggagaaag acatgaccaa agagttcttt
+     1861 gaaaacaaat cagaaacatg gcccgttgga gagtccccca aaggagtgga ggaaggttcc
+     1921 attgggaagg tctgcagaac tttattggca aagtcggtat tcaacagctt gtatgcatct
+     1981 ccacaactag aaggattttc agctgaatca agaaaactgc ttcttatcgt tcaggctctt
+     2041 agggacaacc tggaacctgg gacctttgat cttggggggc tatatgaagc aattgaggag
+     2101 tgcctgatta atgatccctg ggttttgctt aatgcttctt ggttcaactc cttcctcaca
+     2161 catgcattga gatagttgtg gcaatgctac tatttgctat ccatactgtc caaaaaagta
+     2221 ccttgtttct act
+//
+LOCUS       fluHA                   1775 bp    DNA              UNK 01-JAN-1980
+DEFINITION  HA vRNA from plasmid 33_pHW184-HA.gb.
+ACCESSION   fluHA
+VERSION     fluHA
+KEYWORDS    .
+SOURCE      .
+  ORGANISM  .
+            .
+FEATURES             Location/Qualifiers
+     exon            1..1775
+                     /source="JesseBloom"
+                     /gene_id="fluHA"
+                     /gene_name="fluHA"
+                     /gene_biotype="vRNA"
+                     /transcript_id="fluHA"
+                     /label="fluHA"
+     mRNA            2..1754
+                     /source="JesseBloom"
+                     /label="fluHA"
+                     /gene_biotype="protein_coding"
+     CDS             33..1730
+                     /source="JesseBloom"
+                     /label="fluHA"
+                     /gene_biotype="CDS"
+                     /translation="MKAKLLVLLYAFVATDADTICIGYHANNSTDTVDTILEKNVAVTH
+                     SVNLLEDSHNGKLCKLKGIAPLQLGKCNITGWLLGNPECDSLLPARSWSYIVETPNSEN
+                     GACYPGDLIDYEELREQLSSVSSLERFEIFPKESSWPNHTFNGVTVSCSHRGKSSFYRN
+                     LLWLTKKGDSYPKLTNSYVNNKGKEVLVLWGVHHPSSSDEQQSLYSNGNAYVSVASSNY
+                     NRRFTPEIAARPKVRDQHGRMNYYWTLLEPGDTIIFEATGNLIAPWYAFALSRGFESGI
+                     ITSNASMHECNTKCQTPQGAINSNLPFQNIHPVTIGECPKYVRSTKLRMVTGLRNIPSI
+                     QYRGLFGAIAGFIEGGWTGMIDGWYGYHHQNEQGSGYAADQKSTQNAINGITNKVNSVI
+                     EKMNTQFTAVGKEFNNLEKRMENLNKKVDDGFLDIWTYNAELLVLLENERTLDFHDLNV
+                     KNLYEKVKSQLKNNAKEIGNGCFEFYHKCDNECMESVRNGTYDYPKYSEESKLNREKID
+                     GVKLESMGVYQILAIYSTVASSLVLLVSLGAISFWMCSNGSLQCRICI*"
+ORIGIN
+        1 agcaaaagca ggggaaaata aaaacaacca aaatgaaggc aaaactactg gtcctgttat
+       61 atgcatttgt agctacagat gcagacacaa tatgtatagg ctaccatgcg aacaactcaa
+      121 ccgacactgt tgacacaata ctcgagaaga atgtggcagt gacacattct gttaacctgc
+      181 tcgaagacag ccacaacggg aaactatgta aattaaaagg aatagcccca ctacaattgg
+      241 ggaaatgtaa catcaccgga tggctcttgg gaaatccaga atgcgactca ctgcttccag
+      301 cgagatcatg gtcctacatt gtagaaacac caaactctga gaatggagca tgttatccag
+      361 gagatctcat cgactatgag gaactgaggg agcaattgag ctcagtatca tcattagaaa
+      421 gattcgaaat atttcccaag gaaagttcat ggcccaacca cacattcaac ggagtaacag
+      481 tatcatgctc ccatagggga aaaagcagtt tttacagaaa tttgctatgg ctgacgaaga
+      541 agggggattc atacccaaag ctgaccaatt cctatgtgaa caataaaggg aaagaagtcc
+      601 ttgtactatg gggtgttcat cacccgtcta gcagtgatga gcaacagagt ctctatagta
+      661 atggaaatgc ttatgtctct gtagcgtctt caaattataa caggagattc accccggaaa
+      721 tagctgcaag gcccaaagta agagatcaac atgggaggat gaactattac tggaccttgc
+      781 tagaacccgg agacacaata atatttgagg caactggtaa tctaatagca ccatggtatg
+      841 ctttcgcact gagtagaggg tttgagtccg gcatcatcac ctcaaacgcg tcaatgcatg
+      901 agtgtaacac gaagtgtcaa acaccccagg gagctataaa cagcaatctc cctttccaga
+      961 atatacaccc agtcacaata ggagagtgcc caaaatatgt caggagtacc aaattgagga
+     1021 tggttacagg actaagaaac atcccatcca ttcaatacag aggtctattt ggagccattg
+     1081 ctggttttat tgagggggga tggactggaa tgatagatgg atggtatggt tatcatcatc
+     1141 agaatgaaca gggatcaggc tatgcagcgg atcaaaaaag cacacaaaat gccattaacg
+     1201 ggattacaaa caaggtgaac tctgttatcg agaaaatgaa cactcaattc acagctgtgg
+     1261 gtaaagaatt caacaactta gaaaaaagga tggaaaattt aaataaaaaa gttgatgatg
+     1321 ggtttctgga catttggaca tataatgcag aattgttagt tctactggaa aatgaaagga
+     1381 ctttggattt ccatgactta aatgtgaaga atctgtacga gaaagtaaaa agccaattaa
+     1441 agaataatgc caaagaaatc ggaaatgggt gttttgagtt ctaccacaag tgtgacaatg
+     1501 aatgcatgga aagtgtaaga aatgggactt atgattatcc aaaatattca gaagaatcaa
+     1561 agttgaacag ggaaaagata gatggagtga aattggaatc aatgggggtg tatcagattc
+     1621 tggcgatcta ctcaactgtc gccagttcac tggtgctttt ggtctccctg ggggcaatca
+     1681 gtttctggat gtgttctaat gggtctttgc agtgcagaat atgcatctga gattaggatt
+     1741 tcagaaatat aaggaaaaac acccttgttt ctact
+//
+LOCUS       fluNP                   1565 bp    DNA              UNK 01-JAN-1980
+DEFINITION  NP vRNA from plasmid 34_pHW185-NP.gb.
+ACCESSION   fluNP
+VERSION     fluNP
+KEYWORDS    .
+SOURCE      .
+  ORGANISM  .
+            .
+FEATURES             Location/Qualifiers
+     exon            1..1565
+                     /source="JesseBloom"
+                     /gene_id="fluNP"
+                     /gene_name="fluNP"
+                     /gene_biotype="vRNA"
+                     /transcript_id="fluNP"
+                     /label="fluNP"
+     mRNA            2..1544
+                     /source="JesseBloom"
+                     /label="fluNP"
+                     /gene_biotype="protein_coding"
+     CDS             46..1542
+                     /source="JesseBloom"
+                     /label="fluNP"
+                     /gene_biotype="CDS"
+                     /translation="MATKGTKRSYEQMETDGERQNATEIRASVGKMIDGIGRFYIQMCT
+                     ELKLSDYEGRLIQNSLTIERMVLSAFDERRNKYLEEHPSAGKDPKKTGGPIYRRVDGKW
+                     RRELILYDKEEIRRIWRQANNGDDATAGLTHMMIWHSNLNDATYQRTRALVRTGMDPRM
+                     CSLMQGSTLPRRSGAAGAAVKGVGTMVMELIRMIKRGINDRNFWRGENGRRTRIAYERM
+                     CNILKGKFQTAAQRTMVDQVRESRNPGNAEFEDLIFLARSALILRGSVAHKSCLPACVY
+                     GSAVASGYDFEREGYSLVGIDPFRLLQNSQVYSLIRPNENPAHKSQLVWMACHSAAFED
+                     LRVSSFIRGTKVVPRGKLSTRGVQIASNENMETMESSTLELRSRYWAIRTRSGGNTNQQ
+                     RASSGQISIQPTFSVQRNLPFDRPTIMAAFTGNTEGRTSDMRTEIIRLMESARPEDVSF
+                     QGRGVFELSDEKATSPIVPSFDMSNEGSYFFGDNAEEYDN*"
+ORIGIN
+        1 agcaaaagca gggtagataa tcactcacag agtgacatcg aaatcatggc gaccaaaggc
+       61 accaaacgat cttacgaaca gatggagact gatggagaac gccagaatgc cactgaaatc
+      121 agagcatctg tcggaaaaat gattgatgga attggacgat tctacatcca aatgtgcacc
+      181 gaacttaaac tcagtgatta tgagggacgg ctgattcaga acagcttaac aatagagaga
+      241 atggtgctct ctgcttttga cgagaggagg aataaatatc tagaagaaca tcccagtgcg
+      301 gggaaagatc ctaagaaaac tggaggacct atatacagga gagtagatgg aaagtggagg
+      361 agagaactca tcctttatga caaagaagaa ataagacgaa tctggcgcca agctaataat
+      421 ggtgacgatg caacggctgg tctgactcac atgatgatct ggcactccaa tttgaatgat
+      481 gcaacttacc agaggacaag agctcttgtt cgcacaggaa tggatcccag gatgtgctca
+      541 ctgatgcagg gttcaaccct ccctaggagg tctggggccg caggtgctgc agtcaaagga
+      601 gttggaacaa tggtgatgga attgatcaga atgatcaaac gtgggatcaa tgatcggaac
+      661 ttctggaggg gtgagaatgg acggagaaca aggattgctt atgaaagaat gtgcaacatt
+      721 ctcaaaggga aatttcaaac agctgcacaa agaacaatgg tggatcaagt gagagagagc
+      781 cggaatccag gaaatgctga gttcgaagat ctcatctttt tagcacggtc tgcactcata
+      841 ttgagagggt cagttgctca caagtcctgc ctgcctgcct gtgtgtatgg atctgccgta
+      901 gccagtggat acgactttga aagagaggga tactctctag tcggaataga ccctttcaga
+      961 ctgcttcaaa acagccaagt atacagccta atcagaccaa atgagaatcc agcacacaag
+     1021 agtcaactgg tgtggatggc atgccattct gctgcatttg aagatctaag agtatcaagc
+     1081 ttcatcagag ggacgaaagt ggtcccaaga gggaagcttt ccactagagg agttcaaatt
+     1141 gcttccaatg aaaacatgga gactatggaa tcaagtaccc ttgaactgag aagcagatac
+     1201 tgggccataa ggaccagaag tggagggaac accaatcaac agagggcttc ctcgggccaa
+     1261 atcagcatac aacctacgtt ctcagtacag agaaatctcc cttttgacag accaaccatt
+     1321 atggcagcat tcactgggaa tacagagggg agaacatctg acatgagaac cgaaatcata
+     1381 aggctgatgg aaagtgcaag accagaagat gtgtctttcc aggggcgggg agtcttcgag
+     1441 ctctcggacg aaaaggcaac gagcccgatc gtgccctcct ttgacatgag taatgaagga
+     1501 tcttatttct tcggagacaa tgcagaggag tacgacaatt aaagaaaaat acccttgttt
+     1561 ctact
+//
+LOCUS       fluNA                   1409 bp    DNA              UNK 01-JAN-1980
+DEFINITION  NA vRNA from plasmid 35_pHW186-NA.gb.
+ACCESSION   fluNA
+VERSION     fluNA
+KEYWORDS    .
+SOURCE      .
+  ORGANISM  .
+            .
+FEATURES             Location/Qualifiers
+     exon            1..1409
+                     /source="JesseBloom"
+                     /gene_id="fluNA"
+                     /gene_name="fluNA"
+                     /gene_biotype="vRNA"
+                     /transcript_id="fluNA"
+                     /label="fluNA"
+     mRNA            2..1388
+                     /source="JesseBloom"
+                     /label="fluNA"
+                     /gene_biotype="protein_coding"
+     CDS             20..1381
+                     /source="JesseBloom"
+                     /label="fluNA"
+                     /gene_biotype="CDS"
+                     /translation="MNPNQKIITIGSICMVVGIISLILQIGNIISIWISHSIQTGNQNH
+                     TGICNQGSITYKVVAGQDSTSVILTGNSSLCPIRGWAIHSKDNGIRIGSKGDVFVIREP
+                     FISCSHLECRTFFLTQGALLNDKHSRGTFKDRSPYRALMSCPVGEAPSPYNSRFESVAW
+                     SASACHDGMGWLTIGISGPDDGAVAVLKYNRIITETIKSWRKNILRTQESECTCVNGSC
+                     FTIMTDGPSDGLASYKIFKIEKGKVTKSIELNAPNSHYEECSCYPDTGKVMCVCRDNWH
+                     GSNRPWVSFDQNLDYKIGYICSGVFGDNPRPKDGTGSCGPVSADGANGVKGFSYKYGNG
+                     VWIGRTKSDSSRHGFEMIWDPNGWTETDSRFSMRQDVVAITNRSGYSGSFVQHPELTGL
+                     DCMRPCFWVELIRGLPEEDAIWTSGSIISFCGVNSDTVDWSWPDGAELPFTIDK*"
+ORIGIN
+        1 agcgaaagca ggagtttaaa tgaatccaaa ccagaaaata ataaccattg ggtcaatctg
+       61 tatggtagtc ggaataatta gcctaatatt gcaaatagga aatataatct caatatggat
+      121 tagccattca attcaaaccg gaaatcaaaa ccatactgga atatgcaacc aaggcagcat
+      181 tacctataaa gttgttgctg ggcaggactc aacttcagtg atattaaccg gcaattcatc
+      241 tctttgtccc atccgtgggt gggctataca cagcaaagac aatggcataa gaattggttc
+      301 caaaggagac gtttttgtca taagagagcc ttttatttca tgttctcact tggaatgcag
+      361 gacctttttt ctgactcaag gcgccttact gaatgacaag cattcaaggg ggacctttaa
+      421 ggacagaagc ccttataggg ccttaatgag ctgccctgtc ggtgaagctc cgtccccgta
+      481 caattcaagg tttgaatcgg ttgcttggtc agcaagtgca tgtcatgatg gaatgggctg
+      541 gctaacaatc ggaatttctg gtccagatga tggagcagtg gctgtattaa aatacaaccg
+      601 cataataact gaaaccataa aaagttggag gaagaatata ttgagaacac aagagtctga
+      661 atgtacctgt gtaaatggtt catgttttac cataatgacc gatggcccaa gtgatgggct
+      721 ggcctcgtac aaaattttca agatcgagaa ggggaaggtt actaaatcga tagagttgaa
+      781 tgcacctaat tctcactacg aggaatgttc ctgttaccct gataccggca aagtgatgtg
+      841 tgtgtgcaga gacaattggc acggttcgaa ccgaccatgg gtgtccttcg accaaaacct
+      901 agattataaa ataggataca tctgcagtgg ggttttcggt gacaacccgc gtcccaaaga
+      961 tggaacaggc agctgtggcc cagtgtctgc tgatggagca aacggagtaa agggattttc
+     1021 atataagtat ggcaatggtg tttggatagg aaggactaaa agtgacagtt ccagacatgg
+     1081 gtttgagatg atttgggatc ctaatggatg gacagagact gatagtaggt tctctatgag
+     1141 acaagatgtt gtggcaataa ctaatcggtc agggtacagc ggaagtttcg ttcaacatcc
+     1201 tgagctaaca gggctagact gtatgaggcc ttgcttctgg gttgaattaa tcagggggct
+     1261 acctgaggag gacgcaatct ggactagtgg gagcatcatt tctttttgtg gtgtgaatag
+     1321 tgatactgta gattggtctt ggccagacgg tgctgagttg ccgttcacca ttgacaagta
+     1381 gtttgttcaa aaaactcctt gtttctact
+//
+LOCUS       fluM                    1027 bp    DNA              UNK 01-JAN-1980
+DEFINITION  M vRNA from plasmid 36_pHW187-M.gb.
+ACCESSION   fluM
+VERSION     fluM
+KEYWORDS    .
+SOURCE      .
+  ORGANISM  .
+            .
+FEATURES             Location/Qualifiers
+     exon            1..1027
+                     /source="JesseBloom"
+                     /gene_id="fluM"
+                     /gene_name="fluM"
+                     /gene_biotype="vRNA"
+                     /transcript_id="fluM"
+                     /label="fluM"
+     mRNA            2..1005
+                     /source="JesseBloom"
+                     /label="fluM1"
+                     /gene_biotype="protein_coding"
+     mRNA            join(2..51,740..1005)
+                     /source="JesseBloom"
+                     /label="fluM2"
+                     /gene_biotype="protein_coding"
+     CDS             26..784
+                     /source="JesseBloom"
+                     /label="fluM1"
+                     /gene_biotype="CDS"
+                     /translation="MSLLTEVETYVLSIVPSGPLKAEIAQRLEDVFAGKNTDLEVLMEW
+                     LKTRPILSPLTKGILGFVFTLTVPSERGLQRRRFVQNALNGNGDPNNMDKAVKLYRKLK
+                     REITFHGAKEIALSYSAGALACCMGLIYNRMGAVTTEVAFGLVCATCEQIADSQHRSHR
+                     QMVTTTNPLIRHENRMVLASTTAKAMEQMAGSSEQAAEAMDIASQARQMVQAMRTVGTH
+                     PSSSAGLKDDLLENLQAYQKRMGVQMQRFK*"
+     CDS             join(26..51,740..1007)
+                     /source="JesseBloom"
+                     /label="fluM2"
+                     /gene_biotype="CDS"
+                     /translation="MSLLTEVETPIRNEWGCRCNDSSDPLVIAANIIGILHLILWILDR
+                     LFFKCIYRRFKYGLKRGPSTEGVPESMREEYRKEQQNAVDVDDGHFVNIELE*"
+ORIGIN
+        1 agcaaaagca ggtagatatt gaaagatgag tcttctaacc gaggtcgaaa cgtacgttct
+       61 ctctatcgtc ccgtcaggcc ccctcaaagc cgagatcgca cagagacttg aagatgtctt
+      121 tgcagggaag aacaccgatc ttgaggttct catggaatgg ctaaagacaa gaccaatcct
+      181 gtcacctctg actaagggga ttttaggatt tgtgttcacg ctcaccgtgc ccagtgagcg
+      241 gggactgcag cgtagacgct ttgtccaaaa tgctcttaat gggaacggag atccaaataa
+      301 catggacaaa gcagttaaac tgtataggaa gcttaagagg gagataacat tccatggggc
+      361 caaagaaata gcactcagtt attctgctgg tgcacttgcc tgttgtatgg gcctcatata
+      421 caacaggatg ggggctgtga ccactgaagt ggcatttggc ctggtatgcg caacctgtga
+      481 acagattgct gactcccagc atcggtctca taggcaaatg gtgacaacaa ccaatccact
+      541 aatcagacat gagaacagaa tggttctagc cagcactaca gctaaggcta tggagcaaat
+      601 ggctggatcg agtgagcaag cagcagaggc catggatatt gctagtcagg ccaggcaaat
+      661 ggtgcaggcg atgagaaccg ttgggactca tcctagctcc agtgctggtc taaaagatga
+      721 tcttcttgaa aatttacagg cctatcagaa acgaatgggg gtgcagatgc aacgattcaa
+      781 gtgatcctct cgtcattgca gcaaatatca ttggaatctt gcacttgata ttgtggattc
+      841 ttgatcgtct ttttttcaaa tgcatttatc gtcgctttaa atacggtttg aaaagagggc
+      901 cttctaccga aggagtgcca gagtctatga gggaagaata tcgaaaggaa cagcagaatg
+      961 ctgtggatgt tgacgatggt cattttgtca acatagagct ggagtaaaaa actaccttgt
+     1021 ttctact
+//
+LOCUS       fluNS                    890 bp    DNA              UNK 01-JAN-1980
+DEFINITION  NS vRNA from plasmid 37_pHW188-NS.gb.
+ACCESSION   fluNS
+VERSION     fluNS
+KEYWORDS    .
+SOURCE      .
+  ORGANISM  .
+            .
+FEATURES             Location/Qualifiers
+     exon            1..890
+                     /source="JesseBloom"
+                     /gene_id="fluNS"
+                     /gene_name="fluNS"
+                     /gene_biotype="vRNA"
+                     /transcript_id="fluNS"
+                     /label="fluNS"
+     mRNA            2..868
+                     /source="JesseBloom"
+                     /label="fluNS1"
+                     /gene_biotype="protein_coding"
+     mRNA            join(2..56,529..868)
+                     /source="JesseBloom"
+                     /label="fluNS2"
+                     /gene_biotype="protein_coding"
+     CDS             27..719
+                     /source="JesseBloom"
+                     /label="fluNS1"
+                     /gene_biotype="CDS"
+                     /translation="MDPNTVSSFQVDCFLWHVRKRVADQELGDAPFLDRLRRDQKSLRG
+                     RGSTLGLDIETATRAGKQIVERILKEESDEALKMTMASVPASRYLTDMTLEEMSRHWFM
+                     LMPKQKVAGPLCIRMDQAIMDKNIILKANFSVIFDRLETLILLRAFTEEGTIVGEISPL
+                     PSLPGHTDEDVKNAVGVLIGGLEWNNNTVRVSETLQRFAWRSSNENGRPPLTPKQKRKM
+                     AGTIRSEV*"
+     CDS             join(27..56,529..864)
+                     /source="JesseBloom"
+                     /label="fluNS2"
+                     /gene_biotype="CDS"
+                     /translation="MDPNTVSSFQDILMRMSKMQLGSSSEDLNGIITQFESLKLYRDSL
+                     GEAVMRMGDLHSLQNRNGKWREQLGQKFEEIRWLIEEVRHRLKITENSFEQITFMQALQ
+                     LLLEVEQEIRTFSFQLI*"
+ORIGIN
+        1 agcaaaagca gggtgacaaa gacataatgg atccaaacac tgtgtcaagc tttcaggtag
+       61 attgctttct ttggcatgtc cgcaaaagag ttgcagacca agaactaggt gatgccccat
+      121 tccttgatcg gcttcgccga gatcagaagt ccctaagagg aagaggcagc actcttggtc
+      181 tggacatcga aacagccacc cgtgctggaa agcaaatagt ggagcggatt ctgaaggaag
+      241 aatctgatga ggcactcaaa atgaccatgg cctctgtacc tgcatcgcgc tacctaactg
+      301 acatgactct tgaggaaatg tcaaggcact ggttcatgct catgcccaag cagaaagtgg
+      361 caggccctct ttgtatcaga atggaccagg cgatcatgga taagaacatc atactgaaag
+      421 cgaacttcag tgtgattttt gaccggctgg agactctaat attactaagg gccttcaccg
+      481 aagaggggac aattgttggc gaaatttcac cactgccctc tcttccagga catactgatg
+      541 aggatgtcaa aaatgcagtt ggggtcctca tcggaggact tgaatggaat aataacacag
+      601 ttcgagtctc tgaaactcta cagagattcg cttggagaag cagtaatgag aatgggagac
+      661 ctccactcac tccaaaacag aaacggaaaa tggcgggaac aattaggtca gaagtttgaa
+      721 gaaataaggt ggttgattga agaagtgaga cacagactga agataacaga gaatagtttt
+      781 gagcaaataa catttatgca agccttacaa ctattgcttg aagtggagca agagataaga
+      841 actttctcgt ttcagcttat ttaataataa aaaacaccct tgtttctact
+//
