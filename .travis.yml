@@ -45,4 +45,3 @@ script:
 branches:
   only:
     - master
-    - pacbio
