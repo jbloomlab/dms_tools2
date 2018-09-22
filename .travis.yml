@@ -10,7 +10,7 @@ before_install:
   - sudo apt-get -qq install dvipng
   - sudo apt-get -qq install texlive-latex-extra
   - sudo apt-get -qq install texlive-fonts-recommended
-  - sudo apt-get -qq install samtools
+  - sudo apt-get -qq samtools==1.7
   # install minimap2
   - "wget https://github.com/lh3/minimap2/releases/download/v2.12/minimap2-2.12_x64-linux.tar.bz2"
   - "tar xvf minimap2-2.12_x64-linux.tar.bz2"
