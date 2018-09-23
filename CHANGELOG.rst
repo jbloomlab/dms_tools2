@@ -1,7 +1,7 @@
 Change Log
 ===========
 
-2.3.dev0
+2.3.0
 --------
 * Require Python 3.6 or greater.
 
