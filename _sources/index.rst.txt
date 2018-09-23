@@ -17,6 +17,8 @@ It is tailored to analyze libraries created using `comprehensive codon mutagenes
 
     * Estimate the :ref:`fracsurvive` for each mutation when imposing a strong pressure such as antibody selection.
 
+    * Processing PacBio CCS sequencing of defined amplicons using the :py:mod:`dms_tools2.pacbio` module.
+
 The `dms_tools2 source code`_ is freely available under a `GPLv3`_ license.
 `dms_tools2`_ is a re-write of the earlier `dms_tools <http://github.com/jbloomlab/dms_tools>`_ package.
 

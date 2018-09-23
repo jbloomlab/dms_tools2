@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.plot &#8212; dms_tools2 2.2.9 documentation</title>
+    <title>dms_tools2.plot &#8212; dms_tools2 2.3.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -48,6 +48,9 @@
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numbers</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">collections</span>
 
 <span class="kn">import</span> <span class="nn">natsort</span>
 <span class="kn">import</span> <span class="nn">pandas</span>
@@ -78,12 +81,13 @@
                 <span class="s1">&#39;xtick.labelsize&#39;</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span>
                 <span class="s1">&#39;ytick.labelsize&#39;</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span>
                 <span class="s1">&#39;axes.labelsize&#39;</span><span class="p">:</span><span class="mi">19</span><span class="p">,</span>
+                <span class="s1">&#39;legend.fontsize&#39;</span><span class="p">:</span><span class="mi">17</span><span class="p">,</span>
                 <span class="s1">&#39;font.family&#39;</span><span class="p">:</span><span class="s1">&#39;sans-serif&#39;</span><span class="p">,</span>
                 <span class="s1">&#39;font.sans-serif&#39;</span><span class="p">:[</span><span class="s1">&#39;DejaVu Sans&#39;</span><span class="p">],</span>
                 <span class="p">}</span>
            <span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="k">import</span> <span class="n">CODONS</span><span class="p">,</span> <span class="n">AAS</span><span class="p">,</span> <span class="n">AAS_WITHSTOP</span>
+<span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="k">import</span> <span class="n">CODONS</span><span class="p">,</span> <span class="n">AAS</span><span class="p">,</span> <span class="n">AAS_WITHSTOP</span><span class="p">,</span> <span class="n">NTS</span>
 <span class="kn">import</span> <span class="nn">dms_tools2.utils</span>
 
 <span class="c1">#: `color-blind safe palette &lt;http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/&gt;`_</span>
@@ -92,6 +96,12 @@
 <span class="c1">#: `scale_color_manual(COLOR_BLIND_PALETTE)`.</span>
 <span class="n">COLOR_BLIND_PALETTE</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;#000000&quot;</span><span class="p">,</span> <span class="s2">&quot;#E69F00&quot;</span><span class="p">,</span> <span class="s2">&quot;#56B4E9&quot;</span><span class="p">,</span> <span class="s2">&quot;#009E73&quot;</span><span class="p">,</span>
                        <span class="s2">&quot;#F0E442&quot;</span><span class="p">,</span> <span class="s2">&quot;#0072B2&quot;</span><span class="p">,</span> <span class="s2">&quot;#D55E00&quot;</span><span class="p">,</span> <span class="s2">&quot;#CC79A7&quot;</span><span class="p">]</span>
+
+<span class="c1">#: `color-blind safe palette &lt;http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/&gt;`_</span>
+<span class="c1">#: that differs from `COLOR_BLIND_PALETTE` in that first </span>
+<span class="c1">#: color is gray rather than black.</span>
+<span class="n">COLOR_BLIND_PALETTE_GRAY</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;#999999&quot;</span><span class="p">,</span> <span class="s2">&quot;#E69F00&quot;</span><span class="p">,</span> <span class="s2">&quot;#56B4E9&quot;</span><span class="p">,</span> <span class="s2">&quot;#009E73&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;#F0E442&quot;</span><span class="p">,</span> <span class="s2">&quot;#0072B2&quot;</span><span class="p">,</span> <span class="s2">&quot;#D55E00&quot;</span><span class="p">,</span> <span class="s2">&quot;#CC79A7&quot;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="breaksAndLabels"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.breaksAndLabels">[docs]</a><span class="k">def</span> <span class="nf">breaksAndLabels</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
@@ -140,11 +150,12 @@
 <span class="sd">    Useful for nice axis-tick formatting.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        `xlist` (list)</span>
+<span class="sd">        `xlist` (list or number)</span>
 <span class="sd">            Numbers to format.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        List of latex scientific notation formatted strings.</span>
+<span class="sd">        List of latex scientific notation formatted strings,</span>
+<span class="sd">        or single string if `xlist` is a number.</span>
 
 <span class="sd">    &gt;&gt;&gt; latexSciNot([0, 3, 3120, -0.0000927])</span>
 <span class="sd">    [&#39;$0$&#39;, &#39;$3$&#39;, &#39;$3.1 \\\\times 10^{3}$&#39;, &#39;$-9.3 \\\\times 10^{-5}$&#39;]</span>
@@ -161,6 +172,11 @@
 <span class="sd">    &gt;&gt;&gt; latexSciNot([0, 1, 2])</span>
 <span class="sd">    [&#39;$0$&#39;, &#39;$1$&#39;, &#39;$2$&#39;]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xlist</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Number</span><span class="p">):</span>
+        <span class="n">isnum</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">xlist</span> <span class="o">=</span> <span class="p">[</span><span class="n">xlist</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">isnum</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">formatlist</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xlist</span><span class="p">:</span>
         <span class="n">xf</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{0:.2g}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -174,6 +190,9 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">xf</span> <span class="o">=</span> <span class="s1">&#39;$</span><span class="si">{0}</span><span class="s1">$&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xf</span><span class="p">)</span>
         <span class="n">formatlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xf</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">isnum</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">formatlist</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="n">formatlist</span> <span class="o">=</span> <span class="n">formatlist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">formatlist</span></div>
 
 
@@ -502,8 +521,8 @@
                 <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])</span>
     <span class="k">elif</span> <span class="n">classification</span> <span class="o">==</span> <span class="s1">&#39;singlentchanges&#39;</span><span class="p">:</span>
         <span class="n">muttypes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">ntchange</span><span class="p">,</span> <span class="n">ntchange</span><span class="p">)</span> <span class="k">for</span> <span class="n">ntchange</span> <span class="ow">in</span> <span class="p">[</span>
-                <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">to</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nt1</span><span class="p">,</span> <span class="n">nt2</span><span class="p">)</span> <span class="k">for</span> <span class="n">nt1</span> <span class="ow">in</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">NTS</span>
-                <span class="k">for</span> <span class="n">nt2</span> <span class="ow">in</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">NTS</span> <span class="k">if</span> <span class="n">nt1</span> <span class="o">!=</span> <span class="n">nt2</span><span class="p">]])</span>
+                <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">to</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nt1</span><span class="p">,</span> <span class="n">nt2</span><span class="p">)</span> <span class="k">for</span> <span class="n">nt1</span> <span class="ow">in</span> <span class="n">NTS</span>
+                <span class="k">for</span> <span class="n">nt2</span> <span class="ow">in</span> <span class="n">NTS</span> <span class="k">if</span> <span class="n">nt1</span> <span class="o">!=</span> <span class="n">nt2</span><span class="p">]])</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid classification </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">classification</span><span class="p">))</span>
 
@@ -530,9 +549,9 @@
             <span class="o">+</span> <span class="n">scale_y_continuous</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">latexSciNot</span><span class="p">)</span>
             <span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">muttypes</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">COLOR_BLIND_PALETTE</span><span class="p">):</span>
-        <span class="n">p</span> <span class="o">+=</span> <span class="n">scale_fill_manual</span><span class="p">(</span><span class="n">COLOR_BLIND_PALETTE</span><span class="p">)</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">scale_fill_manual</span><span class="p">(</span><span class="n">COLOR_BLIND_PALETTE</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">p</span> <span class="o">+=</span> <span class="n">guides</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="n">guide_legend</span><span class="p">(</span><span class="n">ncol</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">guides</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="n">guide_legend</span><span class="p">(</span><span class="n">ncol</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
 
     <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mf">2.7</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="p">(</span><span class="mf">1.2</span> <span class="o">+</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)),</span>
             <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -826,8 +845,8 @@
              <span class="o">+</span> <span class="n">guides</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
              <span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">((</span><span class="ow">not</span> <span class="n">names</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">or</span> <span class="n">names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isspace</span><span class="p">())):</span>
-        <span class="n">p</span> <span class="o">+=</span> <span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~name&#39;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="n">ncol</span><span class="p">)</span>
-    <span class="n">p</span> <span class="o">+=</span> <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">4.6</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.3</span> <span class="o">+</span> <span class="n">ncol</span><span class="p">),</span> <span class="mf">1.9</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.2</span> <span class="o">+</span> <span class="n">nrow</span><span class="p">)))</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~name&#39;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="n">ncol</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">4.6</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.3</span> <span class="o">+</span> <span class="n">ncol</span><span class="p">),</span> <span class="mf">1.9</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.2</span> <span class="o">+</span> <span class="n">nrow</span><span class="p">)))</span>
     <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
@@ -1092,6 +1111,339 @@
     <span class="k">return</span> <span class="p">(</span><span class="n">df_sigsel</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">gamma_params</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="plotColCorrs"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.plotColCorrs">[docs]</a><span class="k">def</span> <span class="nf">plotColCorrs</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">lower_filter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shrink_threshold</span><span class="o">=</span><span class="mi">25</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plots correlation among columns in pandas Data Frame.</span>
+
+<span class="sd">    Plots distribution of each variable and pairwise correlations.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `df` (pandas DataFrame)</span>
+<span class="sd">            Data frame with data to plot.</span>
+<span class="sd">        `plotfile` (str)</span>
+<span class="sd">            Name of created plot.</span>
+<span class="sd">        `cols` (list)</span>
+<span class="sd">            List of columns in `df` to plot.</span>
+<span class="sd">        `lower_filter` (`None` or str)</span>
+<span class="sd">            Can be any string that can passed to the `query` function</span>
+<span class="sd">            of `df`. In this case, on the lower diagonal only plot</span>
+<span class="sd">            data for which this query is `True`.</span>
+<span class="sd">        `title` (`None` or str)</span>
+<span class="sd">            Title of plot.</span>
+<span class="sd">        `shrink_threshold` (float)</span>
+<span class="sd">            See argument of same name to :meth:`hist_bins_intsafe`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`cols` specifies columns not in `df`&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">lower_filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">filter_indices</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">lower_filter</span><span class="p">)</span><span class="o">.</span><span class="n">index</span>
+        <span class="n">color_all</span> <span class="o">=</span> <span class="n">COLOR_BLIND_PALETTE_GRAY</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">color_filter</span> <span class="o">=</span> <span class="n">COLOR_BLIND_PALETTE_GRAY</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">color_all</span> <span class="o">=</span> <span class="n">COLOR_BLIND_PALETTE</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">hist1d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;1D histogram for diagonal elements.&quot;&quot;&quot;</span>
+        <span class="n">bins</span><span class="o">=</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">hist_bins_intsafe</span><span class="p">(</span><span class="n">x</span><span class="p">,</span>
+                <span class="n">shrink_threshold</span><span class="o">=</span><span class="n">shrink_threshold</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color_all</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">lower_filter</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">filter_indices</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color_filter</span><span class="p">,</span>
+                     <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">hist2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">filterdata</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;2D histogram for off-diagonal elements.&quot;&quot;&quot;</span>
+        <span class="n">bins</span> <span class="o">=</span> <span class="p">[</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">hist_bins_intsafe</span><span class="p">(</span><span class="n">a</span><span class="p">,</span>
+                <span class="n">shrink_threshold</span><span class="o">=</span><span class="n">shrink_threshold</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="n">filterdata</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">color_filter</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">filter_indices</span><span class="p">]</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">filter_indices</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">color_all</span>
+        <span class="n">cmap</span> <span class="o">=</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">from_white_cmap</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">hist2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">g</span> <span class="o">=</span> <span class="p">(</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">AugmentedPairGrid</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="n">cols</span><span class="p">,</span>
+            <span class="n">diag_sharey</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+         <span class="o">.</span><span class="n">map_diag</span><span class="p">(</span><span class="n">hist1d</span><span class="p">)</span>
+         <span class="o">.</span><span class="n">map_upper</span><span class="p">(</span><span class="n">hist2d</span><span class="p">,</span> <span class="n">filterdata</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+         <span class="o">.</span><span class="n">map_lower</span><span class="p">(</span><span class="n">hist2d</span><span class="p">,</span> <span class="n">filterdata</span><span class="o">=</span><span class="p">(</span><span class="n">lower_filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">))</span>
+         <span class="o">.</span><span class="n">ax_lims_clip_outliers</span><span class="p">()</span>
+         <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">lower_filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">label_order</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;all</span><span class="se">\n</span><span class="s1">(</span><span class="si">{0}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">dms_tools2</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">latexSciNot</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">))),</span>
+                       <span class="s1">&#39;</span><span class="si">{0}</span><span class="se">\n</span><span class="s1">(</span><span class="si">{1}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lower_filter</span><span class="p">,</span>
+                            <span class="n">dms_tools2</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">latexSciNot</span><span class="p">(</span>
+                            <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">lower_filter</span><span class="p">)))),</span>
+                       <span class="p">]</span>
+        <span class="n">label_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">lab</span><span class="p">:</span><span class="n">plt</span><span class="o">.</span><span class="n">Line2D</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                                     <span class="n">solid_capstyle</span><span class="o">=</span><span class="s1">&#39;butt&#39;</span><span class="p">)</span>
+                      <span class="k">for</span> <span class="p">(</span><span class="n">lab</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">label_order</span><span class="p">,</span>
+                          <span class="p">[</span><span class="n">color_all</span><span class="p">,</span> <span class="n">color_filter</span><span class="p">])</span>
+                      <span class="p">}</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">add_legend</span><span class="p">(</span><span class="n">label_data</span><span class="p">,</span> <span class="n">label_order</span><span class="o">=</span><span class="n">label_order</span><span class="p">,</span>
+                     <span class="n">labelspacing</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">handlelength</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">)</span>
+
+    <span class="n">g</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plotRarefactionCurves"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.plotRarefactionCurves">[docs]</a><span class="k">def</span> <span class="nf">plotRarefactionCurves</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">rarefy_col</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span> <span class="n">facet_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nrow</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;reads&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">facet_scales</span><span class="o">=</span><span class="s1">&#39;free&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plots rarefaction curves.</span>
+
+<span class="sd">    The rarefaction curves are calculated analytically using</span>
+<span class="sd">    :py:mod:`dms_tools2.utils.rarefactionCurve`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `df` (pandas DataFrame)</span>
+<span class="sd">            Data frame containing data. In tidy form if</span>
+<span class="sd">            faceting.</span>
+<span class="sd">        `rarefy_col` (str)</span>
+<span class="sd">            Name of column in `df` that contains the variable</span>
+<span class="sd">            that we rarify. For instance, these might be strings</span>
+<span class="sd">            giving barcodes.</span>
+<span class="sd">        `plotfile` (str)</span>
+<span class="sd">            Name of created plot.</span>
+<span class="sd">        `facet_col` (str or `None`)</span>
+<span class="sd">            If not `None`, should be name of a column in `df`</span>
+<span class="sd">            that contains a variable we facet in the plot.</span>
+<span class="sd">        `nrow` (int)</span>
+<span class="sd">            If faceting, the number of rows.</span>
+<span class="sd">        `xlabel` (str)</span>
+<span class="sd">            X-axis label.</span>
+<span class="sd">        `ylabel` (str or `None`)</span>
+<span class="sd">            Y-axis label. If `None`, defaults to value of `rarefy_col`.</span>
+<span class="sd">        `facet_scales` (str`)</span>
+<span class="sd">            Scales for faceting. Can be &quot;free&quot;, &quot;free_x&quot;, &quot;free_y&quot;, or</span>
+<span class="sd">            &quot;fixed&quot;</span>
+
+<span class="sd">    Here is an example. First, we simulate two sets of barcodes.</span>
+<span class="sd">    For ease of fast simulation, the barcodes are just numbers here.</span>
+<span class="sd">    One samples a large set, the other a set a quarter that size with</span>
+<span class="sd">    half as many reads:</span>
+
+<span class="sd">    &gt;&gt;&gt; nbc = 40000</span>
+<span class="sd">    &gt;&gt;&gt; bclen = 10</span>
+<span class="sd">    &gt;&gt;&gt; nreads = 200000</span>
+<span class="sd">    &gt;&gt;&gt; barcodes = list(range(nbc))</span>
+<span class="sd">    &gt;&gt;&gt; numpy.random.seed(1)</span>
+<span class="sd">    &gt;&gt;&gt; large_set = numpy.random.choice(barcodes, size=nreads)</span>
+<span class="sd">    &gt;&gt;&gt; small_set = numpy.random.choice(barcodes[ : nbc // 4], size=nreads // 2)</span>
+
+<span class="sd">    Now we put these in a tidy data frame where one column is named</span>
+<span class="sd">    &quot;barcodes&quot; and the other is named &quot;sample&quot;:</span>
+
+<span class="sd">    &gt;&gt;&gt; df = pandas.DataFrame({</span>
+<span class="sd">    ...         &quot;barcodes&quot;:list(small_set) + list(large_set),</span>
+<span class="sd">    ...         &quot;sample&quot;:[&#39;small_set&#39;] * len(small_set) +</span>
+<span class="sd">    ...                  [&#39;large_set&#39;] * len(large_set)})</span>
+
+<span class="sd">    Finally, plot the rarefaction curves:</span>
+
+<span class="sd">    &gt;&gt;&gt; plotfile = &#39;_plotRarefactionCurves.png&#39;</span>
+<span class="sd">    &gt;&gt;&gt; plotRarefactionCurves(df, &#39;barcodes&#39;, plotfile, facet_col=&#39;sample&#39;)</span>
+
+<span class="sd">    Here is the resulting plot:</span>
+
+<span class="sd">    .. image:: _static/_plotRarefactionCurves.png</span>
+<span class="sd">       :width: 6in</span>
+<span class="sd">       :align: center</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">rarefy_col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`df` does not have `rarefy_col` </span><span class="si">{0}</span><span class="s2">&quot;</span>
+                         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rarefy_col</span><span class="p">))</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">facet_col</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">facet_col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`df` does not have `facet_col` </span><span class="si">{0}</span><span class="s2">&quot;</span>
+                         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">facet_col</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">ylabel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ylabel</span> <span class="o">=</span> <span class="n">rarefy_col</span>
+
+    <span class="c1"># get iterator over groups or dummy iterator</span>
+    <span class="n">categories</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">facet_col</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">df</span><span class="p">[</span><span class="n">facet_col</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;category&#39;</span><span class="p">:</span>
+            <span class="n">categories</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">facet_col</span><span class="p">]</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">categories</span>
+        <span class="n">df_iterator</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">facet_col</span><span class="p">)[</span><span class="n">rarefy_col</span><span class="p">]</span>
+        <span class="n">nfacets</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">facet_col</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">df_iterator</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;dummy&#39;</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="n">rarefy_col</span><span class="p">])</span>
+        <span class="n">nfacets</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">df_iterator</span><span class="p">:</span>
+        <span class="n">xs</span><span class="p">,</span> <span class="n">ys</span> <span class="o">=</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">rarefactionCurve</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">ys</span><span class="p">)</span>
+        <span class="n">d</span><span class="p">[</span><span class="n">ylabel</span><span class="p">]</span> <span class="o">+=</span> <span class="n">ys</span>
+        <span class="n">d</span><span class="p">[</span><span class="n">xlabel</span><span class="p">]</span> <span class="o">+=</span> <span class="n">xs</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;_facet_var&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span>
+    <span class="n">rarefied</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">categories</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rarefied</span><span class="p">[</span><span class="s1">&#39;_facet_var&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span>
+                <span class="n">rarefied</span><span class="p">[</span><span class="s1">&#39;_facet_var&#39;</span><span class="p">],</span> <span class="n">categories</span><span class="p">)</span>
+
+    <span class="n">ident</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="n">x</span>
+    <span class="k">if</span> <span class="n">rarefied</span><span class="p">[</span><span class="n">xlabel</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mf">1e4</span><span class="p">:</span> 
+        <span class="n">xlabeler</span> <span class="o">=</span> <span class="n">latexSciNot</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xlabeler</span> <span class="o">=</span> <span class="n">ident</span>
+    <span class="k">if</span> <span class="n">rarefied</span><span class="p">[</span><span class="n">ylabel</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mf">1e4</span><span class="p">:</span>
+        <span class="n">ylabeler</span> <span class="o">=</span> <span class="n">latexSciNot</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ylabeler</span> <span class="o">=</span> <span class="n">ident</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">rarefied</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="n">xlabel</span><span class="p">,</span> <span class="n">ylabel</span><span class="p">))</span> <span class="o">+</span>
+            <span class="n">geom_line</span><span class="p">()</span> <span class="o">+</span>
+            <span class="n">xlab</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span> <span class="o">+</span>
+            <span class="n">ylab</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span> <span class="o">+</span>
+            <span class="n">scale_x_continuous</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">xlabeler</span><span class="p">,</span>
+                    <span class="n">breaks</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">ticker</span><span class="o">.</span><span class="n">MaxNLocator</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+                                     <span class="o">.</span><span class="n">tick_values</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span> <span class="o">+</span>
+            <span class="n">scale_y_continuous</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">ylabeler</span><span class="p">)</span>
+            <span class="p">)</span>
+
+    <span class="n">x_panel_spacing</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;free&quot;</span><span class="p">:</span><span class="mf">0.75</span><span class="p">,</span> <span class="s2">&quot;free_x&quot;</span><span class="p">:</span><span class="mf">0.1</span><span class="p">,</span>
+                       <span class="s2">&quot;fixed&quot;</span><span class="p">:</span><span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;free_y&quot;</span><span class="p">:</span><span class="mf">0.75</span><span class="p">}[</span><span class="n">facet_scales</span><span class="p">]</span>
+    <span class="n">y_panel_spacing</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;free&quot;</span><span class="p">:</span><span class="mf">0.4</span><span class="p">,</span> <span class="s2">&quot;free_x&quot;</span><span class="p">:</span><span class="mf">0.4</span><span class="p">,</span>
+                       <span class="s2">&quot;fixed&quot;</span><span class="p">:</span><span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;free_y&quot;</span><span class="p">:</span><span class="mf">0.1</span><span class="p">}[</span><span class="n">facet_scales</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">facet_col</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ _facet_var&#39;</span><span class="p">,</span> <span class="n">nrow</span><span class="o">=</span><span class="n">nrow</span><span class="p">,</span> <span class="n">scales</span><span class="o">=</span><span class="n">facet_scales</span><span class="p">)</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_spacing_x</span><span class="o">=</span><span class="n">x_panel_spacing</span><span class="p">,</span>
+                   <span class="n">panel_spacing_y</span><span class="o">=</span><span class="n">y_panel_spacing</span><span class="p">)</span>
+
+    <span class="n">ncol</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">nfacets</span> <span class="o">/</span> <span class="n">nrow</span><span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">,</span>
+            <span class="n">height</span><span class="o">=</span><span class="mf">0.5</span> <span class="o">+</span> <span class="mf">1.75</span> <span class="o">*</span> <span class="n">nrow</span> <span class="o">+</span> <span class="n">y_panel_spacing</span> <span class="o">*</span> <span class="p">(</span><span class="n">nrow</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">width</span><span class="o">=</span><span class="p">(</span><span class="mf">1.25</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">ncol</span> <span class="o">+</span> <span class="n">x_panel_spacing</span> <span class="o">*</span> <span class="p">(</span><span class="n">ncol</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)),</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">limitsize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="hist_bins_intsafe"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.hist_bins_intsafe">[docs]</a><span class="k">def</span> <span class="nf">hist_bins_intsafe</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;fd&#39;</span><span class="p">,</span> <span class="n">shrink_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxbins</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Histogram bins that work for integer data.</span>
+
+<span class="sd">    You can auto-choose bins using `numpy.histogram`.</span>
+<span class="sd">    However, if the data are integer, these bins</span>
+<span class="sd">    may be non-integer and so some bins will capture</span>
+<span class="sd">    more integers. This function fixes that.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `x` (numpy array)</span>
+<span class="sd">            The data to bin.</span>
+<span class="sd">        `method` (str)</span>
+<span class="sd">            The binning method. Can be anything</span>
+<span class="sd">            acceptable to `numpy.histogram` as</span>
+<span class="sd">            a `bins` argument.</span>
+<span class="sd">        `shrink_threshold` (`None` or int)</span>
+<span class="sd">            If set to a value other than `None`,</span>
+<span class="sd">            apply a heuristic threshold to slow</span>
+<span class="sd">            the growth in number of bins if they</span>
+<span class="sd">            exceed this number.</span>
+<span class="sd">        `maxbins` (int)</span>
+<span class="sd">            Maximum number of bins.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The bin edges as returned in the second</span>
+<span class="sd">        element of `numpy.histogram`, but adjusted</span>
+<span class="sd">        to be of integer width if the data are all</span>
+<span class="sd">        integers.</span>
+
+<span class="sd">    Just like `numpy.histogram` for non-int data:</span>
+
+<span class="sd">    &gt;&gt;&gt; numpy.random.seed(1)</span>
+<span class="sd">    &gt;&gt;&gt; x = 100 * numpy.random.random(500)</span>
+<span class="sd">    &gt;&gt;&gt; bin_edges = numpy.histogram(x, bins=&#39;fd&#39;)[1]</span>
+<span class="sd">    &gt;&gt;&gt; bin_edges_intsafe = hist_bins_intsafe(x)[ : len(bin_edges)]</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(bin_edges, bin_edges_intsafe)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(bin_edges, bin_edges.astype(&#39;int&#39;))</span>
+<span class="sd">    False</span>
+
+<span class="sd">    But gives integer bins for int data:</span>
+<span class="sd">    &gt;&gt;&gt; x = x.astype(&#39;int&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; bin_edges = numpy.histogram(x, bins=&#39;fd&#39;)[1]</span>
+<span class="sd">    &gt;&gt;&gt; bin_edges_intsafe = hist_bins_intsafe(x)</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(bin_edges, bin_edges_intsafe)</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(bin_edges, bin_edges.astype(&#39;int&#39;))</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(bin_edges_intsafe, bin_edges_intsafe.astype(&#39;int&#39;))</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="s1">&#39;fd&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">maxbins</span><span class="p">:</span>
+        <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">maxbins</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">shrink_threshold</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">corr</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">shrink_threshold</span> <span class="o">&gt;</span> <span class="mi">1</span>
+        <span class="n">corr</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">shrink_threshold</span><span class="p">)))</span>
+
+    <span class="n">binwidth</span> <span class="o">=</span> <span class="p">(</span><span class="n">bin_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">bin_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">corr</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="n">binwidth</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">binwidth</span><span class="p">)</span>
+    <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="n">binwidth</span><span class="p">,</span> <span class="n">binwidth</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">bin_edges</span></div>
+
+
+<div class="viewcode-block" id="from_white_cmap"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.from_white_cmap">[docs]</a><span class="k">def</span> <span class="nf">from_white_cmap</span><span class="p">(</span><span class="n">color</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get matplotlib color map from white to `color`.&quot;&quot;&quot;</span>
+    <span class="n">light</span> <span class="o">=</span> <span class="n">seaborn</span><span class="o">.</span><span class="n">set_hls_values</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">seaborn</span><span class="o">.</span><span class="n">blend_palette</span><span class="p">([</span><span class="n">light</span><span class="p">,</span> <span class="n">color</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AugmentedPairGrid"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.AugmentedPairGrid">[docs]</a><span class="k">class</span> <span class="nc">AugmentedPairGrid</span><span class="p">(</span><span class="n">seaborn</span><span class="o">.</span><span class="n">PairGrid</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Augmented version of `seaborn.PairGrid`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AugmentedPairGrid.ax_lims_clip_outliers"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.AugmentedPairGrid.ax_lims_clip_outliers">[docs]</a>    <span class="k">def</span> <span class="nf">ax_lims_clip_outliers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frac_clip</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">extend</span><span class="o">=</span><span class="mf">0.03</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets axis limits to clip outliers in data.</span>
+
+<span class="sd">        Useful if there are a few data points far outside the range</span>
+<span class="sd">        of most of the data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            `frac_clip` (float)</span>
+<span class="sd">                Set upper and lower limits so that this fraction of</span>
+<span class="sd">                data is outside limits at both ends. Done **before**</span>
+<span class="sd">                adding `extend`.</span>
+<span class="sd">            `extend` (float)</span>
+<span class="sd">                Extend the limits determined by `frac_clip` by this</span>
+<span class="sd">                fraction of the data range.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">frac_clip</span> <span class="o">&lt;</span> <span class="mf">0.5</span>
+
+        <span class="k">def</span> <span class="nf">_get_lims</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Gets limits for data in pandas.Series `s`.&quot;&quot;&quot;</span>
+            <span class="n">s_range</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">s</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">s_range</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">s_extend</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">extend</span><span class="p">,</span> <span class="n">extend</span> <span class="o">*</span> <span class="n">s</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">s_extend</span> <span class="o">=</span> <span class="n">s_range</span> <span class="o">*</span> <span class="n">extend</span>
+            <span class="n">s_min</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">frac_clip</span><span class="p">)</span> <span class="o">-</span> <span class="n">s_extend</span>
+            <span class="n">s_max</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">frac_clip</span><span class="p">)</span> <span class="o">+</span> <span class="n">s_extend</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">s_min</span><span class="p">,</span> <span class="n">s_max</span><span class="p">)</span>
+
+        <span class="n">xlims</span> <span class="o">=</span> <span class="p">[</span><span class="n">_get_lims</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">x</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_vars</span><span class="p">]</span>
+        <span class="n">ylims</span> <span class="o">=</span> <span class="p">[</span><span class="n">_get_lims</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">y</span><span class="p">])</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_vars</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">icol</span><span class="p">,</span> <span class="n">xlim</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">xlims</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">irow</span><span class="p">,</span> <span class="n">ylim</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ylims</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="n">irow</span><span class="p">,</span> <span class="n">icol</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">*</span><span class="n">xlim</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">icol</span> <span class="o">!=</span> <span class="n">irow</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="n">irow</span><span class="p">,</span> <span class="n">icol</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">*</span><span class="n">ylim</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div></div>
+
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">doctest</span>
@@ -1180,10 +1532,10 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, the Bloom lab.
+      &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
     </div>

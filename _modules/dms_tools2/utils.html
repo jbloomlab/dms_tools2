@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.utils &#8212; dms_tools2 2.2.9 documentation</title>
+    <title>dms_tools2.utils &#8212; dms_tools2 2.3.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -43,6 +43,7 @@
 
 
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">platform</span>
@@ -51,8 +52,11 @@
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">random</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">scipy.misc</span>
+<span class="kn">import</span> <span class="nn">scipy.special</span>
 <span class="kn">import</span> <span class="nn">pandas</span>
 <span class="kn">import</span> <span class="nn">HTSeq</span>
 
@@ -73,7 +77,8 @@
             <span class="p">]</span>
     <span class="k">for</span> <span class="n">modname</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;Bio&#39;</span><span class="p">,</span> <span class="s1">&#39;HTSeq&#39;</span><span class="p">,</span> <span class="s1">&#39;pandas&#39;</span><span class="p">,</span> <span class="s1">&#39;numpy&#39;</span><span class="p">,</span> <span class="s1">&#39;IPython&#39;</span><span class="p">,</span>
             <span class="s1">&#39;jupyter&#39;</span><span class="p">,</span> <span class="s1">&#39;matplotlib&#39;</span><span class="p">,</span> <span class="s1">&#39;plotnine&#39;</span><span class="p">,</span> <span class="s1">&#39;natsort&#39;</span><span class="p">,</span> <span class="s1">&#39;pystan&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;scipy&#39;</span><span class="p">,</span> <span class="s1">&#39;seaborn&#39;</span><span class="p">,</span> <span class="s1">&#39;phydmslib&#39;</span><span class="p">,</span> <span class="s1">&#39;statsmodels&#39;</span><span class="p">,</span> <span class="s1">&#39;rpy2&#39;</span><span class="p">]:</span>
+            <span class="s1">&#39;scipy&#39;</span><span class="p">,</span> <span class="s1">&#39;seaborn&#39;</span><span class="p">,</span> <span class="s1">&#39;phydmslib&#39;</span><span class="p">,</span> <span class="s1">&#39;statsmodels&#39;</span><span class="p">,</span> <span class="s1">&#39;rpy2&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;regex&#39;</span><span class="p">,</span> <span class="s1">&#39;umi_tools&#39;</span><span class="p">]:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">v</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">modname</span><span class="p">)</span><span class="o">.</span><span class="n">__version__</span>
             <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="si">{0}</span><span class="s1"> version: </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">modname</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
@@ -329,6 +334,85 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">consensus</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;N&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">consensus</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="rarefactionCurve"><a class="viewcode-back" href="../../dms_tools2.utils.html#dms_tools2.utils.rarefactionCurve">[docs]</a><span class="k">def</span> <span class="nf">rarefactionCurve</span><span class="p">(</span><span class="n">barcodes</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">maxpoints</span><span class="o">=</span><span class="mf">1e5</span><span class="p">,</span> <span class="n">logspace</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rarefaction curve from list of barcodes.</span>
+
+<span class="sd">    Uses the analytical formula for the rarefaction curve defined</span>
+<span class="sd">    `on Wikipedia &lt;https://en.wikipedia.org/wiki/Rarefaction_(ecology)#Derivation&gt;`_.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `barcodes` (list or pandas Series)</span>
+<span class="sd">            Holds the list of unique barcodes for which we calculate</span>
+<span class="sd">            the rarefaction curve. It is expected that some of these</span>
+<span class="sd">            barcodes will be repeated multiple times in the list if</span>
+<span class="sd">            the sampling is approaching saturation.</span>
+<span class="sd">        `maxpoints` (int)</span>
+<span class="sd">            Only calculate values at this many points. The benefit</span>
+<span class="sd">            of this is that it can become very costly to calculate</span>
+<span class="sd">            the curve at every point when there are many points.</span>
+<span class="sd">        `logspace` (True)</span>
+<span class="sd">            Logarithmically space the `maxpoints` points for</span>
+<span class="sd">            the calculation. This will give better results if</span>
+<span class="sd">            we are subsampling and the curve saturates. Only</span>
+<span class="sd">            done if we have to subsample.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The 2-tuple `(nreads, nbarcodes)`, where both `nreads` and</span>
+<span class="sd">        `nbarcodes` are lists of the same length, and `nbarcodes[i]`</span>
+<span class="sd">        is the expected number of barcodes observed when there are</span>
+<span class="sd">        `nreads[i]` reads.</span>
+
+<span class="sd">    Here we take a very small list and show that the results given</span>
+<span class="sd">    by the function are equivalent to those obtained by random</span>
+<span class="sd">    subsampling:</span>
+
+<span class="sd">    &gt;&gt;&gt; barcodes = [&#39;A&#39;, &#39;A&#39;, &#39;A&#39;, &#39;A&#39;, &#39;G&#39;, &#39;G&#39;, &#39;C&#39;, &#39;T&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; (nreads, nbarcodes) = rarefactionCurve(barcodes)</span>
+<span class="sd">    &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">    &gt;&gt;&gt; nrand = 100000</span>
+<span class="sd">    &gt;&gt;&gt; sim_equal_calc = []</span>
+<span class="sd">    &gt;&gt;&gt; for n in range(1, len(barcodes) + 1):</span>
+<span class="sd">    ...     nbarcodes_sim = sum([len(set(random.sample(barcodes, n)))</span>
+<span class="sd">    ...             for _ in range(nrand)]) / nrand</span>
+<span class="sd">    ...     sim_equal_calc.append(numpy.allclose(nbarcodes_sim,</span>
+<span class="sd">    ...             nbarcodes[nreads.index(n)], atol=1e-2))</span>
+<span class="sd">    &gt;&gt;&gt; all(sim_equal_calc)</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">barcodes</span><span class="p">)</span> <span class="c1"># total number of items</span>
+    <span class="n">Ni</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">Counter</span><span class="p">(</span><span class="n">barcodes</span><span class="p">)</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Ni</span><span class="p">)</span>
+    <span class="n">Mj</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">Counter</span><span class="p">(</span><span class="n">Ni</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+    <span class="n">Nk</span><span class="p">,</span> <span class="n">num</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">Mj</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+
+    <span class="c1"># use simplification that (N - Ni)Cr(n) / (N)Cr(n) =</span>
+    <span class="c1"># [(N - Ni)! * (N - n)!] / [N! * (N - Ni - n)!]</span>
+    <span class="c1">#</span>
+    <span class="c1"># Also use fact that gamma(x + 1) = x!</span>
+    <span class="n">nbarcodes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">lnFactorial_N</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">gammaln</span><span class="p">(</span><span class="n">N</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">logspace</span> <span class="ow">and</span> <span class="n">N</span> <span class="o">&gt;</span> <span class="n">maxpoints</span><span class="p">:</span>
+        <span class="n">nreads</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span>
+                <span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">N</span><span class="p">),</span>
+                <span class="n">num</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">maxpoints</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">nreads</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+                <span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">maxpoints</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)))</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nreads</span><span class="p">:</span>
+        <span class="n">lnFactorial_N_minus_n</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">gammaln</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">Nk</span> <span class="o">-</span> <span class="n">n</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="c1"># indices where this is true</span>
+        <span class="n">nbarcodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">K</span> <span class="o">-</span> <span class="p">(</span><span class="n">num</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
+                            <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">gammaln</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">Nk</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span>
+                            <span class="n">lnFactorial_N_minus_n</span> <span class="o">-</span>
+                            <span class="n">lnFactorial_N</span> <span class="o">-</span>
+                            <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">gammaln</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">Nk</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+                    <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                <span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">nreads</span><span class="p">,</span> <span class="n">nbarcodes</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="reverseComplement"><a class="viewcode-back" href="../../dms_tools2.utils.html#dms_tools2.utils.reverseComplement">[docs]</a><span class="k">def</span> <span class="nf">reverseComplement</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">use_cutils</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -1136,10 +1220,10 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, the Bloom lab.
+      &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
     </div>

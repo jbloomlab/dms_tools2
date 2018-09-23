@@ -1,0 +1,961 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pacbio &#8212; dms_tools2 2.3.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="parseargs" href="dms_tools2.parseargs.html" />
+    <link rel="prev" title="neutcurve" href="dms_tools2.neutcurve.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <span class="target" id="module-dms_tools2.pacbio"></span><div class="section" id="pacbio">
+<h1>pacbio<a class="headerlink" href="#pacbio" title="Permalink to this headline">¶</a></h1>
+<p>Tools for processing PacBio sequencing data.</p>
+<dl class="class">
+<dt id="dms_tools2.pacbio.CCS">
+<em class="property">class </em><code class="descclassname">dms_tools2.pacbio.</code><code class="descname">CCS</code><span class="sig-paren">(</span><em>samplename</em>, <em>bamfile</em>, <em>reportfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/pacbio.html#CCS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.pacbio.CCS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to handle results of <code class="docutils literal notranslate"><span class="pre">ccs</span></code>.</p>
+<p>Holds results of PacBio <code class="docutils literal notranslate"><span class="pre">ccs</span></code>.
+Has been tested on output of <code class="docutils literal notranslate"><span class="pre">ccs</span></code> version 3.0.0.</p>
+<p>This class reads all data into memory, and so you
+may need a lot of RAM if <cite>bamfile</cite> is large.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>samplename</cite> (str)</dt>
+<dd>Sample or sequencing run</dd>
+<dt><cite>bamfile</cite> (str)</dt>
+<dd>BAM file created by <code class="docutils literal notranslate"><span class="pre">ccs</span></code></dd>
+<dt><cite>reportfile</cite> (str or <cite>None</cite>)</dt>
+<dd>Report file created by <code class="docutils literal notranslate"><span class="pre">ccs</span></code>, or
+<cite>None</cite> if you have no reports.</dd>
+</dl>
+</dd>
+<dt>Attributes:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>samplename</cite> (str)</dt>
+<dd>Name set at initialization</dd>
+<dt><cite>bamfile</cite> (str)</dt>
+<dd><code class="docutils literal notranslate"><span class="pre">ccs</span></code> BAM file set at initialization</dd>
+<dt><cite>reportfile</cite> (str or <cite>None</cite>)</dt>
+<dd><code class="docutils literal notranslate"><span class="pre">ccs</span></code> report file set at initialization</dd>
+<dt><cite>zmw_report</cite> (pandas.DataFrame or <cite>None</cite>):</dt>
+<dd>ZMW stats in <cite>reportfile</cite>, or <cite>None</cite> if no
+<cite>reportfile</cite>. Columns are <em>status</em>, <em>number</em>,
+<em>percent</em>, and <em>fraction</em>.</dd>
+<dt><cite>subread_report</cite> (pandas.DataFrame or <cite>None</cite>)</dt>
+<dd>Like <cite>zmw_report</cite> but for subreads.</dd>
+<dt><cite>df</cite> (pandas.DataFrame)</dt>
+<dd><p class="first">The CCSs in <cite>bamfile</cite>. Each row is a different CCS
+On creation, there will be the following columns (you
+can modify to add more):</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>“name”: the name of the CCS</li>
+<li>“samplename”: the sample as set via <cite>samplename</cite></li>
+<li>“CCS”: the circular consensus sequence</li>
+<li>“CCS_qvals”: the Q-values as a numpy array</li>
+<li>“passes”: the number of passes of the CCS</li>
+<li>“CCS_accuracy”: the accuracy of the CCS</li>
+<li>“CCS_length”: the length of the CCS</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Here is an example.</p>
+<p>First, define the sequences, quality scores,
+and names for 3 example sequences. The names indicate
+the barcodes, the accuracy of the barcode, and the polarity.
+Two of the sequences have the desired termini and
+a barcode. The other does not. Note that the second
+sequence has an extra nucleotide at each end, this
+will turn out to be fine with the <cite>match_str</cite> we write.
+The second sequence is also reverse complemented:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">termini5</span> <span class="o">=</span> <span class="s1">&#39;ACG&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">termini3</span> <span class="o">=</span> <span class="s1">&#39;CTT&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ccs_seqs</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span><span class="s1">&#39;barcoded_TTC_0.999_plus&#39;</span><span class="p">,</span>
+<span class="gp">... </span>         <span class="s1">&#39;seq&#39;</span><span class="p">:</span><span class="n">termini5</span> <span class="o">+</span> <span class="s1">&#39;TTC&#39;</span> <span class="o">+</span> <span class="s1">&#39;ACG&#39;</span> <span class="o">+</span> <span class="n">termini3</span><span class="p">,</span>
+<span class="gp">... </span>         <span class="s1">&#39;qvals&#39;</span><span class="p">:</span><span class="s1">&#39;?&#39;</span> <span class="o">*</span> <span class="mi">12</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="p">},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span><span class="s1">&#39;barcoded_AGA_0.995_minus&#39;</span><span class="p">,</span>
+<span class="gp">... </span>         <span class="s1">&#39;seq&#39;</span><span class="p">:</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">reverseComplement</span><span class="p">(</span>
+<span class="gp">... </span>               <span class="s1">&#39;T&#39;</span> <span class="o">+</span> <span class="n">termini5</span> <span class="o">+</span> <span class="s1">&#39;AGA&#39;</span> <span class="o">+</span> <span class="s1">&#39;GCA&#39;</span> <span class="o">+</span> <span class="n">termini3</span> <span class="o">+</span> <span class="s1">&#39;A&#39;</span><span class="p">),</span>
+<span class="gp">... </span>         <span class="s1">&#39;qvals&#39;</span><span class="p">:</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="s1">&#39;?&#39;</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">+</span> <span class="s1">&#39;5?9&#39;</span> <span class="o">+</span> <span class="s1">&#39;?&#39;</span> <span class="o">*</span> <span class="mi">7</span><span class="p">)),</span>
+<span class="gp">... </span>        <span class="p">},</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span><span class="s1">&#39;invalid&#39;</span><span class="p">,</span>
+<span class="gp">... </span>         <span class="s1">&#39;seq&#39;</span><span class="p">:</span><span class="s1">&#39;GGG&#39;</span> <span class="o">+</span> <span class="s1">&#39;CAT&#39;</span> <span class="o">+</span> <span class="s1">&#39;GCA&#39;</span> <span class="o">+</span> <span class="n">termini3</span><span class="p">,</span>
+<span class="gp">... </span>         <span class="s1">&#39;qvals&#39;</span><span class="p">:</span><span class="s1">&#39;?&#39;</span> <span class="o">*</span> <span class="mi">12</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="p">}</span>
+<span class="gp">... </span>        <span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">iccs</span> <span class="ow">in</span> <span class="n">ccs_seqs</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">iccs</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">qvalsToAccuracy</span><span class="p">(</span><span class="n">iccs</span><span class="p">[</span><span class="s1">&#39;qvals&#39;</span><span class="p">],</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;sanger&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now place these in a block of text that meets the
+<a class="reference external" href="https://github.com/PacificBiosciences/unanimity/blob/develop/doc/PBCCS.md">CCS SAM specification</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sam_template</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+<span class="gp">... </span>       <span class="s1">&#39;</span><span class="si">{0[name]}</span><span class="s1">&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;4&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;255&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;</span><span class="si">{0[seq]}</span><span class="s1">&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;</span><span class="si">{0[qvals]}</span><span class="s1">&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;np:i:6&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;rq:f:</span><span class="si">{0[accuracy]}</span><span class="s1">&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">samtext</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">sam_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">iccs</span><span class="p">)</span> <span class="k">for</span>
+<span class="gp">... </span>                     <span class="n">iccs</span> <span class="ow">in</span> <span class="n">ccs_seqs</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Create small SAM file with these sequences, then
+convert to BAM file used to initialize a <cite>CCS</cite> object
+(note this requires <code class="docutils literal notranslate"><span class="pre">samtools</span></code> to be installed):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">samfile</span> <span class="o">=</span> <span class="s1">&#39;_temp.sam&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bamfile</span> <span class="o">=</span> <span class="s1">&#39;_temp.bam&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">samfile</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">samtext</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">([</span><span class="s1">&#39;samtools&#39;</span><span class="p">,</span> <span class="s1">&#39;view&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s1">&#39;-b&#39;</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">bamfile</span><span class="p">,</span> <span class="n">samfile</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ccs</span> <span class="o">=</span> <span class="n">CCS</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">bamfile</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">samfile</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">bamfile</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Check <cite>ccs.df</cite> has correct names, samplename, CCS sequences,
+and columns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">set</span><span class="p">(</span><span class="n">ccs</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">ccs_seqs</span><span class="p">}</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">ccs</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">samplename</span> <span class="o">==</span> <span class="s1">&#39;test&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">set</span><span class="p">(</span><span class="n">ccs</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">CCS</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;seq&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">ccs_seqs</span><span class="p">}</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">set</span><span class="p">(</span><span class="n">ccs</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;CCS&#39;</span><span class="p">,</span> <span class="s1">&#39;CCS_qvals&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s1">&#39;passes&#39;</span><span class="p">,</span> <span class="s1">&#39;CCS_accuracy&#39;</span><span class="p">,</span> <span class="s1">&#39;CCS_length&#39;</span><span class="p">,</span> <span class="s1">&#39;samplename&#39;</span><span class="p">}</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Use <a class="reference internal" href="#dms_tools2.pacbio.matchSeqs" title="dms_tools2.pacbio.matchSeqs"><code class="xref py py-meth docutils literal notranslate"><span class="pre">matchSeqs()</span></code></a> to match sequences with expected termini
+and define barcodes and reads in these:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">match_str</span> <span class="o">=</span> <span class="p">(</span><span class="n">termini5</span> <span class="o">+</span> <span class="s1">&#39;(?P&lt;barcode&gt;N</span><span class="si">{3}</span><span class="s1">)&#39;</span> <span class="o">+</span>
+<span class="gp">... </span>        <span class="s1">&#39;(?P&lt;read&gt;N+)&#39;</span> <span class="o">+</span> <span class="n">termini3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ccs</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">matchSeqs</span><span class="p">(</span><span class="n">ccs</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="n">match_str</span><span class="p">,</span> <span class="s1">&#39;CCS&#39;</span><span class="p">,</span> <span class="s1">&#39;barcoded&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This matching adds new columns to the new <cite>ccs.df</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">set</span><span class="p">(</span><span class="n">ccs</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="p">{</span><span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode_qvals&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s1">&#39;barcode_accuracy&#39;</span><span class="p">,</span> <span class="s1">&#39;read&#39;</span><span class="p">,</span> <span class="s1">&#39;read_qvals&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s1">&#39;read_accuracy&#39;</span><span class="p">,</span> <span class="s1">&#39;barcoded&#39;</span><span class="p">,</span> <span class="s1">&#39;barcoded_polarity&#39;</span><span class="p">}</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Now make sure <cite>df</cite> indicates that the correct sequences
+are barcoded, and that they have the correct barcodes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">bc_names</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">ccs_seqs</span> <span class="k">if</span>
+<span class="gp">... </span>        <span class="s1">&#39;barcoded&#39;</span> <span class="ow">in</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ccs</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">ccs</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;barcode&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">ccs</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;barcoded&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">bc_names</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">barcodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">bc_names</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">ccs</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;barcoded&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">barcode</span> <span class="o">==</span> <span class="n">barcodes</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">ccs</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;not barcoded&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">barcode</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">barcode_accuracies</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">2</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">bc_names</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">ccs</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;barcoded&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">barcode_accuracy</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">barcode_accuracies</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">ccs</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;barcoded&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">barcode_accuracy</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="p">[</span><span class="n">qvalsToAccuracy</span><span class="p">(</span><span class="n">qvals</span><span class="p">)</span> <span class="k">for</span> <span class="n">qvals</span> <span class="ow">in</span>
+<span class="gp">... </span>        <span class="n">ccs</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;barcoded&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">barcode_qvals</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">ccs</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;not barcoded&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">barcode_accuracy</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">barcoded_polarity</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;plus&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;minus&#39;</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">}[</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">3</span><span class="p">]]</span>
+<span class="gp">... </span>        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">bc_names</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">ccs</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;barcoded&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">barcoded_polarity</span> <span class="o">==</span> <span class="n">barcoded_polarity</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="dms_tools2.pacbio.TerminiVariantTag">
+<em class="property">class </em><code class="descclassname">dms_tools2.pacbio.</code><code class="descname">TerminiVariantTag</code><a class="headerlink" href="#dms_tools2.pacbio.TerminiVariantTag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
+<p>Variant tag at termini.</p>
+<dl class="attribute">
+<dt id="dms_tools2.pacbio.TerminiVariantTag.nucleotides">
+<code class="descname">nucleotides</code><a class="headerlink" href="#dms_tools2.pacbio.TerminiVariantTag.nucleotides" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dict keyed variant nucleotides, values variant name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dms_tools2.pacbio.TerminiVariantTag.site">
+<code class="descname">site</code><a class="headerlink" href="#dms_tools2.pacbio.TerminiVariantTag.site" title="Permalink to this definition">¶</a></dt>
+<dd><p>Site of tag in termini (0, 1, … numbering).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dms_tools2.pacbio.TerminiVariantTag.termini">
+<code class="descname">termini</code><a class="headerlink" href="#dms_tools2.pacbio.TerminiVariantTag.termini" title="Permalink to this definition">¶</a></dt>
+<dd><p>Location of tag: <cite>termini5</cite> or <cite>termini3</cite>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dms_tools2.pacbio.TerminiVariantTagCaller">
+<em class="property">class </em><code class="descclassname">dms_tools2.pacbio.</code><code class="descname">TerminiVariantTagCaller</code><span class="sig-paren">(</span><em>features, *, variants=['variant_1', 'variant_2'], trim_termini</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/pacbio.html#TerminiVariantTagCaller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.pacbio.TerminiVariantTagCaller" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Call variant tags at termini of CCSs.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>features</cite> (list)</dt>
+<dd>List of BioPython <cite>SeqFeature</cite> objects. Any
+features with a type attribute of <cite>variant_tag</cite>
+are taken to specify variant tags. These should
+consist of a single nucleotide, and have qualifiers
+that give the nucleotide for each variant. The
+features list should also have features with
+type attributes <cite>termini5</cite> and <cite>termini3</cite> used
+to determine which termin each tag falls in.</dd>
+<dt><cite>variants</cite> (list)</dt>
+<dd>List of variant names, must have nucleotide for
+variant specified in qualifier for each variant tag.</dd>
+<dt><cite>trim_termini</cite> (int)</dt>
+<dd>The amount trimmed from the 5’ termini of <cite>termini5</cite>
+and the 3’ termini of <cite>termini3</cite> when these are
+passed to <a class="reference internal" href="#dms_tools2.pacbio.TerminiVariantTagCaller.call" title="dms_tools2.pacbio.TerminiVariantTagCaller.call"><code class="xref py py-class docutils literal notranslate"><span class="pre">TerminiVariantTagCaller.call</span></code></a>.</dd>
+</dl>
+</dd>
+<dt>Attributes:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>variant_tags</cite> (list)</dt>
+<dd>List of <a class="reference internal" href="#dms_tools2.pacbio.TerminiVariantTag" title="dms_tools2.pacbio.TerminiVariantTag"><code class="xref py py-class docutils literal notranslate"><span class="pre">TerminiVariantTag</span></code></a> objects.</dd>
+<dt><cite>variants</cite> (list)</dt>
+<dd>List of variant names set on initialization.</dd>
+<dt><cite>trim_termini</cite> (int)</dt>
+<dd>Value set as argument on initialization.</dd>
+<dt><cite>termini5</cite> (Bio.SeqFeature.SeqFeature)</dt>
+<dd>The 5’ termini in <cite>features</cite></dd>
+<dt><cite>termini3</cite> (Bio.SeqFeature.SeqFeature)</dt>
+<dd>The 3’ termini in <cite>features</cite></dd>
+</dl>
+</dd>
+</dl>
+<p>Here is an example. First, create list of features that has a
+single-nucleotide variant tag for each of two possible variants
+(‘variant_1’ and ‘variant_2’) in each termini:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">SeqFeature</span> <span class="o">=</span> <span class="n">Bio</span><span class="o">.</span><span class="n">SeqFeature</span><span class="o">.</span><span class="n">SeqFeature</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">FeatureLocation</span> <span class="o">=</span> <span class="n">Bio</span><span class="o">.</span><span class="n">SeqFeature</span><span class="o">.</span><span class="n">FeatureLocation</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">features</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="n">SeqFeature</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;termini5&#39;</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">FeatureLocation</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">147</span><span class="p">)),</span>
+<span class="gp">... </span>    <span class="n">SeqFeature</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;termini3&#39;</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">FeatureLocation</span><span class="p">(</span><span class="mi">1303</span><span class="p">,</span> <span class="mi">1342</span><span class="p">)),</span>
+<span class="gp">... </span>    <span class="n">SeqFeature</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;variant_tag&#39;</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">FeatureLocation</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">33</span><span class="p">),</span>
+<span class="gp">... </span>        <span class="n">qualifiers</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;variant_1&#39;</span><span class="p">:[</span><span class="s1">&#39;A&#39;</span><span class="p">],</span> <span class="s1">&#39;variant_2&#39;</span><span class="p">:[</span><span class="s1">&#39;G&#39;</span><span class="p">]}),</span>
+<span class="gp">... </span>    <span class="n">SeqFeature</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;variant_tag&#39;</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">FeatureLocation</span><span class="p">(</span><span class="mi">1310</span><span class="p">,</span> <span class="mi">1311</span><span class="p">),</span>
+<span class="gp">... </span>        <span class="n">qualifiers</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;variant_1&#39;</span><span class="p">:[</span><span class="s1">&#39;T&#39;</span><span class="p">],</span> <span class="s1">&#39;variant_2&#39;</span><span class="p">:[</span><span class="s1">&#39;C&#39;</span><span class="p">]})</span>
+<span class="gp">... </span>    <span class="p">]</span>
+</pre></div>
+</div>
+<p>Now initialize the <a class="reference internal" href="#dms_tools2.pacbio.TerminiVariantTagCaller" title="dms_tools2.pacbio.TerminiVariantTagCaller"><code class="xref py py-class docutils literal notranslate"><span class="pre">TerminiVariantTagCaller</span></code></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">caller</span> <span class="o">=</span> <span class="n">TerminiVariantTagCaller</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">trim_termini</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">caller</span><span class="o">.</span><span class="n">variants</span>
+<span class="go">[&#39;variant_1&#39;, &#39;variant_2&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">int</span><span class="p">(</span><span class="n">caller</span><span class="o">.</span><span class="n">termini5</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+<span class="go">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">int</span><span class="p">(</span><span class="n">caller</span><span class="o">.</span><span class="n">termini5</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+<span class="go">147</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">int</span><span class="p">(</span><span class="n">caller</span><span class="o">.</span><span class="n">termini3</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+<span class="go">1303</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">int</span><span class="p">(</span><span class="n">caller</span><span class="o">.</span><span class="n">termini3</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+<span class="go">1342</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">caller</span><span class="o">.</span><span class="n">variant_tags</span><span class="p">)</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">caller</span><span class="o">.</span><span class="n">variant_tags</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">termini</span>
+<span class="go">&#39;termini5&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">caller</span><span class="o">.</span><span class="n">variant_tags</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">site</span>
+<span class="go">32</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">caller</span><span class="o">.</span><span class="n">variant_tags</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">nucleotides</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;A&#39;</span><span class="p">:</span><span class="s1">&#39;variant_1&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span><span class="s1">&#39;variant_2&#39;</span><span class="p">}</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">caller</span><span class="o">.</span><span class="n">variant_tags</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">termini</span>
+<span class="go">&#39;termini3&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">caller</span><span class="o">.</span><span class="n">variant_tags</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">site</span>
+<span class="go">7</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">caller</span><span class="o">.</span><span class="n">variant_tags</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">nucleotides</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;T&#39;</span><span class="p">:</span><span class="s1">&#39;variant_1&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span><span class="s1">&#39;variant_2&#39;</span><span class="p">}</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Do some example variant calling:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">caller</span><span class="o">.</span><span class="n">call</span><span class="p">({</span><span class="s1">&#39;termini5&#39;</span><span class="p">:</span><span class="s1">&#39;GGCGTCACACTTTGCTATGCCATAGCATATTTATCC&#39;</span><span class="p">,</span>
+<span class="gp">... </span>             <span class="s1">&#39;termini3&#39;</span><span class="p">:</span><span class="s1">&#39;AGATCGGTAGAGCGTCGTGTAGGGAAAGAGTGTGG&#39;</span><span class="p">})</span>
+<span class="go">&#39;variant_1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">caller</span><span class="o">.</span><span class="n">call</span><span class="p">({</span><span class="s1">&#39;termini5&#39;</span><span class="p">:</span><span class="s1">&#39;GGCGTCACACTTTGCTATGCCATAGCATGTTTATCC&#39;</span><span class="p">,</span>
+<span class="gp">... </span>             <span class="s1">&#39;termini3&#39;</span><span class="p">:</span><span class="s1">&#39;AGATCGGCAGAGCGTCGTGTAGGGAAAGAGTGTGG&#39;</span><span class="p">})</span>
+<span class="go">&#39;variant_2&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">caller</span><span class="o">.</span><span class="n">call</span><span class="p">({</span><span class="s1">&#39;termini5&#39;</span><span class="p">:</span><span class="s1">&#39;GGCGTCACACTTTGCTATGCCATAGCATGTTTATCC&#39;</span><span class="p">,</span>
+<span class="gp">... </span>             <span class="s1">&#39;termini3&#39;</span><span class="p">:</span><span class="s1">&#39;AGATCGGTAGAGCGTCGTGTAGGGAAAGAGTGTGG&#39;</span><span class="p">})</span>
+<span class="go">&#39;mixed&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">caller</span><span class="o">.</span><span class="n">call</span><span class="p">({</span><span class="s1">&#39;termini5&#39;</span><span class="p">:</span><span class="s1">&#39;CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC&#39;</span><span class="p">,</span>
+<span class="gp">... </span>             <span class="s1">&#39;termini3&#39;</span><span class="p">:</span><span class="s1">&#39;AGATCGGTAGAGCGTCGTGTAGGGAAAGAGTGTGG&#39;</span><span class="p">})</span>
+<span class="go">&#39;invalid&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">caller</span><span class="o">.</span><span class="n">call</span><span class="p">({</span><span class="s1">&#39;termini5&#39;</span><span class="p">:</span><span class="s1">&#39;GGC&#39;</span><span class="p">,</span> <span class="s1">&#39;termini3&#39;</span><span class="p">:</span><span class="s1">&#39;AGAT&#39;</span><span class="p">})</span>
+<span class="go">&#39;unknown&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">caller</span><span class="o">.</span><span class="n">call</span><span class="p">({})</span>
+<span class="go">&#39;unknown&#39;</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="dms_tools2.pacbio.TerminiVariantTagCaller.call">
+<code class="descname">call</code><span class="sig-paren">(</span><em>termini_seqs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/pacbio.html#TerminiVariantTagCaller.call"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.pacbio.TerminiVariantTagCaller.call" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call variant identity.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>termini_seqs</cite> (dict, namedtuple, pandas row)</dt>
+<dd>Some object that has attributes that can be
+accessed as <cite>termini5</cite> and <cite>termini3</cite>. These
+termini are assumed to have the amount specified
+by <code class="xref py py-class docutils literal notranslate"><span class="pre">TerminiVariantTagCaller.trim_termini</span></code>
+trimmed from the 5’ termini of <cite>termini5</cite> and
+the 3’ termini of <cite>termini3</cite>.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><p class="first">A str that can be any of the following:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>If all tag sites in termini match the same variant,
+return the name of that variant.</li>
+<li>If different tag sites match different variants,
+return “mixed”.</li>
+<li>If any tag sites have a nucleotide that matches no
+known variants, return “invalid”.</li>
+<li>If <cite>termini_seqs</cite> lacks a termini or has a termini
+that is too short to contain the tag sites, return
+“unknown”.</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_tools2.pacbio.TerminiVariantTagCaller.checkTagNucleotides">
+<code class="descname">checkTagNucleotides</code><span class="sig-paren">(</span><em>amplicon</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/pacbio.html#TerminiVariantTagCaller.checkTagNucleotides"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.pacbio.TerminiVariantTagCaller.checkTagNucleotides" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check amplicon carrying tags has right ambiguous nucleotides.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>amplicon</cite> (BioPython <cite>SeqRecord</cite>)</dt>
+<dd>The full amplicon that contains the termini
+and variant tags</dd>
+</dl>
+</dd>
+</dl>
+<p>This method checks that the <cite>amplicon</cite> correctly has
+IUPAC ambiguous nucleotides that cover the possible
+diversity at the site of each variant tag. If so,
+it does nothing and returns <cite>None</cite>. If not, it raises
+a <cite>ValueError</cite>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.pacbio.alignSeqs">
+<code class="descclassname">dms_tools2.pacbio.</code><code class="descname">alignSeqs</code><span class="sig-paren">(</span><em>df</em>, <em>mapper</em>, <em>query_col</em>, <em>aligned_col</em>, <em>*</em>, <em>add_alignment=True</em>, <em>add_target=True</em>, <em>add_n_trimmed=True</em>, <em>add_n_additional=True</em>, <em>add_n_additional_difftarget=True</em>, <em>targetvariants=None</em>, <em>mutationcaller=None</em>, <em>overwrite=True</em>, <em>paf_file=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/pacbio.html#alignSeqs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.pacbio.alignSeqs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Align sequences in a dataframe to target sequence(s).</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>df</cite> (pandas DataFrame)</dt>
+<dd>Data frame in which one column holds sequences to match.
+There also must be a column named “name” with unique names.</dd>
+<dt><cite>mapper</cite> (<a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.Mapper" title="dms_tools2.minimap2.Mapper"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dms_tools2.minimap2.Mapper</span></code></a>)</dt>
+<dd>Align using the <a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.Mapper.map" title="dms_tools2.minimap2.Mapper.map"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dms_tools2.minimap2.Mapper.map</span></code></a>
+function of <cite>mapper</cite>. Target sequence(s) to which
+we align are specified when initializing <cite>mapper</cite>.</dd>
+<dt><cite>query_col</cite> (str)</dt>
+<dd>Name of column in <cite>df</cite> with query sequences to align.</dd>
+<dt><cite>aligned_col</cite> (str)</dt>
+<dd>Name of column added to <cite>df</cite>. Elements of column are
+<cite>True</cite> if <cite>query_col</cite> aligns, and <cite>False</cite> otherwise.</dd>
+<dt><cite>add_alignment</cite> (bool)</dt>
+<dd>Add column with the <a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dms_tools2.minimap2.Alignment</span></code></a>.</dd>
+<dt><cite>add_target</cite> (bool)</dt>
+<dd>Add column giving target (reference) to which sequence
+aligns.</dd>
+<dt><cite>add_n_trimmed</cite> (bool)</dt>
+<dd>Add columns giving number of nucleotides trimmed from
+ends of both the query and target in the alignment.</dd>
+<dt><cite>add_n_additional</cite> (bool)</dt>
+<dd>Add column specifying the number of additional
+alignments.</dd>
+<dt><cite>targetvariants</cite> (<a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.TargetVariants" title="dms_tools2.minimap2.TargetVariants"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_tools2.minimap2.TargetVariants</span></code></a>)</dt>
+<dd>Call target variants of aligned genes using the <cite>call</cite>
+function of this object. Note that this also adjusts
+the returned alignments / CIGAR if a variant is called.
+If the <cite>variantsites_min_acc</cite> attribute is not <cite>None</cite>,
+then <cite>df</cite> must have a column with the name of <cite>query_col</cite>
+suffixed by ‘_qvals’ that gives the Q-values to compute
+accuracies.</dd>
+<dt><cite>mutationcaller</cite> (<a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.MutationCaller" title="dms_tools2.minimap2.MutationCaller"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_tools2.minimap2.MutationCaller</span></code></a>)</dt>
+<dd>Call mutations of aligned genes using the <cite>call</cite> function
+of this object. Note that any target variant mutations are
+handled first and then removed and not called here.</dd>
+<dt><cite>add_n_additional_difftarget</cite> (bool)</dt>
+<dd>Add columns specifying number of additional alignments
+to a target other than the one in the primary alignment.</dd>
+<dt><cite>overwrite</cite> (bool)</dt>
+<dd>If <cite>True</cite>, we overwrite any existing columns to
+be created that already exist. If <cite>False</cite>, raise
+an error if any of the columns already exist.</dd>
+<dt><cite>paf_file</cite> (<cite>None</cite> or str)</dt>
+<dd>If a str, is the name of the PAF file created
+by <cite>mapper</cite> (see <cite>outfile</cite> argument of
+<a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.Mapper.map" title="dms_tools2.minimap2.Mapper.map"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dms_tools2.minimap2.Mapper.map</span></code></a>) Otherwise
+this file is not saved.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><p class="first">A <strong>copy</strong> of <cite>df</cite> with new columns added. The exact
+columns to add are specified by the calling arguments.
+Specifically:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>We always add a column with the name given by
+<cite>aligned_col</cite> that is <cite>True</cite> if there was an
+alignment and <cite>False</cite> otherwise.</li>
+<li>If <cite>add_alignment</cite> is <cite>True</cite>, add column named
+<cite>aligned_col</cite> suffixed by “_alignment” that gives
+the alignment as a <a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dms_tools2.minimap2.Alignment</span></code></a>
+object, or <cite>None</cite> if there is no alignment. Note that
+if there are multiple alignments, then this is the
+“best” alignment, and the remaining alignments are in
+the <a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.Alignment.additional" title="dms_tools2.minimap2.Alignment.additional"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dms_tools2.minimap2.Alignment.additional</span></code></a>
+attribute.</li>
+<li>If <cite>add_target</cite> is <cite>True</cite>, add column named
+<cite>aligned_col</cite> suffixed by “_target” that gives
+the target to which the sequence aligns in the
+“best” alignment, or an empty string if no alignment.</li>
+<li>If <cite>add_n_trimmed</cite> is <cite>True</cite>, add column named
+<cite>aligned_col</cite> suffixed by “_n_trimmed_query_start”,
+“_n_trimmed_query_end”, “_n_trimmed_target_start”,
+and “_n_trimmed_target_end” that give the number
+of nucleotides trimmed from the query and target
+in the “best” alignment. Are all zero if the
+zero if the alignment is end-to-end. Are -1 if no
+alignment.</li>
+<li>If <cite>add_n_additional</cite> is <cite>True</cite>, add column
+named <cite>aligned_col</cite> suffixed by “_n_additional” that
+gives the number of additional alignments (in
+<a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.Alignment.additional" title="dms_tools2.minimap2.Alignment.additional"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dms_tools2.minimap2.Alignment.additional</span></code></a>),
+or -1 if there is no alignment.</li>
+<li>If <cite>add_n_additional_difftarget</cite> is <cite>True</cite>, add column
+named <cite>aligned_col</cite> suffixed by “_n_additional_difftarget”
+that gives the number of additional alignments to
+<strong>different</strong> targets that are not isoforms, or -1
+if if there is no alignment. See the <cite>target_isoforms</cite>
+attribute of <a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.Mapper" title="dms_tools2.minimap2.Mapper"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dms_tools2.minimap2.Mapper</span></code></a>.</li>
+<li>If <cite>targetvariants</cite> is not <cite>None</cite>, add a column
+named <cite>aligned_col</cite> suffixed by “_target_variant”
+that has the values returned for that alignment by
+<a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.TargetVariants.call" title="dms_tools2.minimap2.TargetVariants.call"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_tools2.minimap2.TargetVariants.call</span></code></a>, or
+an empty string if no alignment.</li>
+<li>If <cite>mutationcaller</cite> is not <cite>None</cite>, column named
+<cite>aligned_col</cite> suffixed by “_mutations” giving the
+<a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_tools2.minimap2.Mutations</span></code></a> object returned
+by <a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.MutationCaller.call" title="dms_tools2.minimap2.MutationCaller.call"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_tools2.minimap2.MutationCaller.call</span></code></a>,
+or <cite>None</cite> if there is no alignment.</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.pacbio.matchAndAlignCCS">
+<code class="descclassname">dms_tools2.pacbio.</code><code class="descname">matchAndAlignCCS</code><span class="sig-paren">(</span><em>ccslist</em>, <em>mapper</em>, <em>*</em>, <em>termini5</em>, <em>gene</em>, <em>spacer</em>, <em>umi</em>, <em>barcode</em>, <em>termini3</em>, <em>termini5_fuzziness=0</em>, <em>gene_fuzziness=0</em>, <em>spacer_fuzziness=0</em>, <em>umi_fuzziness=0</em>, <em>barcode_fuzziness=0</em>, <em>termini3_fuzziness=0</em>, <em>targetvariants=None</em>, <em>mutationcaller=None</em>, <em>terminiVariantTagCaller=None</em>, <em>rc_barcode_umi=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/pacbio.html#matchAndAlignCCS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.pacbio.matchAndAlignCCS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Identify CCSs that match pattern and align them.</p>
+<p>This is a convenience function that runs <a class="reference internal" href="#dms_tools2.pacbio.matchSeqs" title="dms_tools2.pacbio.matchSeqs"><code class="xref py py-meth docutils literal notranslate"><span class="pre">matchSeqs()</span></code></a>
+and <a class="reference internal" href="#dms_tools2.pacbio.alignSeqs" title="dms_tools2.pacbio.alignSeqs"><code class="xref py py-meth docutils literal notranslate"><span class="pre">alignSeqs()</span></code></a> for a common use case. It takes one
+or more <a class="reference internal" href="#dms_tools2.pacbio.CCS" title="dms_tools2.pacbio.CCS"><code class="xref py py-class docutils literal notranslate"><span class="pre">CCS</span></code></a> objects, looks for CCS sequences in them
+that match a specific pattern, and aligns them to targets. It
+returns a pandas data frame with all the results. The CCS
+sequences are assumed to be molecules that have the following
+structure, although potentially in either orientation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">5</span><span class="s1">&#39;-...-termini5-gene-spacer-umi-barcode-termini3-...-3&#39;</span>
+</pre></div>
+</div>
+<p>As indicated by the <code class="docutils literal notranslate"><span class="pre">...</span></code>, there can be sequence before and
+after our expected pattern that we ignore. The gene element
+is the aligned to the targets. The full CCS is also aligned
+in the absence of the pattern matching.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>ccslist</cite> (<a class="reference internal" href="#dms_tools2.pacbio.CCS" title="dms_tools2.pacbio.CCS"><code class="xref py py-class docutils literal notranslate"><span class="pre">CCS</span></code></a> object or list of them)</dt>
+<dd>Analyze the CCS’s in the <cite>df</cite> attributes. If there are
+multiple <a class="reference internal" href="#dms_tools2.pacbio.CCS" title="dms_tools2.pacbio.CCS"><code class="xref py py-class docutils literal notranslate"><span class="pre">CCS</span></code></a> objectes, they are concatenated.
+However, they must have the same columns.</dd>
+<dt><cite>mapper</cite> (<a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.Mapper" title="dms_tools2.minimap2.Mapper"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dms_tools2.minimap2.Mapper</span></code></a>)</dt>
+<dd>Mapper used to perform alignments.</dd>
+<dt><cite>termini5</cite> (str or <cite>None</cite>)</dt>
+<dd>Expected sequence at 5’ end as str that can be compiled
+to <cite>regex</cite> object. Passed through <a class="reference internal" href="#dms_tools2.pacbio.re_expandIUPAC" title="dms_tools2.pacbio.re_expandIUPAC"><code class="xref py py-meth docutils literal notranslate"><span class="pre">re_expandIUPAC()</span></code></a>.
+For instance, make it ‘ATG|CTG’ if the sequence might
+start with either <cite>ATG</cite> or <cite>CTG</cite>. Set to <cite>None</cite> if
+no expected 5’ termini.</dd>
+<dt><cite>gene</cite> (str)</dt>
+<dd>Like <cite>termini5</cite> but gives the gene to match. For instance,
+‘N+’ if the gene can be arbitrary sequence and length.</dd>
+<dt><cite>spacer</cite> (str or <cite>None</cite>)</dt>
+<dd>Like <cite>termini5</cite>, but for the spacer after <cite>gene</cite>.</dd>
+<dt><cite>umi</cite> (str or <cite>None</cite>)</dt>
+<dd>Like <cite>termini5</cite>, but for UMI.</dd>
+<dt><cite>barcode</cite> (str or <cite>None</cite>)</dt>
+<dd>Like <cite>termini5</cite>, but for barcode. For instance, ‘N{10}’
+if 10-nucleotide barcode.</dd>
+<dt><cite>termini3</cite> (str or <cite>None</cite>)</dt>
+<dd>Like <cite>termini5</cite>, but for termini3.</dd>
+<dt><cite>termini5_fuzziness</cite>, …, <cite>termini3_fuzziness</cite> (int)</dt>
+<dd>The matching for the sequence patterns uses <cite>regex</cite>,
+which enables fuzzy matching. Set <cite>termini5_fuzziness</cite>
+to enable a specific number of differences (can be
+insertion, deletion, or mismatch) when matching
+<cite>termini5</cite>. Likewise for <cite>gene_fuzziness</cite>, etc.
+Note that the fuzzy matching uses the <em>BESTMATCH</em>
+flag to try to find the best fuzzy match.</dd>
+<dt><cite>targetvariants</cite> (<a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.TargetVariants" title="dms_tools2.minimap2.TargetVariants"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_tools2.minimap2.TargetVariants</span></code></a>)</dt>
+<dd>Call target variants. See docs for same argument to
+<a class="reference internal" href="#dms_tools2.pacbio.alignSeqs" title="dms_tools2.pacbio.alignSeqs"><code class="xref py py-meth docutils literal notranslate"><span class="pre">alignSeqs()</span></code></a>.</dd>
+<dt><cite>mutationcaller</cite> (<a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.MutationCaller" title="dms_tools2.minimap2.MutationCaller"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_tools2.minimap2.MutationCaller</span></code></a>)</dt>
+<dd>Call mutations. See docs for same argument to <a class="reference internal" href="#dms_tools2.pacbio.alignSeqs" title="dms_tools2.pacbio.alignSeqs"><code class="xref py py-meth docutils literal notranslate"><span class="pre">alignSeqs()</span></code></a>.</dd>
+<dt><cite>terminiVariantTagCaller</cite> (<a class="reference internal" href="#dms_tools2.pacbio.TerminiVariantTagCaller" title="dms_tools2.pacbio.TerminiVariantTagCaller"><code class="xref py py-class docutils literal notranslate"><span class="pre">TerminiVariantTagCaller</span></code></a>)</dt>
+<dd>Call variants in termini.</dd>
+<dt><cite>rc_barcode_umi</cite> (bool)</dt>
+<dd>Do we reverse complement the <cite>barcode</cite> and <cite>UMI</cite> in the
+returned data frame relative to the orientation of
+the gene. Typically this is desirable because actual
+barcode sequencing goes in the reverse direction of the
+gene.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><p class="first">A pandas dataframe that will have all columns already in the
+<cite>df</cite> attribute of the input <a class="reference internal" href="#dms_tools2.pacbio.CCS" title="dms_tools2.pacbio.CCS"><code class="xref py py-class docutils literal notranslate"><span class="pre">CCS</span></code></a> objects with the
+following columns added:</p>
+<ul class="last simple">
+<li><cite>barcoded</cite>: <cite>True</cite> if CCS matches full expected pattern,
+<cite>False</cite> otherwise.</li>
+<li><cite>barcoded_polarity</cite>: 1 of the match is in the polarity of
+the CCS, -1 if to the reverse complement, 0 if no match.</li>
+<li>Columns named <cite>termini5</cite>, <cite>gene</cite>, <cite>spacer</cite>, <cite>UMI</cite>,
+<cite>barcode</cite>, and <cite>termini3</cite> (except if any of these elements
+are <cite>None</cite>). If <cite>barcoded</cite> is <cite>True</cite> for that CCS, these
+columns give the sequence for that element. If it is <cite>False</cite>,
+they are empty strings. There are likewise columns with
+these same names suffixed with “_accuracy” that give the CCS
+accuracy for that element, and columns suffixed with “_qvals”
+that give the quality scores for the elements.</li>
+<li>For each of <cite>termini5</cite>, <cite>spacer</cite>, and <cite>termini3</cite> that are
+not <cite>None</cite>, a column named <cite>has_termini5</cite>, etc that
+indicates if that element is matched in isolate even if
+the full pattern is not matched.</li>
+<li><cite>gene_aligned</cite> is True if the CCS matches the expected
+pattern (is <cite>barcoded</cite>), and <cite>gene</cite> can further be
+aligned using <cite>mapper</cite>. It is <cite>False</cite> otherwise.</li>
+<li><cite>gene_aligned_alignment</cite>, <cite>gene_aligned_target</cite>,
+<cite>gene_aligned_n_trimmed_query_start</cite>,
+<cite>gene_aligned_n_trimmed_query_end</cite>,
+<cite>gene_aligned_n_trimmed_target_start</cite>,
+<cite>gene_aligned_n_trimmed_target_end</cite>,
+<cite>gene_aligned_n_additional</cite>, and
+<cite>gene_aligned_n_additional_difftarget</cite> give the
+<a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dms_tools2.minimap2.Alignment</span></code></a>, the alignment
+target, number of nucleotides trimmed from ends of
+the query gene or target, the number
+of additional alignments if <cite>gene_aligned</cite>,
+and the number of additional alignments to different
+targets (see <cite>target_isoforms</cite> attribute of
+<a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.Mapper" title="dms_tools2.minimap2.Mapper"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dms_tools2.minimap2.Mapper</span></code></a>). If
+the gene is not aligned, these are <cite>None</cite>,
+empty strings, or -1.</li>
+<li>If <cite>targetvariants</cite> is not <cite>None</cite>, column named
+<cite>gene_aligned_target_variant</cite> giving target variant
+returned by <code class="xref py py-class docutils literal notranslate"><span class="pre">dms_tools2.minimap2.TargtVariants.call</span></code>.</li>
+<li>If <cite>mutationcaller</cite> is not <cite>None</cite>, column named
+<cite>gene_aligned_mutations</cite> giving the
+<a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_tools2.minimap2.Mutations</span></code></a> object returned
+by <a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.MutationCaller.call" title="dms_tools2.minimap2.MutationCaller.call"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_tools2.minimap2.MutationCaller.call</span></code></a>,
+or <cite>None</cite> if there is no alignment.</li>
+<li>If <cite>terminiVariantTagCaller</cite> is not <cite>None</cite>, column
+named <cite>termini_variant</cite> giving the termini variant
+returned by <a class="reference internal" href="#dms_tools2.pacbio.TerminiVariantTagCaller.call" title="dms_tools2.pacbio.TerminiVariantTagCaller.call"><code class="xref py py-class docutils literal notranslate"><span class="pre">TerminiVariantTagCaller.call</span></code></a>,
+or the str “unknown” if both termini are not matched.</li>
+<li><cite>CCS_aligned</cite> is <cite>True</cite> if the CCS can be aligned
+using <cite>mapper</cite> even if a gene cannot be matched,
+and <cite>False</cite> otherwise. <cite>CCS_aligned_alignment</cite>
+and <cite>CCS_aligned_target</cite> give the
+<a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dms_tools2.minimap2.Alignment</span></code></a> (or <cite>None</cite>)
+and the target (or empty string).</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.pacbio.matchSeqs">
+<code class="descclassname">dms_tools2.pacbio.</code><code class="descname">matchSeqs</code><span class="sig-paren">(</span><em>df</em>, <em>match_str</em>, <em>col_to_match</em>, <em>match_col</em>, <em>*</em>, <em>add_polarity=True</em>, <em>add_group_cols=True</em>, <em>add_accuracy=True</em>, <em>add_qvals=True</em>, <em>expandIUPAC=True</em>, <em>overwrite=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/pacbio.html#matchSeqs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.pacbio.matchSeqs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Identify sequences in a dataframe that match a specific pattern.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>df</cite> (pandas DataFrame)</dt>
+<dd>Data frame with column holding sequences to match.</dd>
+<dt><cite>match_str</cite> (str)</dt>
+<dd>A string that can be passed to <cite>regex.compile</cite> that gives
+the pattern that we are looking for, with target 
+subsequences as named groups. See also the <cite>expandIUPAC</cite>
+parameter, which simplifies writing <cite>match_str</cite>.
+If <cite>None</cite> we just return <cite>df</cite>. Note that we use
+<cite>regex</cite> rather than <cite>re</cite>, so fuzzy matching is
+enabled.</dd>
+<dt><cite>col_to_match</cite> (str)</dt>
+<dd>Name of column in <cite>df</cite> that contains the sequences
+to match.</dd>
+<dt><cite>match_col</cite> (str)</dt>
+<dd>Name of column added to <cite>df</cite>. Elements of columns are
+<cite>True</cite> if <cite>col_to_match</cite> matches <cite>match_str</cite> for that
+row, and <cite>False</cite> otherwise.</dd>
+<dt><cite>add_polarity</cite> (bool)</dt>
+<dd>Add a column specifying the polarity of the match?</dd>
+<dt><cite>add_group_cols</cite> (bool)</dt>
+<dd>Add columns with the sequence of every group in
+<cite>match_str</cite>?</dd>
+<dt><cite>add_accuracy</cite> (bool)</dt>
+<dd>For each group in the match, add a column giving
+the accuracy of that group’s sequence? Only used
+if <cite>add_group_cols</cite> is <cite>True</cite>.</dd>
+<dt><cite>add_qvals</cite> (bool)</dt>
+<dd>For each group in the match, add a column giving
+the Q values for that group’s sequence? Only used if
+<cite>add_group_cols</cite> is <cite>True</cite>.</dd>
+<dt><cite>expandIUPAC</cite> (bool)</dt>
+<dd>Use <a class="reference external" href="https://en.wikipedia.org/wiki/Nucleic_acid_notation">IUPAC code</a>
+to expand ambiguous nucleotides (e.g., “N”) by passing
+<cite>match_str</cite> through the <a class="reference internal" href="#dms_tools2.pacbio.re_expandIUPAC" title="dms_tools2.pacbio.re_expandIUPAC"><code class="xref py py-meth docutils literal notranslate"><span class="pre">re_expandIUPAC()</span></code></a> function.</dd>
+<dt><cite>overwrite</cite> (bool)</dt>
+<dd>If <cite>True</cite>, we overwrite any existing columns to
+be created that already exist. If <cite>False</cite>, raise
+an error if any of the columns already exist.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><p class="first">A <strong>copy</strong> of <cite>df</cite> with new columns added. The exact columns
+to add are specified by the calling arguments. Specifically:</p>
+<blockquote class="last">
+<div><ul>
+<li><p class="first">We always add a column with the name given by <cite>match_col</cite>
+that is <cite>True</cite> if there was a match and <cite>False</cite> otherwise.</p>
+</li>
+<li><p class="first">If <cite>add_polarity</cite> is <cite>True</cite>, add a column that is
+<cite>match_col</cite> suffixed by “_polarity” which is 1 if
+the match is directly to the sequence in <cite>col_to_match</cite>,
+and -1 if it is to the reverse complement of this sequence.
+The value is 0 if there is no match.</p>
+</li>
+<li><p class="first">If <cite>add_group_cols</cite> is <cite>True</cite>, then for each group
+in <cite>match_str</cite> specified using the <cite>re</cite> group naming
+syntax, add a column with that group name that
+gives the sequence matching that group. These
+sequences are empty strings if there is no match.
+These added sequences are in the polarity of the
+match, so if the sequence in <cite>match_col</cite> has
+to be reverse complemented for a match, then these
+sequences will be the reverse complement that matches.
+Additionally, when <cite>add_group_cols</cite> is True:</p>
+<blockquote>
+<div><ul class="simple">
+<li>If <cite>add_accuracy</cite> is <cite>True</cite>, we also add a column
+suffixed by “_accuracy” that gives the
+accuracy of that group as computed from the Q-values.
+The value -1 if there is match for that row. Adding
+accuracy requires a colum in <cite>df</cite> with the name
+given by <cite>match_col</cite> suffixed by “_qvals.”</li>
+<li>If <cite>add_qvals</cite> is <cite>True</cite>, we also add a column 
+suffixed by “_qvals” that gives the Q-values
+for that sequence. Adding these Q-values requires
+that there by a column in <cite>df</cite> with the name given by
+<cite>match_col</cite> suffixed by “_qvals”. The Q-values are
+in the form of a numpy array, or an empty numpy array
+if there is no match for that row.</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+<p>See docs for <a class="reference internal" href="#dms_tools2.pacbio.CCS" title="dms_tools2.pacbio.CCS"><code class="xref py py-class docutils literal notranslate"><span class="pre">CCS</span></code></a> for example uses of this function.</p>
+<p>Here is a short example that uses the fuzzy matching of
+the <cite>regex</cite> model for the polyA tail:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gene</span> <span class="o">=</span> <span class="s1">&#39;ATGGCT&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">polyA</span> <span class="o">=</span> <span class="s1">&#39;AAAACAAAA&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;CCS&#39;</span><span class="p">:[</span><span class="n">gene</span> <span class="o">+</span> <span class="n">polyA</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">match_str</span> <span class="o">=</span> <span class="s1">&#39;(?P&lt;gene&gt;N+)(?P&lt;polyA&gt;AA(A{5,}){e&lt;=1}AA)&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">matchSeqs</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">match_str</span><span class="p">,</span> <span class="s1">&#39;CCS&#39;</span><span class="p">,</span> <span class="s1">&#39;matched&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">add_accuracy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_qvals</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">expected</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">gene</span><span class="o">=</span><span class="n">gene</span><span class="p">,</span> <span class="n">polyA</span><span class="o">=</span><span class="n">polyA</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">matched</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">matched_polarity</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">expected</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.pacbio.qvalsToAccuracy">
+<code class="descclassname">dms_tools2.pacbio.</code><code class="descname">qvalsToAccuracy</code><span class="sig-paren">(</span><em>qvals</em>, <em>encoding='numbers'</em>, <em>no_avg=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/pacbio.html#qvalsToAccuracy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.pacbio.qvalsToAccuracy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts set of quality scores into average accuracy.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>qvals</cite> (numpy array or number or str)</dt>
+<dd>List of Q-values, assumed to be Phred scores.
+For how they are encoded, see <cite>encoding</cite>.</dd>
+<dt><cite>encoding</cite> (str)</dt>
+<dd>If it is “numbers” then <cite>qvals</cite> should be a
+numpy array giving the Q-values, or a number
+with one Q-value. If it is “sanger”, then <cite>qvals</cite>
+is a string, with the score being the ASCII value
+minus 33.</dd>
+<dt><cite>no_avg</cite> (bool)</dt>
+<dd>Compute the accuracies of individual Q-values
+rather than the average of the array or list.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A number giving the average accuracy, or 
+<cite>nan</cite> if <cite>qvals</cite> is empty.</dd>
+</dl>
+<p>Note that the probability <span class="math notranslate nohighlight">\(p\)</span> of an error at a
+given site is related to the Q-value <span class="math notranslate nohighlight">\(Q\)</span> by
+<span class="math notranslate nohighlight">\(Q = -10 \log_{10} p\)</span>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">qvals</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">13</span><span class="p">,</span> <span class="mi">77</span><span class="p">,</span> <span class="mi">93</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">round</span><span class="p">(</span><span class="n">qvalsToAccuracy</span><span class="p">(</span><span class="n">qvals</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span> <span class="o">==</span> <span class="mf">0.983</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">round</span><span class="p">(</span><span class="n">qvalsToAccuracy</span><span class="p">(</span><span class="n">qvals</span><span class="p">[</span><span class="mi">1</span> <span class="p">:</span> <span class="p">]),</span> <span class="mi">3</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">qvalsToAccuracy</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([]))</span>
+<span class="go">nan</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">qvals_str</span> <span class="o">=</span> <span class="s1">&#39;.n~&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">round</span><span class="p">(</span><span class="n">qvalsToAccuracy</span><span class="p">(</span><span class="n">qvals_str</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;sanger&#39;</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span> <span class="o">==</span> <span class="mf">0.983</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">round</span><span class="p">(</span><span class="n">qvalsToAccuracy</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span> <span class="o">==</span> <span class="mf">0.968</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">qvalsToAccuracy</span><span class="p">(</span><span class="n">qvals</span><span class="p">,</span> <span class="n">no_avg</span><span class="o">=</span><span class="kc">True</span><span class="p">)]</span> <span class="o">==</span> <span class="p">[</span><span class="mf">0.94988</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.pacbio.re_expandIUPAC">
+<code class="descclassname">dms_tools2.pacbio.</code><code class="descname">re_expandIUPAC</code><span class="sig-paren">(</span><em>re_str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/pacbio.html#re_expandIUPAC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.pacbio.re_expandIUPAC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Expand IUPAC ambiguous nucleotide codes in <cite>re</cite> search string.</p>
+<p>Simplifies writing <cite>re</cite> search strings that include ambiguous
+nucleotide codes.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>re_str</cite> (str)</dt>
+<dd>String appropriate to be passed to <cite>regex.compile</cite>.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A version of <cite>re_str</cite> where any characters not in the group
+names that correspond to upper-case ambiguous nucleotide codes
+are expanded according to their definitions in the
+<a class="reference external" href="https://en.wikipedia.org/wiki/Nucleic_acid_notation">IUPAC code</a>.</dd>
+</dl>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">re_str</span> <span class="o">=</span> <span class="s1">&#39;^(?P&lt;termini5&gt;ATG)(?P&lt;cDNA&gt;N+)A+(?P&lt;barcode&gt;N</span><span class="si">{4}</span><span class="s1">)$&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">re_expandIUPAC</span><span class="p">(</span><span class="n">re_str</span><span class="p">)</span>
+<span class="go">&#39;^(?P&lt;termini5&gt;ATG)(?P&lt;cDNA&gt;[ACGT]+)A+(?P&lt;barcode&gt;[ACGT]{4})$&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.pacbio.summarizeCCSreports">
+<code class="descclassname">dms_tools2.pacbio.</code><code class="descname">summarizeCCSreports</code><span class="sig-paren">(</span><em>ccslist</em>, <em>report_type</em>, <em>plotfile</em>, <em>plotminfrac=0.005</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/pacbio.html#summarizeCCSreports"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.pacbio.summarizeCCSreports" title="Permalink to this definition">¶</a></dt>
+<dd><p>Summarize and plot <cite>CCS</cite> reports.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>ccslist</cite> (<cite>CCS</cite> object or list of them)</dt>
+<dd><cite>CCS</cite> objects to summarize</dd>
+<dt><cite>report_type</cite> (str “zmw” or “subread”)</dt>
+<dd>Which type of report to summarize</dd>
+<dt><cite>plotfile</cite> (str)</dt>
+<dd>Name of created bar plot</dd>
+<dt><cite>plotminfrac</cite> (float)</dt>
+<dd>Only plot status categories with &gt;=
+this fraction in at least one <cite>CCS</cite></dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>Returns a pandas DataFrame aggregating the reports,
+and creates <cite>plotfile</cite>.</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fracsurvive.html">Fraction surviving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="programs.html">Executable programs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">Python API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="dms_tools2.html">dms_tools2 package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="api.html">Python API</a><ul>
+  <li><a href="dms_tools2.html">dms_tools2 package</a><ul>
+      <li>Previous: <a href="dms_tools2.neutcurve.html" title="previous chapter">neutcurve</a></li>
+      <li>Next: <a href="dms_tools2.parseargs.html" title="next chapter">parseargs</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017--2018, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="_sources/dms_tools2.pacbio.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

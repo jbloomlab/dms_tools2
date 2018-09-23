@@ -1,0 +1,1475 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>dms_tools2.pacbio &#8212; dms_tools2 2.3.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for dms_tools2.pacbio</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">===================</span>
+<span class="sd">pacbio</span>
+<span class="sd">===================</span>
+
+<span class="sd">Tools for processing PacBio sequencing data.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">numbers</span>
+
+<span class="kn">import</span> <span class="nn">regex</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+<span class="kn">import</span> <span class="nn">pysam</span>
+<span class="kn">import</span> <span class="nn">Bio.SeqFeature</span>
+
+<span class="c1"># import dms_tools2.plot to set plotting contexts / themes</span>
+<span class="kn">import</span> <span class="nn">dms_tools2</span>
+<span class="kn">from</span> <span class="nn">dms_tools2.plot</span> <span class="k">import</span> <span class="n">COLOR_BLIND_PALETTE</span>
+<span class="kn">from</span> <span class="nn">dms_tools2.plot</span> <span class="k">import</span> <span class="n">COLOR_BLIND_PALETTE_GRAY</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">plotnine</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="CCS"><a class="viewcode-back" href="../../dms_tools2.pacbio.html#dms_tools2.pacbio.CCS">[docs]</a><span class="k">class</span> <span class="nc">CCS</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Class to handle results of ``ccs``.</span>
+
+<span class="sd">    Holds results of PacBio ``ccs``.</span>
+<span class="sd">    Has been tested on output of ``ccs`` version 3.0.0.</span>
+
+<span class="sd">    This class reads all data into memory, and so you</span>
+<span class="sd">    may need a lot of RAM if `bamfile` is large.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `samplename` (str)</span>
+<span class="sd">            Sample or sequencing run</span>
+<span class="sd">        `bamfile` (str)</span>
+<span class="sd">            BAM file created by ``ccs``</span>
+<span class="sd">        `reportfile` (str or `None`)</span>
+<span class="sd">            Report file created by ``ccs``, or</span>
+<span class="sd">            `None` if you have no reports.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        `samplename` (str)</span>
+<span class="sd">            Name set at initialization</span>
+<span class="sd">        `bamfile` (str)</span>
+<span class="sd">            ``ccs`` BAM file set at initialization</span>
+<span class="sd">        `reportfile` (str or `None`)</span>
+<span class="sd">            ``ccs`` report file set at initialization</span>
+<span class="sd">        `zmw_report` (pandas.DataFrame or `None`):</span>
+<span class="sd">            ZMW stats in `reportfile`, or `None` if no</span>
+<span class="sd">            `reportfile`. Columns are *status*, *number*,</span>
+<span class="sd">            *percent*, and *fraction*.</span>
+<span class="sd">        `subread_report` (pandas.DataFrame or `None`)</span>
+<span class="sd">            Like `zmw_report` but for subreads.</span>
+<span class="sd">        `df` (pandas.DataFrame)</span>
+<span class="sd">            The CCSs in `bamfile`. Each row is a different CCS</span>
+<span class="sd">            On creation, there will be the following columns (you</span>
+<span class="sd">            can modify to add more): </span>
+
+<span class="sd">              - &quot;name&quot;: the name of the CCS</span>
+<span class="sd">              - &quot;samplename&quot;: the sample as set via `samplename`</span>
+<span class="sd">              - &quot;CCS&quot;: the circular consensus sequence</span>
+<span class="sd">              - &quot;CCS_qvals&quot;: the Q-values as a numpy array</span>
+<span class="sd">              - &quot;passes&quot;: the number of passes of the CCS</span>
+<span class="sd">              - &quot;CCS_accuracy&quot;: the accuracy of the CCS</span>
+<span class="sd">              - &quot;CCS_length&quot;: the length of the CCS</span>
+
+<span class="sd">    Here is an example.</span>
+
+<span class="sd">    First, define the sequences, quality scores,</span>
+<span class="sd">    and names for 3 example sequences. The names indicate</span>
+<span class="sd">    the barcodes, the accuracy of the barcode, and the polarity.</span>
+<span class="sd">    Two of the sequences have the desired termini and</span>
+<span class="sd">    a barcode. The other does not. Note that the second</span>
+<span class="sd">    sequence has an extra nucleotide at each end, this</span>
+<span class="sd">    will turn out to be fine with the `match_str` we write.</span>
+<span class="sd">    The second sequence is also reverse complemented:</span>
+
+<span class="sd">    &gt;&gt;&gt; termini5 = &#39;ACG&#39;</span>
+<span class="sd">    &gt;&gt;&gt; termini3 = &#39;CTT&#39;</span>
+<span class="sd">    &gt;&gt;&gt; ccs_seqs = [</span>
+<span class="sd">    ...         {&#39;name&#39;:&#39;barcoded_TTC_0.999_plus&#39;,</span>
+<span class="sd">    ...          &#39;seq&#39;:termini5 + &#39;TTC&#39; + &#39;ACG&#39; + termini3,</span>
+<span class="sd">    ...          &#39;qvals&#39;:&#39;?&#39; * 12,</span>
+<span class="sd">    ...         },</span>
+<span class="sd">    ...         {&#39;name&#39;:&#39;barcoded_AGA_0.995_minus&#39;,</span>
+<span class="sd">    ...          &#39;seq&#39;:dms_tools2.utils.reverseComplement(</span>
+<span class="sd">    ...                &#39;T&#39; + termini5 + &#39;AGA&#39; + &#39;GCA&#39; + termini3 + &#39;A&#39;),</span>
+<span class="sd">    ...          &#39;qvals&#39;:&#39;&#39;.join(reversed(&#39;?&#39; * 4 + &#39;5?9&#39; + &#39;?&#39; * 7)),</span>
+<span class="sd">    ...         },</span>
+<span class="sd">    ...         {&#39;name&#39;:&#39;invalid&#39;,</span>
+<span class="sd">    ...          &#39;seq&#39;:&#39;GGG&#39; + &#39;CAT&#39; + &#39;GCA&#39; + termini3,</span>
+<span class="sd">    ...          &#39;qvals&#39;:&#39;?&#39; * 12,</span>
+<span class="sd">    ...         }</span>
+<span class="sd">    ...         ]</span>
+<span class="sd">    &gt;&gt;&gt; for iccs in ccs_seqs:</span>
+<span class="sd">    ...     iccs[&#39;accuracy&#39;] = qvalsToAccuracy(iccs[&#39;qvals&#39;], encoding=&#39;sanger&#39;)</span>
+
+<span class="sd">    Now place these in a block of text that meets the</span>
+<span class="sd">    `CCS SAM specification &lt;https://github.com/PacificBiosciences/unanimity/blob/develop/doc/PBCCS.md&gt;`_:</span>
+
+<span class="sd">    &gt;&gt;&gt; sam_template = &#39;\\t&#39;.join([</span>
+<span class="sd">    ...        &#39;{0[name]}&#39;,</span>
+<span class="sd">    ...        &#39;4&#39;, &#39;*&#39;, &#39;0&#39;, &#39;255&#39;, &#39;*&#39;, &#39;*&#39;, &#39;0&#39;, &#39;0&#39;,</span>
+<span class="sd">    ...        &#39;{0[seq]}&#39;,</span>
+<span class="sd">    ...        &#39;{0[qvals]}&#39;,</span>
+<span class="sd">    ...        &#39;np:i:6&#39;,</span>
+<span class="sd">    ...        &#39;rq:f:{0[accuracy]}&#39;,</span>
+<span class="sd">    ...        ])</span>
+<span class="sd">    &gt;&gt;&gt; samtext = &#39;\\n&#39;.join([sam_template.format(iccs) for</span>
+<span class="sd">    ...                      iccs in ccs_seqs])</span>
+
+<span class="sd">    Create small SAM file with these sequences, then</span>
+<span class="sd">    convert to BAM file used to initialize a `CCS` object</span>
+<span class="sd">    (note this requires ``samtools`` to be installed):</span>
+
+<span class="sd">    &gt;&gt;&gt; samfile = &#39;_temp.sam&#39;</span>
+<span class="sd">    &gt;&gt;&gt; bamfile = &#39;_temp.bam&#39;</span>
+<span class="sd">    &gt;&gt;&gt; with open(samfile, &#39;w&#39;) as f:</span>
+<span class="sd">    ...     _ = f.write(samtext)</span>
+<span class="sd">    &gt;&gt;&gt; _ = subprocess.check_call([&#39;samtools&#39;, &#39;view&#39;,</span>
+<span class="sd">    ...         &#39;-b&#39;, &#39;-o&#39;, bamfile, samfile])</span>
+<span class="sd">    &gt;&gt;&gt; ccs = CCS(&#39;test&#39;, bamfile, None)</span>
+<span class="sd">    &gt;&gt;&gt; os.remove(samfile)</span>
+<span class="sd">    &gt;&gt;&gt; os.remove(bamfile)</span>
+
+<span class="sd">    Check `ccs.df` has correct names, samplename, CCS sequences,</span>
+<span class="sd">    and columns:</span>
+
+<span class="sd">    &gt;&gt;&gt; set(ccs.df.name) == {s[&#39;name&#39;] for s in ccs_seqs}</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; all(ccs.df.samplename == &#39;test&#39;)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; set(ccs.df.CCS) == {s[&#39;seq&#39;] for s in ccs_seqs}</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; set(ccs.df.columns) == {&#39;CCS&#39;, &#39;CCS_qvals&#39;, &#39;name&#39;,</span>
+<span class="sd">    ...         &#39;passes&#39;, &#39;CCS_accuracy&#39;, &#39;CCS_length&#39;, &#39;samplename&#39;}</span>
+<span class="sd">    True</span>
+
+<span class="sd">    Use :meth:`matchSeqs` to match sequences with expected termini</span>
+<span class="sd">    and define barcodes and reads in these:</span>
+
+<span class="sd">    &gt;&gt;&gt; match_str = (termini5 + &#39;(?P&lt;barcode&gt;N{3})&#39; +</span>
+<span class="sd">    ...         &#39;(?P&lt;read&gt;N+)&#39; + termini3)</span>
+<span class="sd">    &gt;&gt;&gt; ccs.df = matchSeqs(ccs.df, match_str, &#39;CCS&#39;, &#39;barcoded&#39;)</span>
+
+<span class="sd">    This matching adds new columns to the new `ccs.df`:</span>
+
+<span class="sd">    &gt;&gt;&gt; set(ccs.df.columns) &gt;= {&#39;barcode&#39;, &#39;barcode_qvals&#39;,</span>
+<span class="sd">    ...         &#39;barcode_accuracy&#39;, &#39;read&#39;, &#39;read_qvals&#39;,</span>
+<span class="sd">    ...         &#39;read_accuracy&#39;, &#39;barcoded&#39;, &#39;barcoded_polarity&#39;}</span>
+<span class="sd">    True</span>
+
+<span class="sd">    Now make sure `df` indicates that the correct sequences</span>
+<span class="sd">    are barcoded, and that they have the correct barcodes:</span>
+
+<span class="sd">    &gt;&gt;&gt; bc_names = sorted([s[&#39;name&#39;] for s in ccs_seqs if</span>
+<span class="sd">    ...         &#39;barcoded&#39; in s[&#39;name&#39;]])</span>
+<span class="sd">    &gt;&gt;&gt; ccs.df = ccs.df.sort_values(&#39;barcode&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; (ccs.df.query(&#39;barcoded&#39;).name == bc_names).all()</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; barcodes = [x.split(&#39;_&#39;)[1] for x in bc_names]</span>
+<span class="sd">    &gt;&gt;&gt; (ccs.df.query(&#39;barcoded&#39;).barcode == barcodes).all()</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; (ccs.df.query(&#39;not barcoded&#39;).barcode == [&#39;&#39;]).all()</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; barcode_accuracies = [float(x.split(&#39;_&#39;)[2]) for x in bc_names]</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(ccs.df.query(&#39;barcoded&#39;).barcode_accuracy,</span>
+<span class="sd">    ...     barcode_accuracies, atol=1e-4)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(ccs.df.query(&#39;barcoded&#39;).barcode_accuracy,</span>
+<span class="sd">    ...         [qvalsToAccuracy(qvals) for qvals in</span>
+<span class="sd">    ...         ccs.df.query(&#39;barcoded&#39;).barcode_qvals])</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(ccs.df.query(&#39;not barcoded&#39;).barcode_accuracy,</span>
+<span class="sd">    ...     -1, atol=1e-4)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; barcoded_polarity = [{&#39;plus&#39;:1, &#39;minus&#39;:-1}[x.split(&#39;_&#39;)[3]]</span>
+<span class="sd">    ...         for x in bc_names]</span>
+<span class="sd">    &gt;&gt;&gt; (ccs.df.query(&#39;barcoded&#39;).barcoded_polarity == barcoded_polarity).all()</span>
+<span class="sd">    True</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">samplename</span><span class="p">,</span> <span class="n">bamfile</span><span class="p">,</span> <span class="n">reportfile</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;See main class doc string.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">samplename</span> <span class="o">=</span> <span class="n">samplename</span>
+
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">bamfile</span><span class="p">),</span> <span class="s2">&quot;can&#39;t find </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">bamfile</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bamfile</span> <span class="o">=</span> <span class="n">bamfile</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reportfile</span> <span class="o">=</span> <span class="n">reportfile</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reportfile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">zmw_report</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">subread_report</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">reportfile</span><span class="p">),</span> \
+                    <span class="s2">&quot;can&#39;t find </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">reportfile</span><span class="p">)</span>
+            <span class="c1"># set `zmw_report` and `subread_report`</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_parse_report</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_build_df_from_bamfile</span><span class="p">()</span>
+
+
+    <span class="k">def</span> <span class="nf">_parse_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set `zmw_report` and `subread_report` using `reportfile`.&quot;&quot;&quot;</span>
+        <span class="c1"># match reports made by ccs 3.0.0</span>
+        <span class="n">reportmatch</span> <span class="o">=</span> <span class="n">regex</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;^ZMW Yield</span><span class="se">\n</span><span class="s1">(?P&lt;zmw&gt;(.+</span><span class="se">\n</span><span class="s1">)+)</span><span class="se">\n\n</span><span class="s1">&#39;</span>
+                            <span class="s1">&#39;Subread Yield</span><span class="se">\n</span><span class="s1">(?P&lt;subread&gt;(.+</span><span class="se">\n</span><span class="s1">)+)$&#39;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reportfile</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">report</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">reportmatch</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">report</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">m</span><span class="p">,</span> <span class="s2">&quot;Cannot match </span><span class="si">{0}</span><span class="se">\n\n</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">reportfile</span><span class="p">,</span> <span class="n">report</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">read_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;zmw&#39;</span><span class="p">,</span> <span class="s1">&#39;subread&#39;</span><span class="p">]:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+                        <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="n">read_type</span><span class="p">)),</span>
+                        <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">,</span> <span class="s1">&#39;percent&#39;</span><span class="p">]</span>
+                        <span class="p">)</span>
+                  <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">fraction</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> 
+                        <span class="n">x</span><span class="o">.</span><span class="n">percent</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                        <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span>
+                  <span class="p">)</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_type</span> <span class="o">+</span> <span class="s1">&#39;_report&#39;</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_build_df_from_bamfile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Builds `df` from `bamfile`.&quot;&quot;&quot;</span>
+        <span class="c1"># read into dictionary</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">pysam</span><span class="o">.</span><span class="n">AlignmentFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bamfile</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">,</span>
+                <span class="n">check_sq</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">query_sequence</span><span class="p">)</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS_qvals&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">query_qualities</span><span class="p">,</span>
+                                                <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int&#39;</span><span class="p">))</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">query_name</span><span class="p">)</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;passes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">get_tag</span><span class="p">(</span><span class="s1">&#39;np&#39;</span><span class="p">))</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS_accuracy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">get_tag</span><span class="p">(</span><span class="s1">&#39;rq&#39;</span><span class="p">))</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS_length&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">query_length</span><span class="p">)</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;samplename&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samplename</span><span class="p">)</span>
+
+        <span class="c1"># create data frame</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+        <span class="c1"># some checks on `df`</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>\
+                <span class="s2">&quot;non-unique names for </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">CCS_length</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">CCS</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">len</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span>\
+                <span class="s2">&quot;CCS not correct length&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">CCS_length</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">CCS_qvals</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">len</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span>\
+                <span class="s2">&quot;qvals not correct length&quot;</span></div>
+
+
+<span class="n">TerminiVariantTag</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span>
+        <span class="s1">&#39;TerminiVariantTag&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;termini&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;nucleotides&#39;</span><span class="p">])</span>
+<span class="n">TerminiVariantTag</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;Variant tag at termini.&quot;</span>
+<span class="n">TerminiVariantTag</span><span class="o">.</span><span class="n">termini</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> \
+        <span class="s2">&quot;Location of tag: `termini5` or `termini3`.&quot;</span>
+<span class="n">TerminiVariantTag</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> \
+        <span class="s2">&quot;Site of tag in termini (0, 1, ... numbering).&quot;</span>
+<span class="n">TerminiVariantTag</span><span class="o">.</span><span class="n">nucleotides</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> \
+        <span class="s2">&quot;A dict keyed variant nucleotides, values variant name.&quot;</span>
+
+
+<div class="viewcode-block" id="TerminiVariantTagCaller"><a class="viewcode-back" href="../../dms_tools2.pacbio.html#dms_tools2.pacbio.TerminiVariantTagCaller">[docs]</a><span class="k">class</span> <span class="nc">TerminiVariantTagCaller</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Call variant tags at termini of CCSs.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `features` (list)</span>
+<span class="sd">            List of BioPython `SeqFeature` objects. Any</span>
+<span class="sd">            features with a type attribute of `variant_tag`</span>
+<span class="sd">            are taken to specify variant tags. These should</span>
+<span class="sd">            consist of a single nucleotide, and have qualifiers</span>
+<span class="sd">            that give the nucleotide for each variant. The</span>
+<span class="sd">            features list should also have features with</span>
+<span class="sd">            type attributes `termini5` and `termini3` used</span>
+<span class="sd">            to determine which termin each tag falls in.</span>
+<span class="sd">        `variants` (list)</span>
+<span class="sd">            List of variant names, must have nucleotide for</span>
+<span class="sd">            variant specified in qualifier for each variant tag.</span>
+<span class="sd">        `trim_termini` (int)</span>
+<span class="sd">            The amount trimmed from the 5&#39; termini of `termini5`</span>
+<span class="sd">            and the 3&#39; termini of `termini3` when these are</span>
+<span class="sd">            passed to :class:`TerminiVariantTagCaller.call`.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        `variant_tags` (list)</span>
+<span class="sd">            List of :class:`TerminiVariantTag` objects.</span>
+<span class="sd">        `variants` (list)</span>
+<span class="sd">            List of variant names set on initialization.</span>
+<span class="sd">        `trim_termini` (int)</span>
+<span class="sd">            Value set as argument on initialization.</span>
+<span class="sd">        `termini5` (Bio.SeqFeature.SeqFeature)</span>
+<span class="sd">            The 5&#39; termini in `features`</span>
+<span class="sd">        `termini3` (Bio.SeqFeature.SeqFeature)</span>
+<span class="sd">            The 3&#39; termini in `features`</span>
+
+<span class="sd">    Here is an example. First, create list of features that has a</span>
+<span class="sd">    single-nucleotide variant tag for each of two possible variants</span>
+<span class="sd">    (&#39;variant_1&#39; and &#39;variant_2&#39;) in each termini:</span>
+
+<span class="sd">    &gt;&gt;&gt; SeqFeature = Bio.SeqFeature.SeqFeature</span>
+<span class="sd">    &gt;&gt;&gt; FeatureLocation = Bio.SeqFeature.FeatureLocation</span>
+<span class="sd">    &gt;&gt;&gt; features = [</span>
+<span class="sd">    ...     SeqFeature(type=&#39;termini5&#39;, location=FeatureLocation(0, 147)),</span>
+<span class="sd">    ...     SeqFeature(type=&#39;termini3&#39;, location=FeatureLocation(1303, 1342)),</span>
+<span class="sd">    ...     SeqFeature(type=&#39;variant_tag&#39;, location=FeatureLocation(32, 33),</span>
+<span class="sd">    ...         qualifiers={&#39;variant_1&#39;:[&#39;A&#39;], &#39;variant_2&#39;:[&#39;G&#39;]}),</span>
+<span class="sd">    ...     SeqFeature(type=&#39;variant_tag&#39;, location=FeatureLocation(1310, 1311),</span>
+<span class="sd">    ...         qualifiers={&#39;variant_1&#39;:[&#39;T&#39;], &#39;variant_2&#39;:[&#39;C&#39;]})</span>
+<span class="sd">    ...     ]</span>
+
+<span class="sd">    Now initialize the :class:`TerminiVariantTagCaller`:</span>
+
+<span class="sd">    &gt;&gt;&gt; caller = TerminiVariantTagCaller(features, trim_termini=4)</span>
+<span class="sd">    &gt;&gt;&gt; caller.variants</span>
+<span class="sd">    [&#39;variant_1&#39;, &#39;variant_2&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; int(caller.termini5.location.start)</span>
+<span class="sd">    0</span>
+<span class="sd">    &gt;&gt;&gt; int(caller.termini5.location.end)</span>
+<span class="sd">    147</span>
+<span class="sd">    &gt;&gt;&gt; int(caller.termini3.location.start)</span>
+<span class="sd">    1303</span>
+<span class="sd">    &gt;&gt;&gt; int(caller.termini3.location.end)</span>
+<span class="sd">    1342</span>
+<span class="sd">    &gt;&gt;&gt; len(caller.variant_tags)</span>
+<span class="sd">    2</span>
+<span class="sd">    &gt;&gt;&gt; caller.variant_tags[0].termini</span>
+<span class="sd">    &#39;termini5&#39;</span>
+<span class="sd">    &gt;&gt;&gt; caller.variant_tags[0].site</span>
+<span class="sd">    32</span>
+<span class="sd">    &gt;&gt;&gt; caller.variant_tags[0].nucleotides == {&#39;A&#39;:&#39;variant_1&#39;, &#39;G&#39;:&#39;variant_2&#39;}</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; caller.variant_tags[1].termini</span>
+<span class="sd">    &#39;termini3&#39;</span>
+<span class="sd">    &gt;&gt;&gt; caller.variant_tags[1].site</span>
+<span class="sd">    7</span>
+<span class="sd">    &gt;&gt;&gt; caller.variant_tags[1].nucleotides == {&#39;T&#39;:&#39;variant_1&#39;, &#39;C&#39;:&#39;variant_2&#39;}</span>
+<span class="sd">    True</span>
+
+<span class="sd">    Do some example variant calling:</span>
+
+<span class="sd">    &gt;&gt;&gt; caller.call({&#39;termini5&#39;:&#39;GGCGTCACACTTTGCTATGCCATAGCATATTTATCC&#39;,</span>
+<span class="sd">    ...              &#39;termini3&#39;:&#39;AGATCGGTAGAGCGTCGTGTAGGGAAAGAGTGTGG&#39;})</span>
+<span class="sd">    &#39;variant_1&#39;</span>
+<span class="sd">    &gt;&gt;&gt; caller.call({&#39;termini5&#39;:&#39;GGCGTCACACTTTGCTATGCCATAGCATGTTTATCC&#39;,</span>
+<span class="sd">    ...              &#39;termini3&#39;:&#39;AGATCGGCAGAGCGTCGTGTAGGGAAAGAGTGTGG&#39;})</span>
+<span class="sd">    &#39;variant_2&#39;</span>
+<span class="sd">    &gt;&gt;&gt; caller.call({&#39;termini5&#39;:&#39;GGCGTCACACTTTGCTATGCCATAGCATGTTTATCC&#39;,</span>
+<span class="sd">    ...              &#39;termini3&#39;:&#39;AGATCGGTAGAGCGTCGTGTAGGGAAAGAGTGTGG&#39;})</span>
+<span class="sd">    &#39;mixed&#39;</span>
+<span class="sd">    &gt;&gt;&gt; caller.call({&#39;termini5&#39;:&#39;CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC&#39;,</span>
+<span class="sd">    ...              &#39;termini3&#39;:&#39;AGATCGGTAGAGCGTCGTGTAGGGAAAGAGTGTGG&#39;})</span>
+<span class="sd">    &#39;invalid&#39;</span>
+<span class="sd">    &gt;&gt;&gt; caller.call({&#39;termini5&#39;:&#39;GGC&#39;, &#39;termini3&#39;:&#39;AGAT&#39;})</span>
+<span class="sd">    &#39;unknown&#39;</span>
+<span class="sd">    &gt;&gt;&gt; caller.call({})</span>
+<span class="sd">    &#39;unknown&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">variants</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;variant_1&#39;</span><span class="p">,</span> <span class="s1">&#39;variant_2&#39;</span><span class="p">],</span>
+            <span class="n">trim_termini</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;See main class docs.&quot;&quot;&quot;</span>
+        <span class="n">features_dict</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">features</span><span class="p">:</span>
+            <span class="n">features_dict</span><span class="p">[</span><span class="n">feature</span><span class="o">.</span><span class="n">type</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">termini</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;termini5&#39;</span><span class="p">,</span> <span class="s1">&#39;termini3&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">features_dict</span><span class="p">[</span><span class="n">termini</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Failed to find exactly one </span><span class="si">{termini}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">termini</span><span class="p">,</span> <span class="n">features_dict</span><span class="p">[</span><span class="n">termini</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">features_dict</span><span class="p">[</span><span class="s1">&#39;variant_tag&#39;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;no `variant_tag`s specified&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">trim_termini</span> <span class="o">=</span> <span class="n">trim_termini</span>
+        <span class="k">if</span> <span class="n">trim_termini</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;trim_termini must be &gt;= 0&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">variants</span> <span class="o">=</span> <span class="n">variants</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variants</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;no variants specified&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">variant_tags</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">variant_feature</span> <span class="ow">in</span> <span class="n">features_dict</span><span class="p">[</span><span class="s1">&#39;variant_tag&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">variant_feature</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;variant not length 1: </span><span class="si">{variant_feature}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">termini</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">termini5</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">termini3</span><span class="p">]</span> <span class="k">if</span>
+                    <span class="n">variant_feature</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">start</span> <span class="ow">in</span> <span class="n">f</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">termini</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;variant tag not in exactly one termini&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">variant_tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">TerminiVariantTag</span><span class="p">(</span>
+                        <span class="n">termini</span><span class="o">=</span><span class="n">termini</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+                        <span class="n">site</span><span class="o">=</span><span class="n">variant_feature</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">start</span> <span class="o">-</span> 
+                            <span class="n">termini</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">start</span><span class="p">,</span>
+                        <span class="n">nucleotides</span><span class="o">=</span><span class="p">{</span><span class="n">variant_feature</span><span class="o">.</span><span class="n">qualifiers</span><span class="p">[</span><span class="n">v</span><span class="p">][</span><span class="mi">0</span><span class="p">]:</span><span class="n">v</span>
+                            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variants</span><span class="p">})</span>
+                    <span class="p">)</span>
+
+<div class="viewcode-block" id="TerminiVariantTagCaller.checkTagNucleotides"><a class="viewcode-back" href="../../dms_tools2.pacbio.html#dms_tools2.pacbio.TerminiVariantTagCaller.checkTagNucleotides">[docs]</a>    <span class="k">def</span> <span class="nf">checkTagNucleotides</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">amplicon</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check amplicon carrying tags has right ambiguous nucleotides.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            `amplicon` (BioPython `SeqRecord`)</span>
+<span class="sd">                The full amplicon that contains the termini</span>
+<span class="sd">                and variant tags</span>
+
+<span class="sd">        This method checks that the `amplicon` correctly has</span>
+<span class="sd">        IUPAC ambiguous nucleotides that cover the possible</span>
+<span class="sd">        diversity at the site of each variant tag. If so,</span>
+<span class="sd">        it does nothing and returns `None`. If not, it raises</span>
+<span class="sd">        a `ValueError`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">variant_tag</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variant_tags</span><span class="p">:</span>
+            <span class="n">termini</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;termini5&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">termini5</span><span class="p">,</span>
+                       <span class="s1">&#39;termini3&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">termini3</span><span class="p">}[</span><span class="n">variant_tag</span><span class="o">.</span><span class="n">termini</span><span class="p">]</span>
+            <span class="n">terminiseq</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">termini</span><span class="o">.</span><span class="n">location</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">amplicon</span><span class="p">)</span><span class="o">.</span><span class="n">seq</span><span class="p">)</span>
+            <span class="n">nt</span> <span class="o">=</span> <span class="n">terminiseq</span><span class="p">[</span><span class="n">variant_tag</span><span class="o">.</span><span class="n">site</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">NT_TO_REGEXP</span><span class="p">[</span><span class="n">nt</span><span class="p">],</span> <span class="n">variant_nt</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">variant_nt</span> <span class="ow">in</span> <span class="n">variant_tag</span><span class="o">.</span><span class="n">nucleotides</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Nucleotide </span><span class="si">{nt}</span><span class="s2"> invalid for </span><span class="si">{variant_tag}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TerminiVariantTagCaller.call"><a class="viewcode-back" href="../../dms_tools2.pacbio.html#dms_tools2.pacbio.TerminiVariantTagCaller.call">[docs]</a>    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">termini_seqs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Call variant identity.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            `termini_seqs` (dict, namedtuple, pandas row)</span>
+<span class="sd">                Some object that has attributes that can be</span>
+<span class="sd">                accessed as `termini5` and `termini3`. These</span>
+<span class="sd">                termini are assumed to have the amount specified</span>
+<span class="sd">                by :class:`TerminiVariantTagCaller.trim_termini`</span>
+<span class="sd">                trimmed from the 5&#39; termini of `termini5` and</span>
+<span class="sd">                the 3&#39; termini of `termini3`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A str that can be any of the following:</span>
+
+<span class="sd">                - If all tag sites in termini match the same variant,</span>
+<span class="sd">                  return the name of that variant.</span>
+<span class="sd">                - If different tag sites match different variants,</span>
+<span class="sd">                  return &quot;mixed&quot;.</span>
+<span class="sd">                - If any tag sites have a nucleotide that matches no</span>
+<span class="sd">                  known variants, return &quot;invalid&quot;.</span>
+<span class="sd">                - If `termini_seqs` lacks a termini or has a termini</span>
+<span class="sd">                  that is too short to contain the tag sites, return</span>
+<span class="sd">                  &quot;unknown&quot;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="s1">&#39;termini5&#39;</span> <span class="ow">in</span> <span class="n">termini_seqs</span> <span class="ow">and</span> <span class="s1">&#39;termini3&#39;</span> <span class="ow">in</span> <span class="n">termini_seqs</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">&quot;unknown&quot;</span>
+
+        <span class="n">variants</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">variant_tag</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variant_tags</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">variant_tag</span><span class="o">.</span><span class="n">site</span>
+            <span class="k">if</span> <span class="n">variant_tag</span><span class="o">.</span><span class="n">termini</span> <span class="o">==</span> <span class="s1">&#39;termini5&#39;</span><span class="p">:</span>
+                <span class="n">i</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trim_termini</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">termini_seqs</span><span class="p">[</span><span class="n">variant_tag</span><span class="o">.</span><span class="n">termini</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">i</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s1">&#39;unknown&#39;</span>
+            <span class="n">nt</span> <span class="o">=</span> <span class="n">termini_seqs</span><span class="p">[</span><span class="n">variant_tag</span><span class="o">.</span><span class="n">termini</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">nt</span> <span class="ow">in</span> <span class="n">variant_tag</span><span class="o">.</span><span class="n">nucleotides</span><span class="p">:</span>
+                <span class="n">variants</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">variant_tag</span><span class="o">.</span><span class="n">nucleotides</span><span class="p">[</span><span class="n">nt</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s1">&#39;invalid&#39;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">variants</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">variants</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;mixed&#39;</span></div></div>
+
+
+<div class="viewcode-block" id="matchAndAlignCCS"><a class="viewcode-back" href="../../dms_tools2.pacbio.html#dms_tools2.pacbio.matchAndAlignCCS">[docs]</a><span class="k">def</span> <span class="nf">matchAndAlignCCS</span><span class="p">(</span><span class="n">ccslist</span><span class="p">,</span> <span class="n">mapper</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+        <span class="n">termini5</span><span class="p">,</span> <span class="n">gene</span><span class="p">,</span> <span class="n">spacer</span><span class="p">,</span> <span class="n">umi</span><span class="p">,</span> <span class="n">barcode</span><span class="p">,</span> <span class="n">termini3</span><span class="p">,</span>
+        <span class="n">termini5_fuzziness</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">gene_fuzziness</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">spacer_fuzziness</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">umi_fuzziness</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">barcode_fuzziness</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">termini3_fuzziness</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">targetvariants</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mutationcaller</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">terminiVariantTagCaller</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">rc_barcode_umi</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Identify CCSs that match pattern and align them.</span>
+
+<span class="sd">    This is a convenience function that runs :meth:`matchSeqs`</span>
+<span class="sd">    and :meth:`alignSeqs` for a common use case. It takes one</span>
+<span class="sd">    or more :class:`CCS` objects, looks for CCS sequences in them</span>
+<span class="sd">    that match a specific pattern, and aligns them to targets. It</span>
+<span class="sd">    returns a pandas data frame with all the results. The CCS</span>
+<span class="sd">    sequences are assumed to be molecules that have the following</span>
+<span class="sd">    structure, although potentially in either orientation::</span>
+
+<span class="sd">        5&#39;-...-termini5-gene-spacer-umi-barcode-termini3-...-3&#39;</span>
+
+<span class="sd">    As indicated by the ``...``, there can be sequence before and</span>
+<span class="sd">    after our expected pattern that we ignore. The gene element</span>
+<span class="sd">    is the aligned to the targets. The full CCS is also aligned</span>
+<span class="sd">    in the absence of the pattern matching.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `ccslist` (:class:`CCS` object or list of them)</span>
+<span class="sd">            Analyze the CCS&#39;s in the `df` attributes. If there are</span>
+<span class="sd">            multiple :class:`CCS` objectes, they are concatenated.</span>
+<span class="sd">            However, they must have the same columns.</span>
+<span class="sd">        `mapper` (:py:mod:`dms_tools2.minimap2.Mapper`)</span>
+<span class="sd">            Mapper used to perform alignments.</span>
+<span class="sd">        `termini5` (str or `None`)</span>
+<span class="sd">            Expected sequence at 5&#39; end as str that can be compiled</span>
+<span class="sd">            to `regex` object. Passed through :meth:`re_expandIUPAC`.</span>
+<span class="sd">            For instance, make it &#39;ATG|CTG&#39; if the sequence might</span>
+<span class="sd">            start with either `ATG` or `CTG`. Set to `None` if</span>
+<span class="sd">            no expected 5&#39; termini.</span>
+<span class="sd">        `gene` (str)</span>
+<span class="sd">            Like `termini5` but gives the gene to match. For instance,</span>
+<span class="sd">            &#39;N+&#39; if the gene can be arbitrary sequence and length.</span>
+<span class="sd">        `spacer` (str or `None`)</span>
+<span class="sd">            Like `termini5`, but for the spacer after `gene`.</span>
+<span class="sd">        `umi` (str or `None`)</span>
+<span class="sd">            Like `termini5`, but for UMI.</span>
+<span class="sd">        `barcode` (str or `None`)</span>
+<span class="sd">            Like `termini5`, but for barcode. For instance, &#39;N{10}&#39;</span>
+<span class="sd">            if 10-nucleotide barcode.</span>
+<span class="sd">        `termini3` (str or `None`)</span>
+<span class="sd">            Like `termini5`, but for termini3.</span>
+<span class="sd">        `termini5_fuzziness`, ..., `termini3_fuzziness` (int)</span>
+<span class="sd">            The matching for the sequence patterns uses `regex`,</span>
+<span class="sd">            which enables fuzzy matching. Set `termini5_fuzziness`</span>
+<span class="sd">            to enable a specific number of differences (can be</span>
+<span class="sd">            insertion, deletion, or mismatch) when matching</span>
+<span class="sd">            `termini5`. Likewise for `gene_fuzziness`, etc.</span>
+<span class="sd">            Note that the fuzzy matching uses the *BESTMATCH*</span>
+<span class="sd">            flag to try to find the best fuzzy match.</span>
+<span class="sd">        `targetvariants` (:class:`dms_tools2.minimap2.TargetVariants`)</span>
+<span class="sd">            Call target variants. See docs for same argument to</span>
+<span class="sd">            :meth:`alignSeqs`.</span>
+<span class="sd">        `mutationcaller` (:class:`dms_tools2.minimap2.MutationCaller`)</span>
+<span class="sd">            Call mutations. See docs for same argument to :meth:`alignSeqs`.</span>
+<span class="sd">        `terminiVariantTagCaller` (:class:`TerminiVariantTagCaller`)</span>
+<span class="sd">            Call variants in termini.</span>
+<span class="sd">        `rc_barcode_umi` (bool)</span>
+<span class="sd">            Do we reverse complement the `barcode` and `UMI` in the</span>
+<span class="sd">            returned data frame relative to the orientation of</span>
+<span class="sd">            the gene. Typically this is desirable because actual</span>
+<span class="sd">            barcode sequencing goes in the reverse direction of the</span>
+<span class="sd">            gene.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A pandas dataframe that will have all columns already in the</span>
+<span class="sd">        `df` attribute of the input :class:`CCS` objects with the</span>
+<span class="sd">        following columns added:</span>
+
+<span class="sd">        - `barcoded`: `True` if CCS matches full expected pattern,</span>
+<span class="sd">          `False` otherwise.</span>
+
+<span class="sd">        - `barcoded_polarity`: 1 of the match is in the polarity of</span>
+<span class="sd">          the CCS, -1 if to the reverse complement, 0 if no match.</span>
+
+<span class="sd">        - Columns named `termini5`, `gene`, `spacer`, `UMI`,</span>
+<span class="sd">          `barcode`, and `termini3` (except if any of these elements</span>
+<span class="sd">          are `None`). If `barcoded` is `True` for that CCS, these</span>
+<span class="sd">          columns give the sequence for that element. If it is `False`,</span>
+<span class="sd">          they are empty strings. There are likewise columns with</span>
+<span class="sd">          these same names suffixed with &quot;_accuracy&quot; that give the CCS</span>
+<span class="sd">          accuracy for that element, and columns suffixed with &quot;_qvals&quot;</span>
+<span class="sd">          that give the quality scores for the elements.</span>
+
+<span class="sd">        - For each of `termini5`, `spacer`, and `termini3` that are</span>
+<span class="sd">          not `None`, a column named `has_termini5`, etc that</span>
+<span class="sd">          indicates if that element is matched in isolate even if</span>
+<span class="sd">          the full pattern is not matched.</span>
+
+<span class="sd">        - `gene_aligned` is True if the CCS matches the expected</span>
+<span class="sd">          pattern (is `barcoded`), and `gene` can further be</span>
+<span class="sd">          aligned using `mapper`. It is `False` otherwise.</span>
+
+<span class="sd">        - `gene_aligned_alignment`, `gene_aligned_target`,</span>
+<span class="sd">          `gene_aligned_n_trimmed_query_start`,</span>
+<span class="sd">          `gene_aligned_n_trimmed_query_end`,</span>
+<span class="sd">          `gene_aligned_n_trimmed_target_start`,</span>
+<span class="sd">          `gene_aligned_n_trimmed_target_end`,</span>
+<span class="sd">          `gene_aligned_n_additional`, and</span>
+<span class="sd">          `gene_aligned_n_additional_difftarget` give the</span>
+<span class="sd">          :py:mod:`dms_tools2.minimap2.Alignment`, the alignment</span>
+<span class="sd">          target, number of nucleotides trimmed from ends of</span>
+<span class="sd">          the query gene or target, the number</span>
+<span class="sd">          of additional alignments if `gene_aligned`,</span>
+<span class="sd">          and the number of additional alignments to different</span>
+<span class="sd">          targets (see `target_isoforms` attribute of</span>
+<span class="sd">          :py:mod:`dms_tools2.minimap2.Mapper`). If</span>
+<span class="sd">          the gene is not aligned, these are `None`,</span>
+<span class="sd">          empty strings, or -1.</span>
+
+<span class="sd">        - If `targetvariants` is not `None`, column named</span>
+<span class="sd">          `gene_aligned_target_variant` giving target variant</span>
+<span class="sd">          returned by :class:`dms_tools2.minimap2.TargtVariants.call`.</span>
+
+<span class="sd">        - If `mutationcaller` is not `None`, column named</span>
+<span class="sd">          `gene_aligned_mutations` giving the</span>
+<span class="sd">          :class:`dms_tools2.minimap2.Mutations` object returned</span>
+<span class="sd">          by :class:`dms_tools2.minimap2.MutationCaller.call`,</span>
+<span class="sd">          or `None` if there is no alignment.</span>
+
+<span class="sd">        - If `terminiVariantTagCaller` is not `None`, column</span>
+<span class="sd">          named `termini_variant` giving the termini variant</span>
+<span class="sd">          returned by :class:`TerminiVariantTagCaller.call`,</span>
+<span class="sd">          or the str &quot;unknown&quot; if both termini are not matched.</span>
+
+<span class="sd">        - `CCS_aligned` is `True` if the CCS can be aligned</span>
+<span class="sd">          using `mapper` even if a gene cannot be matched,</span>
+<span class="sd">          and `False` otherwise. `CCS_aligned_alignment`</span>
+<span class="sd">          and `CCS_aligned_target` give the</span>
+<span class="sd">          :py:mod:`dms_tools2.minimap2.Alignment` (or `None`)</span>
+<span class="sd">          and the target (or empty string).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ccslist</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Iterable</span><span class="p">):</span>
+        <span class="n">col_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">ccs</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">for</span> <span class="n">ccs</span> <span class="ow">in</span> <span class="n">ccslist</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="n">col_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">col_list</span><span class="p">]),</span>\
+                <span class="s2">&quot;the CCS.df&#39;s in `ccslist` don&#39;t have same columns&quot;</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">ccs</span><span class="o">.</span><span class="n">df</span> <span class="k">for</span> <span class="n">ccs</span> <span class="ow">in</span> <span class="n">ccslist</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">ccslist</span><span class="o">.</span><span class="n">df</span>
+
+    <span class="c1"># internal function:</span>
+    <span class="k">def</span> <span class="nf">_align_CCS_both_orientations</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">mapper</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Try align CCS both ways, adds columns.</span>
+<span class="sd">          `CCS_aligned`, `CCS_aligned_alignment`, and</span>
+<span class="sd">        `CCS_aligned_target`.&quot;&quot;&quot;</span>
+        <span class="n">df_bi</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">pacbio</span><span class="o">.</span><span class="n">alignSeqs</span><span class="p">,</span>
+                         <span class="n">mapper</span><span class="o">=</span><span class="n">mapper</span><span class="p">,</span>
+                         <span class="n">query_col</span><span class="o">=</span><span class="s1">&#39;CCS&#39;</span><span class="p">,</span>
+                         <span class="n">aligned_col</span><span class="o">=</span><span class="s1">&#39;CCS_for_aligned&#39;</span><span class="p">)</span>
+                   <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">CCS_rev</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">CCS</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+                           <span class="n">dms_tools2</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">reverseComplement</span><span class="p">))</span>
+                   <span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">pacbio</span><span class="o">.</span><span class="n">alignSeqs</span><span class="p">,</span>
+                         <span class="n">mapper</span><span class="o">=</span><span class="n">mapper</span><span class="p">,</span>
+                         <span class="n">query_col</span><span class="o">=</span><span class="s1">&#39;CCS_rev&#39;</span><span class="p">,</span>
+                         <span class="n">aligned_col</span><span class="o">=</span><span class="s1">&#39;CCS_rev_aligned&#39;</span><span class="p">)</span>
+                   <span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">CCS_aligned</span><span class="o">=</span><span class="n">df_bi</span><span class="o">.</span><span class="n">CCS_for_aligned</span> <span class="o">|</span>
+                          <span class="n">df_bi</span><span class="o">.</span><span class="n">CCS_rev_aligned</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">CCS_aligned_alignment</span><span class="o">=</span>
+                        <span class="n">df_bi</span><span class="o">.</span><span class="n">CCS_for_aligned_alignment</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                        <span class="n">df_bi</span><span class="o">.</span><span class="n">CCS_for_aligned</span><span class="p">,</span>
+                        <span class="n">df_bi</span><span class="o">.</span><span class="n">CCS_rev_aligned_alignment</span><span class="p">))</span>
+                <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">CCS_aligned_target</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span>
+                        <span class="n">x</span><span class="o">.</span><span class="n">CCS_aligned_alignment</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+                        <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">target</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+                <span class="p">)</span>
+
+    <span class="c1"># build match_str</span>
+    <span class="n">match_str</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">termini5</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;termini5&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">f</span><span class="s1">&#39;(?b)(?P&lt;termini5&gt;</span><span class="si">{termini5}</span><span class="s1">){{e&lt;=</span><span class="si">{termini5_fuzziness}</span><span class="s1">}}&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;termini5&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;gene&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;(?b)(?P&lt;gene&gt;</span><span class="si">{gene}</span><span class="s1">){{e&lt;=</span><span class="si">{gene_fuzziness}</span><span class="s1">}}&#39;</span>
+
+    <span class="k">if</span> <span class="n">spacer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;spacer&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">f</span><span class="s1">&#39;(?b)(?P&lt;spacer&gt;</span><span class="si">{spacer}</span><span class="s1">){{e&lt;=</span><span class="si">{spacer_fuzziness}</span><span class="s1">}}&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;spacer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">umi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;umi&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;(?b)(?P&lt;UMI&gt;</span><span class="si">{umi}</span><span class="s1">){{e&lt;=</span><span class="si">{umi_fuzziness}</span><span class="s1">}}&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;umi&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">barcode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;barcode&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">f</span><span class="s1">&#39;(?b)(?P&lt;barcode&gt;</span><span class="si">{barcode}</span><span class="s1">){{e&lt;=</span><span class="si">{barcode_fuzziness}</span><span class="s1">}}&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;barcode&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">termini3</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;termini3&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">f</span><span class="s1">&#39;(?b)(?P&lt;termini3&gt;</span><span class="si">{termini3}</span><span class="s1">){{e&lt;=</span><span class="si">{termini3_fuzziness}</span><span class="s1">}}&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;termini3&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># now create df</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">df</span>
+
+        <span class="c1"># match barcoded sequences</span>
+        <span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">pacbio</span><span class="o">.</span><span class="n">matchSeqs</span><span class="p">,</span>
+              <span class="n">match_str</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">match_str</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">),</span>
+              <span class="n">col_to_match</span><span class="o">=</span><span class="s1">&#39;CCS&#39;</span><span class="p">,</span>
+              <span class="n">match_col</span><span class="o">=</span><span class="s1">&#39;barcoded&#39;</span><span class="p">)</span>
+    
+        <span class="c1"># look for just termini or spacer</span>
+        <span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">pacbio</span><span class="o">.</span><span class="n">matchSeqs</span><span class="p">,</span> 
+              <span class="n">match_str</span><span class="o">=</span><span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;termini5&#39;</span><span class="p">],</span>
+              <span class="n">col_to_match</span><span class="o">=</span><span class="s1">&#39;CCS&#39;</span><span class="p">,</span>
+              <span class="n">match_col</span><span class="o">=</span><span class="s1">&#39;has_termini5&#39;</span><span class="p">,</span>
+              <span class="n">add_polarity</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+              <span class="n">add_group_cols</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">pacbio</span><span class="o">.</span><span class="n">matchSeqs</span><span class="p">,</span> 
+              <span class="n">match_str</span><span class="o">=</span><span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;termini3&#39;</span><span class="p">],</span>
+              <span class="n">col_to_match</span><span class="o">=</span><span class="s1">&#39;CCS&#39;</span><span class="p">,</span>
+              <span class="n">match_col</span><span class="o">=</span><span class="s1">&#39;has_termini3&#39;</span><span class="p">,</span>
+              <span class="n">add_polarity</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+              <span class="n">add_group_cols</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">pacbio</span><span class="o">.</span><span class="n">matchSeqs</span><span class="p">,</span> 
+              <span class="n">match_str</span><span class="o">=</span><span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;spacer&#39;</span><span class="p">],</span>
+              <span class="n">col_to_match</span><span class="o">=</span><span class="s1">&#39;CCS&#39;</span><span class="p">,</span>
+              <span class="n">match_col</span><span class="o">=</span><span class="s1">&#39;has_spacer&#39;</span><span class="p">,</span>
+              <span class="n">add_polarity</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+              <span class="n">add_group_cols</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    
+        <span class="c1"># see if gene aligns in correct orientation</span>
+        <span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">pacbio</span><span class="o">.</span><span class="n">alignSeqs</span><span class="p">,</span>
+              <span class="n">mapper</span><span class="o">=</span><span class="n">mapper</span><span class="p">,</span>
+              <span class="n">query_col</span><span class="o">=</span><span class="s1">&#39;gene&#39;</span><span class="p">,</span>
+              <span class="n">aligned_col</span><span class="o">=</span><span class="s1">&#39;gene_aligned&#39;</span><span class="p">,</span>
+              <span class="n">targetvariants</span><span class="o">=</span><span class="n">targetvariants</span><span class="p">,</span>
+              <span class="n">mutationcaller</span><span class="o">=</span><span class="n">mutationcaller</span><span class="p">)</span>
+    
+        <span class="c1"># look for any alignment of CCS, take best in either orientation</span>
+        <span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">_align_CCS_both_orientations</span><span class="p">,</span>
+              <span class="n">mapper</span><span class="o">=</span><span class="n">mapper</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">terminiVariantTagCaller</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">termini_variant</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+                <span class="n">terminiVariantTagCaller</span><span class="o">.</span><span class="n">call</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="c1"># reverse complement barcode and UMI</span>
+    <span class="k">if</span> <span class="n">rc_barcode_umi</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">barcode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">barcode</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">barcode</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">reverseComplement</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">umi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">UMI</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">UMI</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">reverseComplement</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="matchSeqs"><a class="viewcode-back" href="../../dms_tools2.pacbio.html#dms_tools2.pacbio.matchSeqs">[docs]</a><span class="k">def</span> <span class="nf">matchSeqs</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">match_str</span><span class="p">,</span> <span class="n">col_to_match</span><span class="p">,</span> <span class="n">match_col</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+        <span class="n">add_polarity</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_group_cols</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">add_accuracy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_qvals</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">expandIUPAC</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Identify sequences in a dataframe that match a specific pattern.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `df` (pandas DataFrame)</span>
+<span class="sd">            Data frame with column holding sequences to match.</span>
+<span class="sd">        `match_str` (str)</span>
+<span class="sd">            A string that can be passed to `regex.compile` that gives</span>
+<span class="sd">            the pattern that we are looking for, with target </span>
+<span class="sd">            subsequences as named groups. See also the `expandIUPAC`</span>
+<span class="sd">            parameter, which simplifies writing `match_str`.</span>
+<span class="sd">            If `None` we just return `df`. Note that we use</span>
+<span class="sd">            `regex` rather than `re`, so fuzzy matching is</span>
+<span class="sd">            enabled.</span>
+<span class="sd">        `col_to_match` (str)</span>
+<span class="sd">            Name of column in `df` that contains the sequences</span>
+<span class="sd">            to match.</span>
+<span class="sd">        `match_col` (str)</span>
+<span class="sd">            Name of column added to `df`. Elements of columns are</span>
+<span class="sd">            `True` if `col_to_match` matches `match_str` for that</span>
+<span class="sd">            row, and `False` otherwise.</span>
+<span class="sd">        `add_polarity` (bool)</span>
+<span class="sd">            Add a column specifying the polarity of the match?</span>
+<span class="sd">        `add_group_cols` (bool)</span>
+<span class="sd">            Add columns with the sequence of every group in</span>
+<span class="sd">            `match_str`?</span>
+<span class="sd">        `add_accuracy` (bool)</span>
+<span class="sd">            For each group in the match, add a column giving</span>
+<span class="sd">            the accuracy of that group&#39;s sequence? Only used</span>
+<span class="sd">            if `add_group_cols` is `True`.</span>
+<span class="sd">        `add_qvals` (bool)</span>
+<span class="sd">            For each group in the match, add a column giving</span>
+<span class="sd">            the Q values for that group&#39;s sequence? Only used if</span>
+<span class="sd">            `add_group_cols` is `True`.</span>
+<span class="sd">        `expandIUPAC` (bool)</span>
+<span class="sd">            Use `IUPAC code &lt;https://en.wikipedia.org/wiki/Nucleic_acid_notation&gt;`_</span>
+<span class="sd">            to expand ambiguous nucleotides (e.g., &quot;N&quot;) by passing</span>
+<span class="sd">            `match_str` through the :meth:`re_expandIUPAC` function.</span>
+<span class="sd">        `overwrite` (bool)</span>
+<span class="sd">            If `True`, we overwrite any existing columns to</span>
+<span class="sd">            be created that already exist. If `False`, raise</span>
+<span class="sd">            an error if any of the columns already exist.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A **copy** of `df` with new columns added. The exact columns</span>
+<span class="sd">        to add are specified by the calling arguments. Specifically:</span>
+
+<span class="sd">            - We always add a column with the name given by `match_col`</span>
+<span class="sd">              that is `True` if there was a match and `False` otherwise.</span>
+
+<span class="sd">            - If `add_polarity` is `True`, add a column that is</span>
+<span class="sd">              `match_col` suffixed by &quot;_polarity&quot; which is 1 if</span>
+<span class="sd">              the match is directly to the sequence in `col_to_match`,</span>
+<span class="sd">              and -1 if it is to the reverse complement of this sequence.</span>
+<span class="sd">              The value is 0 if there is no match.</span>
+
+<span class="sd">            - If `add_group_cols` is `True`, then for each group</span>
+<span class="sd">              in `match_str` specified using the `re` group naming</span>
+<span class="sd">              syntax, add a column with that group name that</span>
+<span class="sd">              gives the sequence matching that group. These</span>
+<span class="sd">              sequences are empty strings if there is no match.</span>
+<span class="sd">              These added sequences are in the polarity of the</span>
+<span class="sd">              match, so if the sequence in `match_col` has</span>
+<span class="sd">              to be reverse complemented for a match, then these</span>
+<span class="sd">              sequences will be the reverse complement that matches.</span>
+<span class="sd">              Additionally, when `add_group_cols` is True:</span>
+
+<span class="sd">                - If `add_accuracy` is `True`, we also add a column</span>
+<span class="sd">                  suffixed by &quot;_accuracy&quot; that gives the</span>
+<span class="sd">                  accuracy of that group as computed from the Q-values.</span>
+<span class="sd">                  The value -1 if there is match for that row. Adding</span>
+<span class="sd">                  accuracy requires a colum in `df` with the name</span>
+<span class="sd">                  given by `match_col` suffixed by &quot;_qvals.&quot;</span>
+
+<span class="sd">                - If `add_qvals` is `True`, we also add a column </span>
+<span class="sd">                  suffixed by &quot;_qvals&quot; that gives the Q-values</span>
+<span class="sd">                  for that sequence. Adding these Q-values requires</span>
+<span class="sd">                  that there by a column in `df` with the name given by</span>
+<span class="sd">                  `match_col` suffixed by &quot;_qvals&quot;. The Q-values are</span>
+<span class="sd">                  in the form of a numpy array, or an empty numpy array</span>
+<span class="sd">                  if there is no match for that row.</span>
+<span class="sd">              </span>
+<span class="sd">    See docs for :class:`CCS` for example uses of this function.</span>
+
+<span class="sd">    Here is a short example that uses the fuzzy matching of</span>
+<span class="sd">    the `regex` model for the polyA tail:</span>
+
+<span class="sd">    &gt;&gt;&gt; gene = &#39;ATGGCT&#39;</span>
+<span class="sd">    &gt;&gt;&gt; polyA = &#39;AAAACAAAA&#39;</span>
+<span class="sd">    &gt;&gt;&gt; df = pandas.DataFrame({&#39;CCS&#39;:[gene + polyA]})</span>
+<span class="sd">    &gt;&gt;&gt; match_str = &#39;(?P&lt;gene&gt;N+)(?P&lt;polyA&gt;AA(A{5,}){e&lt;=1}AA)&#39;</span>
+<span class="sd">    &gt;&gt;&gt; df = matchSeqs(df, match_str, &#39;CCS&#39;, &#39;matched&#39;,</span>
+<span class="sd">    ...         add_accuracy=False, add_qvals=False)</span>
+<span class="sd">    &gt;&gt;&gt; expected = df.assign(gene=gene, polyA=polyA,</span>
+<span class="sd">    ...         matched=True, matched_polarity=1)</span>
+<span class="sd">    &gt;&gt;&gt; (df.sort_index(axis=1) == expected.sort_index(axis=1)).all().all()</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">match_str</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">assert</span> <span class="n">col_to_match</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> \
+            <span class="s2">&quot;`df` lacks `col_to_match` column </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">col_to_match</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">expandIUPAC</span><span class="p">:</span>
+        <span class="n">match_str</span> <span class="o">=</span> <span class="n">re_expandIUPAC</span><span class="p">(</span><span class="n">match_str</span><span class="p">)</span>
+    <span class="n">matcher</span> <span class="o">=</span> <span class="n">regex</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">match_str</span><span class="p">)</span>
+
+    <span class="n">newcols</span> <span class="o">=</span> <span class="p">[</span><span class="n">match_col</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">add_polarity</span><span class="p">:</span>
+        <span class="n">polarity_col</span> <span class="o">=</span> <span class="n">match_col</span> <span class="o">+</span> <span class="s1">&#39;_polarity&#39;</span>
+        <span class="n">newcols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">polarity_col</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">add_group_cols</span><span class="p">:</span>
+        <span class="n">groupnames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">matcher</span><span class="o">.</span><span class="n">groupindex</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">groupnames</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">groupnames</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;duplicate group names in </span><span class="si">{0}</span><span class="s2">&quot;</span>
+                             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">match_str</span><span class="p">))</span>
+        <span class="n">newcols</span> <span class="o">+=</span> <span class="n">groupnames</span>
+        <span class="k">if</span> <span class="n">add_accuracy</span><span class="p">:</span>
+            <span class="n">newcols</span> <span class="o">+=</span> <span class="p">[</span><span class="n">g</span> <span class="o">+</span> <span class="s1">&#39;_accuracy&#39;</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">groupnames</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">add_qvals</span><span class="p">:</span>
+            <span class="n">newcols</span> <span class="o">+=</span> <span class="p">[</span><span class="n">g</span> <span class="o">+</span> <span class="s1">&#39;_qvals&#39;</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">groupnames</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">add_accuracy</span> <span class="ow">or</span> <span class="n">add_qvals</span><span class="p">:</span>
+            <span class="n">match_qvals_col</span> <span class="o">=</span> <span class="n">col_to_match</span> <span class="o">+</span> <span class="s1">&#39;_qvals&#39;</span>
+            <span class="k">if</span> <span class="n">match_qvals_col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;To use `add_accuracy` or &quot;</span>
+                        <span class="s2">&quot;`add_qvals`, you need a column in `df` &quot;</span>
+                        <span class="s2">&quot;named </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">match_qvals_col</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">groupnames</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># make sure created columns don&#39;t already exist</span>
+    <span class="n">dup_cols</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">newcols</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">overwrite</span> <span class="ow">and</span> <span class="n">dup_cols</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`df` already contains some of the &quot;</span>
+                <span class="s2">&quot;columns that we are supposed to add:</span><span class="se">\n</span><span class="si">{0}</span><span class="s2">&quot;</span>
+                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dup_cols</span><span class="p">))</span>
+
+    <span class="c1"># look for matches for each row</span>
+    <span class="n">match_d</span> <span class="o">=</span> <span class="p">{</span><span class="n">c</span><span class="p">:[]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">newcols</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">itertuples</span><span class="p">():</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">tup</span><span class="p">,</span> <span class="n">col_to_match</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">matcher</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">add_group_cols</span> <span class="ow">and</span> <span class="p">(</span><span class="n">add_accuracy</span> <span class="ow">or</span> <span class="n">add_qvals</span><span class="p">):</span>
+            <span class="n">qs</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">tup</span><span class="p">,</span> <span class="n">match_qvals_col</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+            <span class="n">polarity</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">matcher</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">reverseComplement</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+            <span class="n">polarity</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">if</span> <span class="n">add_group_cols</span> <span class="ow">and</span> <span class="p">(</span><span class="n">add_accuracy</span> <span class="ow">or</span> <span class="n">add_qvals</span><span class="p">):</span>
+                <span class="n">qs</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">qs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+            <span class="n">match_d</span><span class="p">[</span><span class="n">match_col</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">add_polarity</span><span class="p">:</span>
+                <span class="n">match_d</span><span class="p">[</span><span class="n">polarity_col</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">polarity</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">groupnames</span><span class="p">:</span>
+                <span class="n">match_d</span><span class="p">[</span><span class="n">g</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="n">g</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">add_qvals</span><span class="p">:</span>
+                    <span class="n">match_d</span><span class="p">[</span><span class="n">g</span> <span class="o">+</span> <span class="s1">&#39;_qvals&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">qs</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="p">:</span> <span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="n">g</span><span class="p">)])</span>
+                <span class="k">if</span> <span class="n">add_accuracy</span><span class="p">:</span>
+                    <span class="n">match_d</span><span class="p">[</span><span class="n">g</span> <span class="o">+</span> <span class="s1">&#39;_accuracy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">qvalsToAccuracy</span><span class="p">(</span>
+                            <span class="n">qs</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="p">:</span> <span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="n">g</span><span class="p">)]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">match_d</span><span class="p">[</span><span class="n">match_col</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">add_polarity</span><span class="p">:</span>
+                <span class="n">match_d</span><span class="p">[</span><span class="n">polarity_col</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">groupnames</span><span class="p">:</span>
+                <span class="n">match_d</span><span class="p">[</span><span class="n">g</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">add_qvals</span><span class="p">:</span>
+                    <span class="n">match_d</span><span class="p">[</span><span class="n">g</span> <span class="o">+</span> <span class="s1">&#39;_qvals&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int&#39;</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">add_accuracy</span><span class="p">:</span>
+                    <span class="n">match_d</span><span class="p">[</span><span class="n">g</span> <span class="o">+</span> <span class="s1">&#39;_accuracy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># set index to make sure matches `df`</span>
+    <span class="n">indexname</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span>
+    <span class="k">assert</span> <span class="n">indexname</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">match_d</span>
+    <span class="n">match_d</span><span class="p">[</span><span class="n">indexname</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">overwrite</span><span class="p">)</span> <span class="ow">and</span> <span class="n">dup_cols</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;overwriting columns&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">dup_cols</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">match_d</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">indexname</span><span class="p">),</span>
+            <span class="p">],</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="alignSeqs"><a class="viewcode-back" href="../../dms_tools2.pacbio.html#dms_tools2.pacbio.alignSeqs">[docs]</a><span class="k">def</span> <span class="nf">alignSeqs</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">mapper</span><span class="p">,</span> <span class="n">query_col</span><span class="p">,</span> <span class="n">aligned_col</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+        <span class="n">add_alignment</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_target</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">add_n_trimmed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_n_additional</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">add_n_additional_difftarget</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">targetvariants</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mutationcaller</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">paf_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Align sequences in a dataframe to target sequence(s).</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        `df` (pandas DataFrame)</span>
+<span class="sd">            Data frame in which one column holds sequences to match.</span>
+<span class="sd">            There also must be a column named &quot;name&quot; with unique names.</span>
+<span class="sd">        `mapper` (:py:mod:`dms_tools2.minimap2.Mapper`)</span>
+<span class="sd">            Align using the :py:mod:`dms_tools2.minimap2.Mapper.map`</span>
+<span class="sd">            function of `mapper`. Target sequence(s) to which</span>
+<span class="sd">            we align are specified when initializing `mapper`.</span>
+<span class="sd">        `query_col` (str)</span>
+<span class="sd">            Name of column in `df` with query sequences to align.</span>
+<span class="sd">        `aligned_col` (str)</span>
+<span class="sd">            Name of column added to `df`. Elements of column are</span>
+<span class="sd">            `True` if `query_col` aligns, and `False` otherwise.</span>
+<span class="sd">        `add_alignment` (bool)</span>
+<span class="sd">            Add column with the :py:mod:`dms_tools2.minimap2.Alignment`.</span>
+<span class="sd">        `add_target` (bool)</span>
+<span class="sd">            Add column giving target (reference) to which sequence</span>
+<span class="sd">            aligns.</span>
+<span class="sd">        `add_n_trimmed` (bool)</span>
+<span class="sd">            Add columns giving number of nucleotides trimmed from</span>
+<span class="sd">            ends of both the query and target in the alignment.</span>
+<span class="sd">        `add_n_additional` (bool)</span>
+<span class="sd">            Add column specifying the number of additional</span>
+<span class="sd">            alignments.</span>
+<span class="sd">        `targetvariants` (:class:`dms_tools2.minimap2.TargetVariants`)</span>
+<span class="sd">            Call target variants of aligned genes using the `call`</span>
+<span class="sd">            function of this object. Note that this also adjusts</span>
+<span class="sd">            the returned alignments / CIGAR if a variant is called.</span>
+<span class="sd">            If the `variantsites_min_acc` attribute is not `None`,</span>
+<span class="sd">            then `df` must have a column with the name of `query_col`</span>
+<span class="sd">            suffixed by &#39;_qvals&#39; that gives the Q-values to compute</span>
+<span class="sd">            accuracies.</span>
+<span class="sd">        `mutationcaller` (:class:`dms_tools2.minimap2.MutationCaller`)</span>
+<span class="sd">            Call mutations of aligned genes using the `call` function</span>
+<span class="sd">            of this object. Note that any target variant mutations are</span>
+<span class="sd">            handled first and then removed and not called here.</span>
+<span class="sd">        `add_n_additional_difftarget` (bool)</span>
+<span class="sd">            Add columns specifying number of additional alignments</span>
+<span class="sd">            to a target other than the one in the primary alignment.</span>
+<span class="sd">        `overwrite` (bool)</span>
+<span class="sd">            If `True`, we overwrite any existing columns to</span>
+<span class="sd">            be created that already exist. If `False`, raise</span>
+<span class="sd">            an error if any of the columns already exist.</span>
+<span class="sd">        `paf_file` (`None` or str)</span>
+<span class="sd">            If a str, is the name of the PAF file created</span>
+<span class="sd">            by `mapper` (see `outfile` argument of</span>
+<span class="sd">            :py:mod:`dms_tools2.minimap2.Mapper.map`) Otherwise</span>
+<span class="sd">            this file is not saved.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A **copy** of `df` with new columns added. The exact</span>
+<span class="sd">        columns to add are specified by the calling arguments.</span>
+<span class="sd">        Specifically:</span>
+
+<span class="sd">            - We always add a column with the name given by</span>
+<span class="sd">              `aligned_col` that is `True` if there was an</span>
+<span class="sd">              alignment and `False` otherwise.</span>
+<span class="sd">              </span>
+<span class="sd">            - If `add_alignment` is `True`, add column named</span>
+<span class="sd">              `aligned_col` suffixed by &quot;_alignment&quot; that gives</span>
+<span class="sd">              the alignment as a :py:mod:`dms_tools2.minimap2.Alignment`</span>
+<span class="sd">              object, or `None` if there is no alignment. Note that</span>
+<span class="sd">              if there are multiple alignments, then this is the</span>
+<span class="sd">              &quot;best&quot; alignment, and the remaining alignments are in</span>
+<span class="sd">              the :py:mod:`dms_tools2.minimap2.Alignment.additional`</span>
+<span class="sd">              attribute.</span>
+
+<span class="sd">            - If `add_target` is `True`, add column named</span>
+<span class="sd">              `aligned_col` suffixed by &quot;_target&quot; that gives</span>
+<span class="sd">              the target to which the sequence aligns in the</span>
+<span class="sd">              &quot;best&quot; alignment, or an empty string if no alignment.</span>
+
+<span class="sd">            - If `add_n_trimmed` is `True`, add column named</span>
+<span class="sd">              `aligned_col` suffixed by &quot;_n_trimmed_query_start&quot;,</span>
+<span class="sd">              &quot;_n_trimmed_query_end&quot;, &quot;_n_trimmed_target_start&quot;,</span>
+<span class="sd">              and &quot;_n_trimmed_target_end&quot; that give the number</span>
+<span class="sd">              of nucleotides trimmed from the query and target</span>
+<span class="sd">              in the &quot;best&quot; alignment. Are all zero if the</span>
+<span class="sd">              zero if the alignment is end-to-end. Are -1 if no</span>
+<span class="sd">              alignment.</span>
+
+<span class="sd">            - If `add_n_additional` is `True`, add column</span>
+<span class="sd">              named `aligned_col` suffixed by &quot;_n_additional&quot; that</span>
+<span class="sd">              gives the number of additional alignments (in</span>
+<span class="sd">              :py:mod:`dms_tools2.minimap2.Alignment.additional`),</span>
+<span class="sd">              or -1 if there is no alignment.</span>
+
+<span class="sd">            - If `add_n_additional_difftarget` is `True`, add column</span>
+<span class="sd">              named `aligned_col` suffixed by &quot;_n_additional_difftarget&quot;</span>
+<span class="sd">              that gives the number of additional alignments to</span>
+<span class="sd">              **different** targets that are not isoforms, or -1</span>
+<span class="sd">              if if there is no alignment. See the `target_isoforms`</span>
+<span class="sd">              attribute of :py:mod:`dms_tools2.minimap2.Mapper`.</span>
+
+<span class="sd">            - If `targetvariants` is not `None`, add a column</span>
+<span class="sd">              named `aligned_col` suffixed by &quot;_target_variant&quot;</span>
+<span class="sd">              that has the values returned for that alignment by</span>
+<span class="sd">              :class:`dms_tools2.minimap2.TargetVariants.call`, or</span>
+<span class="sd">              an empty string if no alignment.</span>
+
+<span class="sd">            - If `mutationcaller` is not `None`, column named</span>
+<span class="sd">              `aligned_col` suffixed by &quot;_mutations&quot; giving the</span>
+<span class="sd">              :class:`dms_tools2.minimap2.Mutations` object returned</span>
+<span class="sd">              by :class:`dms_tools2.minimap2.MutationCaller.call`,</span>
+<span class="sd">              or `None` if there is no alignment.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">query_col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="s2">&quot;no `query_col` </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query_col</span><span class="p">)</span>
+
+    <span class="n">newcols</span> <span class="o">=</span> <span class="p">[</span><span class="n">aligned_col</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">add_alignment</span><span class="p">:</span>
+        <span class="n">alignment_col</span> <span class="o">=</span> <span class="n">aligned_col</span> <span class="o">+</span> <span class="s1">&#39;_alignment&#39;</span>
+        <span class="n">newcols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">alignment_col</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">add_target</span><span class="p">:</span>
+        <span class="n">target_col</span> <span class="o">=</span> <span class="n">aligned_col</span> <span class="o">+</span> <span class="s1">&#39;_target&#39;</span>
+        <span class="n">newcols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">target_col</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">add_n_trimmed</span><span class="p">:</span>
+        <span class="n">n_trimmed_prefix</span> <span class="o">=</span> <span class="n">aligned_col</span> <span class="o">+</span> <span class="s1">&#39;_n_trimmed_&#39;</span>
+        <span class="k">for</span> <span class="n">suffix</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;query_start&#39;</span><span class="p">,</span> <span class="s1">&#39;query_end&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;target_start&#39;</span><span class="p">,</span> <span class="s1">&#39;target_end&#39;</span><span class="p">]:</span>
+            <span class="n">newcols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n_trimmed_prefix</span> <span class="o">+</span> <span class="n">suffix</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">add_n_additional</span><span class="p">:</span>
+        <span class="n">n_additional_col</span> <span class="o">=</span> <span class="n">aligned_col</span> <span class="o">+</span> <span class="s1">&#39;_n_additional&#39;</span>
+        <span class="n">newcols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n_additional_col</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">add_n_additional_difftarget</span><span class="p">:</span>
+        <span class="n">n_additional_difftarget_col</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">aligned_col</span> <span class="o">+</span> <span class="s1">&#39;_n_additional_difftarget&#39;</span><span class="p">)</span>
+        <span class="n">newcols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n_additional_difftarget_col</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">targetvariants</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">targetvariant_col</span> <span class="o">=</span> <span class="n">aligned_col</span> <span class="o">+</span> <span class="s1">&#39;_target_variant&#39;</span>
+        <span class="n">newcols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">targetvariant_col</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">targetvariants</span><span class="o">.</span><span class="n">variantsites_min_acc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">qvals_col</span> <span class="o">=</span> <span class="n">query_col</span> <span class="o">+</span> <span class="s1">&#39;_qvals&#39;</span>
+            <span class="k">if</span> <span class="n">qvals_col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot use `variantsites_min_acc` &quot;</span>
+                        <span class="s2">&quot;of `targetvariants` as there is not a column &quot;</span>
+                        <span class="s2">&quot;in `df` named </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">qvals_col</span><span class="p">))</span>
+            <span class="n">qvals</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">qvals_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                                  <span class="n">index</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">mutationcaller</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mutations_col</span> <span class="o">=</span> <span class="n">aligned_col</span> <span class="o">+</span> <span class="s1">&#39;_mutations&#39;</span>
+        <span class="n">newcols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mutations_col</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">newcols</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">newcols</span><span class="p">))</span>
+
+    <span class="n">dup_cols</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">newcols</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">overwrite</span><span class="p">)</span> <span class="ow">and</span> <span class="n">dup_cols</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`df` already contains these columns:</span><span class="se">\n</span><span class="si">{0}</span><span class="s2">&quot;</span>
+                         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dup_cols</span><span class="p">))</span>
+
+    <span class="c1"># perform the mapping</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">unique</span><span class="p">()),</span> \
+            <span class="s2">&quot;`name` in `df` not unique&quot;</span>
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">queryfile</span><span class="p">:</span>
+        <span class="n">queryfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+                        <span class="s1">&#39;&gt;</span><span class="si">{0}</span><span class="se">\n</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">tup</span><span class="p">)</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span>
+                        <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> != &quot;&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query_col</span><span class="p">))</span>
+                            <span class="p">[[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">query_col</span><span class="p">]]</span>
+                            <span class="o">.</span><span class="n">itertuples</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                        <span class="p">]))</span>
+        <span class="n">map_dict</span> <span class="o">=</span> <span class="n">mapper</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">queryfile</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="n">paf_file</span><span class="p">)</span>
+
+    <span class="n">align_d</span> <span class="o">=</span> <span class="p">{</span><span class="n">c</span><span class="p">:[]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">newcols</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">map_dict</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">map_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="k">assert</span> <span class="n">a</span><span class="o">.</span><span class="n">strand</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;method does not handle - polarity&quot;</span>
+            <span class="k">if</span> <span class="n">targetvariants</span><span class="p">:</span>
+                <span class="p">(</span><span class="n">variant</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="o">=</span> <span class="n">targetvariants</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">qvals</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+                <span class="n">align_d</span><span class="p">[</span><span class="n">targetvariant_col</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">variant</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">mutationcaller</span><span class="p">:</span>
+                <span class="n">align_d</span><span class="p">[</span><span class="n">mutations_col</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mutationcaller</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">a</span><span class="p">,</span>
+                        <span class="n">qvals</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span>
+            <span class="n">align_d</span><span class="p">[</span><span class="n">aligned_col</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">add_alignment</span><span class="p">:</span>
+                <span class="n">align_d</span><span class="p">[</span><span class="n">alignment_col</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">add_target</span><span class="p">:</span>
+                <span class="n">align_d</span><span class="p">[</span><span class="n">target_col</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">add_n_trimmed</span><span class="p">:</span>
+                <span class="n">align_d</span><span class="p">[</span><span class="n">n_trimmed_prefix</span> <span class="o">+</span> <span class="s1">&#39;query_start&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">a</span><span class="o">.</span><span class="n">q_st</span><span class="p">)</span>
+                <span class="n">align_d</span><span class="p">[</span><span class="n">n_trimmed_prefix</span> <span class="o">+</span> <span class="s1">&#39;query_end&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">a</span><span class="o">.</span><span class="n">q_len</span> <span class="o">-</span> <span class="n">a</span><span class="o">.</span><span class="n">q_en</span><span class="p">)</span>
+                <span class="n">align_d</span><span class="p">[</span><span class="n">n_trimmed_prefix</span> <span class="o">+</span> <span class="s1">&#39;target_start&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">a</span><span class="o">.</span><span class="n">r_st</span><span class="p">)</span>
+                <span class="n">align_d</span><span class="p">[</span><span class="n">n_trimmed_prefix</span> <span class="o">+</span> <span class="s1">&#39;target_end&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">a</span><span class="o">.</span><span class="n">r_len</span> <span class="o">-</span> <span class="n">a</span><span class="o">.</span><span class="n">r_en</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">add_n_additional</span><span class="p">:</span>
+                <span class="n">align_d</span><span class="p">[</span><span class="n">n_additional_col</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">additional</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">add_n_additional_difftarget</span><span class="p">:</span>
+                <span class="n">align_d</span><span class="p">[</span><span class="n">n_additional_difftarget_col</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="nb">len</span><span class="p">([</span><span class="n">a2</span><span class="o">.</span><span class="n">target</span> <span class="k">for</span> <span class="n">a2</span> <span class="ow">in</span> <span class="n">a</span><span class="o">.</span><span class="n">additional</span> <span class="k">if</span>
+                        <span class="n">a2</span><span class="o">.</span><span class="n">target</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mapper</span><span class="o">.</span><span class="n">target_isoforms</span><span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="n">target</span><span class="p">]]))</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">align_d</span><span class="p">[</span><span class="n">aligned_col</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">add_alignment</span><span class="p">:</span>
+                <span class="n">align_d</span><span class="p">[</span><span class="n">alignment_col</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">add_target</span><span class="p">:</span>
+                <span class="n">align_d</span><span class="p">[</span><span class="n">target_col</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">add_n_trimmed</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">suffix</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;query_start&#39;</span><span class="p">,</span> <span class="s1">&#39;query_end&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;target_start&#39;</span><span class="p">,</span> <span class="s1">&#39;target_end&#39;</span><span class="p">]:</span>
+                    <span class="n">align_d</span><span class="p">[</span><span class="n">n_trimmed_prefix</span> <span class="o">+</span> <span class="n">suffix</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">add_n_additional</span><span class="p">:</span>
+                <span class="n">align_d</span><span class="p">[</span><span class="n">n_additional_col</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">add_n_additional_difftarget</span><span class="p">:</span>
+                <span class="n">align_d</span><span class="p">[</span><span class="n">n_additional_difftarget_col</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">targetvariants</span><span class="p">:</span>
+                <span class="n">align_d</span><span class="p">[</span><span class="n">targetvariant_col</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">mutationcaller</span><span class="p">:</span>
+                <span class="n">align_d</span><span class="p">[</span><span class="n">mutations_col</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="c1"># set index to make sure matches `df`</span>
+    <span class="n">index_name</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span>
+    <span class="k">assert</span> <span class="n">index_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">align_d</span>
+    <span class="n">align_d</span><span class="p">[</span><span class="n">index_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">overwrite</span><span class="p">)</span> <span class="ow">and</span> <span class="n">dup_cols</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;overwriting columns&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">dup_cols</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">align_d</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">index_name</span><span class="p">),</span>
+            <span class="p">],</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="qvalsToAccuracy"><a class="viewcode-back" href="../../dms_tools2.pacbio.html#dms_tools2.pacbio.qvalsToAccuracy">[docs]</a><span class="k">def</span> <span class="nf">qvalsToAccuracy</span><span class="p">(</span><span class="n">qvals</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;numbers&#39;</span><span class="p">,</span> <span class="n">no_avg</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Converts set of quality scores into average accuracy.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `qvals` (numpy array or number or str)</span>
+<span class="sd">            List of Q-values, assumed to be Phred scores.</span>
+<span class="sd">            For how they are encoded, see `encoding`.</span>
+<span class="sd">        `encoding` (str)</span>
+<span class="sd">            If it is &quot;numbers&quot; then `qvals` should be a</span>
+<span class="sd">            numpy array giving the Q-values, or a number</span>
+<span class="sd">            with one Q-value. If it is &quot;sanger&quot;, then `qvals`</span>
+<span class="sd">            is a string, with the score being the ASCII value</span>
+<span class="sd">            minus 33.</span>
+<span class="sd">        `no_avg` (bool)</span>
+<span class="sd">            Compute the accuracies of individual Q-values</span>
+<span class="sd">            rather than the average of the array or list.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A number giving the average accuracy, or </span>
+<span class="sd">        `nan` if `qvals` is empty.</span>
+
+<span class="sd">    Note that the probability :math:`p` of an error at a</span>
+<span class="sd">    given site is related to the Q-value :math:`Q` by</span>
+<span class="sd">    :math:`Q = -10 \log_{10} p`.</span>
+
+<span class="sd">    &gt;&gt;&gt; qvals = numpy.array([13, 77, 93])</span>
+<span class="sd">    &gt;&gt;&gt; round(qvalsToAccuracy(qvals), 3) == 0.983</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; round(qvalsToAccuracy(qvals[1 : ]), 3) == 1</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; qvalsToAccuracy(numpy.array([]))</span>
+<span class="sd">    nan</span>
+
+<span class="sd">    &gt;&gt;&gt; qvals_str = &#39;.n~&#39;</span>
+<span class="sd">    &gt;&gt;&gt; round(qvalsToAccuracy(qvals_str, encoding=&#39;sanger&#39;), 3) == 0.983</span>
+<span class="sd">    True</span>
+
+<span class="sd">    &gt;&gt;&gt; round(qvalsToAccuracy(15), 3) == 0.968</span>
+<span class="sd">    True</span>
+
+<span class="sd">    &gt;&gt;&gt; [round(a, 5) for a in qvalsToAccuracy(qvals, no_avg=True)] == [0.94988, 1, 1]</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">encoding</span> <span class="o">==</span> <span class="s1">&#39;numbers&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">qvals</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Number</span><span class="p">):</span>
+            <span class="n">qvals</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">qvals</span><span class="p">])</span>
+            <span class="n">no_avg</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">qvals</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">qvals</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">qvals</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">qvals</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">qvals</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="k">if</span> <span class="n">encoding</span> <span class="o">==</span> <span class="s1">&#39;numbers&#39;</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">elif</span> <span class="n">encoding</span> <span class="o">==</span> <span class="s1">&#39;sanger&#39;</span><span class="p">:</span>
+        <span class="n">qvals</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">ord</span><span class="p">(</span><span class="n">q</span><span class="p">)</span> <span class="o">-</span> <span class="mi">33</span> <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">qvals</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;invalid `encoding`: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">encoding</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">no_avg</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">qvals</span> <span class="o">/</span> <span class="o">-</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">qvals</span> <span class="o">/</span> <span class="o">-</span><span class="mi">10</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">qvals</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="summarizeCCSreports"><a class="viewcode-back" href="../../dms_tools2.pacbio.html#dms_tools2.pacbio.summarizeCCSreports">[docs]</a><span class="k">def</span> <span class="nf">summarizeCCSreports</span><span class="p">(</span><span class="n">ccslist</span><span class="p">,</span> <span class="n">report_type</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span>
+                        <span class="n">plotminfrac</span><span class="o">=</span><span class="mf">0.005</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Summarize and plot `CCS` reports.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `ccslist` (`CCS` object or list of them)</span>
+<span class="sd">            `CCS` objects to summarize</span>
+<span class="sd">        `report_type` (str &quot;zmw&quot; or &quot;subread&quot;)</span>
+<span class="sd">            Which type of report to summarize</span>
+<span class="sd">        `plotfile` (str)</span>
+<span class="sd">            Name of created bar plot</span>
+<span class="sd">        `plotminfrac` (float)</span>
+<span class="sd">            Only plot status categories with &gt;=</span>
+<span class="sd">            this fraction in at least one `CCS`</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Returns a pandas DataFrame aggregating the reports,</span>
+<span class="sd">        and creates `plotfile`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ccslist</span><span class="p">,</span> <span class="n">CCS</span><span class="p">):</span>
+        <span class="n">ccslist</span> <span class="o">=</span> <span class="p">[</span><span class="n">ccslist</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">ccs</span><span class="p">,</span> <span class="n">CCS</span><span class="p">)</span> <span class="k">for</span> <span class="n">ccs</span> <span class="ow">in</span> <span class="n">ccslist</span><span class="p">]),</span> \
+            <span class="s2">&quot;`ccslist` not a list of `CCS` objects&quot;</span>
+
+    <span class="k">assert</span> <span class="n">report_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;zmw&#39;</span><span class="p">,</span> <span class="s1">&#39;subread&#39;</span><span class="p">]</span>
+    <span class="n">report</span> <span class="o">=</span> <span class="n">report_type</span> <span class="o">+</span> <span class="s1">&#39;_report&#39;</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="nb">getattr</span><span class="p">(</span><span class="n">ccs</span><span class="p">,</span> <span class="n">report</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">sample</span><span class="o">=</span><span class="n">ccs</span><span class="o">.</span><span class="n">samplename</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">ccs</span> <span class="ow">in</span> <span class="n">ccslist</span><span class="p">])</span>
+          <span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+          <span class="p">[[</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;status&#39;</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">,</span> <span class="s1">&#39;fraction&#39;</span><span class="p">]]</span>
+          <span class="p">)</span>
+
+    <span class="c1"># version of df that only has categories with `plotminfrac`</span>
+    <span class="n">plot_df</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">maxfrac</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">)</span>
+                         <span class="o">.</span><span class="n">fraction</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s1">&#39;max&#39;</span><span class="p">))</span>
+                 <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;maxfrac &gt;= @plotminfrac&#39;</span><span class="p">)</span>
+                 <span class="p">)</span>
+    <span class="n">nstatus</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">plot_df</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">plot_df</span><span class="p">)</span> <span class="o">+</span>
+            <span class="n">geom_col</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;number&#39;</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="s1">&#39;status&#39;</span><span class="p">),</span>
+                     <span class="n">position</span><span class="o">=</span><span class="s1">&#39;stack&#39;</span><span class="p">)</span> <span class="o">+</span>
+            <span class="n">theme</span><span class="p">(</span><span class="n">axis_text_x</span><span class="o">=</span><span class="n">element_text</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">vjust</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                  <span class="n">hjust</span><span class="o">=</span><span class="mf">0.5</span><span class="p">))</span> <span class="o">+</span>
+            <span class="n">ylab</span><span class="p">({</span><span class="s1">&#39;zmw&#39;</span><span class="p">:</span><span class="s1">&#39;ZMWs&#39;</span><span class="p">,</span> <span class="s1">&#39;subread&#39;</span><span class="p">:</span><span class="s1">&#39;subreads&#39;</span><span class="p">}[</span><span class="n">report_type</span><span class="p">])</span>
+            <span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">nstatus</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">COLOR_BLIND_PALETTE</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">scale_fill_manual</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span>
+                <span class="n">COLOR_BLIND_PALETTE</span><span class="p">[</span> <span class="p">:</span> <span class="n">nstatus</span><span class="p">])))</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">,</span> 
+           <span class="n">height</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+           <span class="n">width</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">ccslist</span><span class="p">)),</span>
+           <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="re_expandIUPAC"><a class="viewcode-back" href="../../dms_tools2.pacbio.html#dms_tools2.pacbio.re_expandIUPAC">[docs]</a><span class="k">def</span> <span class="nf">re_expandIUPAC</span><span class="p">(</span><span class="n">re_str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Expand IUPAC ambiguous nucleotide codes in `re` search string.</span>
+
+<span class="sd">    Simplifies writing `re` search strings that include ambiguous</span>
+<span class="sd">    nucleotide codes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `re_str` (str)</span>
+<span class="sd">            String appropriate to be passed to `regex.compile`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A version of `re_str` where any characters not in the group</span>
+<span class="sd">        names that correspond to upper-case ambiguous nucleotide codes</span>
+<span class="sd">        are expanded according to their definitions in the</span>
+<span class="sd">        `IUPAC code &lt;https://en.wikipedia.org/wiki/Nucleic_acid_notation&gt;`_.</span>
+
+<span class="sd">    &gt;&gt;&gt; re_str = &#39;^(?P&lt;termini5&gt;ATG)(?P&lt;cDNA&gt;N+)A+(?P&lt;barcode&gt;N{4})$&#39;</span>
+<span class="sd">    &gt;&gt;&gt; re_expandIUPAC(re_str)</span>
+<span class="sd">    &#39;^(?P&lt;termini5&gt;ATG)(?P&lt;cDNA&gt;[ACGT]+)A+(?P&lt;barcode&gt;[ACGT]{4})$&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># We simply do a simple replacement on all characters not in group</span>
+    <span class="c1"># names. So first we must find group names:</span>
+    <span class="n">groupname_indices</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span>
+    <span class="n">groupname_matcher</span> <span class="o">=</span> <span class="n">regex</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;\(\?P&lt;[^&gt;]*&gt;&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">groupname_matcher</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">re_str</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(),</span> <span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">()):</span>
+            <span class="n">groupname_indices</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    
+    <span class="c1"># now replace ambiguous characters</span>
+    <span class="n">new_re_str</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">re_str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">groupname_indices</span><span class="p">)</span> <span class="ow">and</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">NT_TO_REGEXP</span><span class="p">:</span>
+            <span class="n">new_re_str</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">NT_TO_REGEXP</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_re_str</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">new_re_str</span><span class="p">)</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fracsurvive.html">Fraction surviving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../programs.html">Executable programs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017--2018, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

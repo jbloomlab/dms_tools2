@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>utils &#8212; dms_tools2 2.2.9 documentation</title>
+    <title>utils &#8212; dms_tools2 2.3.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -598,6 +598,56 @@ in Sanger ASCII encoding.</dd>
 </dd></dl>
 
 <dl class="function">
+<dt id="dms_tools2.utils.rarefactionCurve">
+<code class="descclassname">dms_tools2.utils.</code><code class="descname">rarefactionCurve</code><span class="sig-paren">(</span><em>barcodes</em>, <em>*</em>, <em>maxpoints=100000.0</em>, <em>logspace=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#rarefactionCurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.rarefactionCurve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rarefaction curve from list of barcodes.</p>
+<p>Uses the analytical formula for the rarefaction curve defined
+<a class="reference external" href="https://en.wikipedia.org/wiki/Rarefaction_(ecology)#Derivation">on Wikipedia</a>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>barcodes</cite> (list or pandas Series)</dt>
+<dd>Holds the list of unique barcodes for which we calculate
+the rarefaction curve. It is expected that some of these
+barcodes will be repeated multiple times in the list if
+the sampling is approaching saturation.</dd>
+<dt><cite>maxpoints</cite> (int)</dt>
+<dd>Only calculate values at this many points. The benefit
+of this is that it can become very costly to calculate
+the curve at every point when there are many points.</dd>
+<dt><cite>logspace</cite> (True)</dt>
+<dd>Logarithmically space the <cite>maxpoints</cite> points for
+the calculation. This will give better results if
+we are subsampling and the curve saturates. Only
+done if we have to subsample.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>The 2-tuple <cite>(nreads, nbarcodes)</cite>, where both <cite>nreads</cite> and
+<cite>nbarcodes</cite> are lists of the same length, and <cite>nbarcodes[i]</cite>
+is the expected number of barcodes observed when there are
+<cite>nreads[i]</cite> reads.</dd>
+</dl>
+<p>Here we take a very small list and show that the results given
+by the function are equivalent to those obtained by random
+subsampling:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">barcodes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">nreads</span><span class="p">,</span> <span class="n">nbarcodes</span><span class="p">)</span> <span class="o">=</span> <span class="n">rarefactionCurve</span><span class="p">(</span><span class="n">barcodes</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nrand</span> <span class="o">=</span> <span class="mi">100000</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sim_equal_calc</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">barcodes</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">nbarcodes_sim</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">barcodes</span><span class="p">,</span> <span class="n">n</span><span class="p">)))</span>
+<span class="gp">... </span>            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nrand</span><span class="p">)])</span> <span class="o">/</span> <span class="n">nrand</span>
+<span class="gp">... </span>    <span class="n">sim_equal_calc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">nbarcodes_sim</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">nbarcodes</span><span class="p">[</span><span class="n">nreads</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">n</span><span class="p">)],</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">sim_equal_calc</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
 <dt id="dms_tools2.utils.renumberSites">
 <code class="descclassname">dms_tools2.utils.</code><code class="descname">renumberSites</code><span class="sig-paren">(</span><em>renumbfile</em>, <em>infiles</em>, <em>missing='error'</em>, <em>outfiles=None</em>, <em>outprefix=None</em>, <em>outdir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#renumberSites"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.renumberSites" title="Permalink to this definition">¶</a></dt>
 <dd><p>Renumber sites in CSV files.</p>
@@ -766,10 +816,10 @@ as <cite>infiles</cite>, but have the pre-pended filename extension
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, the Bloom lab.
+      &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |

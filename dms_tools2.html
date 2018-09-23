@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2 package &#8212; dms_tools2 2.2.9 documentation</title>
+    <title>dms_tools2 package &#8212; dms_tools2 2.3.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -16,7 +16,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="compareprefs" href="dms_tools2.compareprefs.html" />
+    <link rel="next" title="barcodes" href="dms_tools2.barcodes.html" />
     <link rel="prev" title="Python API" href="api.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -40,64 +40,26 @@
 <h2>dms_tools2<a class="headerlink" href="#dms-tools2" title="Permalink to this headline">¶</a></h2>
 <p>Python package for analyzing deep mutational scanning (DMS) data.</p>
 <p>See <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">http://jbloomlab.github.io/dms_tools2</a> for documentation.</p>
-<dl class="data">
-<dt id="dms_tools2.AAS">
-<code class="descclassname">dms_tools2.</code><code class="descname">AAS</code><em class="property"> = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']</em><a class="headerlink" href="#dms_tools2.AAS" title="Permalink to this definition">¶</a></dt>
-<dd><p>alphabetized list of all 20 amino acids</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="dms_tools2.AAS_WITHSTOP">
-<code class="descclassname">dms_tools2.</code><code class="descname">AAS_WITHSTOP</code><em class="property"> = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y', '*']</em><a class="headerlink" href="#dms_tools2.AAS_WITHSTOP" title="Permalink to this definition">¶</a></dt>
-<dd><p>like <cite>AAS</cite> but includes stop codon (<code class="docutils literal notranslate"><span class="pre">*</span></code>) at end</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="dms_tools2.AA_TO_CODONS">
-<code class="descclassname">dms_tools2.</code><code class="descname">AA_TO_CODONS</code><em class="property"> = {'*': ['TAA', 'TAG', 'TGA'], 'A': ['GCA', 'GCC', 'GCG', 'GCT'], 'C': ['TGC', 'TGT'], 'D': ['GAC', 'GAT'], 'E': ['GAA', 'GAG'], 'F': ['TTC', 'TTT'], 'G': ['GGA', 'GGC', 'GGG', 'GGT'], 'H': ['CAC', 'CAT'], 'I': ['ATA', 'ATC', 'ATT'], 'K': ['AAA', 'AAG'], 'L': ['CTA', 'CTC', 'CTG', 'CTT', 'TTA', 'TTG'], 'M': ['ATG'], 'N': ['AAC', 'AAT'], 'P': ['CCA', 'CCC', 'CCG', 'CCT'], 'Q': ['CAA', 'CAG'], 'R': ['AGA', 'AGG', 'CGA', 'CGC', 'CGG', 'CGT'], 'S': ['AGC', 'AGT', 'TCA', 'TCC', 'TCG', 'TCT'], 'T': ['ACA', 'ACC', 'ACG', 'ACT'], 'V': ['GTA', 'GTC', 'GTG', 'GTT'], 'W': ['TGG'], 'Y': ['TAC', 'TAT']}</em><a class="headerlink" href="#dms_tools2.AA_TO_CODONS" title="Permalink to this definition">¶</a></dt>
-<dd><p>dict back-translating amino acid to list of codons.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="dms_tools2.CODONS">
-<code class="descclassname">dms_tools2.</code><code class="descname">CODONS</code><em class="property"> = ['AAA', 'AAC', 'AAG', 'AAT', 'ACA', 'ACC', 'ACG', 'ACT', 'AGA', 'AGC', 'AGG', 'AGT', 'ATA', 'ATC', 'ATG', 'ATT', 'CAA', 'CAC', 'CAG', 'CAT', 'CCA', 'CCC', 'CCG', 'CCT', 'CGA', 'CGC', 'CGG', 'CGT', 'CTA', 'CTC', 'CTG', 'CTT', 'GAA', 'GAC', 'GAG', 'GAT', 'GCA', 'GCC', 'GCG', 'GCT', 'GGA', 'GGC', 'GGG', 'GGT', 'GTA', 'GTC', 'GTG', 'GTT', 'TAA', 'TAC', 'TAG', 'TAT', 'TCA', 'TCC', 'TCG', 'TCT', 'TGA', 'TGC', 'TGG', 'TGT', 'TTA', 'TTC', 'TTG', 'TTT']</em><a class="headerlink" href="#dms_tools2.CODONS" title="Permalink to this definition">¶</a></dt>
-<dd><p>alphabetized list of all codons</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="dms_tools2.CODON_TO_AA">
-<code class="descclassname">dms_tools2.</code><code class="descname">CODON_TO_AA</code><em class="property"> = {'AAA': 'K', 'AAC': 'N', 'AAG': 'K', 'AAT': 'N', 'ACA': 'T', 'ACC': 'T', 'ACG': 'T', 'ACT': 'T', 'AGA': 'R', 'AGC': 'S', 'AGG': 'R', 'AGT': 'S', 'ATA': 'I', 'ATC': 'I', 'ATG': 'M', 'ATT': 'I', 'CAA': 'Q', 'CAC': 'H', 'CAG': 'Q', 'CAT': 'H', 'CCA': 'P', 'CCC': 'P', 'CCG': 'P', 'CCT': 'P', 'CGA': 'R', 'CGC': 'R', 'CGG': 'R', 'CGT': 'R', 'CTA': 'L', 'CTC': 'L', 'CTG': 'L', 'CTT': 'L', 'GAA': 'E', 'GAC': 'D', 'GAG': 'E', 'GAT': 'D', 'GCA': 'A', 'GCC': 'A', 'GCG': 'A', 'GCT': 'A', 'GGA': 'G', 'GGC': 'G', 'GGG': 'G', 'GGT': 'G', 'GTA': 'V', 'GTC': 'V', 'GTG': 'V', 'GTT': 'V', 'TAA': '*', 'TAC': 'Y', 'TAG': '*', 'TAT': 'Y', 'TCA': 'S', 'TCC': 'S', 'TCG': 'S', 'TCT': 'S', 'TGA': '*', 'TGC': 'C', 'TGG': 'W', 'TGT': 'C', 'TTA': 'L', 'TTC': 'F', 'TTG': 'L', 'TTT': 'F'}</em><a class="headerlink" href="#dms_tools2.CODON_TO_AA" title="Permalink to this definition">¶</a></dt>
-<dd><p>dict translating codons to amino acids</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="dms_tools2.NTCOMPLEMENT">
-<code class="descclassname">dms_tools2.</code><code class="descname">NTCOMPLEMENT</code><em class="property"> = {'A': 'T', 'C': 'G', 'G': 'C', 'N': 'N', 'T': 'A'}</em><a class="headerlink" href="#dms_tools2.NTCOMPLEMENT" title="Permalink to this definition">¶</a></dt>
-<dd><p>dict mapping each nucleotide to its complement.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="dms_tools2.NTS">
-<code class="descclassname">dms_tools2.</code><code class="descname">NTS</code><em class="property"> = ['A', 'C', 'G', 'T']</em><a class="headerlink" href="#dms_tools2.NTS" title="Permalink to this definition">¶</a></dt>
-<dd><p>alphabetized list of all nucleotides</p>
-</dd></dl>
-
 </div>
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="dms_tools2.barcodes.html">barcodes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_tools2.compareprefs.html">compareprefs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_tools2.diffsel.html">diffsel</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_tools2.dssp.html">dssp</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_tools2.fracsurvive.html">fracsurvive</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_tools2.ipython_utils.html">ipython_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_tools2.minimap2.html">minimap2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_tools2.neutcurve.html">neutcurve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_tools2.pacbio.html">pacbio</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_tools2.parseargs.html">parseargs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_tools2.plot.html">plot</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_tools2.prefs.html">prefs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_tools2.protstruct.html">protstruct</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_tools2.rplot.html">rplot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_tools2.seqnumbering.html">seqnumbering</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_tools2.sra.html">sra</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_tools2.utils.html">utils</a></li>
 </ul>
@@ -171,7 +133,7 @@
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="api.html">Python API</a><ul>
       <li>Previous: <a href="api.html" title="previous chapter">Python API</a></li>
-      <li>Next: <a href="dms_tools2.compareprefs.html" title="next chapter">compareprefs</a></li>
+      <li>Next: <a href="dms_tools2.barcodes.html" title="next chapter">barcodes</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -193,10 +155,10 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, the Bloom lab.
+      &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |

@@ -1,0 +1,4 @@
+.. automodule:: dms_tools2.seqnumbering
+    :members:
+    :undoc-members:
+    :show-inheritance:

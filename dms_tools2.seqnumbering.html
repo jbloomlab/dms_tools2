@@ -1,0 +1,384 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>seqnumbering &#8212; dms_tools2 2.3.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="sra" href="dms_tools2.sra.html" />
+    <link rel="prev" title="rplot" href="dms_tools2.rplot.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <span class="target" id="module-dms_tools2.seqnumbering"></span><div class="section" id="seqnumbering">
+<h1>seqnumbering<a class="headerlink" href="#seqnumbering" title="Permalink to this headline">¶</a></h1>
+<p>Deals with sequence numbering conversions.</p>
+<dl class="class">
+<dt id="dms_tools2.seqnumbering.TranscriptConverter">
+<em class="property">class </em><code class="descclassname">dms_tools2.seqnumbering.</code><code class="descname">TranscriptConverter</code><span class="sig-paren">(</span><em>genbankfile</em>, <em>*</em>, <em>ignore_other_features=False</em>, <em>to_upper=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/seqnumbering.html#TranscriptConverter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.seqnumbering.TranscriptConverter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Convert sites in mRNA transcript to chromosome or CDS sites.</p>
+<p>In mRNA sequencing, we identify mutations with respect
+to their position in the mRNA. But we may want map them
+to the corresponding numbers in the entire chromosome 
+(gene segment in case of a segmented virus, or entire
+viral genome in the case of a non-segmented virus), or
+to CDSs encoded on that chromosome.</p>
+<p>For all site numbers used as input and output for this
+class, numbering is assumed to be 1, 2, …. Note that
+this is different than the 0, 1, … numbering used
+by Python for strings.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>genbankfile</cite> (str)</dt>
+<dd>Genbank file with one or more loci, each of which
+should be a separate chromosome. The features
+of relevance are called <cite>mRNA</cite> and <cite>CDS</cite>.
+Each of these features should have a qualifier
+called <cite>label</cite> that gives its name.</dd>
+<dt><cite>ignore_other_features</cite> (bool)</dt>
+<dd>If <cite>genbankfile</cite> contains features not <cite>mRNA</cite>
+or <cite>CDS</cite>, ignore them or raise error?</dd>
+<dt><cite>to_upper</cite> (bool)</dt>
+<dd>Convert all sequences to upper case letters?</dd>
+</dl>
+</dd>
+<dt>Attributes:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>chromosomes</cite> (dict)</dt>
+<dd>Keyed by chromosome names, values are
+<cite>Bio.SeqRecord.SeqRecord</cite> for chromosomes.</dd>
+<dt><cite>mRNAs</cite> (dict)</dt>
+<dd>Keyed by mRNA names, values are
+<cite>Bio.SeqFeature.SeqFeature</cite> for mRNA.</dd>
+<dt><cite>CDSs</cite> (dict)</dt>
+<dd>Keyed by CDS names, values are
+<cite>Bio.SeqFeature.SeqFeature</cite> for CDS.</dd>
+<dt><cite>mRNA_chromosome</cite> (dict)</dt>
+<dd>Keyed by mRNA name, values is name of chromosome
+containing mRNA.</dd>
+<dt><cite>chromosome_CDSs</cite> (dict)</dt>
+<dd>Keyed by chromosome names, values are names of
+CDSs on chromosome.</dd>
+</dl>
+</dd>
+</dl>
+<p>Specify example <cite>genbankfile</cite> contents with required information.
+In this file, the chromosome is <cite>fluNS</cite>, and it encodes two mRNAs
+and two CDSs (for <cite>fluNS1</cite> and <cite>fluNS2</cite>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">genbank_text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="s1">LOCUS       fluNS                    890 bp    DNA              UNK 01-JAN-1980</span>
+<span class="gp">... </span><span class="s1">FEATURES             Location/Qualifiers</span>
+<span class="gp">... </span><span class="s1">     mRNA            2..868</span>
+<span class="gp">... </span><span class="s1">                     /label=&quot;fluNS1&quot;</span>
+<span class="gp">... </span><span class="s1">     mRNA            join(2..56,529..868)</span>
+<span class="gp">... </span><span class="s1">                     /label=&quot;fluNS2&quot;</span>
+<span class="gp">... </span><span class="s1">     CDS             27..719</span>
+<span class="gp">... </span><span class="s1">                     /label=&quot;fluNS1&quot;</span>
+<span class="gp">... </span><span class="s1">     CDS             join(27..56,529..864)</span>
+<span class="gp">... </span><span class="s1">                     /label=&quot;fluNS2&quot;</span>
+<span class="gp">... </span><span class="s1">ORIGIN</span>
+<span class="gp">... </span><span class="s1">        1 agcaaaagca gggtgacaaa gacataatgg atccaaacac tgtgtcaagc tttcaggtag</span>
+<span class="gp">... </span><span class="s1">       61 attgctttct ttggcatgtc cgcaaaagag ttgcagacca agaactaggt gatgccccat</span>
+<span class="gp">... </span><span class="s1">      121 tccttgatcg gcttcgccga gatcagaagt ccctaagagg aagaggcagc actcttggtc</span>
+<span class="gp">... </span><span class="s1">      181 tggacatcga aacagccacc cgtgctggaa agcaaatagt ggagcggatt ctgaaggaag</span>
+<span class="gp">... </span><span class="s1">      241 aatctgatga ggcactcaaa atgaccatgg cctctgtacc tgcatcgcgc tacctaactg</span>
+<span class="gp">... </span><span class="s1">      301 acatgactct tgaggaaatg tcaaggcact ggttcatgct catgcccaag cagaaagtgg</span>
+<span class="gp">... </span><span class="s1">      361 caggccctct ttgtatcaga atggaccagg cgatcatgga taagaacatc atactgaaag</span>
+<span class="gp">... </span><span class="s1">      421 cgaacttcag tgtgattttt gaccggctgg agactctaat attactaagg gccttcaccg</span>
+<span class="gp">... </span><span class="s1">      481 aagaggggac aattgttggc gaaatttcac cactgccctc tcttccagga catactgatg</span>
+<span class="gp">... </span><span class="s1">      541 aggatgtcaa aaatgcagtt ggggtcctca tcggaggact tgaatggaat aataacacag</span>
+<span class="gp">... </span><span class="s1">      601 ttcgagtctc tgaaactcta cagagattcg cttggagaag cagtaatgag aatgggagac</span>
+<span class="gp">... </span><span class="s1">      661 ctccactcac tccaaaacag aaacggaaaa tggcgggaac aattaggtca gaagtttgaa</span>
+<span class="gp">... </span><span class="s1">      721 gaaataaggt ggttgattga agaagtgaga cacagactga agataacaga gaatagtttt</span>
+<span class="gp">... </span><span class="s1">      781 gagcaaataa catttatgca agccttacaa ctattgcttg aagtggagca agagataaga</span>
+<span class="gp">... </span><span class="s1">      841 actttctcgt ttcagcttat ttaataataa aaaacaccct tgtttctact</span>
+<span class="gp">... </span><span class="s1">//</span>
+<span class="gp">... </span><span class="s1">&#39;&#39;&#39;</span>
+</pre></div>
+</div>
+<p>Now initialize a <a class="reference internal" href="#dms_tools2.seqnumbering.TranscriptConverter" title="dms_tools2.seqnumbering.TranscriptConverter"><code class="xref py py-class docutils literal notranslate"><span class="pre">TranscriptConverter</span></code></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r+&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">genbankfile</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">genbankfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">genbank_text</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">genbankfile</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">genbankfile</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">converter</span> <span class="o">=</span> <span class="n">TranscriptConverter</span><span class="p">(</span><span class="n">genbankfile</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Confirm resulting <a class="reference internal" href="#dms_tools2.seqnumbering.TranscriptConverter" title="dms_tools2.seqnumbering.TranscriptConverter"><code class="xref py py-class docutils literal notranslate"><span class="pre">TranscriptConverter</span></code></a> contains one
+chromosome (<cite>fluNS</cite>) with the expected to mRNAs and CDSs:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">converter</span><span class="o">.</span><span class="n">chromosomes</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+<span class="go">[&#39;fluNS&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">sorted</span><span class="p">(</span><span class="n">converter</span><span class="o">.</span><span class="n">CDSs</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+<span class="go">[&#39;fluNS1&#39;, &#39;fluNS2&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">sorted</span><span class="p">(</span><span class="n">converter</span><span class="o">.</span><span class="n">mRNAs</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+<span class="go">[&#39;fluNS1&#39;, &#39;fluNS2&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">converter</span><span class="o">.</span><span class="n">mRNA_chromosome</span><span class="p">[</span><span class="s1">&#39;fluNS1&#39;</span><span class="p">]</span>
+<span class="go">&#39;fluNS&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">converter</span><span class="o">.</span><span class="n">mRNA_chromosome</span><span class="p">[</span><span class="s1">&#39;fluNS2&#39;</span><span class="p">]</span>
+<span class="go">&#39;fluNS&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">converter</span><span class="o">.</span><span class="n">chromosome_CDSs</span><span class="p">[</span><span class="s1">&#39;fluNS&#39;</span><span class="p">]</span>
+<span class="go">[&#39;fluNS1&#39;, &#39;fluNS2&#39;]</span>
+</pre></div>
+</div>
+<p>Get site in chromosome (<cite>fluNS</cite>) that corresponds to a
+position in the <cite>fluNS1</cite> mRNA, and then do the same for
+the <cite>fluNS2</cite> mRNA, using
+<a class="reference internal" href="#dms_tools2.seqnumbering.TranscriptConverter.i_mRNAtoChromosome" title="dms_tools2.seqnumbering.TranscriptConverter.i_mRNAtoChromosome"><code class="xref py py-class docutils literal notranslate"><span class="pre">TranscriptConverter.i_mRNAtoChromosome</span></code></a>. Then
+check nucleotide identities with
+<a class="reference internal" href="#dms_tools2.seqnumbering.TranscriptConverter.ntIdentity" title="dms_tools2.seqnumbering.TranscriptConverter.ntIdentity"><code class="xref py py-class docutils literal notranslate"><span class="pre">TranscriptConverter.ntIdentity</span></code></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">converter</span><span class="o">.</span><span class="n">i_mRNAtoChromosome</span><span class="p">(</span><span class="s1">&#39;fluNS1&#39;</span><span class="p">,</span> <span class="mi">60</span><span class="p">)</span>
+<span class="go">61</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">converter</span><span class="o">.</span><span class="n">ntIdentity</span><span class="p">(</span><span class="s1">&#39;fluNS&#39;</span><span class="p">,</span> <span class="mi">61</span><span class="p">)</span>
+<span class="go">&#39;A&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">converter</span><span class="o">.</span><span class="n">i_mRNAtoChromosome</span><span class="p">(</span><span class="s1">&#39;fluNS2&#39;</span><span class="p">,</span> <span class="mi">58</span><span class="p">)</span>
+<span class="go">531</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">converter</span><span class="o">.</span><span class="n">ntIdentity</span><span class="p">(</span><span class="s1">&#39;fluNS&#39;</span><span class="p">,</span> <span class="mi">531</span><span class="p">)</span>
+<span class="go">&#39;C&#39;</span>
+</pre></div>
+</div>
+<p>Do the same for substrings of <cite>fluNS1</cite> and <cite>fluNS2</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">converter</span><span class="o">.</span><span class="n">i_mRNAtoChromosome</span><span class="p">(</span><span class="s1">&#39;fluNS1&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">mRNAfragment</span><span class="o">=</span><span class="s1">&#39;GATTGCTTTCT&#39;</span><span class="p">)</span>
+<span class="go">61</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">converter</span><span class="o">.</span><span class="n">i_mRNAtoChromosome</span><span class="p">(</span><span class="s1">&#39;fluNS2&#39;</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="n">mRNAfragment</span><span class="o">=</span><span class="s1">&#39;TTTCAGGACATACTGATG&#39;</span><span class="p">)</span>
+<span class="go">531</span>
+</pre></div>
+</div>
+<p>Get amino-acid substitutions caused by chromosome point mutation.
+We can specify point mutation as string or tuple, and get
+output with 3 or 1-letter amino-acid codes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">converter</span><span class="o">.</span><span class="n">aaSubstitutions</span><span class="p">(</span><span class="s1">&#39;fluNS&#39;</span><span class="p">,</span> <span class="s1">&#39;A61T&#39;</span><span class="p">)</span>
+<span class="go">&#39;fluNS1-Asp12Val&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">converter</span><span class="o">.</span><span class="n">aaSubstitutions</span><span class="p">(</span><span class="s1">&#39;fluNS&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="mi">61</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">))</span>
+<span class="go">&#39;fluNS1-Asp12Val&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">converter</span><span class="o">.</span><span class="n">aaSubstitutions</span><span class="p">(</span><span class="s1">&#39;fluNS&#39;</span><span class="p">,</span> <span class="s1">&#39;A61T&#39;</span><span class="p">,</span> <span class="n">aa_3letter</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="go">&#39;fluNS1-D12V&#39;</span>
+</pre></div>
+</div>
+<p>Now look at a point mutation that affects <cite>fluNS1</cite> and <cite>fluNS2</cite>, but
+only causes an amino-acid substitution in the former (is synonymous
+in the latter):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">converter</span><span class="o">.</span><span class="n">aaSubstitutions</span><span class="p">(</span><span class="s1">&#39;fluNS&#39;</span><span class="p">,</span> <span class="s1">&#39;C531T&#39;</span><span class="p">)</span>
+<span class="go">&#39;fluNS1-His169Tyr&#39;</span>
+</pre></div>
+</div>
+<p>Now mutation that causes amino-acid substitutions in
+<cite>fluNS1</cite> and <cite>fluNS2</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">converter</span><span class="o">.</span><span class="n">aaSubstitutions</span><span class="p">(</span><span class="s1">&#39;fluNS&#39;</span><span class="p">,</span> <span class="s1">&#39;A532T&#39;</span><span class="p">)</span>
+<span class="go">&#39;fluNS1-His169Leu_fluNS2-Ile12Leu&#39;</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="dms_tools2.seqnumbering.TranscriptConverter.aaSubstitutions">
+<code class="descname">aaSubstitutions</code><span class="sig-paren">(</span><em>chromosome</em>, <em>mutation</em>, <em>*</em>, <em>aa_3letter=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/seqnumbering.html#TranscriptConverter.aaSubstitutions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.seqnumbering.TranscriptConverter.aaSubstitutions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Amino-acid substitutions from point mutation to chromosome.</p>
+<p>Gets all amino-acid substitutions in CDSs caused by a
+point mutation to a chromosome.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>chromosome</cite> (str)</dt>
+<dd>Name of chromosome.</dd>
+<dt><cite>mutation</cite> (str or 3-tuple)</dt>
+<dd>Point mutation in chromosome based numbering. A str
+like “A50T”, or tuple <cite>(wt, i, mut)</cite> where <cite>wt</cite> is
+wildtype nt, <cite>i</cite> is site, and <cite>mut</cite> is mutant nt.</dd>
+<dt><cite>aa_3letter</cite> (bool)</dt>
+<dd>Use 3-letter rather than 1-letter amino-acid codes?</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><p class="first">A string giving the amino-acid mutations:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>If no mutations, returns empty str.</li>
+<li>If one mutation, will be str like ‘fluNS1-Asp12Val’.</li>
+<li>If several mutations, will be str like
+‘fluNS1-His169Leu_fluNS2-Ile12Leu’.</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_tools2.seqnumbering.TranscriptConverter.i_mRNAtoChromosome">
+<code class="descname">i_mRNAtoChromosome</code><span class="sig-paren">(</span><em>mRNA</em>, <em>i</em>, <em>*</em>, <em>mRNAfragment=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/seqnumbering.html#TranscriptConverter.i_mRNAtoChromosome"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.seqnumbering.TranscriptConverter.i_mRNAtoChromosome" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert site number in mRNA to number in chromosome.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>mRNA</cite> (str)</dt>
+<dd>Name of a valid mRNA.</dd>
+<dt><cite>i</cite> (int)</dt>
+<dd>Site number in mRNA.</dd>
+<dt><cite>mRNAfragment</cite> (str or <cite>None</cite>)</dt>
+<dd>Substring sequence of <cite>mRNA</cite>. In this case, <cite>i</cite>
+is taken as the site in this substring of the
+<cite>mRNA</cite>. Useful because sometimes mutations may
+be called in a fragment of the full mRNA. Set
+to <cite>None</cite> if <cite>i</cite> is site in full mRNA.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>Site number in chromosome that contains <cite>mRNA</cite>.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_tools2.seqnumbering.TranscriptConverter.ntIdentity">
+<code class="descname">ntIdentity</code><span class="sig-paren">(</span><em>chromosome</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/seqnumbering.html#TranscriptConverter.ntIdentity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.seqnumbering.TranscriptConverter.ntIdentity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets identity at site in chromosome.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>chromosome</cite> (str)</dt>
+<dd>Name of chromosome.</dd>
+<dt><cite>i</cite> (int)</dt>
+<dd>Site in chromosome.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>Nucleotide in <cite>chromosome</cite> at site <cite>i</cite>.</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fracsurvive.html">Fraction surviving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="programs.html">Executable programs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">Python API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="dms_tools2.html">dms_tools2 package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="api.html">Python API</a><ul>
+  <li><a href="dms_tools2.html">dms_tools2 package</a><ul>
+      <li>Previous: <a href="dms_tools2.rplot.html" title="previous chapter">rplot</a></li>
+      <li>Next: <a href="dms_tools2.sra.html" title="next chapter">sra</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017--2018, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="_sources/dms_tools2.seqnumbering.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

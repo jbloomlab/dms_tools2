@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>plot &#8212; dms_tools2 2.2.9 documentation</title>
+    <title>plot &#8212; dms_tools2 2.3.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -39,6 +39,34 @@
 <p>Plotting related functions for <code class="docutils literal notranslate"><span class="pre">dms_tools2</span></code>.</p>
 <p>Uses <a class="reference external" href="https://plotnine.readthedocs.io/en/stable">plotnine</a>
 and <a class="reference external" href="https://seaborn.pydata.org/index.html">seaborn</a>.</p>
+<dl class="class">
+<dt id="dms_tools2.plot.AugmentedPairGrid">
+<em class="property">class </em><code class="descclassname">dms_tools2.plot.</code><code class="descname">AugmentedPairGrid</code><span class="sig-paren">(</span><em>data</em>, <em>hue=None</em>, <em>hue_order=None</em>, <em>palette=None</em>, <em>hue_kws=None</em>, <em>vars=None</em>, <em>x_vars=None</em>, <em>y_vars=None</em>, <em>diag_sharey=True</em>, <em>height=2.5</em>, <em>aspect=1</em>, <em>despine=True</em>, <em>dropna=True</em>, <em>size=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#AugmentedPairGrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.AugmentedPairGrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">seaborn.axisgrid.PairGrid</span></code></p>
+<p>Augmented version of <cite>seaborn.PairGrid</cite>.</p>
+<dl class="method">
+<dt id="dms_tools2.plot.AugmentedPairGrid.ax_lims_clip_outliers">
+<code class="descname">ax_lims_clip_outliers</code><span class="sig-paren">(</span><em>frac_clip=0.001</em>, <em>extend=0.03</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#AugmentedPairGrid.ax_lims_clip_outliers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.AugmentedPairGrid.ax_lims_clip_outliers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets axis limits to clip outliers in data.</p>
+<p>Useful if there are a few data points far outside the range
+of most of the data.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>frac_clip</cite> (float)</dt>
+<dd>Set upper and lower limits so that this fraction of
+data is outside limits at both ends. Done <strong>before</strong>
+adding <cite>extend</cite>.</dd>
+<dt><cite>extend</cite> (float)</dt>
+<dd>Extend the limits determined by <cite>frac_clip</cite> by this
+fraction of the data range.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="data">
 <dt id="dms_tools2.plot.COLOR_BLIND_PALETTE">
 <code class="descclassname">dms_tools2.plot.</code><code class="descname">COLOR_BLIND_PALETTE</code><em class="property"> = ['#000000', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7']</em><a class="headerlink" href="#dms_tools2.plot.COLOR_BLIND_PALETTE" title="Permalink to this definition">¶</a></dt>
@@ -46,6 +74,14 @@ and <a class="reference external" href="https://seaborn.pydata.org/index.html">s
 use by adding to your plots the following
 <cite>scale_fill_manual(COLOR_BLIND_PALETTE)</cite> or
 <cite>scale_color_manual(COLOR_BLIND_PALETTE)</cite>.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="dms_tools2.plot.COLOR_BLIND_PALETTE_GRAY">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">COLOR_BLIND_PALETTE_GRAY</code><em class="property"> = ['#999999', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7']</em><a class="headerlink" href="#dms_tools2.plot.COLOR_BLIND_PALETTE_GRAY" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/">color-blind safe palette</a>
+that differs from <cite>COLOR_BLIND_PALETTE</cite> in that first 
+color is gray rather than black.</p>
 </dd></dl>
 
 <dl class="function">
@@ -186,6 +222,67 @@ simulate the data:</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="dms_tools2.plot.from_white_cmap">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">from_white_cmap</code><span class="sig-paren">(</span><em>color</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#from_white_cmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.from_white_cmap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get matplotlib color map from white to <cite>color</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.plot.hist_bins_intsafe">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">hist_bins_intsafe</code><span class="sig-paren">(</span><em>x</em>, <em>method='fd'</em>, <em>shrink_threshold=None</em>, <em>maxbins=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#hist_bins_intsafe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.hist_bins_intsafe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Histogram bins that work for integer data.</p>
+<p>You can auto-choose bins using <cite>numpy.histogram</cite>.
+However, if the data are integer, these bins
+may be non-integer and so some bins will capture
+more integers. This function fixes that.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>x</cite> (numpy array)</dt>
+<dd>The data to bin.</dd>
+<dt><cite>method</cite> (str)</dt>
+<dd>The binning method. Can be anything
+acceptable to <cite>numpy.histogram</cite> as
+a <cite>bins</cite> argument.</dd>
+<dt><cite>shrink_threshold</cite> (<cite>None</cite> or int)</dt>
+<dd>If set to a value other than <cite>None</cite>,
+apply a heuristic threshold to slow
+the growth in number of bins if they
+exceed this number.</dd>
+<dt><cite>maxbins</cite> (int)</dt>
+<dd>Maximum number of bins.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>The bin edges as returned in the second
+element of <cite>numpy.histogram</cite>, but adjusted
+to be of integer width if the data are all
+integers.</dd>
+</dl>
+<p>Just like <cite>numpy.histogram</cite> for non-int data:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">500</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bin_edges</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="s1">&#39;fd&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bin_edges_intsafe</span> <span class="o">=</span> <span class="n">hist_bins_intsafe</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span> <span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">,</span> <span class="n">bin_edges_intsafe</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">,</span> <span class="n">bin_edges</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">))</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>But gives integer bins for int data:
+&gt;&gt;&gt; x = x.astype(‘int’)
+&gt;&gt;&gt; bin_edges = numpy.histogram(x, bins=’fd’)[1]
+&gt;&gt;&gt; bin_edges_intsafe = hist_bins_intsafe(x)
+&gt;&gt;&gt; numpy.allclose(bin_edges, bin_edges_intsafe)
+False
+&gt;&gt;&gt; numpy.allclose(bin_edges, bin_edges.astype(‘int’))
+False
+&gt;&gt;&gt; numpy.allclose(bin_edges_intsafe, bin_edges_intsafe.astype(‘int’))
+True</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="dms_tools2.plot.latexSciNot">
 <code class="descclassname">dms_tools2.plot.</code><code class="descname">latexSciNot</code><span class="sig-paren">(</span><em>xlist</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#latexSciNot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.latexSciNot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts list of numbers to LaTex scientific notation.</p>
@@ -193,12 +290,13 @@ simulate the data:</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
-<dt><cite>xlist</cite> (list)</dt>
+<dt><cite>xlist</cite> (list or number)</dt>
 <dd>Numbers to format.</dd>
 </dl>
 </dd>
 <dt>Returns:</dt>
-<dd>List of latex scientific notation formatted strings.</dd>
+<dd>List of latex scientific notation formatted strings,
+or single string if <cite>xlist</cite> is a number.</dd>
 </dl>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">latexSciNot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3120</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0000927</span><span class="p">])</span>
 <span class="go">[&#39;$0$&#39;, &#39;$3$&#39;, &#39;$3.1 \\times 10^{3}$&#39;, &#39;$-9.3 \\times 10^{-5}$&#39;]</span>
@@ -264,6 +362,33 @@ simulate the data:</p>
 </dd>
 <dt><cite>csvfile</cite> (str or <cite>None</cite>)</dt>
 <dd><cite>None</cite> or name of CSV file to which numerical data are written.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.plot.plotColCorrs">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotColCorrs</code><span class="sig-paren">(</span><em>df</em>, <em>plotfile</em>, <em>cols</em>, <em>*</em>, <em>lower_filter=None</em>, <em>title=None</em>, <em>shrink_threshold=25</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotColCorrs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotColCorrs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots correlation among columns in pandas Data Frame.</p>
+<p>Plots distribution of each variable and pairwise correlations.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>df</cite> (pandas DataFrame)</dt>
+<dd>Data frame with data to plot.</dd>
+<dt><cite>plotfile</cite> (str)</dt>
+<dd>Name of created plot.</dd>
+<dt><cite>cols</cite> (list)</dt>
+<dd>List of columns in <cite>df</cite> to plot.</dd>
+<dt><cite>lower_filter</cite> (<cite>None</cite> or str)</dt>
+<dd>Can be any string that can passed to the <cite>query</cite> function
+of <cite>df</cite>. In this case, on the lower diagonal only plot
+data for which this query is <cite>True</cite>.</dd>
+<dt><cite>title</cite> (<cite>None</cite> or str)</dt>
+<dd>Title of plot.</dd>
+<dt><cite>shrink_threshold</cite> (float)</dt>
+<dd>See argument of same name to <a class="reference internal" href="#dms_tools2.plot.hist_bins_intsafe" title="dms_tools2.plot.hist_bins_intsafe"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hist_bins_intsafe()</span></code></a>.</dd>
 </dl>
 </dd>
 </dl>
@@ -420,6 +545,69 @@ that <cite>points</cite> is not <cite>NaN</cite>.</dd>
 </dl>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.plot.plotRarefactionCurves">
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotRarefactionCurves</code><span class="sig-paren">(</span><em>df</em>, <em>rarefy_col</em>, <em>plotfile</em>, <em>*</em>, <em>facet_col=None</em>, <em>nrow=1</em>, <em>xlabel='reads'</em>, <em>ylabel=None</em>, <em>facet_scales='free'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotRarefactionCurves"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotRarefactionCurves" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots rarefaction curves.</p>
+<p>The rarefaction curves are calculated analytically using
+<a class="reference internal" href="dms_tools2.utils.html#dms_tools2.utils.rarefactionCurve" title="dms_tools2.utils.rarefactionCurve"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dms_tools2.utils.rarefactionCurve</span></code></a>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>df</cite> (pandas DataFrame)</dt>
+<dd>Data frame containing data. In tidy form if
+faceting.</dd>
+<dt><cite>rarefy_col</cite> (str)</dt>
+<dd>Name of column in <cite>df</cite> that contains the variable
+that we rarify. For instance, these might be strings
+giving barcodes.</dd>
+<dt><cite>plotfile</cite> (str)</dt>
+<dd>Name of created plot.</dd>
+<dt><cite>facet_col</cite> (str or <cite>None</cite>)</dt>
+<dd>If not <cite>None</cite>, should be name of a column in <cite>df</cite>
+that contains a variable we facet in the plot.</dd>
+<dt><cite>nrow</cite> (int)</dt>
+<dd>If faceting, the number of rows.</dd>
+<dt><cite>xlabel</cite> (str)</dt>
+<dd>X-axis label.</dd>
+<dt><cite>ylabel</cite> (str or <cite>None</cite>)</dt>
+<dd>Y-axis label. If <cite>None</cite>, defaults to value of <cite>rarefy_col</cite>.</dd>
+<dt><cite>facet_scales</cite> (str`)</dt>
+<dd>Scales for faceting. Can be “free”, “free_x”, “free_y”, or
+“fixed”</dd>
+</dl>
+</dd>
+</dl>
+<p>Here is an example. First, we simulate two sets of barcodes.
+For ease of fast simulation, the barcodes are just numbers here.
+One samples a large set, the other a set a quarter that size with
+half as many reads:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">nbc</span> <span class="o">=</span> <span class="mi">40000</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bclen</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nreads</span> <span class="o">=</span> <span class="mi">200000</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">barcodes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">nbc</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">large_set</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">barcodes</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">nreads</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">small_set</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">barcodes</span><span class="p">[</span> <span class="p">:</span> <span class="n">nbc</span> <span class="o">//</span> <span class="mi">4</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="n">nreads</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now we put these in a tidy data frame where one column is named
+“barcodes” and the other is named “sample”:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+<span class="gp">... </span>        <span class="s2">&quot;barcodes&quot;</span><span class="p">:</span><span class="nb">list</span><span class="p">(</span><span class="n">small_set</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">large_set</span><span class="p">),</span>
+<span class="gp">... </span>        <span class="s2">&quot;sample&quot;</span><span class="p">:[</span><span class="s1">&#39;small_set&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">small_set</span><span class="p">)</span> <span class="o">+</span>
+<span class="gp">... </span>                 <span class="p">[</span><span class="s1">&#39;large_set&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">large_set</span><span class="p">)})</span>
+</pre></div>
+</div>
+<p>Finally, plot the rarefaction curves:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">plotfile</span> <span class="o">=</span> <span class="s1">&#39;_plotRarefactionCurves.png&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plotRarefactionCurves</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s1">&#39;barcodes&#39;</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span> <span class="n">facet_col</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here is the resulting plot:</p>
+<a class="reference internal image-reference" href="_images/_plotRarefactionCurves.png"><img alt="_images/_plotRarefactionCurves.png" class="align-center" src="_images/_plotRarefactionCurves.png" style="width: 6in;" /></a>
 </dd></dl>
 
 <dl class="function">
@@ -594,10 +782,10 @@ plot either differential selection or fraction surviving.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, the Bloom lab.
+      &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |

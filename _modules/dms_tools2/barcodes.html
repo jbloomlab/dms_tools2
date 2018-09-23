@@ -1,0 +1,245 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>dms_tools2.barcodes &#8212; dms_tools2 2.3.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for dms_tools2.barcodes</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">===============</span>
+<span class="sd">barcodes</span>
+<span class="sd">===============</span>
+
+<span class="sd">Operations for sequence barcodes and UMIs.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">collections</span>
+
+
+<span class="kn">import</span> <span class="nn">pandas</span>
+<span class="kn">import</span> <span class="nn">umi_tools.network</span>
+
+
+<span class="n">_umi_clusterer</span> <span class="o">=</span> <span class="n">umi_tools</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">UMIClusterer</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="almost_duplicated"><a class="viewcode-back" href="../../dms_tools2.barcodes.html#dms_tools2.barcodes.almost_duplicated">[docs]</a><span class="k">def</span> <span class="nf">almost_duplicated</span><span class="p">(</span><span class="n">barcodes</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Identifies nearly identical barcodes.</span>
+
+<span class="sd">    This function minics the pandas `duplicated`</span>
+<span class="sd">    function except it can also mark as duplicated almost</span>
+<span class="sd">    but not exactly identical sequences.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `barcodes` (list or pandas Series)</span>
+<span class="sd">            Lists all the barcodes, which should be strings</span>
+<span class="sd">            of same length.</span>
+<span class="sd">        `threshold` (int)</span>
+<span class="sd">            Max number of mismatches for barcodes to be</span>
+<span class="sd">            considered almost identical.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A pandas Series of the same length as `barcodes`</span>
+<span class="sd">        filled with bools that indicates whether a barcode</span>
+<span class="sd">        is a near duplicate. For each group of barcodes within</span>
+<span class="sd">        `threshold` of each other, only one barcode will have</span>
+<span class="sd">        an entry of `False` (not duplicated) and the rest will</span>
+<span class="sd">        be `True` (duplicated). The barcode listed as not duplicated</span>
+<span class="sd">        is chosen as follows: (1) it has the most abundant barcode</span>
+<span class="sd">        in the group, (2) among barcodes that are equivalent abundant</span>
+<span class="sd">        we take the one listed first in `barcodes`.</span>
+<span class="sd">        Groups are computed using the directional method of</span>
+<span class="sd">        `umi_tools &lt;https://github.com/CGATOxford/UMI-tools&gt;`_.</span>
+
+<span class="sd">    When `threshold` is zero, just like `pandas.duplicated`:</span>
+
+<span class="sd">    &gt;&gt;&gt; barcodes = [&#39;CTC&#39;, &#39;ATG&#39;, &#39;ATG&#39;, &#39;ATA&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; almost_duplicated(barcodes, threshold=0).equals(</span>
+<span class="sd">    ...     pandas.Series([False, False, True, False]))</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; pandas.Series(barcodes).duplicated().equals(</span>
+<span class="sd">    ...     pandas.Series([False, False, True, False]))</span>
+<span class="sd">    True</span>
+
+<span class="sd">    But when `threshold` is 1, also identifies **almost** equal</span>
+<span class="sd">    barcodes (in this case, ones that differ by &lt;= 1 mutation:</span>
+
+<span class="sd">    &gt;&gt;&gt; almost_duplicated(barcodes, threshold=1).equals(</span>
+<span class="sd">    ...     pandas.Series([False, False, True, True]))</span>
+<span class="sd">    True</span>
+
+<span class="sd">    All barcodes are within a distance of two, so all are</span>
+<span class="sd">    near duplicates. Note how we mark as not duplicated</span>
+<span class="sd">    (`False`) the first one listed among the most abundant</span>
+<span class="sd">    barcode (&#39;ATG&#39;):</span>
+
+<span class="sd">    &gt;&gt;&gt; almost_duplicated(pandas.Series(barcodes), threshold=2).equals(</span>
+<span class="sd">    ...     pandas.Series([True, False, True, True]))</span>
+<span class="sd">    True</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">threshold</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`threshold` must be &gt;= 0&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">barcodes</span><span class="p">,</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">barcodes</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Iterable</span><span class="p">):</span>
+            <span class="n">barcodes</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">barcodes</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`barcodes` invalid type {type(barcodes)}&quot;</span><span class="p">)</span>
+    <span class="n">barcodes</span> <span class="o">=</span> <span class="n">barcodes</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">Counter</span><span class="p">(</span><span class="n">barcodes</span><span class="p">)</span>
+
+    <span class="n">groups</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">_umi_clusterer</span><span class="p">(</span><span class="n">barcodes</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>
+        <span class="c1"># keep only barcode(s) most abundant in group</span>
+        <span class="n">max_count</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">counts</span><span class="p">[</span><span class="n">barcode</span><span class="p">]</span> <span class="k">for</span> <span class="n">barcode</span> <span class="ow">in</span> <span class="n">group</span><span class="p">)</span>
+        <span class="n">groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">frozenset</span><span class="p">(</span><span class="n">barcode</span> <span class="k">for</span> <span class="n">barcode</span> <span class="ow">in</span> <span class="n">group</span>
+                      <span class="k">if</span> <span class="n">counts</span><span class="p">[</span><span class="n">barcode</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">max_count</span><span class="p">))</span>
+
+    <span class="n">dups</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">barcode</span> <span class="ow">in</span> <span class="n">barcodes</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">barcode</span> <span class="ow">in</span> <span class="n">g</span><span class="p">:</span>
+                <span class="n">dups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+                <span class="n">groups</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">groups</span>
+
+    <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dups</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">barcodes</span><span class="o">.</span><span class="n">index</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fracsurvive.html">Fraction surviving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../programs.html">Executable programs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017--2018, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

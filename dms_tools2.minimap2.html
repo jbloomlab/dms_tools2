@@ -1,0 +1,1745 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>minimap2 &#8212; dms_tools2 2.3.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="neutcurve" href="dms_tools2.neutcurve.html" />
+    <link rel="prev" title="ipython_utils" href="dms_tools2.ipython_utils.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <span class="target" id="module-dms_tools2.minimap2"></span><div class="section" id="minimap2">
+<h1>minimap2<a class="headerlink" href="#minimap2" title="Permalink to this headline">¶</a></h1>
+<p>Runs <a class="reference external" href="https://lh3.github.io/minimap2/">minimap2</a>
+aligner.</p>
+<dl class="class">
+<dt id="dms_tools2.minimap2.Alignment">
+<em class="property">class </em><code class="descclassname">dms_tools2.minimap2.</code><code class="descname">Alignment</code><a class="headerlink" href="#dms_tools2.minimap2.Alignment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
+<p>Alignment of a query to a target.</p>
+<dl class="attribute">
+<dt id="dms_tools2.minimap2.Alignment.additional">
+<code class="descname">additional</code><a class="headerlink" href="#dms_tools2.minimap2.Alignment.additional" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of additional <a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a> objects, useful for multiple alignments.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dms_tools2.minimap2.Alignment.cigar_str">
+<code class="descname">cigar_str</code><a class="headerlink" href="#dms_tools2.minimap2.Alignment.cigar_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>CIGAR in <a class="reference external" href="https://github.com/lh3/minimap2#cs">PAF long format</a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dms_tools2.minimap2.Alignment.q_en">
+<code class="descname">q_en</code><a class="headerlink" href="#dms_tools2.minimap2.Alignment.q_en" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alignment end in query (0 based).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dms_tools2.minimap2.Alignment.q_len">
+<code class="descname">q_len</code><a class="headerlink" href="#dms_tools2.minimap2.Alignment.q_len" title="Permalink to this definition">¶</a></dt>
+<dd><p>Total length of query prior to any clipping.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dms_tools2.minimap2.Alignment.q_st">
+<code class="descname">q_st</code><a class="headerlink" href="#dms_tools2.minimap2.Alignment.q_st" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alignment start in query (0 based).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dms_tools2.minimap2.Alignment.r_en">
+<code class="descname">r_en</code><a class="headerlink" href="#dms_tools2.minimap2.Alignment.r_en" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alignment end in target (0 based).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dms_tools2.minimap2.Alignment.r_len">
+<code class="descname">r_len</code><a class="headerlink" href="#dms_tools2.minimap2.Alignment.r_len" title="Permalink to this definition">¶</a></dt>
+<dd><p>Total length of target prior to any clipping.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dms_tools2.minimap2.Alignment.r_st">
+<code class="descname">r_st</code><a class="headerlink" href="#dms_tools2.minimap2.Alignment.r_st" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alignment start in target (0 based).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dms_tools2.minimap2.Alignment.score">
+<code class="descname">score</code><a class="headerlink" href="#dms_tools2.minimap2.Alignment.score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alignment score.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dms_tools2.minimap2.Alignment.strand">
+<code class="descname">strand</code><a class="headerlink" href="#dms_tools2.minimap2.Alignment.strand" title="Permalink to this definition">¶</a></dt>
+<dd><p>1 if aligns in forward polarity, -1 if in reverse.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dms_tools2.minimap2.Alignment.target">
+<code class="descname">target</code><a class="headerlink" href="#dms_tools2.minimap2.Alignment.target" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of target to which query was aligned.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dms_tools2.minimap2.Mapper">
+<em class="property">class </em><code class="descclassname">dms_tools2.minimap2.</code><code class="descname">Mapper</code><span class="sig-paren">(</span><em>targetfile</em>, <em>options</em>, <em>*</em>, <em>prog='minimap2'</em>, <em>target_isoforms={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#Mapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.Mapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to run <code class="docutils literal notranslate"><span class="pre">minimap2</span></code> and get results.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>targetfile</cite> (str)</dt>
+<dd>FASTA file with target (reference) to which we align
+reads.</dd>
+<dt><cite>options</cite> (list)</dt>
+<dd><p class="first">Command line options to <code class="docutils literal notranslate"><span class="pre">minimap2</span></code>. For
+recommended options, for different situations, see:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li><a class="reference internal" href="#dms_tools2.minimap2.OPTIONS_CODON_DMS" title="dms_tools2.minimap2.OPTIONS_CODON_DMS"><code class="xref py py-data docutils literal notranslate"><span class="pre">OPTIONS_CODON_DMS</span></code></a></li>
+<li><a class="reference internal" href="#dms_tools2.minimap2.OPTIONS_VIRUS_W_DEL" title="dms_tools2.minimap2.OPTIONS_VIRUS_W_DEL"><code class="xref py py-data docutils literal notranslate"><span class="pre">OPTIONS_VIRUS_W_DEL</span></code></a></li>
+</ul>
+</div></blockquote>
+</dd>
+<dt><cite>prog</cite> (str or <cite>None</cite>)</dt>
+<dd>Path to <code class="docutils literal notranslate"><span class="pre">minimap2</span></code> executable. Class is only
+tested against version &gt;=2.11 but may work with
+other versions too.</dd>
+<dt><cite>target_isoforms</cite> (dict)</dt>
+<dd>Sometimes targets might be be isoforms of each
+other. You can specify that with this dict, which
+is keyed by target names and has values that are sets
+of other targets. If targets <cite>M1</cite> and <cite>M2</cite> are isoforms,
+set <cite>target_isoforms={‘M1’:[‘M2’], ‘M2’:[‘M1’]}</cite>.
+This argument is just used to set the <cite>target_isoforms</cite>
+attribute, but isn’t used during alignment.</dd>
+</dl>
+</dd>
+<dt>Attributes:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>targetfile</cite> (str)</dt>
+<dd>Target (reference) file set at initialization.</dd>
+<dt><cite>targetseqs</cite> (OrderedDict)</dt>
+<dd>Sequences in <cite>targetfile</cite>. Keys are sequence
+names, values are sequences as strings. In
+same order as listing in <cite>targetfile</cite>.</dd>
+<dt><cite>prog</cite> (str)</dt>
+<dd>Path to <code class="docutils literal notranslate"><span class="pre">minimap2</span></code> set at initialization.</dd>
+<dt><cite>options</cite> (list)</dt>
+<dd>Options to <code class="docutils literal notranslate"><span class="pre">minimap2</span></code> set at initialization.</dd>
+<dt><cite>version</cite> (str)</dt>
+<dd>Version of <code class="docutils literal notranslate"><span class="pre">minimap2</span></code>.</dd>
+<dt><cite>target_isoforms</cite> (dict)</dt>
+<dd>Isoforms for each target. This is the value set
+by <cite>target_isoforms</cite> at initialization plus
+ensuring that each target is listed as an isoform
+of itself.</dd>
+</dl>
+</dd>
+</dl>
+<p>Here is an example where we align a few reads to two target
+sequences.</p>
+<p>First, we generate a few target sequences:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">targetlen</span> <span class="o">=</span> <span class="mi">200</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">targets</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]:</span>
+<span class="gp">... </span>    <span class="n">targets</span><span class="p">[</span><span class="s1">&#39;target</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">NTS</span><span class="p">)</span>
+<span class="gp">... </span>            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">targetlen</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Now we generate some queries. One is a random sequence that should not
+align, and the other two are substrings of the targets into which we
+have introduced a single mutation or indel. The names of the queries
+give their target, start in query, end in query, cigar string:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">queries</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;randseq&#39;</span><span class="p">:</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">NTS</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">180</span><span class="p">))}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">qstart</span><span class="p">,</span> <span class="n">qend</span><span class="p">,</span> <span class="n">mut</span> <span class="ow">in</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">183</span><span class="p">,</span> <span class="s1">&#39;mut53&#39;</span><span class="p">),</span> <span class="p">(</span><span class="mi">36</span><span class="p">,</span> <span class="mi">194</span><span class="p">,</span> <span class="s1">&#39;del140&#39;</span><span class="p">)]:</span>
+<span class="gp">... </span>    <span class="n">target</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">targets</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+<span class="gp">... </span>    <span class="n">qseq</span> <span class="o">=</span> <span class="n">targets</span><span class="p">[</span><span class="n">target</span><span class="p">][</span><span class="n">qstart</span> <span class="p">:</span> <span class="n">qend</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="n">mutsite</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">mut</span><span class="p">[</span><span class="mi">3</span> <span class="p">:</span> <span class="p">])</span>
+<span class="gp">... </span>    <span class="k">if</span> <span class="s1">&#39;mut&#39;</span> <span class="ow">in</span> <span class="n">mut</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="n">wt</span> <span class="o">=</span> <span class="n">qseq</span><span class="p">[</span><span class="n">mutsite</span><span class="p">]</span>
+<span class="gp">... </span>        <span class="n">mut</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="n">nt</span> <span class="k">for</span> <span class="n">nt</span> <span class="ow">in</span> <span class="n">NTS</span> <span class="k">if</span> <span class="n">nt</span> <span class="o">!=</span> <span class="n">wt</span><span class="p">])</span>
+<span class="gp">... </span>        <span class="n">cigar</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;=&#39;</span> <span class="o">+</span> <span class="n">qseq</span><span class="p">[</span> <span class="p">:</span> <span class="n">mutsite</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;*&#39;</span> <span class="o">+</span> <span class="n">wt</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">+</span>
+<span class="gp">... </span>                 <span class="n">mut</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;=&#39;</span> <span class="o">+</span> <span class="n">qseq</span><span class="p">[</span><span class="n">mutsite</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:</span> <span class="p">])</span>
+<span class="gp">... </span>        <span class="n">qseq</span> <span class="o">=</span> <span class="n">qseq</span><span class="p">[</span> <span class="p">:</span> <span class="n">mutsite</span><span class="p">]</span> <span class="o">+</span> <span class="n">mut</span> <span class="o">+</span> <span class="n">qseq</span><span class="p">[</span><span class="n">mutsite</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:</span> <span class="p">]</span>
+<span class="gp">... </span>    <span class="k">elif</span> <span class="s1">&#39;del&#39;</span> <span class="ow">in</span> <span class="n">mut</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="n">cigar</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;=&#39;</span> <span class="o">+</span> <span class="n">qseq</span><span class="p">[</span> <span class="p">:</span> <span class="n">mutsite</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span> <span class="o">+</span>
+<span class="gp">... </span>                 <span class="n">qseq</span><span class="p">[</span><span class="n">mutsite</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;=&#39;</span> <span class="o">+</span> <span class="n">qseq</span><span class="p">[</span><span class="n">mutsite</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:</span> <span class="p">])</span>
+<span class="gp">... </span>        <span class="n">qseq</span> <span class="o">=</span> <span class="n">qseq</span><span class="p">[</span> <span class="p">:</span> <span class="n">mutsite</span><span class="p">]</span> <span class="o">+</span> <span class="n">qseq</span><span class="p">[</span><span class="n">mutsite</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:</span> <span class="p">]</span>
+<span class="gp">... </span>    <span class="n">queryname</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="p">[</span><span class="n">target</span><span class="p">,</span> <span class="n">qstart</span><span class="p">,</span> <span class="n">qend</span><span class="p">,</span> <span class="n">cigar</span><span class="p">]))</span>
+<span class="gp">... </span>    <span class="n">queries</span><span class="p">[</span><span class="n">queryname</span><span class="p">]</span> <span class="o">=</span> <span class="n">qseq</span>
+</pre></div>
+</div>
+<p>Now map the queries to the targets:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">TempFile</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">TempFile</span><span class="p">()</span> <span class="k">as</span> <span class="n">targetfile</span><span class="p">,</span> <span class="n">TempFile</span><span class="p">()</span> <span class="k">as</span> <span class="n">queryfile</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">targetfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;&gt;</span><span class="si">{0}</span><span class="se">\n</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">tup</span><span class="p">)</span>
+<span class="gp">... </span>                         <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">targets</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+<span class="gp">... </span>    <span class="n">targetfile</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">queryfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;&gt;</span><span class="si">{0}</span><span class="se">\n</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">tup</span><span class="p">)</span>
+<span class="gp">... </span>                        <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">queries</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+<span class="gp">... </span>    <span class="n">queryfile</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">mapper</span> <span class="o">=</span> <span class="n">Mapper</span><span class="p">(</span><span class="n">targetfile</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">OPTIONS_CODON_DMS</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">mapper2</span> <span class="o">=</span> <span class="n">Mapper</span><span class="p">(</span><span class="n">targetfile</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">OPTIONS_CODON_DMS</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">target_isoforms</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;target1&#39;</span><span class="p">:{</span><span class="s1">&#39;target2&#39;</span><span class="p">},</span>
+<span class="gp">... </span>                             <span class="s1">&#39;target2&#39;</span><span class="p">:{</span><span class="s1">&#39;target1&#39;</span><span class="p">}})</span>
+<span class="gp">... </span>    <span class="n">alignments</span> <span class="o">=</span> <span class="n">mapper</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">queryfile</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mapper</span><span class="o">.</span><span class="n">targetseqs</span> <span class="o">==</span> <span class="n">targets</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Now make sure we find the expected alignments:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">set</span><span class="p">(</span><span class="n">alignments</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">q</span> <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">queries</span> <span class="k">if</span> <span class="n">q</span> <span class="o">!=</span> <span class="s1">&#39;randseq&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">matched</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="ow">in</span> <span class="n">alignments</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="n">expected</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">matched</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">target</span> <span class="o">==</span> <span class="n">expected</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="gp">... </span>    <span class="n">matched</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">a</span><span class="o">.</span><span class="n">r_st</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">r_en</span><span class="p">]</span> <span class="o">==</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">expected</span><span class="p">[</span><span class="mi">1</span> <span class="p">:</span> <span class="mi">3</span><span class="p">])))</span>
+<span class="gp">... </span>    <span class="n">matched</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">a</span><span class="o">.</span><span class="n">q_st</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">q_en</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">queries</span><span class="p">[</span><span class="n">query</span><span class="p">])])</span>
+<span class="gp">... </span>    <span class="n">matched</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">cigar_str</span> <span class="o">==</span> <span class="n">expected</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+<span class="gp">... </span>    <span class="n">matched</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">strand</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">matched</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Test out the <cite>target_isoform</cite> argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mapper</span><span class="o">.</span><span class="n">target_isoforms</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;target1&#39;</span><span class="p">:{</span><span class="s1">&#39;target1&#39;</span><span class="p">},</span> <span class="s1">&#39;target2&#39;</span><span class="p">:{</span><span class="s1">&#39;target2&#39;</span><span class="p">}}</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mapper2</span><span class="o">.</span><span class="n">target_isoforms</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;target1&#39;</span><span class="p">:{</span><span class="s1">&#39;target1&#39;</span><span class="p">,</span> <span class="s1">&#39;target2&#39;</span><span class="p">},</span>
+<span class="gp">... </span>        <span class="s1">&#39;target2&#39;</span><span class="p">:{</span><span class="s1">&#39;target1&#39;</span><span class="p">,</span> <span class="s1">&#39;target2&#39;</span><span class="p">}}</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="dms_tools2.minimap2.Mapper.map">
+<code class="descname">map</code><span class="sig-paren">(</span><em>queryfile</em>, <em>*</em>, <em>outfile=None</em>, <em>introns_to_gaps=True</em>, <em>shift_indels=True</em>, <em>check_alignments=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#Mapper.map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.Mapper.map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Map query sequences to target.</p>
+<p>Aligns query sequences to targets. Adds <code class="docutils literal notranslate"><span class="pre">--c</span> <span class="pre">--cs=long</span></code>
+arguments to <cite>options</cite> to get a long CIGAR string, and
+returns results as a dictionary, and optionally writes them
+to a PAF file.</p>
+<p>This is <strong>not</strong> a memory-efficient implementation as
+a lot is read into memory. So if you have very large
+queries or targets, that may pose a problem.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>queryfile</cite> (str)</dt>
+<dd>FASTA file with query sequences to align.
+Headers should be unique.</dd>
+<dt><cite>outfile</cite> (<cite>None</cite> or str)</dt>
+<dd>Name of output file containing alignment
+results in PAF format if a str is provided.
+Provide <cite>None</cite> if you don’t want to create
+a permanent alignment file.</dd>
+<dt><cite>introns_to_gaps</cite> (bool)</dt>
+<dd>If there are introns in the alignment CIGARs, convert
+to gaps by running through <a class="reference internal" href="#dms_tools2.minimap2.intronsToGaps" title="dms_tools2.minimap2.intronsToGaps"><code class="xref py py-meth docutils literal notranslate"><span class="pre">intronsToGaps()</span></code></a>.</dd>
+<dt><cite>shift_indels</cite> (bool)</dt>
+<dd>Pass alignments through <a class="reference internal" href="#dms_tools2.minimap2.shiftIndels" title="dms_tools2.minimap2.shiftIndels"><code class="xref py py-meth docutils literal notranslate"><span class="pre">shiftIndels()</span></code></a>.
+Only applies to alignments returned in dict,
+does not affect any results in <cite>outfile</cite>.</dd>
+<dt><cite>check_alignments</cite> (bool)</dt>
+<dd>Run all alignments through <a class="reference internal" href="#dms_tools2.minimap2.checkAlignment" title="dms_tools2.minimap2.checkAlignment"><code class="xref py py-meth docutils literal notranslate"><span class="pre">checkAlignment()</span></code></a>
+before returning, and raise error if any are invalid.
+This is a good debugging check, but costs time.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A dict where keys are the name of each query in
+<cite>queryfile</cite> for which there is an alignment (there
+are no keys for queries that do not align). If there
+is a single alignment for a query, the value is that
+<a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a> object. There can be multiple primary
+alignments (<a class="reference external" href="https://github.com/lh3/minimap2/issues/113">see here</a>).
+If there are multiple alignments, the value is the
+<a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a> with the highest score, and the remaining
+alignments are listed in the <a class="reference internal" href="#dms_tools2.minimap2.Alignment.additional" title="dms_tools2.minimap2.Alignment.additional"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment.additional</span></code></a>
+attribute of that “best” alignment.</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dms_tools2.minimap2.MutationCaller">
+<em class="property">class </em><code class="descclassname">dms_tools2.minimap2.</code><code class="descname">MutationCaller</code><span class="sig-paren">(</span><em>mapper</em>, <em>*</em>, <em>transcriptconverter=None</em>, <em>targetindex=1</em>, <em>target_clip=0</em>, <em>query_softclip=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#MutationCaller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.MutationCaller" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Call <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> from <a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a>.</p>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>mapper</cite> (<a class="reference internal" href="#dms_tools2.minimap2.Mapper" title="dms_tools2.minimap2.Mapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapper</span></code></a>)</dt>
+<dd>The <a class="reference internal" href="#dms_tools2.minimap2.Mapper" title="dms_tools2.minimap2.Mapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapper</span></code></a> used to create the alignments.</dd>
+<dt><cite>transcriptconverter</cite> (<a class="reference internal" href="dms_tools2.seqnumbering.html#dms_tools2.seqnumbering.TranscriptConverter" title="dms_tools2.seqnumbering.TranscriptConverter"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_tools2.seqnumbering.TranscriptConverter</span></code></a> or <cite>None</cite>)</dt>
+<dd>Use if the alignments made by <cite>mapper</cite> are to transcripts
+(or partial transcripts) and you want to convert the numbering
+of mutations to 1, 2, … numbering of the chromosomes
+containing these transcripts, plus indicate amino-acid
+substitutions in any CDSs. The target names in <cite>mapper</cite> should
+match the mRNA names in <cite>transcriptconverter</cite>. If you
+use a <cite>transcriptconverter</cite>, <cite>targetindex</cite> must be 1.</dd>
+<dt><cite>targetindex</cite> (int)</dt>
+<dd>Number assigned to first nucleotide of target when
+numbering mutations. A value of 1 means that the first
+nucleotide of the target is position 1.</dd>
+<dt><cite>target_clip</cite> (int)</dt>
+<dd>Ignore any mutations that occur within this many
+nucleotides of the termini of target. If an indel
+includes any nucleotides that are not ignored,
+then the full indel is reported.</dd>
+<dt><cite>query_softclip</cite> (int)</dt>
+<dd>Ignore any mutations that occur within this many
+nucleotides of the termini of the query <strong>and</strong>
+are soft clipped in the alignment. If an indel
+includes any nucleotides not ignored, then the full
+indel is reported.</dd>
+</dl>
+</dd>
+</dl>
+<p>Here is an example. First, create an <a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a>
+that corresponds to the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">target</span><span class="p">:</span> <span class="o">--</span><span class="n">ATGCATGAAT</span><span class="o">--</span><span class="n">CGAAT</span>
+<span class="n">query</span><span class="p">:</span>  <span class="n">cgATGaAcG</span><span class="o">--</span><span class="n">TatCt</span><span class="o">---</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">targetfile</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="n">_</span> <span class="o">=</span> <span class="n">targetfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;&gt;target</span><span class="se">\n</span><span class="s1">ATGCATGGATCGAAT&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="n">targetfile</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="gp">... </span>        <span class="n">mapper</span> <span class="o">=</span> <span class="n">Mapper</span><span class="p">(</span><span class="n">targetfile</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">OPTIONS_CODON_DMS</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">Alignment</span><span class="p">(</span><span class="n">q_st</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">q_en</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">q_len</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">strand</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">r_st</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">r_en</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">r_len</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s1">&#39;target&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">cigar_str</span><span class="o">=</span><span class="s1">&#39;=ATG*ca=A*tc=G-aa=T+at=C*gt&#39;</span><span class="p">,</span> <span class="n">additional</span><span class="o">=</span><span class="p">[])</span>
+</pre></div>
+</div>
+<p>Also create some Q-values. Just to make things simple for this
+example, we use unrealistic Q-values. For aligned sites they
+are equal to the site number in the target; for un-aligned sites
+they are 50.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">qvals</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Now call mutations using <a class="reference internal" href="#dms_tools2.minimap2.MutationCaller.call" title="dms_tools2.minimap2.MutationCaller.call"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutationCaller.call</span></code></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mutcaller</span> <span class="o">=</span> <span class="n">MutationCaller</span><span class="p">(</span><span class="n">mapper</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span> <span class="o">=</span> <span class="n">mutcaller</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">qvals</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">substitutions</span><span class="p">()</span>
+<span class="go">[&#39;C4A&#39;, &#39;T6C&#39;, &#39;G12T&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">substitutions</span><span class="p">(</span><span class="n">returnval</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+<span class="go">[4, 6, 12]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">deletions</span><span class="p">()</span>
+<span class="go">[&#39;del8to9&#39;, &#39;del13to15&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">deletions</span><span class="p">(</span><span class="n">returnval</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+<span class="go">[8, 13]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">insertions</span><span class="p">()</span>
+<span class="go">[&#39;ins1len2&#39;, &#39;ins11len2&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">insertions</span><span class="p">(</span><span class="n">returnval</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+<span class="go">[1, 11]</span>
+</pre></div>
+</div>
+<p>Check that homo-polymer lengths are correct:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">deletions</span><span class="p">(</span><span class="n">returnval</span><span class="o">=</span><span class="s1">&#39;homopolymer_length&#39;</span><span class="p">)</span>
+<span class="go">[2, 2]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">insertions</span><span class="p">(</span><span class="n">returnval</span><span class="o">=</span><span class="s1">&#39;homopolymer_length&#39;</span><span class="p">)</span>
+<span class="go">[1, 1]</span>
+</pre></div>
+</div>
+<p>Check that Q-values are also correct:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">muts</span><span class="o">.</span><span class="n">substitutions</span><span class="p">(</span><span class="n">returnval</span><span class="o">=</span><span class="s1">&#39;accuracy&#39;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">pacbio</span><span class="o">.</span><span class="n">qvalsToAccuracy</span><span class="p">,</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">12</span><span class="p">])))</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">muts</span><span class="o">.</span><span class="n">insertions</span><span class="p">(</span><span class="n">returnval</span><span class="o">=</span><span class="s1">&#39;accuracy&#39;</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="nb">map</span><span class="p">(</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">pacbio</span><span class="o">.</span><span class="n">qvalsToAccuracy</span><span class="p">,</span> <span class="p">[[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">],</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">]])))</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">muts</span><span class="o">.</span><span class="n">deletions</span><span class="p">(</span><span class="n">returnval</span><span class="o">=</span><span class="s1">&#39;accuracy&#39;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="p">[</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">pacbio</span><span class="o">.</span><span class="n">qvalsToAccuracy</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">],</span> <span class="n">equal_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Illustrate <cite>targetindex</cite> by re-calling with 0-based idexing:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mutcaller_index0</span> <span class="o">=</span> <span class="n">MutationCaller</span><span class="p">(</span><span class="n">mapper</span><span class="p">,</span> <span class="n">targetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_index0</span> <span class="o">=</span> <span class="n">mutcaller_index0</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">qvals</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_index0</span><span class="o">.</span><span class="n">substitutions</span><span class="p">()</span>
+<span class="go">[&#39;C3A&#39;, &#39;T5C&#39;, &#39;G11T&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_index0</span><span class="o">.</span><span class="n">deletions</span><span class="p">()</span>
+<span class="go">[&#39;del7to8&#39;, &#39;del12to14&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_index0</span><span class="o">.</span><span class="n">insertions</span><span class="p">()</span>
+<span class="go">[&#39;ins0len2&#39;, &#39;ins10len2&#39;]</span>
+</pre></div>
+</div>
+<p>Use <cite>target_clip</cite> to ignore mutations near target termini:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mutcaller_targetclip2</span> <span class="o">=</span> <span class="n">MutationCaller</span><span class="p">(</span><span class="n">mapper</span><span class="p">,</span> <span class="n">target_clip</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_targetclip2</span> <span class="o">=</span> <span class="n">mutcaller_targetclip2</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">qvals</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_targetclip2</span><span class="o">.</span><span class="n">substitutions</span><span class="p">()</span>
+<span class="go">[&#39;C4A&#39;, &#39;T6C&#39;, &#39;G12T&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_targetclip2</span><span class="o">.</span><span class="n">deletions</span><span class="p">()</span>
+<span class="go">[&#39;del8to9&#39;, &#39;del13to15&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_targetclip2</span><span class="o">.</span><span class="n">insertions</span><span class="p">()</span>
+<span class="go">[&#39;ins11len2&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mutcaller_targetclip4</span> <span class="o">=</span> <span class="n">MutationCaller</span><span class="p">(</span><span class="n">mapper</span><span class="p">,</span> <span class="n">target_clip</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_targetclip4</span> <span class="o">=</span> <span class="n">mutcaller_targetclip4</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">qvals</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_targetclip4</span><span class="o">.</span><span class="n">substitutions</span><span class="p">()</span>
+<span class="go">[&#39;T6C&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_targetclip4</span><span class="o">.</span><span class="n">deletions</span><span class="p">()</span>
+<span class="go">[&#39;del8to9&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_targetclip4</span><span class="o">.</span><span class="n">insertions</span><span class="p">()</span>
+<span class="go">[&#39;ins11len2&#39;]</span>
+</pre></div>
+</div>
+<p>Use <cite>query_softclip</cite> to ignore clipped regions in query:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mutcaller_querysoftclip</span> <span class="o">=</span> <span class="n">MutationCaller</span><span class="p">(</span><span class="n">mapper</span><span class="p">,</span> <span class="n">query_softclip</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_querysoftclip</span> <span class="o">=</span> <span class="n">mutcaller_querysoftclip</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">qvals</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_querysoftclip</span><span class="o">.</span><span class="n">substitutions</span><span class="p">()</span>
+<span class="go">[&#39;C4A&#39;, &#39;T6C&#39;, &#39;G12T&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_querysoftclip</span><span class="o">.</span><span class="n">deletions</span><span class="p">()</span>
+<span class="go">[&#39;del8to9&#39;, &#39;del13to15&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_querysoftclip</span><span class="o">.</span><span class="n">insertions</span><span class="p">()</span>
+<span class="go">[&#39;ins11len2&#39;]</span>
+</pre></div>
+</div>
+<p>Now use <cite>transcriptconverter</cite> to get mutations numbered in
+chromosome coordinates along with amino-acid substitutions.
+First, initialize a <a class="reference internal" href="dms_tools2.seqnumbering.html#dms_tools2.seqnumbering.TranscriptConverter" title="dms_tools2.seqnumbering.TranscriptConverter"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_tools2.seqnumbering.TranscriptConverter</span></code></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r+&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">genbankfile</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">genbankfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="s1">LOCUS       chromosome                17 bp    DNA              UNK 01-JAN-1980</span>
+<span class="gp">... </span><span class="s1">FEATURES             Location/Qualifiers</span>
+<span class="gp">... </span><span class="s1">     mRNA            3..17</span>
+<span class="gp">... </span><span class="s1">                     /label=&quot;target&quot;</span>
+<span class="gp">... </span><span class="s1">     CDS             3..14</span>
+<span class="gp">... </span><span class="s1">                     /label=&quot;prot&quot;</span>
+<span class="gp">... </span><span class="s1">ORIGIN</span>
+<span class="gp">... </span><span class="s1">        1 CAATGCATGG ATCGAAT</span>
+<span class="gp">... </span><span class="s1">//</span>
+<span class="gp">... </span><span class="s1">&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">genbankfile</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">genbankfile</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">transcriptconverter</span> <span class="o">=</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">seqnumbering</span><span class="o">.</span><span class="n">TranscriptConverter</span><span class="p">(</span><span class="n">genbankfile</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now create a <a class="reference internal" href="#dms_tools2.minimap2.MutationCaller" title="dms_tools2.minimap2.MutationCaller"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutationCaller</span></code></a> that uses <cite>transcriptconverter</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mutcaller_tc</span> <span class="o">=</span> <span class="n">MutationCaller</span><span class="p">(</span><span class="n">mapper</span><span class="p">,</span> <span class="n">transcriptconverter</span><span class="o">=</span><span class="n">transcriptconverter</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Use it to call the mutations in chromosome coordinates. Note that
+the amino-acid substitutions that result from a nucleotide point
+substitution are also indicated in the results:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">muts_tc</span> <span class="o">=</span> <span class="n">mutcaller_tc</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">qvals</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_tc</span><span class="o">.</span><span class="n">substitutions</span><span class="p">()</span>
+<span class="go">[&#39;chromosome-C6A_prot-His2Asn&#39;, &#39;chromosome-T8C&#39;, &#39;chromosome-G14T&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_tc</span><span class="o">.</span><span class="n">substitutions</span><span class="p">(</span><span class="n">returnval</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+<span class="go">[6, 8, 14]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_tc</span><span class="o">.</span><span class="n">deletions</span><span class="p">()</span>
+<span class="go">[&#39;chromosome-del10to11&#39;, &#39;chromosome-del15to17&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_tc</span><span class="o">.</span><span class="n">deletions</span><span class="p">(</span><span class="n">returnval</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+<span class="go">[10, 15]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_tc</span><span class="o">.</span><span class="n">insertions</span><span class="p">()</span>
+<span class="go">[&#39;chromosome-ins3len2&#39;, &#39;chromosome-ins13len2&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_tc</span><span class="o">.</span><span class="n">insertions</span><span class="p">(</span><span class="n">returnval</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+<span class="go">[3, 13]</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="dms_tools2.minimap2.MutationCaller.call">
+<code class="descname">call</code><span class="sig-paren">(</span><em>a</em>, <em>qvals=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#MutationCaller.call"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.MutationCaller.call" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call mutations in alignment.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>a</cite> (<a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a>)</dt>
+<dd>Call mutations in this alignment.</dd>
+<dt><cite>qvals</cite> (<cite>None</cite> or numpy array)</dt>
+<dd>Array of Q-values for the <strong>entire</strong> query used
+to build alignment, not just aligned region.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><p class="first">A <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> object holding the mutations.
+If you are <strong>not</strong> using <cite>transcriptconverter</cite>,
+mutations are named like this:</p>
+<blockquote>
+<div><ul class="simple">
+<li>“A60T” for substitution (at site 60)</li>
+<li>“ins5len10” for insertion (starts at 5, length 10)</li>
+<li>“del12to14” for deletion (12, 13, and 14 deleted)</li>
+</ul>
+</div></blockquote>
+<p>where the number refers to the alignment target in
+<cite>mapper</cite>.</p>
+<p>If you are using <cite>transcriptconverter</cite>, then mutations are
+named like this:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>“fluNS-A61T_fluNS1-Asp12Val” indicating
+substitution at site 61 in the “fluNS” chromosome
+causing amino-acid substitution Asp12Val in
+the “fluNS1” CDS. If there is no amino-acid
+substitution, the name will just be “fluNS-A61T”.</li>
+<li>“fluNS-ins4len10” for insertion (again, now
+in coordinates of the chromosome, which is “fluNS”.</li>
+<li>“fluNS-del11to13” for deletion.</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dms_tools2.minimap2.MutationConsensus">
+<em class="property">class </em><code class="descclassname">dms_tools2.minimap2.</code><code class="descname">MutationConsensus</code><span class="sig-paren">(</span><em>*</em>, <em>n_mut=2</em>, <em>min_acc=0.999</em>, <em>min_sub_frac=0.3</em>, <em>min_indel_frac=0.5</em>, <em>group_indel_frac=0.9</em>, <em>homopolymer_calling={'n_mut': 3}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#MutationConsensus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.MutationConsensus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Takes consensus of several <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a>.</p>
+<p>Designed for when you have called <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a>
+for several sequences thought to represent the same template.
+The method make some use of statistical information in the
+accuracies computed from quality scores, but is heuristic.
+This is because it is designed for cases where causes other than
+simple sequencing error (e.g., mis-assigned sequences, true mix
+of templates, errors during library preparation) may be present.</p>
+<p>Initialize a <a class="reference internal" href="#dms_tools2.minimap2.MutationConsensus" title="dms_tools2.minimap2.MutationConsensus"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutationConsensus</span></code></a> object with arguments
+below, which become attributes of the object. Then call consensus
+mutations with <a class="reference internal" href="#dms_tools2.minimap2.MutationConsensus.callConsensus" title="dms_tools2.minimap2.MutationConsensus.callConsensus"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutationConsensus.callConsensus</span></code></a> method.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>n_mut</cite> (int)</dt>
+<dd>At least this many sequences must have mutation to
+call it in consensus.</dd>
+<dt><cite>min_acc</cite> (float)</dt>
+<dd>Completely ignore any mutations with accuracy lower
+than this. Should be a threshold that just gets rid
+of really low-accuracy ones. Is <strong>not</strong> applied to
+mutations with an accuracy of NaN (<cite>math.nan</cite>).</dd>
+<dt><cite>min_sub_frac</cite> (float)</dt>
+<dd>More than this fraction of sequences must have
+substitution (point mutation) to call it as present.</dd>
+<dt><cite>min_indel_frac</cite> (float)</dt>
+<dd>More than this fraction of sequences must have an
+indel to call it as present. By default this is more
+stringent than <cite>min_sub_frac</cite> because indel sequencing
+errors are more common and deletions can be enriched
+during PCR.</dd>
+<dt><cite>group_indel_frac</cite> (float)</dt>
+<dd>If other overlap by &gt;= this fraction of their
+total net length with the most common indel,
+group them together as the most common indel.
+Designed to handle this case where alignment issues
+slightly change called boundaries of long indels.</dd>
+<dt><cite>homopolymer_calling</cite> (dict)</dt>
+<dd>More stringent calling of <strong>single-nucleotide</strong>
+indels in hompolymers, which are defined as runs of
+&gt;= 3 consecutive nucleotides. Rationale
+is that main mode of PacBio sequencing errors is
+short indels in homopolymers. Can contain entries
+keyed by “n_mut” and “min_indel_frac”.
+Then for single-nucleotide indels in &gt;= 3 nt homopolymers,
+increases calling stringency to these new parameters.
+If no entry in dict, just uses main values set for
+other mutations, so supply empty dict if you want to
+no homopolymer correction.</dd>
+</dl>
+</dd>
+</dl>
+<p>Mutations are called from the list of <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a>
+passed to <a class="reference internal" href="#dms_tools2.minimap2.MutationConsensus.callConsensus" title="dms_tools2.minimap2.MutationConsensus.callConsensus"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutationConsensus.callConsensus</span></code></a> as follows:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Ignore any mutations with accuracy less then <cite>min_acc</cite>,
+but do <strong>not</strong> eliminate mutations with accuracy that
+is <cite>math.nan</cite>.</li>
+<li>If there are less then <cite>n_mut</cite> <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> passed,
+and they have no mutations, call as wildtype.</li>
+<li>If there are less than <cite>n_mut</cite> <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a>
+passed and some have mutations, call as ambiguous.</li>
+<li>If there are at least <cite>n_mut</cite> <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a>
+passed but less than <cite>n_mut</cite> of them have a mutation,
+call as wildtype.</li>
+<li>If there are at least <cite>n_mut</cite> <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a>
+that contain a specific mutation
+<strong>and</strong> the fraction of <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> that
+have this mutation is &gt;= <cite>min_sub_frac</cite> (for point
+mutations) or <cite>min_indel_frac</cite> (for indels), then call
+the sequence as having the mutation.</li>
+<li>Otherwise call as wildtype.</li>
+</ol>
+</div></blockquote>
+<p>Here is an example.</p>
+<p>First, define some <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m_wt</span> <span class="o">=</span> <span class="n">Mutations</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">substitution_tuples</span><span class="o">=</span><span class="p">[],</span>
+<span class="gp">... </span>        <span class="n">insertion_tuples</span><span class="o">=</span><span class="p">[],</span>
+<span class="gp">... </span>        <span class="n">deletion_tuples</span><span class="o">=</span><span class="p">[])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m_A1G_high_acc</span> <span class="o">=</span> <span class="n">Mutations</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">substitution_tuples</span><span class="o">=</span><span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;A1G&#39;</span><span class="p">,</span> <span class="mi">30</span><span class="p">)],</span>
+<span class="gp">... </span>        <span class="n">insertion_tuples</span><span class="o">=</span><span class="p">[],</span>
+<span class="gp">... </span>        <span class="n">deletion_tuples</span><span class="o">=</span><span class="p">[])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m_A1G_low_acc</span> <span class="o">=</span> <span class="n">Mutations</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">substitution_tuples</span><span class="o">=</span><span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;A1G&#39;</span><span class="p">,</span> <span class="mi">9</span><span class="p">)],</span>
+<span class="gp">... </span>        <span class="n">insertion_tuples</span><span class="o">=</span><span class="p">[],</span>
+<span class="gp">... </span>        <span class="n">deletion_tuples</span><span class="o">=</span><span class="p">[])</span>
+</pre></div>
+</div>
+<p>Initialize a <a class="reference internal" href="#dms_tools2.minimap2.MutationConsensus" title="dms_tools2.minimap2.MutationConsensus"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutationConsensus</span></code></a> with default args:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span> <span class="o">=</span> <span class="n">MutationConsensus</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>A single <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> with no mutation is called wildtype,
+and so returns an empty string:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_wt</span><span class="p">],</span> <span class="s1">&#39;substitutions&#39;</span><span class="p">)</span>
+<span class="go">&#39;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_wt</span><span class="p">],</span> <span class="s1">&#39;insertions&#39;</span><span class="p">)</span>
+<span class="go">&#39;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_wt</span><span class="p">],</span> <span class="s1">&#39;deletions&#39;</span><span class="p">)</span>
+<span class="go">&#39;&#39;</span>
+</pre></div>
+</div>
+<p>Same for two with no mutations:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_wt</span><span class="p">,</span> <span class="n">m_wt</span><span class="p">],</span> <span class="s1">&#39;substitutions&#39;</span><span class="p">)</span>
+<span class="go">&#39;&#39;</span>
+</pre></div>
+</div>
+<p>A single <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> with mutations is called as ambiguous:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_A1G_high_acc</span><span class="p">],</span> <span class="s1">&#39;substitutions&#39;</span><span class="p">)</span>
+<span class="go">&#39;unknown&#39;</span>
+</pre></div>
+</div>
+<p>One with mutations and one without is called wildtype:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_A1G_high_acc</span><span class="p">,</span> <span class="n">m_wt</span><span class="p">],</span> <span class="s1">&#39;substitutions&#39;</span><span class="p">)</span>
+<span class="go">&#39;&#39;</span>
+</pre></div>
+</div>
+<p>Two high-quality mutation calls are give a consensus mutation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_A1G_high_acc</span><span class="p">,</span> <span class="n">m_A1G_high_acc</span><span class="p">],</span> <span class="s1">&#39;substitutions&#39;</span><span class="p">)</span>
+<span class="go">&#39;A1G&#39;</span>
+</pre></div>
+</div>
+<p>But it two low-quality mutation calls do not:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_A1G_low_acc</span><span class="p">,</span> <span class="n">m_A1G_low_acc</span><span class="p">],</span> <span class="s1">&#39;substitutions&#39;</span><span class="p">)</span>
+<span class="go">&#39;&#39;</span>
+</pre></div>
+</div>
+<p>Having two mutation calls and one wildtype call gives mutation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_A1G_high_acc</span><span class="p">,</span> <span class="n">m_A1G_high_acc</span><span class="p">,</span> <span class="n">m_wt</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;substitutions&#39;</span><span class="p">)</span>
+<span class="go">&#39;A1G&#39;</span>
+</pre></div>
+</div>
+<p>Unless the wildtype is in sufficient excess:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_A1G_high_acc</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">[</span><span class="n">m_wt</span><span class="p">]</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s1">&#39;substitutions&#39;</span><span class="p">)</span>
+<span class="go">&#39;&#39;</span>
+</pre></div>
+</div>
+<p>Example with two substitutions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m_A1G_T2A_high_acc</span> <span class="o">=</span> <span class="n">Mutations</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">substitution_tuples</span><span class="o">=</span><span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;A1G&#39;</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;T2A&#39;</span><span class="p">,</span> <span class="mi">30</span><span class="p">)],</span>
+<span class="gp">... </span>        <span class="n">insertion_tuples</span><span class="o">=</span><span class="p">[],</span>
+<span class="gp">... </span>        <span class="n">deletion_tuples</span><span class="o">=</span><span class="p">[])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_A1G_T2A_high_acc</span><span class="p">,</span> <span class="n">m_A1G_T2A_high_acc</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;substitutions&#39;</span><span class="p">)</span>
+<span class="go">&#39;A1G T2A&#39;</span>
+</pre></div>
+</div>
+<p>Example where one sequence has two mutations (enough to be called)
+and the other only has one (not enough to be called):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_A1G_T2A_high_acc</span><span class="p">,</span> <span class="n">m_A1G_high_acc</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;substitutions&#39;</span><span class="p">)</span>
+<span class="go">&#39;A1G&#39;</span>
+</pre></div>
+</div>
+<p>Use the <cite>include_stats</cite> option to get more detailed output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_A1G_T2A_high_acc</span><span class="p">,</span> <span class="n">m_A1G_T2A_high_acc</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">m_A1G_high_acc</span><span class="p">,</span> <span class="n">m_wt</span><span class="p">],</span> <span class="s1">&#39;substitutions&#39;</span><span class="p">,</span> <span class="n">include_stats</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">&#39;A1G_(3/4) T2A_(2/4)&#39;</span>
+</pre></div>
+</div>
+<p>Group sufficiently overlapping indels:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m_shortdel</span> <span class="o">=</span> <span class="n">Mutations</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">substitution_tuples</span><span class="o">=</span><span class="p">[],</span>
+<span class="gp">... </span>        <span class="n">insertion_tuples</span><span class="o">=</span><span class="p">[],</span>
+<span class="gp">... </span>        <span class="n">deletion_tuples</span><span class="o">=</span><span class="p">[(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="s1">&#39;del8to9&#39;</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">1</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m_longdel</span> <span class="o">=</span> <span class="n">Mutations</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">substitution_tuples</span><span class="o">=</span><span class="p">[],</span>
+<span class="gp">... </span>        <span class="n">insertion_tuples</span><span class="o">=</span><span class="p">[],</span>
+<span class="gp">... </span>        <span class="n">deletion_tuples</span><span class="o">=</span><span class="p">[(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="s1">&#39;del8to18&#39;</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">1</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_shortdel</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;deletions&#39;</span><span class="p">)</span>
+<span class="go">&#39;del8to9&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_longdel</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;deletions&#39;</span><span class="p">)</span>
+<span class="go">&#39;del8to18&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m_overlaplongdel</span> <span class="o">=</span> <span class="n">Mutations</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">substitution_tuples</span><span class="o">=</span><span class="p">[],</span>
+<span class="gp">... </span>        <span class="n">insertion_tuples</span><span class="o">=</span><span class="p">[],</span>
+<span class="gp">... </span>        <span class="n">deletion_tuples</span><span class="o">=</span><span class="p">[(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="s1">&#39;del9to17&#39;</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">1</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_longdel</span><span class="p">,</span> <span class="n">m_shortdel</span><span class="p">],</span> <span class="s1">&#39;deletions&#39;</span><span class="p">)</span>
+<span class="go">&#39;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_wt</span><span class="p">,</span> <span class="n">m_longdel</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">m_overlaplongdel</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s1">&#39;deletions&#39;</span><span class="p">)</span>
+<span class="go">&#39;del9to17&#39;</span>
+</pre></div>
+</div>
+<p>Demonstrate <cite>min_acc</cite> filter:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons_no_min_acc</span> <span class="o">=</span> <span class="n">MutationConsensus</span><span class="p">(</span><span class="n">min_acc</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_wt</span><span class="p">,</span> <span class="n">m_A1G_low_acc</span><span class="p">]</span> <span class="o">*</span> <span class="mi">6</span><span class="p">,</span> <span class="s1">&#39;substitutions&#39;</span><span class="p">)</span>
+<span class="go">&#39;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons_no_min_acc</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_wt</span><span class="p">,</span> <span class="n">m_A1G_low_acc</span><span class="p">]</span> <span class="o">*</span> <span class="mi">6</span><span class="p">,</span> <span class="s1">&#39;substitutions&#39;</span><span class="p">)</span>
+<span class="go">&#39;A1G&#39;</span>
+</pre></div>
+</div>
+<p>Demonstrate <cite>homopolymer_calling</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m_homopolymer_indel</span> <span class="o">=</span> <span class="n">Mutations</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">substitution_tuples</span><span class="o">=</span><span class="p">[],</span>
+<span class="gp">... </span>        <span class="n">insertion_tuples</span><span class="o">=</span><span class="p">[(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;ins13len1&#39;</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">3</span><span class="p">)],</span>
+<span class="gp">... </span>        <span class="n">deletion_tuples</span><span class="o">=</span><span class="p">[(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;del9to10&#39;</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+<span class="gp">... </span>                         <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;del5to5&#39;</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">3</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_homopolymer_indel</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;insertions&#39;</span><span class="p">)</span>
+<span class="go">&#39;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_homopolymer_indel</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;deletions&#39;</span><span class="p">)</span>
+<span class="go">&#39;del9to10&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_homopolymer_indel</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;insertions&#39;</span><span class="p">)</span>
+<span class="go">&#39;ins13len1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_homopolymer_indel</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;deletions&#39;</span><span class="p">)</span>
+<span class="go">&#39;del5to5 del9to10&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_homopolymer_indel</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="p">[</span><span class="n">m_wt</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;deletions&#39;</span><span class="p">)</span>
+<span class="go">&#39;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mutcons</span><span class="o">.</span><span class="n">callConsensus</span><span class="p">([</span><span class="n">m_homopolymer_indel</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="p">[</span><span class="n">m_wt</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;deletions&#39;</span><span class="p">)</span>
+<span class="go">&#39;del5to5 del9to10&#39;</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="dms_tools2.minimap2.MutationConsensus.callConsensus">
+<code class="descname">callConsensus</code><span class="sig-paren">(</span><em>mutationlist</em>, <em>mutation_type</em>, <em>*</em>, <em>include_stats=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#MutationConsensus.callConsensus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.MutationConsensus.callConsensus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calls consensus from <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a>.</p>
+<p>The calling is done using the criteria described in the
+main docs for <a class="reference internal" href="#dms_tools2.minimap2.MutationConsensus" title="dms_tools2.minimap2.MutationConsensus"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutationConsensus</span></code></a>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>mutationlist</cite> (list)</dt>
+<dd>List of one or more <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> from
+which we call consensus.</dd>
+<dt><cite>mutation_type</cite> (str)</dt>
+<dd>Type of mutation to call. Should be one of
+‘substitutions’, ‘insertions’, or ‘deletions’.</dd>
+<dt><cite>include_stats</cite> (bool)</dt>
+<dd>Include statistics on number of CCSs that have
+mutation for each called mutation.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A str giving the result. If consensus of mutations
+cannot be called, returns the string “unknown”.
+Otherwise returns empty string if no consensus mutations,
+or a string giving the mutations separated by spaces
+the same way they are returned by the methods of
+<a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a>. Mutations are sorted first by
+number of times observed, and then alphabetically.</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dms_tools2.minimap2.Mutations">
+<em class="property">class </em><code class="descclassname">dms_tools2.minimap2.</code><code class="descname">Mutations</code><span class="sig-paren">(</span><em>*</em>, <em>substitution_tuples</em>, <em>insertion_tuples</em>, <em>deletion_tuples</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#Mutations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.Mutations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to hold mutations.</p>
+<p>Holds three types of mutations: substitutions (point mutations),
+insertions, and deletions.</p>
+<p>The numbering scheme used to define the mutations (e.g.,
+0-based, 1-based) is determined upstream when deciding how to
+number the mutations passed at initialization.</p>
+<p>When initializing, set Q-values to <cite>math.nan</cite> if they are
+not known. The Q-values are used to calculate accuracy
+of mutations via <a class="reference internal" href="dms_tools2.pacbio.html#dms_tools2.pacbio.qvalsToAccuracy" title="dms_tools2.pacbio.qvalsToAccuracy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">dms_tools2.pacbio.qvalsToAccuracy()</span></code></a>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>substitution_tuples</cite> (list)</dt>
+<dd>Substitutions <cite>(i, mut_str, q)</cite> where
+<cite>i</cite> is the site number, <cite>mut_str</cite> is a string
+describing substitution, and <cite>q</cite> is the Q-value.</dd>
+<dt><cite>insertion_tuples</cite> (list)</dt>
+<dd>Insertions <cite>(i, ins_len, mut_str, q, hplen)</cite> where <cite>i</cite>
+is site <strong>after</strong> insertion, <cite>inslen</cite> is insertion length,
+<cite>mut_str</cite> is string describing insertion, <cite>qs</cite> is
+numpy array of Q-values, and <cite>hplen</cite> is length of homopolymer
+in which insertion occurs.</dd>
+<dt><cite>deletion_tuples</cite> (list)</dt>
+<dd>Deletions <cite>(istart, iend, mut_str</cite>, q, hplen)` where
+<cite>istart</cite> is first site of deletion, <cite>iend</cite> is
+last site of deletion (so a single nucleotide
+deletion has <cite>istart == iend</cite>), <cite>mut_str</cite> is string
+describing deletion , <cite>q</cite> is the Q-value of the
+site immediately <strong>after</strong> the deletion in accordance with
+<a class="reference external" href="https://github.com/PacificBiosciences/unanimity/blob/develop/doc/PBCCS.md#interpretting-qual-values">PacBio CCS</a>
+specification, and <cite>hplen</cite> is length of homopolymer
+in which deletion occurs.</dd>
+</dl>
+</dd>
+</dl>
+<p>After intialization, use the methods described below to get
+information about the mutations. All of the methods that
+return lists of mutations do them ordered by site (first to last).</p>
+<p>We keep track of the length of the homopolymers in which
+indels are found because the main error mode of PacBio
+sequencing is indels in homopolymers.</p>
+<p>Here is an example. Note that Q-value of 20 indicates an accuracy
+of 0.99, and a Q-value of 30 indicates an accuracy of 0.999:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span> <span class="o">=</span> <span class="n">Mutations</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">substitution_tuples</span><span class="o">=</span><span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;A1T&#39;</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">),</span>
+<span class="gp">... </span>            <span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="s1">&#39;C15A&#39;</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span> <span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="s1">&#39;G13A&#39;</span><span class="p">,</span> <span class="mi">20</span><span class="p">)],</span>
+<span class="gp">... </span>        <span class="n">insertion_tuples</span><span class="o">=</span><span class="p">[(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;ins5len2&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">],</span> <span class="mi">1</span><span class="p">)],</span>
+<span class="gp">... </span>        <span class="n">deletion_tuples</span><span class="o">=</span><span class="p">[(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;del8to10&#39;</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">substitutions</span><span class="p">()</span>
+<span class="go">[&#39;A1T&#39;, &#39;G13A&#39;, &#39;C15A&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">substitutions</span><span class="p">(</span><span class="n">returnval</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+<span class="go">[1, 13, 15]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">insertions</span><span class="p">()</span>
+<span class="go">[&#39;ins5len2&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">insertions</span><span class="p">(</span><span class="n">returnval</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+<span class="go">[5]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">deletions</span><span class="p">()</span>
+<span class="go">[&#39;del8to10&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">deletions</span><span class="p">(</span><span class="n">returnval</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+<span class="go">[8]</span>
+</pre></div>
+</div>
+<p>Now with some filtering on accuracy:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">substitutions</span><span class="p">(</span><span class="n">min_acc</span><span class="o">=</span><span class="mf">0.99</span><span class="p">)</span>
+<span class="go">[&#39;G13A&#39;, &#39;C15A&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">substitutions</span><span class="p">(</span><span class="n">min_acc</span><span class="o">=</span><span class="mf">0.995</span><span class="p">)</span>
+<span class="go">[&#39;C15A&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">insertions</span><span class="p">(</span><span class="n">min_acc</span><span class="o">=</span><span class="mf">0.991</span><span class="p">)</span>
+<span class="go">[&#39;ins5len2&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">insertions</span><span class="p">(</span><span class="n">min_acc</span><span class="o">=</span><span class="mf">0.999</span><span class="p">)</span>
+<span class="go">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">deletions</span><span class="p">(</span><span class="n">min_acc</span><span class="o">=</span><span class="mf">0.95</span><span class="p">)</span>
+<span class="go">[&#39;del8to10&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">deletions</span><span class="p">(</span><span class="n">min_acc</span><span class="o">=</span><span class="mf">0.999</span><span class="p">)</span>
+<span class="go">[]</span>
+</pre></div>
+</div>
+<p>Now get lengths of insertions / deletions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">deletions</span><span class="p">(</span><span class="n">returnval</span><span class="o">=</span><span class="s1">&#39;length&#39;</span><span class="p">)</span>
+<span class="go">[3]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">insertions</span><span class="p">(</span><span class="n">returnval</span><span class="o">=</span><span class="s1">&#39;length&#39;</span><span class="p">)</span>
+<span class="go">[2]</span>
+</pre></div>
+</div>
+<p>Get homopolymer lengths:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">deletions</span><span class="p">(</span><span class="n">returnval</span><span class="o">=</span><span class="s1">&#39;homopolymer_length&#39;</span><span class="p">)</span>
+<span class="go">[2]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts</span><span class="o">.</span><span class="n">insertions</span><span class="p">(</span><span class="n">returnval</span><span class="o">=</span><span class="s1">&#39;homopolymer_length&#39;</span><span class="p">)</span>
+<span class="go">[1]</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="dms_tools2.minimap2.Mutations.deletions">
+<code class="descname">deletions</code><span class="sig-paren">(</span><em>*</em>, <em>returnval='mutation'</em>, <em>min_acc=None</em>, <em>min_acc_filter_nan=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#Mutations.deletions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.Mutations.deletions" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of deletions.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>min_acc</cite> (float or <cite>None</cite>)</dt>
+<dd>Only include deletions with &gt;= this accuracy.</dd>
+<dt><cite>min_acc_filter_nan</cite> (bool)</dt>
+<dd>If using <cite>min_acc</cite> filter, do we also remove
+mutations with an accuracy that is <cite>math.nan</cite>?</dd>
+<dt><cite>returnval</cite> (str)</dt>
+<dd><p class="first">Type of value to return in list:</p>
+<ul class="last simple">
+<li>“mutation”: Strings giving mutations, where
+“del12to13” means deletion of nucleotides 12
+to 13, inclusive.</li>
+<li>“site”: Sites of where deletions start.</li>
+<li>“length”: Integers giving deletion lengths.</li>
+<li>“accuracy”: Numbers giving accuracy of each
+mutation. Accuracy is for first nucleotide <strong>after</strong>
+deletion.</li>
+<li>“homopolymer_length”: Integers giving length
+of homopolymer in which deletion is found.</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>List of mutations or other value specified by <cite>returnval</cite>.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_tools2.minimap2.Mutations.insertions">
+<code class="descname">insertions</code><span class="sig-paren">(</span><em>*</em>, <em>returnval='mutation'</em>, <em>min_acc=None</em>, <em>min_acc_filter_nan=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#Mutations.insertions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.Mutations.insertions" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of insertions.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>min_acc</cite> (float or <cite>None</cite>)</dt>
+<dd>Only include insertions with &gt;= this accuracy.</dd>
+<dt><cite>min_acc_filter_nan</cite> (bool)</dt>
+<dd>If using <cite>min_acc</cite> filter, do we also remove
+mutations with an accuracy that is <cite>math.nan</cite>?</dd>
+<dt><cite>returnval</cite> (str)</dt>
+<dd><p class="first">Type of value to return in list:</p>
+<ul class="last simple">
+<li>“mutation”: Strings giving mutations, where
+“ins10len20” means insertion of length 20
+immediately before site 10.</li>
+<li>“site”: Sites of insertions.</li>
+<li>“length”: Integers giving insertion lengths.</li>
+<li>“accuracy”: Numbers giving accuracy of each
+mutation. Accuracy of insertion is averaged
+over its length.</li>
+<li>“homopolymer_length”: Integers giving length
+of homopolymer in which insertion is found.</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>List of mutations or other value specified by <cite>returnval</cite>.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_tools2.minimap2.Mutations.substitutions">
+<code class="descname">substitutions</code><span class="sig-paren">(</span><em>*</em>, <em>returnval='mutation'</em>, <em>min_acc=None</em>, <em>min_acc_filter_nan=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#Mutations.substitutions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.Mutations.substitutions" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of substitutions or associated values.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>min_acc</cite> (float or <cite>None</cite>)</dt>
+<dd>Only include substitutions with &gt;= this accuracy.</dd>
+<dt><cite>min_acc_filter_nan</cite> (bool)</dt>
+<dd>If using <cite>min_acc</cite> filter, do we also remove
+mutations with an accuracy that is <cite>math.nan</cite>?</dd>
+<dt><cite>returnval</cite> (str)</dt>
+<dd><p class="first">Type of value to return in list:</p>
+<ul class="last simple">
+<li>“mutation”: Strings giving mutations, where
+“A1T” means site 1 is mutated from A to T.</li>
+<li>“site”: Sites of substitutions.</li>
+<li>“accuracy”: Numbers giving accuracy of each
+mutation.</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>List of mutations or other value specified by <cite>returnval</cite>.</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="data">
+<dt id="dms_tools2.minimap2.OPTIONS_CODON_DMS">
+<code class="descclassname">dms_tools2.minimap2.</code><code class="descname">OPTIONS_CODON_DMS</code><em class="property"> = ['--for-only', '-A2', '-B4', '-O12', '-E2', '--secondary=no', '--end-bonus=13']</em><a class="headerlink" href="#dms_tools2.minimap2.OPTIONS_CODON_DMS" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>options</cite> argument to <a class="reference internal" href="#dms_tools2.minimap2.Mapper" title="dms_tools2.minimap2.Mapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapper</span></code></a> that works well
+for codon-mutant libraries such as those created for
+deep mutational scanning. Indels are highly penalized
+as they are not expected, and settings are used that
+effectively call strings of consecutive nucleotide
+mutations as expected during codon mutagenesis. The
+queries are assumed to be in the same orientation as
+the target.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="dms_tools2.minimap2.OPTIONS_VIRUS_W_DEL">
+<code class="descclassname">dms_tools2.minimap2.</code><code class="descname">OPTIONS_VIRUS_W_DEL</code><em class="property"> = ['-x', 'splice', '-un', '-C0', '--splice-flank=no', '--mask-level=1', '--secondary=no', '--for-only', '--end-seed-pen=2', '--end-bonus=1']</em><a class="headerlink" href="#dms_tools2.minimap2.OPTIONS_VIRUS_W_DEL" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>options</cite> argument to <a class="reference internal" href="#dms_tools2.minimap2.Mapper" title="dms_tools2.minimap2.Mapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapper</span></code></a> that works well
+for libraries that contain viral genes expected to
+potentially have both point mutations (at nucleotide, not
+codon level) and some longer deletions.
+The queries are assumed to be in the same orientation
+as the target. These options resemble those suggested for
+<a class="reference external" href="https://github.com/lh3/minimap2/blob/master/cookbook.md#map-iso-seq">PacBio IsoSeq</a>
+but use <cite>-C0</cite> and <cite>-un</cite> to avoid splice-site preference as
+we want to trick the aligner into thinking long deletions are
+spliced introns.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="dms_tools2.minimap2.TargetVariants">
+<em class="property">class </em><code class="descclassname">dms_tools2.minimap2.</code><code class="descname">TargetVariants</code><span class="sig-paren">(</span><em>variantfiles</em>, <em>mapper</em>, <em>*</em>, <em>variantsites_min_acc=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#TargetVariants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.TargetVariants" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>After alignment, assign to one of several target variants.</p>
+<p>Useful if you aligned against one set of targets, but
+in reality the queries could align to several different
+<strong>point mutant</strong> variants of that target. Use this
+class to take the alignments and see if they instead exactly
+match a variant of the target.</p>
+<p>Initialize to specify the target variants, then classify
+using <a class="reference internal" href="#dms_tools2.minimap2.TargetVariants.call" title="dms_tools2.minimap2.TargetVariants.call"><code class="xref py py-class docutils literal notranslate"><span class="pre">TargetVariants.call</span></code></a>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>variantfiles</cite> (dict)</dt>
+<dd>Specifies FASTA files giving the target variants.
+Each file must have the same target names as in
+<cite>mapper.targetfile</cite>. These are the variants to
+which we compare the queries, and they must be
+point mutants (same length) as the targets for
+<cite>mapper</cite>. Currently only works when there are
+two sets of variants.</dd>
+<dt><cite>mapper</cite> (<a class="reference internal" href="#dms_tools2.minimap2.Mapper" title="dms_tools2.minimap2.Mapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapper</span></code></a>)</dt>
+<dd>The mapper used to make the alignments. Used to check
+that the sequences specified in <cite>variantfiles</cite> are
+proper point mutant variants of the alignment targets.</dd>
+<dt><cite>variantsites_min_acc</cite> (float or <cite>None</cite>)</dt>
+<dd>Minimum required accuracy (computed from Q-values)
+required for calling by <a class="reference internal" href="#dms_tools2.minimap2.TargetVariants.call" title="dms_tools2.minimap2.TargetVariants.call"><code class="xref py py-class docutils literal notranslate"><span class="pre">TargetVariants.call</span></code></a>.</dd>
+</dl>
+</dd>
+<dt>Attributes:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>variantfiles</cite> (dict)</dt>
+<dd>See above.</dd>
+<dt><cite>mapper</cite> (<a class="reference internal" href="#dms_tools2.minimap2.Mapper" title="dms_tools2.minimap2.Mapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapper</span></code></a>)</dt>
+<dd>See above.</dd>
+<dt><cite>variantsites_min_acc</cite> (float or <cite>None</cite>)</dt>
+<dd>See above.</dd>
+<dt><cite>variantnames</cite> (list)</dt>
+<dd>Alphabeticized list of the variant names that key
+<cite>variantfiles</cite>.</dd>
+<dt><cite>targetnames</cite> (list)</dt>
+<dd>Alphabeticized list of the target names.</dd>
+<dt><cite>variantseqs</cite> (dict)</dt>
+<dd>The actual sequences in <cite>variantfiles</cite>. Keyed
+by each variant in <cite>variantnames</cite>, then keyed
+by each name in <cite>targetnames</cite>, and values
+are the sequences for that variant of that target.</dd>
+<dt><cite>variablesites</cite> (dict)</dt>
+<dd>Keyed by target names, each value is a list of
+all sites that differ between target variants,
+sorted and in 0, 1, … indexing.</dd>
+<dt><cite>sitevariants</cite> (dict)</dt>
+<dd><cite>sitevariants[target][variant]</cite> is a list that gives
+the identity of  <cite>variant</cite> for target ` at each site
+in <cite>variablesites[target]</cite>.</dd>
+</dl>
+</dd>
+</dl>
+<p>Here is a short example.</p>
+<p>First, create two target seqs, and two variants that each
+differ at two positions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">target1_wt</span>  <span class="o">=</span> <span class="s1">&#39;ATGCATGAA&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">target1_var</span> <span class="o">=</span> <span class="s1">&#39;ATCCATGTA&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">target2_wt</span>  <span class="o">=</span> <span class="s1">&#39;GATACCCGG&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">target2_var</span> <span class="o">=</span> <span class="s1">&#39;GCTACCCCG&#39;</span>
+</pre></div>
+</div>
+<p>Now write these to two targetfiles, initialize <a class="reference internal" href="#dms_tools2.minimap2.Mapper" title="dms_tools2.minimap2.Mapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapper</span></code></a>
+with the wildtype target sets, initialize <a class="reference internal" href="#dms_tools2.minimap2.TargetVariants" title="dms_tools2.minimap2.TargetVariants"><code class="xref py py-class docutils literal notranslate"><span class="pre">TargetVariants</span></code></a>
+with wildtype and variant target sets:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">TempFile</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">TempFile</span><span class="p">()</span> <span class="k">as</span> <span class="n">wtfile</span><span class="p">,</span> <span class="n">TempFile</span><span class="p">()</span> <span class="k">as</span> <span class="n">varfile</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">wtfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;&gt;target1</span><span class="se">\n</span><span class="si">{0}</span><span class="se">\n</span><span class="s1">&gt;target2</span><span class="se">\n</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+<span class="gp">... </span>                     <span class="n">target1_wt</span><span class="p">,</span> <span class="n">target2_wt</span><span class="p">))</span>
+<span class="gp">... </span>    <span class="n">wtfile</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">varfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;&gt;target1</span><span class="se">\n</span><span class="si">{0}</span><span class="se">\n</span><span class="s1">&gt;target2</span><span class="se">\n</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+<span class="gp">... </span>                      <span class="n">target1_var</span><span class="p">,</span> <span class="n">target2_var</span><span class="p">))</span>
+<span class="gp">... </span>    <span class="n">varfile</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">mapper</span> <span class="o">=</span> <span class="n">Mapper</span><span class="p">(</span><span class="n">wtfile</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">OPTIONS_CODON_DMS</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">targetvars</span> <span class="o">=</span> <span class="n">TargetVariants</span><span class="p">(</span>
+<span class="gp">... </span>            <span class="p">{</span><span class="s1">&#39;wildtype&#39;</span><span class="p">:</span><span class="n">wtfile</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;variant&#39;</span><span class="p">:</span><span class="n">varfile</span><span class="o">.</span><span class="n">name</span><span class="p">},</span>
+<span class="gp">... </span>            <span class="n">mapper</span><span class="p">,</span> <span class="n">variantsites_min_acc</span><span class="o">=</span><span class="mf">0.99</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">targetvars</span><span class="o">.</span><span class="n">variantnames</span>
+<span class="go">[&#39;variant&#39;, &#39;wildtype&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">targetvars</span><span class="o">.</span><span class="n">targetnames</span>
+<span class="go">[&#39;target1&#39;, &#39;target2&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">sorted</span><span class="p">(</span><span class="n">targetvars</span><span class="o">.</span><span class="n">variablesites</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+<span class="go">[(&#39;target1&#39;, [2, 7]), (&#39;target2&#39;, [1, 7])]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">targetvars</span><span class="o">.</span><span class="n">sitevariants</span> <span class="o">==</span> <span class="p">{</span>
+<span class="gp">... </span>        <span class="s1">&#39;target1&#39;</span><span class="p">:{</span><span class="s1">&#39;wildtype&#39;</span><span class="p">:[</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">],</span> <span class="s1">&#39;variant&#39;</span><span class="p">:[</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">]},</span>
+<span class="gp">... </span>        <span class="s1">&#39;target2&#39;</span><span class="p">:{</span><span class="s1">&#39;wildtype&#39;</span><span class="p">:[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">],</span> <span class="s1">&#39;variant&#39;</span><span class="p">:[</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">]}}</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Now test on some alignments. First, one that matches the
+wildtype of target2:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a_wildtype</span> <span class="o">=</span> <span class="n">Alignment</span><span class="p">(</span><span class="n">q_st</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">q_en</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">q_len</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">strand</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">r_st</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">r_en</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">r_len</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s1">&#39;target2&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">additional</span><span class="o">=</span><span class="p">[],</span> <span class="n">cigar_str</span><span class="o">=</span><span class="s1">&#39;=ATACCCGG&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">variant</span><span class="p">,</span> <span class="n">a_new</span><span class="p">)</span> <span class="o">=</span> <span class="n">targetvars</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">a_wildtype</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variant</span>
+<span class="go">&#39;wildtype&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a_wildtype</span> <span class="o">==</span> <span class="n">a_new</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Now one that matches the variant of target2:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a_variant</span> <span class="o">=</span> <span class="n">a_wildtype</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">cigar_str</span><span class="o">=</span><span class="s1">&#39;*ac=TACCC*gc=G&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">variant</span><span class="p">,</span> <span class="n">a_new</span><span class="p">)</span> <span class="o">=</span> <span class="n">targetvars</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">a_variant</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variant</span>
+<span class="go">&#39;variant&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a_variant</span> <span class="o">==</span> <span class="n">a_new</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a_new</span><span class="o">.</span><span class="n">cigar_str</span>
+<span class="go">&#39;=CTACCCCG&#39;</span>
+</pre></div>
+</div>
+<p>Now one that matches the variant of target2, but also has another
+mutation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a_variant</span> <span class="o">=</span> <span class="n">a_wildtype</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">cigar_str</span><span class="o">=</span><span class="s1">&#39;*ac=TA*ca=CC*gc=G&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">variant</span><span class="p">,</span> <span class="n">a_new</span><span class="p">)</span> <span class="o">=</span> <span class="n">targetvars</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">a_variant</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variant</span>
+<span class="go">&#39;variant&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a_variant</span> <span class="o">==</span> <span class="n">a_new</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a_new</span><span class="o">.</span><span class="n">cigar_str</span>
+<span class="go">&#39;=CTA*ca=CCCG&#39;</span>
+</pre></div>
+</div>
+<p>Now one that is mixed (doesn’t match either wildtype or variant):</p>
+<p>Now one that is mixed (doesn’t match either wildtype or variant):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a_mixed</span> <span class="o">=</span> <span class="n">a_wildtype</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">cigar_str</span><span class="o">=</span><span class="s1">&#39;=ATACCC*gc=G&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">variant</span><span class="p">,</span> <span class="n">a_new</span><span class="p">)</span> <span class="o">=</span> <span class="n">targetvars</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">a_mixed</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variant</span>
+<span class="go">&#39;mixed&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a_mixed</span> <span class="o">==</span> <span class="n">a_new</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Now an alignment that only spans some variable sites:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a_var_partial</span> <span class="o">=</span> <span class="n">Alignment</span><span class="p">(</span><span class="n">q_st</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">q_en</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">q_len</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">strand</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">r_st</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">r_en</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">r_len</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s1">&#39;target2&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">additional</span><span class="o">=</span><span class="p">[],</span> <span class="n">cigar_str</span><span class="o">=</span><span class="s1">&#39;=TACCC*gc=G&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">variant</span><span class="p">,</span> <span class="n">a_new</span><span class="p">)</span> <span class="o">=</span> <span class="n">targetvars</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">a_var_partial</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variant</span>
+<span class="go">&#39;partial variant&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a_var_partial</span> <span class="o">==</span> <span class="n">a_new</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a_new</span><span class="o">.</span><span class="n">cigar_str</span>
+<span class="go">&#39;=TACCCCG&#39;</span>
+</pre></div>
+</div>
+<p>Now alignments that do and do not pass the accuracy
+threshold:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a_qvals</span> <span class="o">=</span> <span class="n">Alignment</span><span class="p">(</span><span class="n">q_st</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">q_en</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">q_len</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">strand</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">r_st</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">r_en</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">r_len</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s1">&#39;target2&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">additional</span><span class="o">=</span><span class="p">[],</span> <span class="n">cigar_str</span><span class="o">=</span><span class="s1">&#39;=ATACCCGG&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">qvals_high</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">30</span><span class="p">]</span> <span class="o">*</span> <span class="mi">9</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">variant</span><span class="p">,</span> <span class="n">a_new</span><span class="p">)</span> <span class="o">=</span> <span class="n">targetvars</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">a_qvals</span><span class="p">,</span> <span class="n">qvals_high</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variant</span>
+<span class="go">&#39;wildtype&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">qvals_low</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">30</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mi">30</span><span class="p">]</span> <span class="o">*</span> <span class="mi">7</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">variant</span><span class="p">,</span> <span class="n">a_new</span><span class="p">)</span> <span class="o">=</span> <span class="n">targetvars</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">a_qvals</span><span class="p">,</span> <span class="n">qvals_low</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variant</span>
+<span class="go">&#39;low accuracy&#39;</span>
+</pre></div>
+</div>
+<p>Now an alignment that does not span any variable sites:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a_unknown</span> <span class="o">=</span> <span class="n">Alignment</span><span class="p">(</span><span class="n">q_st</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">q_en</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">q_len</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">strand</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">r_st</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">r_en</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">r_len</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s1">&#39;target2&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">additional</span><span class="o">=</span><span class="p">[],</span> <span class="n">cigar_str</span><span class="o">=</span><span class="s1">&#39;=TACCC&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">variant</span><span class="p">,</span> <span class="n">a_new</span><span class="p">)</span> <span class="o">=</span> <span class="n">targetvars</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">a_unknown</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a_unknown</span> <span class="o">==</span> <span class="n">a_new</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variant</span>
+<span class="go">&#39;unknown&#39;</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="dms_tools2.minimap2.TargetVariants.call">
+<code class="descname">call</code><span class="sig-paren">(</span><em>a</em>, <em>qvals=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#TargetVariants.call"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.TargetVariants.call" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call target variant for an alignment.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>a</cite> (<a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a>)</dt>
+<dd>The alignment (built with <cite>mapper</cite>) for which
+we want to call the target variant.</dd>
+<dt><cite>qvals</cite> (<cite>None</cite> or numpy array)</dt>
+<dd>Array of all Q-values for <strong>entire</strong> query used to
+build alignment, not just aligned region. If not <cite>None</cite>
+<strong>and</strong> <cite>variantsites_min_acc</cite> attribute is not <cite>None</cite>,
+then an accuracy requirement is imposed.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><p class="first">The 2-tuple <cite>(variant, new_a)</cite>. Possible values are:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>If <cite>a</cite> does not cover any of the variable sites,
+then <cite>variant</cite> is “unknown” and <cite>new_a</cite> is
+just <cite>a</cite>.</li>
+<li>If any of the variable sites in <cite>a</cite> don’t meet
+the accuracy threshold of <cite>variantsites_min_acc</cite>, then
+<cite>variant</cite> is “low accuracy” and <cite>new_a</cite> is just <cite>a</cite>.</li>
+<li>If all of the variable sites present in <cite>a</cite> don’t
+exactly match one of the variants, then <cite>variant</cite>
+is “mixed” and <cite>new_a</cite> is just <cite>a</cite>.</li>
+<li>If <cite>a</cite> exactly matches one of the target variants
+at all variable sites, then <cite>variant</cite> is a
+variant in <code class="xref py py-class docutils literal notranslate"><span class="pre">TargetVariant.variantnames</span></code> and
+<cite>new_a</cite> is a version of <cite>a</cite> in which any mismatches
+relative to this target variant have been removed
+from the <a class="reference internal" href="#dms_tools2.minimap2.Alignment.cigar_str" title="dms_tools2.minimap2.Alignment.cigar_str"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment.cigar_str</span></code></a> attribute.</li>
+<li>If <cite>a</cite> only covers some of the variable sites but all
+of these match one of the target variants, then
+<cite>variant</cite> is “partial &lt;variant&gt;” where &lt;variant&gt;
+is a variant in <code class="xref py py-class docutils literal notranslate"><span class="pre">TargetVariant.variantnames</span></code>,
+and <cite>new_a</cite> is a version of <cite>a</cite> in which any mismatches
+relative to this target variant havea been removed
+from the <a class="reference internal" href="#dms_tools2.minimap2.Alignment.cigar_str" title="dms_tools2.minimap2.Alignment.cigar_str"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment.cigar_str</span></code></a> attribute.</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.minimap2.checkAlignment">
+<code class="descclassname">dms_tools2.minimap2.</code><code class="descname">checkAlignment</code><span class="sig-paren">(</span><em>a</em>, <em>target</em>, <em>query</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#checkAlignment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.checkAlignment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks alignment is valid given target and query.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>a</cite> (<a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a>)</dt>
+<dd>The alignment.</dd>
+<dt><cite>target</cite> (str)</dt>
+<dd>The target to which <cite>query</cite> is aligned.</dd>
+<dt><cite>query</cite> (str)</dt>
+<dd>The query aligned to <cite>target</cite>.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><cite>True</cite> if <cite>a</cite> is a valid alignment of <cite>query</cite>
+to <cite>target</cite>, <cite>False</cite> otherwise. Being valid does
+not mean an alignment is good, just that the
+start / ends and CIGAR in <cite>a</cite> are valid.</dd>
+</dl>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;ATGCAT&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;TACA&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a_valid</span> <span class="o">=</span> <span class="n">Alignment</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="s1">&#39;target&#39;</span><span class="p">,</span> <span class="n">r_st</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">r_en</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">r_len</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">q_st</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">q_en</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">q_len</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">strand</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">cigar_str</span><span class="o">=</span><span class="s1">&#39;=T*ga=CA&#39;</span><span class="p">,</span> <span class="n">additional</span><span class="o">=</span><span class="p">[],</span> <span class="n">score</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">checkAlignment</span><span class="p">(</span><span class="n">a_valid</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a_invalid</span> <span class="o">=</span> <span class="n">a_valid</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">r_st</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">r_en</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">checkAlignment</span><span class="p">(</span><span class="n">a_invalid</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;ATGCAT&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a_valid2</span> <span class="o">=</span> <span class="n">Alignment</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="s1">&#39;target&#39;</span><span class="p">,</span> <span class="n">r_st</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">r_en</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">r_len</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">q_st</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">q_en</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">q_len</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">strand</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">cigar_str</span><span class="o">=</span><span class="s1">&#39;=A+tgc-tgc=AT&#39;</span><span class="p">,</span> <span class="n">additional</span><span class="o">=</span><span class="p">[],</span> <span class="n">score</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">checkAlignment</span><span class="p">(</span><span class="n">a_valid2</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.minimap2.cigarToQueryAndTarget">
+<code class="descclassname">dms_tools2.minimap2.</code><code class="descname">cigarToQueryAndTarget</code><span class="sig-paren">(</span><em>cigar</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#cigarToQueryAndTarget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.cigarToQueryAndTarget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <cite>(query, target)</cite> specified by PAF long CIGAR.</p>
+<p>Cannot handle CIGAR strings with intron operations.
+To check those, you first need to run through
+<a class="reference internal" href="#dms_tools2.minimap2.intronsToGaps" title="dms_tools2.minimap2.intronsToGaps"><code class="xref py py-meth docutils literal notranslate"><span class="pre">intronsToGaps()</span></code></a>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>cigar</cite> (str)</dt>
+<dd>CIGAR string.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>The 2-tuple <cite>(query, target)</cite>, where each is
+a string giving the encoded query and target.</dd>
+</dl>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cigarToQueryAndTarget</span><span class="p">(</span><span class="s1">&#39;=AT*ac=G+at=AG-ac=T&#39;</span><span class="p">)</span>
+<span class="go">(&#39;ATCGATAGT&#39;, &#39;ATAGAGACT&#39;)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cigarToQueryAndTarget</span><span class="p">(</span><span class="s1">&#39;=A+tgc-tgc=AT&#39;</span><span class="p">)</span>
+<span class="go">(&#39;ATGCAT&#39;, &#39;ATGCAT&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.minimap2.iTargetToQuery">
+<code class="descclassname">dms_tools2.minimap2.</code><code class="descname">iTargetToQuery</code><span class="sig-paren">(</span><em>a</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#iTargetToQuery"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.iTargetToQuery" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets index in query aligned to target index.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>a</cite> (<a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a>)</dt>
+<dd>The alignment.</dd>
+<dt><cite>i</cite> (int)</dt>
+<dd>Index in target in 0-based numbering.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>Index in query that aligns to site <cite>i</cite> in target,
+or <cite>None</cite> if there is not an alignment at that site.</dd>
+</dl>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">Alignment</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="s1">&#39;target&#39;</span><span class="p">,</span> <span class="n">r_st</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">r_en</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">r_len</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">q_st</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">q_en</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">q_len</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">strand</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">cigar_str</span><span class="o">=</span><span class="s1">&#39;=T*ga=CA-ga=T+c=T&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">additional</span><span class="o">=</span><span class="p">[],</span> <span class="n">score</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iTargetToQuery</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iTargetToQuery</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iTargetToQuery</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="go">6</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iTargetToQuery</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iTargetToQuery</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+<span class="go">7</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iTargetToQuery</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+<span class="go">9</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iTargetToQuery</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.minimap2.intronsToGaps">
+<code class="descclassname">dms_tools2.minimap2.</code><code class="descname">intronsToGaps</code><span class="sig-paren">(</span><em>cigar</em>, <em>target</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#intronsToGaps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.intronsToGaps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts introns to gaps in CIGAR string.</p>
+<p>If you run <code class="docutils literal notranslate"><span class="pre">minimap2</span></code>, it reports introns differently
+than gaps in the target. This function converts
+the intron notation to gaps. This is useful if you are
+using the introns as an ad-hoc way to identify
+long gaps.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>cigar</cite> (str)</dt>
+<dd>PAF long CIGAR string, format is
+<a class="reference external" href="https://github.com/lh3/minimap2#cs">detailed here</a>.</dd>
+<dt><cite>target</cite> (str)</dt>
+<dd>The exact portion of the target aligned to the query
+in <cite>cigar</cite>.</dd>
+</dl>
+</dd>
+</dl>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;ATGGAACTAGCATCTAG&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cigar</span> <span class="o">=</span> <span class="s1">&#39;=A+ca=TG-g=A*ag=CT~ag5at=CTAG&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">intronsToGaps</span><span class="p">(</span><span class="n">cigar</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+<span class="go">&#39;=A+ca=TG-g=A*ag=CT-agcat=CTAG&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.minimap2.mutateSeq">
+<code class="descclassname">dms_tools2.minimap2.</code><code class="descname">mutateSeq</code><span class="sig-paren">(</span><em>wtseq</em>, <em>mutations</em>, <em>insertions</em>, <em>deletions</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#mutateSeq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.mutateSeq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mutates sequence and gets CIGAR.</p>
+<p>Primarily useful for simulations.</p>
+<p>In the mutation specifications below, 0-based numbering
+is used. Sequence characters are upper case nucleotides.
+Operations are applied in the order: mutations, insertions,
+deletions. So a deletion can overwrite a mutation or insertion.
+The entire insertion counts as just one added site when indexing
+the deletions. You will get an error if deletions and insertions
+overlap.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>wtseq</cite> (str)</dt>
+<dd>The wildtype sequence.</dd>
+<dt><cite>mutations</cite> (list)</dt>
+<dd>List of point mutations in form <cite>(i, mut)</cite> where
+<cite>i</cite> is site and <cite>mut</cite> is mutant amino acid (can be
+same as wildtype).</dd>
+<dt><cite>deletions</cite> (list)</dt>
+<dd>List of deletion locations in form <cite>(istart, iend)</cite>.</dd>
+<dt><cite>insertions</cite> (list)</dt>
+<dd>List of insertions in form <cite>(i, seqtoinsert)</cite>.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>The 2-tuple <cite>(mutantseq, cigar)</cite> where <cite>cigar</cite> is the CIGAR
+in <a class="reference external" href="https://github.com/lh3/minimap2#cs">PAF long format</a>.</dd>
+</dl>
+<p>Here is an example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">wtseq</span> <span class="o">=</span> <span class="s1">&#39;ATGGAATGA&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">mutantseq</span><span class="p">,</span> <span class="n">cigar</span><span class="p">)</span> <span class="o">=</span> <span class="n">mutateSeq</span><span class="p">(</span><span class="n">wtseq</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mutantseq</span> <span class="o">==</span> <span class="n">wtseq</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cigar</span> <span class="o">==</span> <span class="s1">&#39;=&#39;</span> <span class="o">+</span> <span class="n">wtseq</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">mutantseq</span><span class="p">,</span> <span class="n">cigar</span><span class="p">)</span> <span class="o">=</span> <span class="n">mutateSeq</span><span class="p">(</span><span class="n">wtseq</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">)],</span>
+<span class="gp">... </span>        <span class="p">[(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;TAC&#39;</span><span class="p">)],</span> <span class="p">[(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mutantseq</span>
+<span class="go">&#39;CTGAAGTACA&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cigar</span>
+<span class="go">&#39;*ac=TG*ga=A-at=G+tac=A&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.minimap2.numAligned">
+<code class="descclassname">dms_tools2.minimap2.</code><code class="descname">numAligned</code><span class="sig-paren">(</span><em>cigar</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#numAligned"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.numAligned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets number of aligned nucleotides from PAF long CIGAR.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>cigar</cite> (str)</dt>
+<dd>CIGAR str.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>The number of aligned nucleotides in the cigar, where a
+nucleotide is considered aligned if it is either a
+match or a point mutation, but not if it is an indel.</dd>
+</dl>
+<p>Example: the CIGAR below has 3 matches, a deletion, 5 matches,
+2 mutations, 2 matches, an insertion, 3 matches, 1 mutation, and
+2 matches. So this counts as 3 + 5 + 2 + 2 + 3 + 1 + 2 = 18
+aligned nucleotides:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">numAligned</span><span class="p">(</span><span class="s1">&#39;=ACT-gata=AGTCA*ta*ga=TA+tta=GCA*ca=GT&#39;</span><span class="p">)</span>
+<span class="go">18</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.minimap2.numExactMatches">
+<code class="descclassname">dms_tools2.minimap2.</code><code class="descname">numExactMatches</code><span class="sig-paren">(</span><em>cigar</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#numExactMatches"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.numExactMatches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number exactly matched nucleotides in long CIGAR.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">numExactMatches</span><span class="p">(</span><span class="s1">&#39;=ATG-aca=A*gc+ac=TAC&#39;</span><span class="p">)</span>
+<span class="go">7</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.minimap2.parsePAF">
+<code class="descclassname">dms_tools2.minimap2.</code><code class="descname">parsePAF</code><span class="sig-paren">(</span><em>paf_file</em>, <em>targets=None</em>, <em>introns_to_gaps=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#parsePAF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.parsePAF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse <code class="docutils literal notranslate"><span class="pre">*.paf</span></code> file as created by <code class="docutils literal notranslate"><span class="pre">minimap2</span></code>.</p>
+<p><cite>paf_file</cite> is assumed to be created with
+the <code class="docutils literal notranslate"><span class="pre">minimap2</span></code> options <code class="docutils literal notranslate"><span class="pre">-c</span> <span class="pre">--cs=long</span></code>, which
+creates long <cite>cs</cite> tags with the CIGAR string.</p>
+<p>PAF format is <a class="reference external" href="https://github.com/lh3/miniasm/blob/master/PAF.md">described here</a>.
+PAF long CIGAR string format from <code class="docutils literal notranslate"><span class="pre">minimap2</span></code> is
+<a class="reference external" href="https://github.com/lh3/minimap2#cs">detailed here</a>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>paf_file</cite> (str or iterator)</dt>
+<dd>If str, should be name of <code class="docutils literal notranslate"><span class="pre">*.paf</span></code> file.
+Otherwise should be an iterator that returns
+lines as would be read from a PAF file.</dd>
+<dt><cite>targets</cite> (dict or <cite>None</cite>)</dt>
+<dd>If not <cite>None</cite>, is dict keyed by target names,
+with values target sequences. You need to provide
+this if <code class="docutils literal notranslate"><span class="pre">minimap2</span></code> is run with a <code class="docutils literal notranslate"><span class="pre">--splice</span></code>
+option and <cite>introns_to_gaps</cite> is <cite>True</cite>.</dd>
+<dt><cite>introns_to_gap</cite> (bool)</dt>
+<dd>Pass CIGAR strings through <a class="reference internal" href="#dms_tools2.minimap2.intronsToGaps" title="dms_tools2.minimap2.intronsToGaps"><code class="xref py py-meth docutils literal notranslate"><span class="pre">intronsToGaps()</span></code></a>.
+Requires you to provide <cite>targets</cite>.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A generator that yields query / alignments on each line in
+<cite>paf_file</cite>. Returned as the 2-tuple <cite>(query_name, a)</cite>,
+where <cite>query_name</cite> is a str giving the name of the query
+sequence, and <cite>a</cite> is an <a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a>.</dd>
+</dl>
+<p>Here is a short example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">paf_file</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+<span class="gp">... </span>        <span class="s1">&#39;myquery&#39;</span><span class="p">,</span> <span class="s1">&#39;10&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;10&#39;</span><span class="p">,</span> <span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="s1">&#39;mytarget&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s1">&#39;20&#39;</span><span class="p">,</span> <span class="s1">&#39;5&#39;</span><span class="p">,</span> <span class="s1">&#39;15&#39;</span><span class="p">,</span> <span class="s1">&#39;9&#39;</span><span class="p">,</span> <span class="s1">&#39;10&#39;</span><span class="p">,</span> <span class="s1">&#39;60&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s1">&#39;cs:Z:=ATG*ga=GAACAT&#39;</span><span class="p">,</span> <span class="s1">&#39;AS:i:7&#39;</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">alignments</span> <span class="o">=</span> <span class="p">[</span><span class="n">tup</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">parsePAF</span><span class="p">(</span><span class="n">paf_file</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">alignments</span><span class="p">)</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">queryname</span><span class="p">,</span> <span class="n">alignment</span><span class="p">)</span> <span class="o">=</span> <span class="n">alignments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">queryname</span>
+<span class="go">&#39;myquery&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">alignment</span><span class="o">.</span><span class="n">target</span>
+<span class="go">&#39;mytarget&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">alignment</span><span class="o">.</span><span class="n">r_st</span><span class="p">,</span> <span class="n">alignment</span><span class="o">.</span><span class="n">r_en</span><span class="p">)</span>
+<span class="go">(5, 15)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">alignment</span><span class="o">.</span><span class="n">q_st</span><span class="p">,</span> <span class="n">alignment</span><span class="o">.</span><span class="n">q_en</span><span class="p">)</span>
+<span class="go">(0, 10)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">alignment</span><span class="o">.</span><span class="n">strand</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">alignment</span><span class="o">.</span><span class="n">cigar_str</span>
+<span class="go">&#39;=ATG*ga=GAACAT&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">alignment</span><span class="o">.</span><span class="n">q_len</span>
+<span class="go">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">alignment</span><span class="o">.</span><span class="n">score</span>
+<span class="go">7</span>
+</pre></div>
+</div>
+<p>Now an example of using <cite>targets</cite> and <cite>introns_to_gaps</cite>.
+You can see that this option converts the <code class="docutils literal notranslate"><span class="pre">~gg5ac</span></code>
+to <code class="docutils literal notranslate"><span class="pre">-ggaac</span></code> in the <cite>cigar_str</cite> attribute:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">targets</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;mytarget&#39;</span><span class="p">:</span><span class="s1">&#39;ATGGGAACAT&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">paf_file</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+<span class="gp">... </span>        <span class="s1">&#39;myquery&#39;</span><span class="p">,</span> <span class="s1">&#39;9&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;9&#39;</span><span class="p">,</span> <span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="s1">&#39;mytarget&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s1">&#39;10&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;10&#39;</span><span class="p">,</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span> <span class="s1">&#39;4&#39;</span><span class="p">,</span> <span class="s1">&#39;60&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s1">&#39;cs:Z:=TG~gg5ac=AT&#39;</span><span class="p">,</span> <span class="s1">&#39;AS:i:2&#39;</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a_keep_introns</span> <span class="o">=</span> <span class="p">[</span><span class="n">tup</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">parsePAF</span><span class="p">(</span><span class="n">paf_file</span><span class="p">)][</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">paf_file</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a_introns_to_gaps</span> <span class="o">=</span> <span class="p">[</span><span class="n">tup</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">parsePAF</span><span class="p">(</span><span class="n">paf_file</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">targets</span><span class="o">=</span><span class="n">targets</span><span class="p">,</span> <span class="n">introns_to_gaps</span><span class="o">=</span><span class="kc">True</span><span class="p">)][</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a_keep_introns</span><span class="o">.</span><span class="n">cigar_str</span>
+<span class="go">&#39;=TG~gg5ac=AT&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a_introns_to_gaps</span><span class="o">.</span><span class="n">cigar_str</span>
+<span class="go">&#39;=TG-ggaac=AT&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.minimap2.removeCIGARmutations">
+<code class="descclassname">dms_tools2.minimap2.</code><code class="descname">removeCIGARmutations</code><span class="sig-paren">(</span><em>cigar</em>, <em>muts_to_remove</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#removeCIGARmutations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.removeCIGARmutations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes point mutations from CIGAR string.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>cigar</cite> (str)</dt>
+<dd>Long format CIGAR string.</dd>
+<dt><cite>muts_to_remove</cite> (dict)</dt>
+<dd>Dict keyed by site number in 0-based numbering of
+target starting at first target position in <cite>cigar</cite>,
+values are nucleotides that we want to make the new
+target identity for the CIGAR at that site. All
+of these nucleotides must be the wildtype in the
+current CIGAR mutation.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>New CIGAR string expected if <cite>cigar</cite> was actually to the
+target where the wildtype identity is what is given by
+the mutation.</dd>
+</dl>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cigar</span> <span class="o">=</span> <span class="s1">&#39;=AT-gca=T*at=G+ca*ga=T*at&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">muts_to_remove</span> <span class="o">=</span> <span class="p">{</span><span class="mi">6</span><span class="p">:</span><span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="mi">8</span><span class="p">:</span><span class="s1">&#39;A&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">removeCIGARmutations</span><span class="p">(</span><span class="n">cigar</span><span class="p">,</span> <span class="n">muts_to_remove</span><span class="p">)</span>
+<span class="go">&#39;=AT-gca=TTG+ca=AT*at&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.minimap2.shiftIndels">
+<code class="descclassname">dms_tools2.minimap2.</code><code class="descname">shiftIndels</code><span class="sig-paren">(</span><em>cigar</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#shiftIndels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.shiftIndels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shifts indels to consistent position.</p>
+<p>In some cases it is ambiguous where to place insertions /
+deletions in the CIGAR string. This function moves them
+to a consistent location (as far forward as possible).</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>cigar</cite> (str)</dt>
+<dd>PAF long CIGAR string, format is
+<a class="reference external" href="https://github.com/lh3/minimap2#cs">detailed here</a>.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A version of <cite>cigar</cite> with indels shifted as far
+forward as possible.</dd>
+</dl>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">shiftIndels</span><span class="p">(</span><span class="s1">&#39;=AAC-atagcc=GGG-ac=T&#39;</span><span class="p">)</span>
+<span class="go">&#39;=AA-catagc=CGGG-ac=T&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">shiftIndels</span><span class="p">(</span><span class="s1">&#39;=AAC-atagac=GGG-acg=AT&#39;</span><span class="p">)</span>
+<span class="go">&#39;=A-acatag=ACGG-gac=GAT&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">shiftIndels</span><span class="p">(</span><span class="s1">&#39;=TCC+c=TCAGA+aga=CT&#39;</span><span class="p">)</span>
+<span class="go">&#39;=T+c=CCTC+aga=AGACT&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.minimap2.trimCigar">
+<code class="descclassname">dms_tools2.minimap2.</code><code class="descname">trimCigar</code><span class="sig-paren">(</span><em>side</em>, <em>cigar</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#trimCigar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.trimCigar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trims a nucleotide from CIGAR string.</p>
+<p>Currently just trims one site.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>side</cite> (str)</dt>
+<dd>“start” trim from start, “end” to trim from end.</dd>
+<dt><cite>cigar</cite> (str)</dt>
+<dd>PAF long CIGAR string, format is
+<a class="reference external" href="https://github.com/lh3/minimap2#cs">detailed here</a>.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A version of <cite>cigar</cite> with a single site trimmed
+from start or end.</dd>
+</dl>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">trimCigar</span><span class="p">(</span><span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="s1">&#39;=ATG&#39;</span><span class="p">)</span>
+<span class="go">&#39;=TG&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">trimCigar</span><span class="p">(</span><span class="s1">&#39;end&#39;</span><span class="p">,</span> <span class="s1">&#39;=ATG&#39;</span><span class="p">)</span>
+<span class="go">&#39;=AT&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">trimCigar</span><span class="p">(</span><span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="s1">&#39;*ac=TG&#39;</span><span class="p">)</span>
+<span class="go">&#39;=TG&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">trimCigar</span><span class="p">(</span><span class="s1">&#39;end&#39;</span><span class="p">,</span> <span class="s1">&#39;=AT*ag&#39;</span><span class="p">)</span>
+<span class="go">&#39;=AT&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">trimCigar</span><span class="p">(</span><span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="s1">&#39;-aac=TG&#39;</span><span class="p">)</span>
+<span class="go">&#39;-ac=TG&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">trimCigar</span><span class="p">(</span><span class="s1">&#39;end&#39;</span><span class="p">,</span> <span class="s1">&#39;=TG+aac&#39;</span><span class="p">)</span>
+<span class="go">&#39;=TG+aa&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fracsurvive.html">Fraction surviving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="programs.html">Executable programs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">Python API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="dms_tools2.html">dms_tools2 package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="api.html">Python API</a><ul>
+  <li><a href="dms_tools2.html">dms_tools2 package</a><ul>
+      <li>Previous: <a href="dms_tools2.ipython_utils.html" title="previous chapter">ipython_utils</a></li>
+      <li>Next: <a href="dms_tools2.neutcurve.html" title="next chapter">neutcurve</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017--2018, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="_sources/dms_tools2.minimap2.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>
