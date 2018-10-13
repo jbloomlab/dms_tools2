@@ -657,32 +657,32 @@ def matchAndAlignCCS(ccslist, mapper, *,
     match_str = collections.OrderedDict()
     if termini5 is not None:
         match_str['termini5'] = \
-                f'(?b)(?P<termini5>{termini5}){{e<={termini5_fuzziness}}}'
+                f'(?P<termini5>{termini5}){{e<={termini5_fuzziness}}}'
     else:
         match_str['termini5'] = None
 
-    match_str['gene'] = f'(?b)(?P<gene>{gene}){{e<={gene_fuzziness}}}'
+    match_str['gene'] = f'(?P<gene>{gene}){{e<={gene_fuzziness}}}'
 
     if spacer is not None:
         match_str['spacer'] = \
-                f'(?b)(?P<spacer>{spacer}){{e<={spacer_fuzziness}}}'
+                f'(?P<spacer>{spacer}){{e<={spacer_fuzziness}}}'
     else:
         match_str['spacer'] = None
 
     if umi is not None:
-        match_str['umi'] = f'(?b)(?P<UMI>{umi}){{e<={umi_fuzziness}}}'
+        match_str['umi'] = f'(?P<UMI>{umi}){{e<={umi_fuzziness}}}'
     else:
         match_str['umi'] = None
 
     if barcode is not None:
         match_str['barcode'] = \
-                f'(?b)(?P<barcode>{barcode}){{e<={barcode_fuzziness}}}'
+                f'(?P<barcode>{barcode}){{e<={barcode_fuzziness}}}'
     else:
         match_str['barcode'] = None
 
     if termini3 is not None:
         match_str['termini3'] = \
-                f'(?b)(?P<termini3>{termini3}){{e<={termini3_fuzziness}}}'
+                f'(?P<termini3>{termini3}){{e<={termini3_fuzziness}}}'
     else:
         match_str['termini3'] = None
 
@@ -761,7 +761,8 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
             parameter, which simplifies writing `match_str`.
             If `None` we just return `df`. Note that we use
             `regex` rather than `re`, so fuzzy matching is
-            enabled.
+            enabled. Note that the matching uses the *BESTMATCH*
+            flago to find the best match.
         `col_to_match` (str)
             Name of column in `df` that contains the sequences
             to match.
@@ -855,7 +856,7 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
 
     if expandIUPAC:
         match_str = re_expandIUPAC(match_str)
-    matcher = regex.compile(match_str)
+    matcher = regex.compile(match_str, flags=regex.BESTMATCH)
 
     newcols = [match_col]
     if add_polarity:

@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.3.dev1
+-----------
+* Improve matching of termini tags when there are mismatches in `dms_tools2.pacbio`
+
 2.3.0
 --------
 * Require Python 3.6 or greater.
