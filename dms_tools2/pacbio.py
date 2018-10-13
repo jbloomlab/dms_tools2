@@ -746,7 +746,7 @@ def matchAndAlignCCS(ccslist, mapper, *,
 
 
 def matchSeqs(df, match_str, col_to_match, match_col, *,
-        add_polarity=True, add_group_cols=True,
+        add_polarity=True, add_group_cols=True, remove_indels=[],
         add_accuracy=True, add_qvals=True,
         expandIUPAC=True, overwrite=False):
     """Identify sequences in a dataframe that match a specific pattern.
@@ -762,7 +762,7 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
             If `None` we just return `df`. Note that we use
             `regex` rather than `re`, so fuzzy matching is
             enabled. Note that the matching uses the *BESTMATCH*
-            flago to find the best match.
+            flag to find the best match.
         `col_to_match` (str)
             Name of column in `df` that contains the sequences
             to match.
@@ -775,6 +775,15 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
         `add_group_cols` (bool)
             Add columns with the sequence of every group in
             `match_str`?
+        `remove_indels` (list)
+            Only meaningful if `match_str` specifies to allow
+            fuzzy matching for a group, and `add_group_cols`
+            is `True`. Then for each named group in `match_str`,
+            in sequence for that group that is added to the
+            returned `df`, indicate indels by adding a `-`
+            gap character for deletions, and removing the
+            inserted nucleotide called by regex if there
+            is an insertion.
         `add_accuracy` (bool)
             For each group in the match, add a column giving
             the accuracy of that group's sequence? Only used
@@ -838,14 +847,61 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
 
     >>> gene = 'ATGGCT'
     >>> polyA = 'AAAACAAAA'
-    >>> df = pandas.DataFrame({'CCS':[gene + polyA]})
+    >>> df_in = pandas.DataFrame({'CCS':[gene + polyA]})
     >>> match_str = '(?P<gene>N+)(?P<polyA>AA(A{5,}){e<=1}AA)'
-    >>> df = matchSeqs(df, match_str, 'CCS', 'matched',
+    >>> df = matchSeqs(df_in, match_str, 'CCS', 'matched',
     ...         add_accuracy=False, add_qvals=False)
     >>> expected = df.assign(gene=gene, polyA=polyA,
     ...         matched=True, matched_polarity=1)
     >>> (df.sort_index(axis=1) == expected.sort_index(axis=1)).all().all()
     True
+
+    Here is a short example with fuzzy matching that uses the
+    `remove_indels` option.
+    First, do not remove the indels:
+
+    >>> termini5 = 'ACAT'
+    >>> termini3 = 'ATAC'
+    >>> match_str2 = '^(?P<termini5>AAT){e<=1}(?P<gene>ATGGCT){e<=1}(?P<termini3>ATGAC){e<=1}$'
+    >>> df_in2 = pandas.DataFrame({'CCS':[termini5 + gene + termini3]})
+    >>> df2 = matchSeqs(df_in2, match_str2, 'CCS', 'matched',
+    ...         add_accuracy=False, add_qvals=False)
+    >>> df2.gene.values[0] == gene
+    True
+    >>> df2.termini5.values[0] == termini5
+    True
+    >>> df2.termini3.values[0] == termini3
+    True
+
+    Now remove the indels in just *termini3*:
+
+    >>> df2_rm = matchSeqs(df_in2, match_str2, 'CCS', 'matched',
+    ...         remove_indels=['termini3'],
+    ...         add_accuracy=False, add_qvals=False)
+    >>> df2_rm.gene.values[0] == gene
+    True
+    >>> df2_rm.termini5.values[0] == termini5
+    True
+    >>> df2_rm.termini3.values[0] == termini3
+    False
+    >>> df2_rm.termini3.values[0]
+    'AT-AC'
+
+    Now remove indels in **both** termini:
+
+    >>> df2_rm2 = matchSeqs(df_in2, match_str2, 'CCS', 'matched',
+    ...         remove_indels=['termini5', 'termini3'],
+    ...         add_accuracy=False, add_qvals=False)
+    >>> df2_rm2.gene.values[0] == gene
+    True
+    >>> df2_rm2.termini5.values[0] == termini5
+    False
+    >>> df2_rm2.termini5.values[0]
+    'AAT'
+    >>> df2_rm2.termini3.values[0] == termini3
+    False
+    >>> df2_rm2.termini3.values[0]
+    'AT-AC'
     """
 
     if match_str is None:
@@ -879,8 +935,17 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
                 raise ValueError("To use `add_accuracy` or "
                         "`add_qvals`, you need a column in `df` "
                         "named {0}".format(match_qvals_col))
+        if remove_indels:
+            if set(remove_indels) > set(remove_indels):
+                raise ValueError("`remove_indels` specifies "
+                        "unknown group(s)")
+        else:
+            remove_indels = []
     else:
         groupnames = []
+        if remove_indels:
+            raise ValueError("can't use `remove_indels` without "
+                             "using `add_group_cols`")
 
     # make sure created columns don't already exist
     dup_cols = set(newcols).intersection(set(df.columns))
@@ -907,13 +972,47 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
             match_d[match_col].append(True)
             if add_polarity:
                 match_d[polarity_col].append(polarity)
+            ins_sites = m.fuzzy_changes[1]
+            del_sites = m.fuzzy_changes[2]
             for g in groupnames:
-                match_d[g].append(m.group(g))
+                g_start = m.start(g)
+                g_end = m.end(g)
+                if g in remove_indels:
+                    g_ins_sites = [i for i in ins_sites
+                                  if g_start <= i < g_end]
+                    g_del_sites = [i for i in del_sites
+                                   if g_start <= i < g_end]
+                else:
+                    g_ins_sites = []
+                    g_del_sites = []
                 if add_qvals:
-                    match_d[g + '_qvals'].append(qs[m.start(g) : m.end(g)])
+                    g_qs = qs[g_start : g_end]
+                    g_qs_list = []
+                if g_ins_sites or g_del_sites:
+                    g_seq = []
+                    for i, x in enumerate(m.group(g)):
+                        if i + g_start in g_ins_sites:
+                            pass
+                        elif i + g_start in g_del_sites:
+                            g_seq.append(x + '-')
+                            if add_qvals:
+                                g_qs_list.append(g_qs[i])
+                                g_qs_list.append(numpy.nan)
+                        else:
+                            g_seq.append(x)
+                            if add_qvals:
+                                g_qs_list.append(g_qs[i])
+                    g_seq = ''.join(g_seq)
+                    if add_qvals:
+                        g_qs = numpy.array(g_qs_list)
+                else:
+                    g_seq = m.group(g)
+                match_d[g].append(g_seq)
+                if add_qvals:
+                    match_d[g + '_qvals'].append(g_qs)
                 if add_accuracy:
                     match_d[g + '_accuracy'].append(qvalsToAccuracy(
-                            qs[m.start(g) : m.end(g)]))
+                            qs[g_start : g_end]))
         else:
             match_d[match_col].append(False)
             if add_polarity:
