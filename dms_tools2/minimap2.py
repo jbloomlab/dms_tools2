@@ -158,13 +158,13 @@ class Mutations:
             `i` is the site number, `mut_str` is a string
             describing substitution, and `q` is the Q-value.
         `insertion_tuples` (list)
-            Insertions `(i, ins_len, mut_str, q, hplen)` where `i`
+            Insertions `(i, ins_len, mut_str, qs, hplen)` where `i`
             is site **after** insertion, `inslen` is insertion length,
             `mut_str` is string describing insertion, `qs` is
             numpy array of Q-values, and `hplen` is length of homopolymer
             in which insertion occurs.
         `deletion_tuples` (list)
-            Deletions `(istart, iend, mut_str`, q, hplen)` where
+            Deletions `(istart, iend, mut_str, q, hplen)` where
             `istart` is first site of deletion, `iend` is
             last site of deletion (so a single nucleotide
             deletion has `istart == iend`), `mut_str` is string
@@ -231,6 +231,19 @@ class Mutations:
     [2]
     >>> muts.insertions(returnval='homopolymer_length')
     [1]
+
+    Test `repr`:
+
+    >>> muts ==  eval(repr(muts), {}, {'nan':math.nan, 'Mutations':Mutations})
+    True
+
+    Write human-readable representation using `str`:
+
+    >>> str(Mutations(substitution_tuples=[], insertion_tuples=[],
+    ...     deletion_tuples=[]))
+    'no mutations'
+    >>> str(muts)
+    'A1T (Q = nan); G13A (Q = 20); C15A (Q = 30); ins5len2 (Qs = [20, 30], homopolymer length = 1); del8to10 (Q = 20, homopolymer length = 2)'
     """
 
     def __init__(self, *, substitution_tuples, insertion_tuples,
@@ -239,6 +252,38 @@ class Mutations:
         self._substitution_tuples = sorted(substitution_tuples)
         self._insertion_tuples = sorted(insertion_tuples)
         self._deletion_tuples = sorted(deletion_tuples)
+
+
+    def __repr__(self):
+        return (f"{self.__class__.__name__}("
+                f"substitution_tuples={self._substitution_tuples}, "
+                f"deletion_tuples={self._deletion_tuples}, "
+                f"insertion_tuples={self._insertion_tuples})"
+                )
+
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+
+    def __str__(self):
+        """Returns readable string representation."""
+        s = []
+
+        for i, mut_str, q in self._substitution_tuples:
+            s.append(f'{mut_str} (Q = {q})')
+
+        for i, ins_len, mut_str, qs, hplen in self._insertion_tuples:
+            qs = list(qs)
+            s.append(f'{mut_str} (Qs = {qs}, homopolymer length = {hplen})')
+
+        for istart, iend, mut_str, q, hplen in self._deletion_tuples:
+            s.append(f'{mut_str} (Q = {q}, homopolymer length = {hplen})')
+
+        if len(s) == 0:
+            s.append('no mutations')
+
+        return '; '.join(s)
 
 
     def substitutions(self, *, returnval='mutation', min_acc=None,
