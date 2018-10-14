@@ -1360,15 +1360,20 @@ def summarizeCCSreports(ccslist, report_type, plotfile,
             `CCS` objects to summarize
         `report_type` (str "zmw" or "subread")
             Which type of report to summarize
-        `plotfile` (str)
-            Name of created bar plot
+        `plotfile` (str or `None`)
+            Name of created bar plot, or `None`
+            if you want to return the created plot.
         `plotminfrac` (float)
             Only plot status categories with >=
             this fraction in at least one `CCS`
 
     Returns:
-        Returns a pandas DataFrame aggregating the reports,
-        and creates `plotfile`.
+
+        - If `plotfile` is a str, returns a pandas DataFrame
+          aggregating the reports and creates `plotfile`.
+
+        - If `plotfile` is `None`, returns the 2-tuple
+          containing the data frame and the plot.
     """
     if isinstance(ccslist, CCS):
         ccslist = [ccslist]
@@ -1402,13 +1407,16 @@ def summarizeCCSreports(ccslist, report_type, plotfile,
     if nstatus <= len(COLOR_BLIND_PALETTE):
         p = p + scale_fill_manual(list(reversed(
                 COLOR_BLIND_PALETTE[ : nstatus])))
-    p.save(plotfile, 
-           height=3,
-           width=(2 + 0.3 * len(ccslist)),
-           verbose=False)
-    plt.close()
 
-    return df
+    if plotfile is None:
+        return (df, p)
+    else:
+        p.save(plotfile, 
+               height=3,
+               width=(2 + 0.3 * len(ccslist)),
+               verbose=False)
+        plt.close()
+        return df
 
 def re_expandIUPAC(re_str):
     """Expand IUPAC ambiguous nucleotide codes in `re` search string.

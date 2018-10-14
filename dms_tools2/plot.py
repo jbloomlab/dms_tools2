@@ -1085,8 +1085,9 @@ def plotColCorrs(df, plotfile, cols, *, lower_filter=None,
     Args:
         `df` (pandas DataFrame)
             Data frame with data to plot.
-        `plotfile` (str)
-            Name of created plot.
+        `plotfile` (str or `None`)
+            Name of created plot, or `None` if you want
+            plot returned.
         `cols` (list)
             List of columns in `df` to plot.
         `lower_filter` (`None` or str)
@@ -1097,6 +1098,11 @@ def plotColCorrs(df, plotfile, cols, *, lower_filter=None,
             Title of plot.
         `shrink_threshold` (float)
             See argument of same name to :meth:`hist_bins_intsafe`.
+
+    Returns:
+        If `plotfile` is a string, makes the plot and does
+        not return anything. If `plotfile` is `None`, returns
+        the plot.
     """
     if not set(cols).issubset(set(df.columns)):
         raise ValueError("`cols` specifies columns not in `df`")
@@ -1156,8 +1162,11 @@ def plotColCorrs(df, plotfile, cols, *, lower_filter=None,
     if title is not None:
         g.fig.suptitle(title, va='bottom')
 
-    g.savefig(plotfile)
-    plt.close()
+    if plotfile is None:
+        return g
+    else:
+        g.savefig(plotfile)
+        plt.close()
 
 
 def plotRarefactionCurves(df, rarefy_col, plotfile,
