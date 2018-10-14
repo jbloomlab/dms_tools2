@@ -243,7 +243,7 @@ class Mutations:
     ...     deletion_tuples=[]))
     'no mutations'
     >>> str(muts)
-    'A1T (Q = nan); G13A (Q = 20); C15A (Q = 30); ins5len2 (Qs = [20, 30], homopolymer length = 1); del8to10 (Q = 20, homopolymer length = 2)'
+    'A1T; G13A (Q = 20); C15A (Q = 30); ins5len2 (Qs = [20, 30], homopolymer length = 1); del8to10 (Q = 20, homopolymer length = 2)'
     """
 
     def __init__(self, *, substitution_tuples, insertion_tuples,
@@ -271,14 +271,39 @@ class Mutations:
         s = []
 
         for i, mut_str, q in self._substitution_tuples:
-            s.append(f'{mut_str} (Q = {q})')
+            if q is None or math.isnan(q):
+                s.append(mut_str)
+            else:
+                s.append(f'{mut_str} (Q = {q})')
 
         for i, ins_len, mut_str, qs, hplen in self._insertion_tuples:
-            qs = list(qs)
-            s.append(f'{mut_str} (Qs = {qs}, homopolymer length = {hplen})')
+            i_str = []
+            if qs is None:
+                pass
+            elif isinstance(qs, collections.Iterable):
+                if qs and not all(map(math.isnan, qs)):
+                    i_str.append(f'Qs = {str(qs)}')
+            elif not math.isnan(q):
+                i_str.append(f'Q = {q}')
+            if (hplen is not None) and not math.isnan(hplen):
+                i_str.append(f'homopolymer length = {hplen}')
+            if i_str:
+                i_str = ', '.join(i_str)
+                s.append(f'{mut_str} ({i_str})')
+            else:
+                s.append(mut_str)
 
         for istart, iend, mut_str, q, hplen in self._deletion_tuples:
-            s.append(f'{mut_str} (Q = {q}, homopolymer length = {hplen})')
+            i_str = []
+            if (q is not None) and not math.isnan(q):
+                i_str.append(f'Q = {q}')
+            if (hplen is not None) and not math.isnan(hplen):
+                i_str.append(f'homopolymer length = {hplen}')
+            if i_str:
+                i_str = ', '.join(i_str)
+                s.append(f'{mut_str} ({i_str})')
+            else:
+                s.append(mut_str)
 
         if len(s) == 0:
             s.append('no mutations')
