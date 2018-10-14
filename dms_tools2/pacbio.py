@@ -485,6 +485,7 @@ def matchAndAlignCCS(ccslist, mapper, *,
         barcode_fuzziness=0, termini3_fuzziness=0,
         targetvariants=None, mutationcaller=None,
         terminiVariantTagCaller=None,
+        tagged_termini_remove_indels=True,
         rc_barcode_umi=True):
     """Identify CCSs that match pattern and align them.
 
@@ -543,6 +544,14 @@ def matchAndAlignCCS(ccslist, mapper, *,
             Call mutations. See docs for same argument to :meth:`alignSeqs`.
         `terminiVariantTagCaller` (:class:`TerminiVariantTagCaller`)
             Call variants in termini.
+        `tagged_termini_remove_indels` (bool)
+            If `terminiVariantTagCaller` is being used and this,
+            is `True`, then use `remove_indels` flag when calling
+            `matchSeqs` for the termini. This is useful if
+            using fuzzy matching from the termini, as it aids
+            in the calling of tags as it doesn't cause indels
+            to misplace the tag. Has no meaning if
+            `terminiVariantTagCaller` is not being used.
         `rc_barcode_umi` (bool)
             Do we reverse complement the `barcode` and `UMI` in the
             returned data frame relative to the orientation of
@@ -686,6 +695,12 @@ def matchAndAlignCCS(ccslist, mapper, *,
     else:
         match_str['termini3'] = None
 
+    if tagged_termini_remove_indels and (
+            terminiVariantTagCaller is not None):
+        remove_indels = ['termini5', 'termini3']
+    else:
+        remove_indels = []
+
     # now create df
     df = (
         df
@@ -695,7 +710,8 @@ def matchAndAlignCCS(ccslist, mapper, *,
               match_str=''.join(m for m in match_str.values()
                     if m is not None),
               col_to_match='CCS',
-              match_col='barcoded')
+              match_col='barcoded',
+              remove_indels=remove_indels)
     
         # look for just termini or spacer
         .pipe(dms_tools2.pacbio.matchSeqs, 
