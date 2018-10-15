@@ -1070,6 +1070,8 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
             we align are specified when initializing `mapper`.
         `query_col` (str)
             Name of column in `df` with query sequences to align.
+            If we are to use Q-values, there must also be a column
+            with this name suffixed by "_qvals".
         `aligned_col` (str)
             Name of column added to `df`. Elements of column are
             `True` if `query_col` aligns, and `False` otherwise.
@@ -1187,17 +1189,20 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
         n_additional_difftarget_col = (
                 aligned_col + '_n_additional_difftarget')
         newcols.append(n_additional_difftarget_col)
+    qvals_col = query_col + '_qvals'
+    if qvals_col in df.columns:
+        qvals = pandas.Series(df[qvals_col].values,
+                              index=df.name).to_dict()
+    else:
+        qvals = collections.defaultdict(lambda: math.nan)
     if targetvariants is not None:
         targetvariant_col = aligned_col + '_target_variant'
         newcols.append(targetvariant_col)
         if targetvariants.variantsites_min_acc is not None:
-            qvals_col = query_col + '_qvals'
             if qvals_col not in df.columns:
                 raise ValueError("Cannot use `variantsites_min_acc` "
                         "of `targetvariants` as there is not a column "
                         "in `df` named {0}".format(qvals_col))
-            qvals = pandas.Series(df[qvals_col].values,
-                                  index=df.name).to_dict()
     if mutationcaller is not None:
         mutations_col = aligned_col + '_mutations'
         newcols.append(mutations_col)
