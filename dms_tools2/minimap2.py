@@ -151,6 +151,8 @@ class Mutations:
     When initializing, set Q-values to `math.nan` if they are
     not known. The Q-values are used to calculate accuracy
     of mutations via :meth:`dms_tools2.pacbio.qvalsToAccuracy`.
+    Likewise, pass `math.nan` for homopolymer lengths if they
+    are not known.
 
     Args:
         `substitution_tuples` (list)
@@ -173,8 +175,13 @@ class Mutations:
             `PacBio CCS <https://github.com/PacificBiosciences/unanimity/blob/develop/doc/PBCCS.md#interpretting-qual-values>`_
             specification, and `hplen` is length of homopolymer
             in which deletion occurs.
+        `acc_not_q` (bool)
+            If `True`, then the tuples used to pass the mutations
+            should give the accuracy rather than the Q-values.
 
-    After intialization, use the methods described below to get
+    You can also create objects using :class:`Mutations.from_str`.
+
+    After initialization, use the methods described below to get
     information about the mutations. All of the methods that
     return lists of mutations do them ordered by site (first to last).
 
@@ -232,60 +239,82 @@ class Mutations:
     >>> muts.insertions(returnval='homopolymer_length')
     [1]
 
-    Test `repr`:
+    Show how we can get string representations with
+    `repr` and `str`:
 
-    >>> muts ==  eval(repr(muts), {}, {'nan':math.nan, 'Mutations':Mutations})
+    >>> str(muts) == repr(muts)
     True
+    >>> str(muts)
+    'A1T; G13A (accuracy = 0.990000); C15A (accuracy = 0.999000); ins5len2 (accuracy = 0.994500, homopolymer length = 1); del8to10 (accuracy = 0.990000, homopolymer length = 2)'
 
-    Write human-readable representation using `str`:
+    Note that when Q-values or homopolymer lengths are not provided,
+    then the aren't printed in the `str` representation:
 
     >>> str(Mutations(substitution_tuples=[], insertion_tuples=[],
-    ...     deletion_tuples=[]))
+    ...         deletion_tuples=[(8, 10, 'del8to10', math.nan, math.nan),
+    ...                          (12, 14, 'del12to14', math.nan, 4)]))
+    'del8to10; del12to14 (homopolymer length = 4)'
+
+    Also show what these representations look like when there
+    are no mutations:
+
+    >>> str(Mutations(substitution_tuples=[], insertion_tuples=[],
+    ...         deletion_tuples=[]))
     'no mutations'
-    >>> str(muts)
-    'A1T; G13A (Q = 20); C15A (Q = 30); ins5len2 (Qs = [20, 30], homopolymer length = 1); del8to10 (Q = 20, homopolymer length = 2)'
+
     """
 
     def __init__(self, *, substitution_tuples, insertion_tuples,
-            deletion_tuples):
+            deletion_tuples, acc_not_q=False):
         """See main class doc string."""
-        self._substitution_tuples = sorted(substitution_tuples)
-        self._insertion_tuples = sorted(insertion_tuples)
-        self._deletion_tuples = sorted(deletion_tuples)
 
+        self._substitution_tuples = []
+        for i, mut_str, q in sorted(substitution_tuples):
+            if acc_not_q:
+                acc = q
+            else:
+                acc = dms_tools2.pacbio.qvalsToAccuracy(q)
+            self._substitution_tuples.append((i, mut_str, acc))
 
-    def __repr__(self):
-        return (f"{self.__class__.__name__}("
-                f"substitution_tuples={self._substitution_tuples}, "
-                f"deletion_tuples={self._deletion_tuples}, "
-                f"insertion_tuples={self._insertion_tuples})"
-                )
+        self._insertion_tuples = []
+        for i, ins_len, mut_str, qs, hplen in sorted(insertion_tuples):
+            if acc_not_q:
+                acc = qs
+            else:
+                acc = dms_tools2.pacbio.qvalsToAccuracy(qs)
+            if hplen is None or math.isnan(hplen):
+                hplen = math.nan
+            self._insertion_tuples.append((i, ins_len, mut_str, acc, hplen))
+
+        self._deletion_tuples = []
+        for istart, iend, mut_str, q, hplen in sorted(deletion_tuples):
+            if acc_not_q:
+                acc = q
+            else:
+                acc = dms_tools2.pacbio.qvalsToAccuracy(q)
+            if hplen is None or math.isnan(hplen):
+                hplen = math.nan
+            self._deletion_tuples.append((istart, iend, mut_str, acc, hplen))
 
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
 
-    def __str__(self):
-        """Returns readable string representation."""
+    def __repr__(self):
         s = []
 
-        for i, mut_str, q in self._substitution_tuples:
-            if q is None or math.isnan(q):
+        for i, mut_str, acc in self._substitution_tuples:
+            if math.isnan(acc):
                 s.append(mut_str)
             else:
-                s.append(f'{mut_str} (Q = {q})')
+                s.append(f'{mut_str} (accuracy = {acc:.6f})')
 
-        for i, ins_len, mut_str, qs, hplen in self._insertion_tuples:
+        for i, ins_len, mut_str, acc, hplen in self._insertion_tuples:
             i_str = []
-            if qs is None:
-                pass
-            elif isinstance(qs, collections.Iterable):
-                if qs and not all(map(math.isnan, qs)):
-                    i_str.append(f'Qs = {str(qs)}')
-            elif not math.isnan(q):
-                i_str.append(f'Q = {q}')
-            if (hplen is not None) and not math.isnan(hplen):
+            if not math.isnan(acc):
+                i_str.append(f'accuracy = {acc:.6f}')
+            if not math.isnan(hplen):
                 i_str.append(f'homopolymer length = {hplen}')
             if i_str:
                 i_str = ', '.join(i_str)
@@ -293,11 +322,11 @@ class Mutations:
             else:
                 s.append(mut_str)
 
-        for istart, iend, mut_str, q, hplen in self._deletion_tuples:
+        for istart, iend, mut_str, acc, hplen in self._deletion_tuples:
             i_str = []
-            if (q is not None) and not math.isnan(q):
-                i_str.append(f'Q = {q}')
-            if (hplen is not None) and not math.isnan(hplen):
+            if not math.isnan(acc):
+                i_str.append(f'accuracy = {acc:.6f}')
+            if not math.isnan(hplen):
                 i_str.append(f'homopolymer length = {hplen}')
             if i_str:
                 i_str = ', '.join(i_str)
@@ -309,6 +338,152 @@ class Mutations:
             s.append('no mutations')
 
         return '; '.join(s)
+
+
+    @classmethod
+    def from_str(cls, mut_str):
+        """Create :class:`Mutations` from str representation.
+
+        Args:
+            `mut_str` (str)
+                String representation as returned by `str(mut)`
+                where `mut` is a :class:`Mutations` object.
+                See the examples below for more details.
+
+        Returns:
+            :class:`Mutations` object.
+
+        Examples of creating :class:`Mutations.from_str`.
+        First, a single substitution without an accuracy:
+
+        >>> m = Mutations.from_str('A1T')
+        >>> str(m)
+        'A1T'
+        >>> str(m) == str(Mutations(substitution_tuples=[(1, 'A1T', math.nan)],
+        ...         deletion_tuples=[], insertion_tuples=[]))
+        True
+
+        And now substitutions with Q-values:
+
+        >>> m2 = Mutations.from_str('A1T (accuracy = 0.99); G3A (accuracy = 0.999)')
+        >>> m2 == Mutations.from_str(str(m2))
+        True
+
+        Now including deletions:
+
+        >>> m3 = Mutations.from_str(
+        ...         'del1to3 (accuracy = 0.99); '
+        ...         'A6T (accuracy = 0.995); '
+        ...         'del8to9 (accuracy = 0.999, homopolymer length = 2)')
+        >>> str(m3)
+        'A6T (accuracy = 0.995000); del1to3 (accuracy = 0.990000); del8to9 (accuracy = 0.999000, homopolymer length = 2)'
+
+        An insertion:
+
+        >>> m4 = Mutations.from_str('ins5len2 (accuracy = 0.99, homopolymer length = 3)')
+        >>> str(m4)
+        'ins5len2 (accuracy = 0.990000, homopolymer length = 3)'
+
+        Example of a null mutation:
+
+        >>> m_null = Mutations.from_str('no mutations')
+        >>> m_null2 = Mutations.from_str('')
+        >>> m_null == m_null2
+        True
+        >>> str(m_null) == str(m_null2)
+        True
+        >>> str(m_null)
+        'no mutations'
+
+        """
+        sub_tups = []
+        ins_tups = []
+        del_tups = []
+
+        if (not mut_str) or mut_str.isspace() or mut_str == 'no mutations':
+            pass
+
+        else:
+            sub_match = re.compile(
+                    '^(?P<wt>[ACGT])(?P<i>\d+)(?P<mut>[ACGT])'
+                    '(?: \(accuracy = (?P<acc>\d+\.{0,1}\d*)\)){0,1}$')
+
+            del_match = re.compile(
+                    '^del(?P<istart>\d+)to(?P<iend>\d+)'
+                    '(?: \((?:accuracy = (?P<acc>\d+\.{0,1}\d*)){0,1}(?:\, ){0,1}'
+                    '(?:homopolymer length = (?P<hplen>\d+)){0,1}\)){0,1}$')
+
+            ins_match = re.compile(
+                    'ins(?P<i>\d+)len(?P<ins_len>\d+)'
+                    '(?: \((?:accuracy = (?P<acc>\d+\.{0,1}\d*)){0,1}(?:\, ){0,1}'
+                    '(?:homopolymer length = (?P<hplen>\d+)){0,1}\)){0,1}$')
+
+            for s in map(str.strip, mut_str.split(';')):
+
+                m = sub_match.match(s)
+                if m:
+                    acc = m.group('acc')
+                    if acc is None:
+                        acc = math.nan
+                    else:
+                        acc = float(acc)
+                    sub_tups.append((
+                            int(m.group('i')),
+                            m.group('wt') + m.group('i') + m.group('mut'),
+                            acc
+                            ))
+                    continue
+
+                m = del_match.match(s)
+                if m:
+                    acc = m.group('acc')
+                    if acc is None:
+                        acc = math.nan
+                    else:
+                        acc = float(acc)
+                    hplen = m.group('hplen')
+                    if hplen is None:
+                        hplen = math.nan
+                    else:
+                        hplen = int(hplen)
+                    del_tups.append((
+                            int(m.group('istart')),
+                            int(m.group('iend')),
+                            'del' + m.group('istart') + 'to' + m.group('iend'),
+                            acc,
+                            hplen
+                            ))
+                    continue
+
+                m = ins_match.match(s)
+                if m:
+                    acc = m.group('acc')
+                    if acc is None:
+                        acc = math.nan
+                    else:
+                        acc = float(acc)
+                    hplen = m.group('hplen')
+                    if hplen is None:
+                        hplen = math.nan
+                    else:
+                        hplen = int(hplen)
+                    ins_tups.append((
+                            int(m.group('i')),
+                            int(m.group('ins_len')),
+                            'ins' + m.group('i') + 'len' + m.group('ins_len'),
+                            acc,
+                            hplen
+                            ))
+                    continue
+
+                raise ValueError(f"could not match {s} in {mut_str}")
+
+                raise ValueError(f"could not match {s} in {mut_str}")
+
+        return cls(substitution_tuples=sub_tups,
+                   insertion_tuples=ins_tups,
+                   deletion_tuples=del_tups,
+                   acc_not_q=True)
 
 
     def substitutions(self, *, returnval='mutation', min_acc=None,
@@ -338,8 +513,7 @@ class Mutations:
         if min_acc is None:
             subtups = self._substitution_tuples
         else:
-            accs = [dms_tools2.pacbio.qvalsToAccuracy(tup[2])
-                    for tup in self._substitution_tuples]
+            accs = [tup[2] for tup in self._substitution_tuples]
             subtups = [tup for tup, a in zip(self._substitution_tuples, accs) if
                     (a >= min_acc) or ((not min_acc_filter_nan) and math.isnan(a))]
 
@@ -348,8 +522,7 @@ class Mutations:
         elif returnval == 'site':
             return [tup[0] for tup in subtups]
         elif returnval == 'accuracy':
-            return [dms_tools2.pacbio.qvalsToAccuracy(tup[2])
-                    for tup in subtups]
+            return [tup[2] for tup in subtups]
         else:
             raise ValueError("invalid `returnval` {0}".format(returnval))
 
@@ -388,8 +561,7 @@ class Mutations:
         if min_acc is None:
             instups = self._insertion_tuples
         else:
-            accs = [dms_tools2.pacbio.qvalsToAccuracy(tup[3])
-                    for tup in self._insertion_tuples]
+            accs = [tup[3] for tup in self._insertion_tuples]
             instups = [tup for tup, a in zip(self._insertion_tuples, accs) if
                     (a >= min_acc) or ((not min_acc_filter_nan) and math.isnan(a))]
 
@@ -400,8 +572,7 @@ class Mutations:
         elif returnval == 'length':
             return [tup[1] for tup in instups]
         elif returnval == 'accuracy':
-            return [dms_tools2.pacbio.qvalsToAccuracy(tup[3])
-                    for tup in instups]
+            return [tup[3] for tup in instups]
         elif returnval == 'homopolymer_length':
             return [tup[4] for tup in instups]
         else:
@@ -442,8 +613,7 @@ class Mutations:
         if min_acc is None:
             deltups = self._deletion_tuples
         else:
-            accs = [dms_tools2.pacbio.qvalsToAccuracy(tup[3])
-                    for tup in self._deletion_tuples]
+            accs = [tup[3] for tup in self._deletion_tuples]
             deltups = [tup for tup, a in zip(self._deletion_tuples, accs) if
                     (a >= min_acc) or ((not min_acc_filter_nan) and math.isnan(a))]
 
@@ -454,8 +624,7 @@ class Mutations:
         elif returnval == 'length':
             return [tup[1] - tup[0] + 1 for tup in deltups]
         elif returnval == 'accuracy':
-            return [dms_tools2.pacbio.qvalsToAccuracy(tup[3])
-                    for tup in deltups]
+            return [tup[3] for tup in deltups]
         elif returnval == 'homopolymer_length':
             return [tup[4] for tup in deltups]
         else:

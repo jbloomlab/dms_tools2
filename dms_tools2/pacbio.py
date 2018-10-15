@@ -1341,7 +1341,7 @@ def qvalsToAccuracy(qvals, encoding='numbers', no_avg=False):
             qvals = numpy.array(qvals)
 
     if qvals is None or len(qvals) == 0:
-        return numpy.nan
+        return math.nan
 
     if encoding == 'numbers':
         pass
