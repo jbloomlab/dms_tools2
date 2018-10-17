@@ -110,7 +110,7 @@ def fracIdentWithinBarcode(df, *, barcode_col='barcode',
     """Gets fraction of identical variants within barcodes.
 
     This function is designed for the case when you have barcoded
-    variants, and you want to determine how often the unique variants
+    variants, and you want to determine how often the variants
     with the same barcode are identical. To calculate this, all
     variants with the same barcode are grouped, and for every pair
     of variants within a barcode we compute the fraction that 
