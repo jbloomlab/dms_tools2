@@ -6,9 +6,9 @@ barcodes
 Operations for sequence barcodes and UMIs.
 """
 
-
+import re
 import collections
-
+import itertools
 
 import numpy
 import pandas
@@ -170,7 +170,7 @@ def fracIdentWithinBarcode(df, *, barcode_col='barcode',
     if sample_col is None:
         sample_col = 'sample'
         drop_sample_col = True
-        df = df.assign(sample=sample_col)
+        df = df.assign(sample='dummy')
     else:
         drop_sample_col = False
 
@@ -210,6 +210,221 @@ def fracIdentWithinBarcode(df, *, barcode_col='barcode',
         result = result.drop(sample_col, axis='columns')
 
     return result
+
+
+def simpleConsensus(df, *,
+        barcode_col='barcode', substitution_col='substitutions',
+        insertion_col='insertions', deletion_col='deletions',
+        sample_col=None, max_diffs=1, max_minor_muts=1):
+    """Simple method to get consensus of mutations within barcode.
+
+    Args:
+        `df` (pandas Data Frame)
+            Holds variants and their barcodes. Each row gives a 
+            sequence variant and its barcode. There need to be
+            columns with the names given by the next four arguments
+            described below.
+        `barcode_col` (str)
+            Name of column holding barcodes.
+        `substitution_col` (str)
+            Name of column holding substitutions as list of strings.
+        `insertion_col` (str)
+            Name of column holding insertions as list of strings.
+        `deletion_col` (str)
+            Name of column holding insertions as list of strings.
+        `sample_col` (`None` or str)
+            If we have multiple samples, analyze each barcode only
+            within its sample. In that case, `sample_col` should be
+            name of column giving sample name.
+        `max_diffs` (int)
+            Drop any barcode where any variant differs from all other
+            variants for that barcode by more than this many mutations.
+        `max_minor_muts` (int)
+            Drop any barcode where there is a minor (non-consensus)
+            mutation found more than this many times.
+
+    Returns:
+        The 2-tuple `(consensus, dropped)`. These are each data frames:
+
+            - `consensus` is a new data frame with a row for each
+              barcode for which we could call the consensus. The
+              columns have the same names as `barcode_col`, 
+              `substitution_col`, `insertion_col`, `deletion_col`,
+              and (optionally) `sample_col`--but the the three
+              columns for the mutations now just list the **consensus**
+              mutations of that type. In addition, there is a new
+              column called `nsequences` that gives the number of
+              sequences supporting the call of that barcode.
+
+            - `dropped` simply contains all rows in the original `df`
+              that correspond to sequences that were dropped due to
+              `max_diffs` or `max_minor_muts` not being satisfied.
+              There is also a column called "drop_reason" that is
+              "excess diffs" if a sequence is dropped due to the
+              `max_diffs` filter (too many differences between
+              variants) or "excess minor muts" if a sequence is
+              dropped due to the `max_minor_muts` filter (high
+              frequency non-consensus mutations).
+
+    The approach is as follows:
+
+      1. Group all variants within the sample barcode and sample.
+
+      2. If there are multiple sequences, check if any of them differ
+         from all the others by more than `max_diffs` mutations total
+         (taking substitutions, insertions, and deletions together).
+         If so, drop the entire barcode. The reason is that if there
+         are variants that are very different, it becomes likely that
+         it isn't just sequencing error, but rather something is wrong
+         with that barcode (multiple variants with same barcode or
+         strand exchange).
+
+      3. Take the consensus of the sequences, which means keeping
+         mutations that are present in **greater** than half of the
+         variants. Note that this calling scheme means that the
+         consensus being called is dependent on the reference used
+         to call the mutations, which is an important caveat if you
+         are calling variants relative to multiple different parent
+         sequences.
+
+      4. If there are any minor mutations (mutations not in consensus)
+         that are present in more than `max_minor_muts` variants or missing
+         from more than `max_minor_muts` variants, then
+         drop that barcode. The reason is that recurring minor mutations
+         also suggest some problem more complex than sequencing error
+         that may render the whole barcode family invalid.
+
+    Note that this method returns a consensus even if there is just
+    one sequence for the barcode (in that case, this sequence is
+    the consensus). This is fine--if you want to get consensus calls
+    that are more strongly supported, simply filter the returned
+    `consensus` data frame for lager values of `nsequences`, as the
+    more sequences that support a barcode call the more accurate is
+    is expected to be.
+
+    Here is an example:
+
+    >>> df = pandas.DataFrame([
+    ...     ('s1', 'AG', ['A2C'], [], ['del5to7']),
+    ...     ('s1', 'AG', ['A2C'], [], []),
+    ...     ('s1', 'TA', ['G3A'], ['ins4len3'], []),
+    ...     ('s2', 'TA', ['C5A', 'T6C'], [], []),
+    ...     ('s2', 'TA', ['T6C'], ['ins5len1'], []),
+    ...     ('s2', 'TA', ['T6C'], [], []),
+    ...     ('s2', 'GG', [], [], ['del1to4']),
+    ...     ('s2', 'GG', ['A1C'], [], []),
+    ...     ('s2', 'AA', [], [], []),
+    ...     ('s2', 'AA', [], [], []),
+    ...     ('s2', 'AA', ['T6C'], [], []),
+    ...     ('s2', 'AA', ['T6C'], [], [])],
+    ...     columns=['sample', 'barcode', 'substitutions',
+    ...              'insertions', 'deletions']
+    ...     )
+    >>> consensus, dropped = simpleConsensus(df, sample_col='sample')
+    >>> consensus
+      sample barcode substitutions  insertions deletions  nsequences
+    0     s1      AG         [A2C]          []        []           2
+    1     s1      TA         [G3A]  [ins4len3]        []           1
+    2     s2      TA         [T6C]          []        []           3
+    >>> pandas.set_option('display.max_columns', 10)
+    >>> dropped
+      sample barcode substitutions insertions  deletions        drop_reason
+    0     s2      GG            []         []  [del1to4]       excess diffs
+    1     s2      GG         [A1C]         []         []       excess diffs
+    2     s2      AA            []         []         []  excess minor muts
+    3     s2      AA            []         []         []  excess minor muts
+    4     s2      AA         [T6C]         []         []  excess minor muts
+    5     s2      AA         [T6C]         []         []  excess minor muts
+    """
+    if sample_col is None:
+        sample_col = 'sample'
+        df = df.assign(sample_col='dummy')
+        drop_sample_col = True
+    else:
+        drop_sample_col = False
+
+    mut_cols = [substitution_col, insertion_col, deletion_col]
+    all_cols = [sample_col, barcode_col] + mut_cols
+
+    if not all([col in df.columns for col in all_cols]):
+        raise ValueError(f"Cannot find column {col}")
+
+
+    # make sure no mutations duplicated, otherwise approach below fails
+    for col in mut_cols:
+        duplicated = df[col].apply(len) - df[col].apply(set).apply(len)
+        if duplicated.any():
+            raise ValueError(f"duplicated {col}:\n"
+                             f"{df[col][duplicated > 0]}")
+
+    dropped = []
+    consensus = []
+
+    for (sample, barcode), g in df[all_cols].reset_index(drop=True).groupby(
+            [sample_col, barcode_col]):
+
+        nseqs = len(g)
+
+        if nseqs == 1:
+            consensus.append(g.values[0].tolist() + [nseqs])
+            continue
+
+        # is max_diffs satisfied?
+        min_variant_diffs = collections.defaultdict(lambda: max_diffs + 1)
+        for v1, v2 in itertools.combinations(g.itertuples(), 2):
+            i1 = getattr(v1, 'Index')
+            i2 = getattr(v2, 'Index')
+            ndiffs = sum([
+                    len(set(getattr(v1, col)).symmetric_difference(
+                        set(getattr(v2, col))))
+                    for col in mut_cols])
+            min_variant_diffs[i1] = min(min_variant_diffs[i1], ndiffs)
+            min_variant_diffs[i2] = min(min_variant_diffs[i2], ndiffs)
+
+        if nseqs > 1 and any(
+                [d > max_diffs for d in min_variant_diffs.values()]):
+            # need to add to `dropped` because of max_diffs failing
+            dropped.append(g.assign(drop_reason="excess diffs"))
+            continue
+
+        # get consensus and see if `max_minor_muts` is satisfied
+        consensus_failed = False
+        g_consensus = [sample, barcode]
+        for col in mut_cols:
+            counts = collections.Counter(
+                    itertools.chain.from_iterable(g[col]))
+            if any([max_minor_muts < count < (nseqs - max_minor_muts)
+                   for count in counts.values()]):
+                consensus_failed = True
+                break
+            else:
+                col_consensus = [mut for mut, c in counts.items()
+                        if c > 0.5 * nseqs]
+                # order mutations based on first number in string
+                n_col_consensus = []
+                for mut in col_consensus:
+                    m = re.search('(\-{0,1}\d+)', mut)
+                    if m is None:
+                        n_col_consensus.append((math.nan, mut))
+                    else:
+                        n_col_consensus.append((int(m.group()), mut))
+                g_consensus.append([mut for n, mut in
+                        sorted(n_col_consensus)])
+        if consensus_failed:
+            # need to add to dropped
+            dropped.append(g.assign(drop_reason="excess minor muts"))
+        else:
+            consensus.append(g_consensus + [nseqs])
+
+    consensus = pandas.DataFrame(consensus,
+            columns=all_cols + ['nsequences'])
+    dropped = pandas.concat(dropped).sort_index().reset_index(drop=True)
+
+    if drop_sample_col:
+        dropped = dropped.drop(sample_col, axis='columns')
+        consensus = consensus.drop(sample_col, axis='columns')
+
+    return (consensus, dropped)
 
 
 
