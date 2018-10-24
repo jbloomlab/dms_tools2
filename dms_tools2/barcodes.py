@@ -215,7 +215,8 @@ def fracIdentWithinBarcode(df, *, barcode_col='barcode',
 def simpleConsensus(df, *,
         barcode_col='barcode', substitution_col='substitutions',
         insertion_col='insertions', deletion_col='deletions',
-        sample_col=None, max_diffs=1, max_minor_muts=1):
+        sample_col=None, max_sub_diffs=1, max_indel_diffs=2,
+        max_minor_muts=1):
     """Simple method to get consensus of mutations within barcode.
 
     Args:
@@ -236,9 +237,14 @@ def simpleConsensus(df, *,
             If we have multiple samples, analyze each barcode only
             within its sample. In that case, `sample_col` should be
             name of column giving sample name.
-        `max_diffs` (int)
+        `max_sub_diffs` (int)
             Drop any barcode where any variant differs from all other
-            variants for that barcode by more than this many mutations.
+            variants for that barcode by more than this many substitution
+            (point mutation) differences.
+        `max_indel_diffs` (int)
+            Drop any barcode where any variant differs from all other
+            variants for that barcode by more than this many indel
+            (insertion or deletion) differences.
         `max_minor_muts` (int)
             Drop any barcode where there is a minor (non-consensus)
             mutation found more than this many times.
@@ -369,26 +375,32 @@ def simpleConsensus(df, *,
             consensus.append(g.values[0].tolist() + [nseqs])
             continue
 
-        # is max_diffs satisfied?
-        min_variant_diffs = collections.defaultdict(lambda: max_diffs + 1)
-        for v1, v2 in itertools.combinations(g.itertuples(), 2):
-            i1 = getattr(v1, 'Index')
-            i2 = getattr(v2, 'Index')
-            ndiffs = sum([
-                    len(set(getattr(v1, col)).symmetric_difference(
+        consensus_failed = False
+        # are max_sub_diffs and max_indel_diffs satisfied?
+        for difftype, mut_cols, max_diffs in [
+                ('substitutions', [substitution_col], max_sub_diffs),
+                ('indels', [insertion_col, deletion_col], max_indel_diffs)]:
+            min_variant_diffs = collections.defaultdict(lambda: max_diffs + 1)
+            for v1, v2 in itertools.combinations(g.itertuples(), 2):
+                i1 = getattr(v1, 'Index')
+                i2 = getattr(v2, 'Index')
+                n_diffs = sum([len(
+                        set(getattr(v1, col)).symmetric_difference(
                         set(getattr(v2, col))))
-                    for col in mut_cols])
-            min_variant_diffs[i1] = min(min_variant_diffs[i1], ndiffs)
-            min_variant_diffs[i2] = min(min_variant_diffs[i2], ndiffs)
+                        for col in mut_cols])
+                min_variant_diffs[i1] = min(
+                        min_variant_diffs[i1], n_diffs)
 
-        if nseqs > 1 and any(
-                [d > max_diffs for d in min_variant_diffs.values()]):
-            # need to add to `dropped` because of max_diffs failing
-            dropped.append(g.assign(drop_reason="excess diffs"))
+            if nseqs > 1 and any(
+                    [d > max_diffs for d in min_variant_diffs.values()]):
+                # need to add to `dropped` because of max_diffs failing
+                dropped.append(g.assign(drop_reason=f"excess {difftype}"))
+                consensus_failed = True
+                break
+        if consensus_failed:
             continue
 
         # get consensus and see if `max_minor_muts` is satisfied
-        consensus_failed = False
         g_consensus = [sample, barcode]
         for col in mut_cols:
             counts = collections.Counter(
