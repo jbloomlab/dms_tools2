@@ -1,11 +1,13 @@
 Change Log
 ===========
 
-2.3.dev1
+2.4.dev0
 -----------
 * Improve matching of termini tags when there are mismatches in `dms_tools2.pacbio`
 
 * Some updates to `dms_tools2.minimap2.Mutations` objects.
+
+* Added functionality to `dms_tools2.barcodes` to get identity within barcodes and take consensus of sequences with same barcode.
 
 2.3.0
 --------
