@@ -259,18 +259,14 @@ def simpleConsensus(df, *,
               and (optionally) `sample_col`--but the the three
               columns for the mutations now just list the **consensus**
               mutations of that type. In addition, there is a new
-              column called `nsequences` that gives the number of
+              column called "nsequences" that gives the number of
               sequences supporting the call of that barcode.
 
             - `dropped` simply contains all rows in the original `df`
               that correspond to sequences that were dropped due to
               `max_diffs` or `max_minor_muts` not being satisfied.
-              There is also a column called "drop_reason" that is
-              "excess diffs" if a sequence is dropped due to the
-              `max_diffs` filter (too many differences between
-              variants) or "excess minor muts" if a sequence is
-              dropped due to the `max_minor_muts` filter (high
-              frequency non-consensus mutations).
+              There is also a column called "drop_reason" that gives
+              the reason that the barcode was dropped.
 
     The approach is as follows:
 
@@ -317,12 +313,16 @@ def simpleConsensus(df, *,
     ...     ('s2', 'TA', ['C5A', 'T6C'], [], []),
     ...     ('s2', 'TA', ['T6C'], ['ins5len1'], []),
     ...     ('s2', 'TA', ['T6C'], [], []),
+    ...     ('s2', 'TG', ['T6A'], [], []),
+    ...     ('s2', 'TG', ['A2G'], [], []),
     ...     ('s2', 'GG', [], [], ['del1to4']),
     ...     ('s2', 'GG', ['A1C'], [], []),
     ...     ('s2', 'AA', [], [], []),
     ...     ('s2', 'AA', [], [], []),
     ...     ('s2', 'AA', ['T6C'], [], []),
-    ...     ('s2', 'AA', ['T6C'], [], [])],
+    ...     ('s2', 'AA', ['T6C'], [], []),
+    ...     ('s3', 'AA', ['T6G'], ['ins1len1'], ['del1to2']),
+    ...     ('s3', 'AA', ['T6G'], [], ['del5to7'])],
     ...     columns=['sample', 'barcode', 'substitutions',
     ...              'insertions', 'deletions']
     ...     )
@@ -331,16 +331,20 @@ def simpleConsensus(df, *,
       sample barcode substitutions  insertions deletions  nsequences
     0     s1      AG         [A2C]          []        []           2
     1     s1      TA         [G3A]  [ins4len3]        []           1
-    2     s2      TA         [T6C]          []        []           3
+    2     s2      GG            []          []        []           2
+    3     s2      TA         [T6C]          []        []           3
     >>> pandas.set_option('display.max_columns', 10)
+    >>> pandas.set_option('display.width', 500)
     >>> dropped
-      sample barcode substitutions insertions  deletions        drop_reason
-    0     s2      GG            []         []  [del1to4]       excess diffs
-    1     s2      GG         [A1C]         []         []       excess diffs
-    2     s2      AA            []         []         []  excess minor muts
-    3     s2      AA            []         []         []  excess minor muts
-    4     s2      AA         [T6C]         []         []  excess minor muts
-    5     s2      AA         [T6C]         []         []  excess minor muts
+      sample barcode substitutions  insertions  deletions           drop_reason
+    0     s2      TG         [T6A]          []         []  excess substitutions
+    1     s2      TG         [A2G]          []         []  excess substitutions
+    2     s2      AA            []          []         []     excess minor muts
+    3     s2      AA            []          []         []     excess minor muts
+    4     s2      AA         [T6C]          []         []     excess minor muts
+    5     s2      AA         [T6C]          []         []     excess minor muts
+    6     s3      AA         [T6G]  [ins1len1]  [del1to2]         excess indels
+    7     s3      AA         [T6G]          []  [del5to7]         excess indels
     """
     if sample_col is None:
         sample_col = 'sample'
@@ -377,7 +381,7 @@ def simpleConsensus(df, *,
 
         consensus_failed = False
         # are max_sub_diffs and max_indel_diffs satisfied?
-        for difftype, mut_cols, max_diffs in [
+        for difftype, diff_cols, max_diffs in [
                 ('substitutions', [substitution_col], max_sub_diffs),
                 ('indels', [insertion_col, deletion_col], max_indel_diffs)]:
             min_variant_diffs = collections.defaultdict(lambda: max_diffs + 1)
@@ -387,14 +391,16 @@ def simpleConsensus(df, *,
                 n_diffs = sum([len(
                         set(getattr(v1, col)).symmetric_difference(
                         set(getattr(v2, col))))
-                        for col in mut_cols])
+                        for col in diff_cols])
                 min_variant_diffs[i1] = min(
                         min_variant_diffs[i1], n_diffs)
 
             if nseqs > 1 and any(
                     [d > max_diffs for d in min_variant_diffs.values()]):
                 # need to add to `dropped` because of max_diffs failing
-                dropped.append(g.assign(drop_reason=f"excess {difftype}"))
+                dropped.append(
+                        g.assign(drop_reason=f"excess {difftype}")
+                        )
                 consensus_failed = True
                 break
         if consensus_failed:
@@ -424,13 +430,18 @@ def simpleConsensus(df, *,
                         sorted(n_col_consensus)])
         if consensus_failed:
             # need to add to dropped
-            dropped.append(g.assign(drop_reason="excess minor muts"))
+            dropped.append(
+                    g.assign(drop_reason="excess minor muts")
+                    )
         else:
             consensus.append(g_consensus + [nseqs])
 
     consensus = pandas.DataFrame(consensus,
             columns=all_cols + ['nsequences'])
-    dropped = pandas.concat(dropped).sort_index().reset_index(drop=True)
+    if dropped:
+        dropped = pandas.concat(dropped).sort_index().reset_index(drop=True)
+    else:
+        dropped = pandas.DataFrame()
 
     if drop_sample_col:
         dropped = dropped.drop(sample_col, axis='columns')
