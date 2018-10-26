@@ -319,7 +319,7 @@ class CCS:
         elif ext in {'.fq', '.fastq'}:
             headmatch = re.compile('^(?P<name>\S+)\s+'
                                    'np:i:(?P<passes>\d+)\s+'
-                                   'rq:f:(?P<accuracy>\d+\.\d+)')
+                                   'rq:f:(?P<accuracy>\d+\.{0,1}\d*)')
             for r, head, q, qs in HTSeq.FastqReader(self.ccsfile,
                                                     raw_iterator=True):
                 m = headmatch.match(head)
