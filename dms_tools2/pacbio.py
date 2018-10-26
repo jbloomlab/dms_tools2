@@ -8,6 +8,7 @@ Tools for processing PacBio sequencing data.
 
 
 import os
+import gzip
 import re
 import io
 import math
@@ -20,6 +21,7 @@ import regex
 import numpy
 import pandas
 import pysam
+import HTSeq
 import Bio.SeqFeature
 
 # import dms_tools2.plot to set plotting contexts / themes
@@ -37,13 +39,21 @@ class CCS:
     Has been tested on output of ``ccs`` version 3.0.0.
 
     This class reads all data into memory, and so you
-    may need a lot of RAM if `bamfile` is large.
+    may need a lot of RAM if `ccsfile` is large.
 
     Args:
         `samplename` (str)
             Sample or sequencing run
-        `bamfile` (str)
-            BAM file created by ``ccs``
+        `ccsfile` (str)
+            File created by ``ccs`` that holds the CCSs. The
+            ``ccs`` program outputs BAM files. However, you
+            can also pass FASTQ files generated from these
+            BAM files using ``samtools bam2fq -T np,rq <bamfile>``
+            (note that ``-T np,rq`` flag which is needed to
+            preserve the number of passes and accuracy flags).
+            The file format is determined from the file extension,
+            and can be ``*.bam``, ``*.fastq``, ``*.fq``,
+            ``*.fastq.gz``, or ``*.fq.gz``.
         `reportfile` (str or `None`)
             Report file created by ``ccs``, or
             `None` if you have no reports.
@@ -51,7 +61,7 @@ class CCS:
     Attributes:
         `samplename` (str)
             Name set at initialization
-        `bamfile` (str)
+        `ccsfile` (str)
             ``ccs`` BAM file set at initialization
         `reportfile` (str or `None`)
             ``ccs`` report file set at initialization
@@ -62,7 +72,7 @@ class CCS:
         `subread_report` (pandas.DataFrame or `None`)
             Like `zmw_report` but for subreads.
         `df` (pandas.DataFrame)
-            The CCSs in `bamfile`. Each row is a different CCS
+            The CCSs in `ccsfile`. Each row is a different CCS
             On creation, there will be the following columns (you
             can modify to add more): 
 
@@ -120,7 +130,7 @@ class CCS:
     ...                      iccs in ccs_seqs])
 
     Create small SAM file with these sequences, then
-    convert to BAM file used to initialize a `CCS` object
+    convert to BAM file used to initialize a :class:`CCS`
     (note this requires ``samtools`` to be installed):
 
     >>> samfile = '_temp.sam'
@@ -131,6 +141,45 @@ class CCS:
     ...         '-b', '-o', bamfile, samfile])
     >>> ccs = CCS('test', bamfile, None)
     >>> os.remove(samfile)
+
+    We also sometimes create the BAM files created by PacBio
+    ``ccs`` to FASTQ. Do that using ``samtools bam2fq -T np,rq``
+    to keep flags with number of passes and overall read quality:
+
+    >>> fastq_data = subprocess.check_output(
+    ...         ['samtools', 'bam2fq', '-T', 'np,rq', bamfile])
+
+    Show how the resulting FASTQ data keeps the *np* and *rq* tags:
+
+    >>> print(fastq_data.decode('utf-8').strip().replace('\\t', ' '))
+    @barcoded_TTC_0.999_plus np:i:6 rq:f:0.999
+    ACGTTCACGCTT
+    +
+    ????????????
+    @barcoded_AGA_0.995_minus np:i:6 rq:f:0.998144
+    TAAGTGCTCTCGTA
+    +
+    ???????9?5????
+    @invalid np:i:6 rq:f:0.999
+    GGGCATGCACTT
+    +
+    ????????????
+
+    Write the FASTQ to a file, and check that :class:`CCS`
+    initialized from the FASTQ is the same as one from the BAM:
+
+    >>> fastqfile = '_temp.fastq'
+    >>> gzfastqfile = '_temp.fastq.gz'
+    >>> with open(fastqfile, 'wb') as f:
+    ...     _ = f.write(fastq_data)
+    >>> with gzip.open(gzfastqfile, 'wb') as f:
+    ...     _ = f.write(fastq_data)
+    >>> ccs_fastq = CCS('test', fastqfile, None)
+    >>> ccs_gzfastq = CCS('test', gzfastqfile, None)
+    >>> pandas.testing.assert_frame_equal(ccs_fastq.df, ccs.df)
+    >>> pandas.testing.assert_frame_equal(ccs_gzfastq.df, ccs.df)
+    >>> os.remove(fastqfile)
+    >>> os.remove(gzfastqfile)
     >>> os.remove(bamfile)
 
     Check `ccs.df` has correct names, samplename, CCS sequences,
@@ -191,12 +240,12 @@ class CCS:
 
     """
 
-    def __init__(self, samplename, bamfile, reportfile):
+    def __init__(self, samplename, ccsfile, reportfile):
         """See main class doc string."""
         self.samplename = samplename
 
-        assert os.path.isfile(bamfile), "can't find {0}".format(bamfile)
-        self.bamfile = bamfile
+        assert os.path.isfile(ccsfile), f"can't find {ccsfile}"
+        self.ccsfile = ccsfile
 
         self.reportfile = reportfile
         if self.reportfile is None:
@@ -208,7 +257,11 @@ class CCS:
             # set `zmw_report` and `subread_report`
             self._parse_report()
 
-        self._build_df_from_bamfile()
+        self._build_df_from_ccsfile()
+
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
 
 
     def _parse_report(self):
@@ -235,20 +288,54 @@ class CCS:
             setattr(self, read_type + '_report', df)
 
 
-    def _build_df_from_bamfile(self):
-        """Builds `df` from `bamfile`."""
+    def _build_df_from_ccsfile(self):
+        """Builds `df` from `ccsfile`."""
         # read into dictionary
         d = collections.defaultdict(list)
-        for s in pysam.AlignmentFile(self.bamfile, 'rb',
-                check_sq=False):
-            d['CCS'].append(s.query_sequence)
-            d['CCS_qvals'].append(numpy.asarray(s.query_qualities,
-                                                dtype='int'))
-            d['name'].append(s.query_name)
-            d['passes'].append(s.get_tag('np'))
-            d['CCS_accuracy'].append(s.get_tag('rq'))
-            d['CCS_length'].append(s.query_length)
-            d['samplename'].append(self.samplename)
+
+        # get file type by extensions
+        base, ext = [s.lower() for s in os.path.splitext(self.ccsfile)]
+        if ext in {'.gz', '.gzip'}:
+            gzipped = True
+            ext = os.path.splitext(base)[1].lower()
+        else:
+            gzipped = False
+
+        # extract data based on file extension
+        if ext == '.bam':
+            if gzipped:
+                raise ValueError("Cannot handle gzipped BAM")
+            for s in pysam.AlignmentFile(self.ccsfile, 'rb',
+                                         check_sq=False):
+                d['CCS'].append(s.query_sequence)
+                d['CCS_qvals'].append(numpy.asarray(s.query_qualities,
+                                                    dtype='int'))
+                d['name'].append(s.query_name)
+                d['passes'].append(s.get_tag('np'))
+                d['CCS_accuracy'].append(s.get_tag('rq'))
+                d['CCS_length'].append(s.query_length)
+                d['samplename'].append(self.samplename)
+
+        elif ext in {'.fq', '.fastq'}:
+            headmatch = re.compile('^(?P<name>\S+)\s+'
+                                   'np:i:(?P<passes>\d+)\s+'
+                                   'rq:f:(?P<accuracy>\d+\.\d+)')
+            for r, head, q, qs in HTSeq.FastqReader(self.ccsfile,
+                                                    raw_iterator=True):
+                m = headmatch.match(head)
+                if not m:
+                    raise ValueError(f"could not match {head}")
+                d['CCS'].append(r)
+                qvals = numpy.array([ord(qi) - 33 for qi in q], dtype='int')
+                d['CCS_qvals'].append(qvals)
+                d['name'].append(m.group('name'))
+                d['passes'].append(int(m.group('passes')))
+                d['CCS_accuracy'].append(float(m.group('accuracy')))
+                d['CCS_length'].append(len(r))
+                d['samplename'].append(self.samplename)
+
+        else:
+            raise ValueError(f"invalid file extension {ext}")
 
         # create data frame
         self.df = pandas.DataFrame(d)

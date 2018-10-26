@@ -9,6 +9,8 @@ Change Log
 
 * Added functionality to `dms_tools2.barcodes` to get identity within barcodes and take consensus of sequences with same barcode.
 
+* `pacbio.CCS` handles FASTQ as well as BAM input.
+
 2.3.0
 --------
 * Require Python 3.6 or greater.
