@@ -108,14 +108,14 @@ def initLogger(logfile, prog, args):
 
 
 def iteratePairedFASTQ(r1files, r2files, r1trim=None, r2trim=None):
-    """Iterates over FASTQ file pairs for paired-end sequencing reads.
+    """Iterates over FASTQ files for single or paired-end sequencing.
 
     Args:
         `r1files` (list or str)
             Name of R1 FASTQ file or list of such files. Can optionally
             be gzipped.
-        `r2files` (list or str)
-            Like `r1files` but for R2 files.
+        `r2files` (list or str or `None`)
+            Like `r1files` but for R2 files, or `None` if no R2.
         `r1trim` (int or `None`)
             If not `None`, trim `r1` and `q1` to be no longer than this.
         `r2trim` (int or `None`)
@@ -126,9 +126,11 @@ def iteratePairedFASTQ(r1files, r2files, r1trim=None, r2trim=None):
 
             - `name` is a string giving the read name
 
-            - `r1` and `r2` are strings giving the reads
+            - `r1` and `r2` are strings giving the reads; `r2`
+              is `None` if no R2.
 
-            - `q1` and `q2` are strings giving the PHRED Q scores
+            - `q1` and `q2` are strings giving the PHRED Q scores;
+              `q2` is none if no R2.
 
             - `fail` is `True` if either read failed Illumina chastity
               filter, `False` if both passed, `None` if info not present.
@@ -144,25 +146,45 @@ def iteratePairedFASTQ(r1files, r2files, r1trim=None, r2trim=None):
     >>> q2_1 = 'G<GGGIII'
     >>> tf = tempfile.NamedTemporaryFile
     >>> with tf(mode='w') as r1file, tf(mode='w') as r2file:
-    ...     dummyvar = r1file.write('\\n'.join([
+    ...     _ = r1file.write('\\n'.join([
     ...             n1_1, r1_1, '+', q1_1,
     ...             n1_1.replace(':N:', ':Y:'), r1_1, '+', q1_1,
     ...             n1_1.split()[0], r1_1, '+', q1_1,
     ...             ]))
     ...     r1file.flush()
-    ...     dummyvar = r2file.write('\\n'.join([
+    ...     _ = r2file.write('\\n'.join([
     ...             n2_1, r2_1, '+', q2_1,
     ...             n2_1, r2_1, '+', q2_1,
     ...             n2_1, r2_1, '+', q2_1,
     ...             ]))
     ...     r2file.flush()
     ...     itr = iteratePairedFASTQ(r1file.name, r2file.name, r1trim=4, r2trim=5)
-    ...     next(itr) == (n1_1.split()[0][1 : ], r1_1[ : 4], 
+    ...     next(itr) == (n1_1.split()[0][1 : ], r1_1[ : 4],
     ...             r2_1[ : 5], q1_1[ : 4], q2_1[ : 5], False)
-    ...     next(itr) == (n1_1.split()[0][1 : ], r1_1[ : 4], 
+    ...     next(itr) == (n1_1.split()[0][1 : ], r1_1[ : 4],
     ...             r2_1[ : 5], q1_1[ : 4], q2_1[ : 5], True)
-    ...     next(itr) == (n1_1.split()[0][1 : ], r1_1[ : 4], 
+    ...     next(itr) == (n1_1.split()[0][1 : ], r1_1[ : 4],
     ...             r2_1[ : 5], q1_1[ : 4], q2_1[ : 5], None)
+    True
+    True
+    True
+
+    Now do the same test but for just R1:
+
+    >>> with tf(mode='w') as r1file:
+    ...     _ = r1file.write('\\n'.join([
+    ...             n1_1, r1_1, '+', q1_1,
+    ...             n1_1.replace(':N:', ':Y:'), r1_1, '+', q1_1,
+    ...             n1_1.split()[0], r1_1, '+', q1_1,
+    ...             ]))
+    ...     r1file.flush()
+    ...     itr_R1 = iteratePairedFASTQ(r1file.name, None, r1trim=4)
+    ...     next(itr_R1) == (n1_1.split()[0][1 : ], r1_1[ : 4],
+    ...             None, q1_1[ : 4], None, False)
+    ...     next(itr_R1) == (n1_1.split()[0][1 : ], r1_1[ : 4],
+    ...             None, q1_1[ : 4], None, True)
+    ...     next(itr_R1) == (n1_1.split()[0][1 : ], r1_1[ : 4],
+    ...             None, q1_1[ : 4], None, None)
     True
     True
     True
@@ -170,39 +192,51 @@ def iteratePairedFASTQ(r1files, r2files, r1trim=None, r2trim=None):
     """
     if isinstance(r1files, str):
         r1files = [r1files]
-        assert isinstance(r2files, str)
-        r2files = [r2files]
-    assert len(r1files) == len(r2files) > 0
-    assert isinstance(r1files, list) and isinstance(r2files, list)
+        if r2files is not None:
+            r2files = [r2files]
+    if r2files is None:
+        r2files = [None] * len(r1files)
     for (r1file, r2file) in zip(r1files, r2files):
         r1reader = HTSeq.FastqReader(r1file, raw_iterator=True)
-        r2reader = HTSeq.FastqReader(r2file, raw_iterator=True)
-        for ((r1, id1, q1, qs1), (r2, id2, q2, qs2)) in zip(
-                r1reader, r2reader):
+        if r2file is None:
+            read_iterator = r1reader
+        else:
+            r2reader = HTSeq.FastqReader(r2file, raw_iterator=True)
+            read_iterator = zip(r1reader, r2reader)
+        for tup in read_iterator:
+            if r2file is None:
+               r1, id1, q1, qs1 = tup
+               r2 = q2 = None
+            else:
+                (r1, id1, q1, qs1), (r2, id2, q2, qs2) = tup
+                id2 = id2.split()
+                name2 = id2[0]
             id1 = id1.split()
-            id2 = id2.split()
             name1 = id1[0]
-            name2 = id2[0]
-            # next check trims last two chars, need for SRA downloaded files
-            if name1[-2 : ] == '.1' and name2[-2 : ] == '.2':
-                name1 = name1[ : -2]
-                name2 = name2[ : -2]
-            assert name1 == name2, "{0} vs {1}".format(name1, name2)
+            if r2file is not None:
+                # trims last two chars, need for SRA downloaded files
+                if name1[-2 : ] == '.1' and name2[-2 : ] == '.2':
+                    name1 = name1[ : -2]
+                    name2 = name2[ : -2]
+                if name1 != name2:
+                    raise ValueError(f"name mismatch {name1} vs {name2}")
             # parse chastity filter assuming CASAVA 1.8 header
-            fail = None
             try:
                 f1 = id1[1][2]
-                f2 = id2[1][2]
+                if r2file is None:
+                    f2 = 'N'
+                else:
+                    f2 = id2[1][2]
                 if f1 == 'N' and f2 == 'N':
                     fail = False
                 elif f1 in ['N', 'Y'] and f2 in ['N', 'Y']:
                     fail = True
             except IndexError:
-                pass # header does not specify chastity filter
+                fail = None # header does not specify chastity filter
             if r1trim is not None:
                 r1 = r1[ : r1trim]
                 q1 = q1[ : r1trim]
-            if r2trim is not None:
+            if (r2trim is not None) and (r2file is not None):
                 r2 = r2[ : r2trim]
                 q2 = q2[ : r2trim]
             yield (name1, r1, r2, q1, q2, fail)
