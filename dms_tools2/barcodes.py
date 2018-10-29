@@ -685,6 +685,28 @@ class IlluminaBarcodeParser:
     "low quality barcode" 1
     "R1 / R2 disagree" 1
 
+    Now parse the barcodes using `valid_barcodes` to set a
+    barcode whitelist:
+
+    >>> parser_wl = IlluminaBarcodeParser(
+    ...              bclen=4,
+    ...              upstream='ACATGA',
+    ...              downstream='GACT',
+    ...              valid_barcodes={'CGTA', 'AGTA'}
+    ...              )
+    >>> barcodes_wl, fates_wl = parser_wl.parse(r1file, r2file)
+    >>> print(barcodes_wl.to_csv(sep=' ', index=False).strip())
+    barcode count
+    CGTA 2
+    AGTA 1
+    >>> print(fates_wl.to_csv(sep=' ', index=False).strip())
+    fate count
+    "valid barcode" 3
+    "unparseable barcode" 3
+    "low quality barcode" 1
+    "invalid barcode" 1
+    "R1 / R2 disagree" 1
+
     Remove the test FASTQ files:
 
     >>> os.remove(r1file)
