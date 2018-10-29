@@ -7,6 +7,7 @@ Operations for sequence barcodes and UMIs.
 """
 
 import re
+import os
 import collections
 import itertools
 
@@ -499,7 +500,7 @@ class IlluminaBarcodeParser:
     a quality of at least `minq`.
 
     Here is an example. Imagine we are parsing 4 nucleotide barcodes
-    that have the following construction:
+    that have the following construction::
 
         5'-[R2 binding site]-ACATGA-NNNN-GACT-[R1 binding site]-3'
 
@@ -510,6 +511,184 @@ class IlluminaBarcodeParser:
     ...              upstream='ACATGA',
     ...              downstream='GACT'
     ...              )
+
+    Now we write some test FASTQ files. We write valid test
+    reads and some invalid reads. The header for each read
+    explains why it is valid / invalid. We use quality scores
+    of ``?`` (30) or ``+`` (10) for high- and low-quality bases:
+
+    >>> r1file = '_temp_R1.fastq'
+    >>> r2file = '_temp_R2.fastq'
+    >>> with open(r1file, 'w') as f1, open(r2file, 'w') as f2:
+    ...
+    ...     # valid TACG barcode, full flanking regions
+    ...     _ = f1.write(
+    ...         '@valid_CGTA_barcode_full_flanking_region\\n'
+    ...         'AGTCCGTATCATGT\\n'
+    ...         '+\\n'
+    ...         '??????????????\\n')
+    ...     _ = f2.write(
+    ...         '@valid_CGTA_barcode_full_flanking_region\\n'
+    ...         'ACATGATACGGACT\\n'
+    ...         '+\\n'
+    ...         '??????????????\\n')
+    ...
+    ...     # valid CGTA barcode, partial flanking regions
+    ...     _ = f1.write(
+    ...         '@valid_CGTA_barcode_partial_flanking_region\\n'
+    ...         'AGTCCGTATCAT\\n'
+    ...         '+\\n'
+    ...         '??????????????\\n')
+    ...     _ = f2.write(
+    ...         '@valid_CGTA_barcode_partial_flanking_region\\n'
+    ...         'ACATGATACG\\n'
+    ...         '+\\n'
+    ...         '??????????????\\n')
+    ...
+    ...     # valid GCCG barcode, extended flanking regions
+    ...     _ = f1.write(
+    ...         '@valid_GCCG_barcode_extended_flanking_region\\n'
+    ...         'AGTCGCCGTCATGTTAC\\n'
+    ...         '+\\n'
+    ...         '??????????????\\n')
+    ...     _ = f2.write(
+    ...         '@valid_GCCG_barcode_extended_flanking_region\\n'
+    ...         'ACATGACGGCGACTGAC\\n'
+    ...         '+\\n'
+    ...         '??????????????\\n')
+    ...
+    ...     # AAGT barcode in R1 but R2 differs
+    ...     _ = f1.write(
+    ...         '@AAGT_R1_barcode_but_R2_differs\\n'
+    ...         'AGTCAAGTTCATGT\\n'
+    ...         '+\\n'
+    ...         '??????????????\\n')
+    ...     _ = f2.write(
+    ...         '@AAGT_R1_barcode_but_R2_differs\\n'
+    ...         'ACATGAACTAGACT\\n'
+    ...         '+\\n'
+    ...         '??????????????\\n')
+    ...
+    ...     # same site low quality in R1 and R2
+    ...     _ = f1.write(
+    ...         '@low_quality_site_in_R1_and_R2\\n'
+    ...         'AGTCCGTATCATGT\\n'
+    ...         '+\\n'
+    ...         '?????+????????\\n')
+    ...     _ = f2.write(
+    ...         '@low_quality_site_in_R1_and_R2\\n'
+    ...         'ACATGATACGGACT\\n'
+    ...         '+\\n'
+    ...         '????????+?????\\n')
+    ...
+    ...     # different site low quality in R1 and R2
+    ...     _ = f1.write(
+    ...         '@AGTA_with_low_quality_site_in_R1\\n'
+    ...         'AGTCAGTATCATGT\\n'
+    ...         '+\\n'
+    ...         '?????+????????\\n')
+    ...     _ = f2.write(
+    ...         '@AGTA_with_low_quality_site_in_R1\\n'
+    ...         'ACATGATACTGACT\\n'
+    ...         '+\\n'
+    ...         '?????????+????\\n')
+    ...
+    ...     # N in barcode
+    ...     _ = f1.write(
+    ...         '@N_in_barcode\\n'
+    ...         'AGTCCGTNTCATGT\\n'
+    ...         '+\\n'
+    ...         '??????????????\\n')
+    ...     _ = f2.write(
+    ...         '@N_in_barcode\\n'
+    ...         'ACATGATACGGACT\\n'
+    ...         '+\\n'
+    ...         '??????????????\\n')
+    ...
+    ...     # GGAG barcode, one mismatch in each flanking region
+    ...     _ = f1.write(
+    ...         '@GGAG_barcode_one_mismatch_per_flank\\n'
+    ...         'GGTCGGAGTCATGA\\n'
+    ...         '+\\n'
+    ...         '??????????????\\n')
+    ...     _ = f2.write(
+    ...         '@GGAG_barcode_one_mismatch_per_flank\\n'
+    ...         'TCATGACTCCGACG\\n'
+    ...         '+\\n'
+    ...         '??????????????\\n')
+    ...
+    ...     # GGAG barcode, two mismatch in a flanking region
+    ...     _ = f1.write(
+    ...         '@GGAG_barcode_two_mismatch_in_a_flank\\n'
+    ...         'GGTCGGAGTCATAA\\n'
+    ...         '+\\n'
+    ...         '??????????????\\n')
+    ...     _ = f2.write(
+    ...         '@GGAG_barcode_two_mismatch_in_a_flank\\n'
+    ...         'TCATGACTCCGACG\\n'
+    ...         '+\\n'
+    ...         '??????????????\\n')
+
+
+    Now parse the barcodes using both the R1 and R2 files:
+
+    >>> barcodes, fates = parser.parse(r1file, r2file)
+    >>> print(barcodes.to_csv(sep=' ', index=False).strip())
+    barcode count
+    CGTA 2
+    GCCG 1
+    AGTA 1
+    >>> print(fates.to_csv(sep=' ', index=False).strip())
+    fate count
+    "valid barcode" 4
+    "unparseable barcode" 3
+    "low quality barcode" 1
+    "R1 / R2 disagree" 1
+
+    Now we parse just using R1. We gain the barcode where R1 and
+    R2 disagree, but lose the one where R1 is low quality at a
+    position where R2 is OK:
+
+    >>> barcodes, fates = parser.parse(r1file)
+    >>> print(barcodes.to_csv(sep=' ', index=False).strip())
+    barcode count
+    CGTA 2
+    GCCG 1
+    AAGT 1
+    >>> print(fates.to_csv(sep=' ', index=False).strip())
+    fate count
+    "valid barcode" 4
+    "unparseable barcode" 3
+    "low quality barcode" 2
+
+    Now create a parser that allows a mismatch in each flanking
+    region, and check that we recover a "GGAG" barcode:
+
+    >>> parser_mismatch = IlluminaBarcodeParser(
+    ...              bclen=4,
+    ...              upstream='ACATGA',
+    ...              downstream='GACT',
+    ...              upstream_mismatch=1,
+    ...              downstream_mismatch=1,
+    ...              )
+    >>> barcodes_mismatch, fates_mismatch = parser_mismatch.parse(r1file, r2file)
+    >>> print(barcodes_mismatch.to_csv(sep=' ', index=False).strip())
+    barcode count
+    CGTA 2
+    GGAG 1
+    GCCG 1
+    AGTA 1
+    >>> print(fates_mismatch.to_csv(sep=' ', index=False).strip())
+    fate count
+    "valid barcode" 5
+    "unparseable barcode" 2
+    "low quality barcode" 1
+    "R1 / R2 disagree" 1
+
+    Remove the test FASTQ files:
+
+    >>> os.remove(r1file)
+    >>> os.remove(r2file)
     """
 
     #: valid nucleotide characters
@@ -549,7 +728,7 @@ class IlluminaBarcodeParser:
         self._matches = {'R1':{}, 'R2':{}} # saves match object by read length
 
 
-    def parse(self, r1files, r2files=None, chastity_filter=True):
+    def parse(self, r1files, r2files=None, *, chastity_filter=True):
         """Parses barcodes from files.
 
         Args:
@@ -564,15 +743,13 @@ class IlluminaBarcodeParser:
         Returns:
             The 2-tuple `(barcodes, fates)`. In this 2-tuple:
 
-                - `barcodes` is a pandas Series giving the
-                  number of observations of each barcode.
-                  The index is named "barcode", the values
-                  are named "count".
+                - `barcodes` is a pandas DataFrame giving the
+                  number of observations of each barcode. The
+                  columns are named "barcode" and "count".
 
                 - `fates` is a pandas DataFrame giving the
-                  total number of reads with each fate. The 
-                  fates (listed below) are the index, and the
-                  values are named "count":
+                  total number of reads with each fate. The
+                  columns are named "fate" and "count".
 
                   - "valid barcode"
 
@@ -591,7 +768,7 @@ class IlluminaBarcodeParser:
             reads = ['R1', 'R2']
 
         barcodes = collections.defaultdict(int)
-        fate = collections.defaultdict(int)
+        fates = collections.defaultdict(int)
 
         for name, r1, r2, q1, q2, fail in \
                 dms_tools2.utils.iteratePairedFASTQ(r1files, r2files):
@@ -614,19 +791,19 @@ class IlluminaBarcodeParser:
                     if read == 'R1':
                         match_str = (
                                 f'^({self._rcdownstream})'
-                                f'{{{s<=self.downstream_mismatch}}}' +
-                                f'(?P<bc>N{self.bclen})' +
+                                f'{{s<={self.downstream_mismatch}}}' +
+                                f'(?P<bc>N{{{self.bclen}}})' +
                                 f'({self._rcupstream[ : len_past_bc]})' +
-                                f'{{{s<=self.upstream_mismatch}}}'
+                                f'{{s<={self.upstream_mismatch}}}'
                                 )
                     else:
                         assert read == 'R2'
                         match_str = (
                                 f'^({self.upstream})' +
-                                f'{{{s<=self.upstream_mismatch}}}' +
-                                f'(?P<bc>N{self.bclen})' +
+                                f'{{s<={self.upstream_mismatch}}}' +
+                                f'(?P<bc>N{{{self.bclen}}})' +
                                 f'({self.downstream[ : len_past_bc]})' +
-                                f'{{{s<=self.downstream_mismatch}}}'
+                                f'{{s<={self.downstream_mismatch}}}'
                                 )
                     matcher = regex.compile(
                             dms_tools2.pacbio.re_expandIUPAC(match_str),
@@ -652,7 +829,7 @@ class IlluminaBarcodeParser:
                 if self.rc_barcode and 'R2' in reads:
                     bc['R2'] = dms_tools2.utils.reverseComplement(bc['R2'])
                     bc_q['R2'] = numpy.flip(bc_q['R2'])
-                else:
+                elif 'R2' in reads:
                     bc['R1'] = dms_tools2.utils.reverseComplement(bc['R1'])
                     bc_q['R1'] = numpy.flip(bc_q['R1'])
                 if len(reads) == 1:
@@ -682,16 +859,18 @@ class IlluminaBarcodeParser:
                 # invalid flanking sequence or N in barcode
                 fates['unparseable barcode'] += 1
 
-        barcodes = (pandas.Series(barcodes)
-                    .rename_axis('barcode')
-                    .rename('count')
-                    .sort_values(ascending=False)
+        barcodes = (pandas.DataFrame(
+                        list(barcodes.items()),
+                        columns=['barcode', 'count'])
+                    .sort_values(['count', 'barcode'], ascending=False)
+                    .reset_index(drop=True)
                     )
 
-        fates = (pandas.Series(fates)
-                 .rename_axis('fate')
-                 .rename('count')
-                 .sort_values(ascending=False)
+        fates = (pandas.DataFrame(
+                    list(fates.items()),
+                    columns=['fate', 'count'])
+                 .sort_values(['count', 'fate'], ascending=False)
+                 .reset_index(drop=True)
                  )
 
         return (barcodes, fates)
