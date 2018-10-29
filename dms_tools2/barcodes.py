@@ -12,8 +12,11 @@ import itertools
 
 import numpy
 import pandas
+import regex
 import umi_tools.network
 
+import dms_tools2.utils
+import dms_tools2.pacbio
 
 _umi_clusterer = umi_tools.network.UMIClusterer()
 
@@ -449,6 +452,249 @@ def simpleConsensus(df, *,
 
     return (consensus, dropped)
 
+
+class IlluminaBarcodeParser:
+    """Parser for Illumina barcodes.
+
+    The barcodes should be read by R1 and optionally R2.
+    The arrangement of elements is shown below::
+
+        5'-[R2_start]-upstream-barcode-downstream-R1_start-3'
+
+    R1 anneals downstream of the barcode and reads backwards. If 
+    R2 is used, it anneals upstream of the barcode and reads forward.
+    There can be sequences (`upstream` and `downstream`) on either
+    side of the barcode: `downstream` must fully cover the
+    region between where R1 starts and the barcode, and if you are
+    using R2 then `upstream` must fully cover the region between
+    where R2 starts and the barcode. However, it is fine if R1
+    reads backwards past `upstream`, and if `R2` reads forward
+    past `downstream`.
+
+    Args:
+        `bclen` (int)
+            Length of the barcode.
+        `upstream` (str)
+            Sequence upstream of the barcode.
+        `downstream` (str)
+            Sequence downstream of barcode.
+        `upstream_mismatch` (int)
+            Max number of mismatches allowed in `upstream`.
+        `downstream_mismatch` (int)
+            Like `upstream_mismatches` but for `downstream`.
+        `valid_barcodes` (`None` or iterable such as list, Series)
+            If not `None`, only retain barcodes listed here.
+            Use if you know the set of possible valid barcodes.
+        `rc_barcode` (bool)
+            Parse the reverse complement of the barcode (the
+            orientation read by R1).
+        `minq` (int)
+            Require at least this quality score for all bases
+            in barcode.
+
+    To use, first initialize a :class:`IlluminaBarcodeParser`, then 
+    parse barcodes using :class:`IlluminaBarcodeParser.parse`.
+    Barcodes are retained as valid only if R1 and R2 agree at every
+    nucleotide in barcode and if at each site at least one read has
+    a quality of at least `minq`.
+
+    Here is an example. Imagine we are parsing 4 nucleotide barcodes
+    that have the following construction:
+
+        5'-[R2 binding site]-ACATGA-NNNN-GACT-[R1 binding site]-3'
+
+    First, we initialize an appropriate :class:`IlluminaBarcodeParser`:
+
+    >>> parser = IlluminaBarcodeParser(
+    ...              bclen=4,
+    ...              upstream='ACATGA',
+    ...              downstream='GACT'
+    ...              )
+    """
+
+    #: valid nucleotide characters
+    VALID_NTS = 'ACGTN'
+
+    def __init__(self, *, bclen,
+            upstream='', downstream='',
+            upstream_mismatch=0, downstream_mismatch=0,
+            valid_barcodes=None, rc_barcode=True, minq=20):
+        """See main class doc string."""
+
+        # first make all arguments into attributes 
+        self.bclen = bclen
+        if re.match(f"^[{self.VALID_NTS}]*$", upstream):
+            self.upstream = upstream
+        else:
+            raise ValueError(f"invalid chars in upstream {upstream}")
+        if re.match(f"^[{self.VALID_NTS}]*$", downstream):
+            self.downstream = downstream
+        else:
+            raise ValueError(f"invalid chars in downstream {downstream}")
+        self.upstream_mismatch = upstream_mismatch
+        self.downstream_mismatch = downstream_mismatch
+        self.valid_barcodes = valid_barcodes
+        if self.valid_barcodes:
+            self.valid_barcodes = set(self.valid_barcodes)
+        self.minq = minq
+        self.rc_barcode = rc_barcode
+
+        # specify information about R1 / R2 matches
+        self._bcend = {
+                'R1':self.bclen + len(self.downstream),
+                'R2':self.bclen + len(self.upstream)
+                }
+        self._rcdownstream = dms_tools2.utils.reverseComplement(self.downstream)
+        self._rcupstream = dms_tools2.utils.reverseComplement(self.upstream)
+        self._matches = {'R1':{}, 'R2':{}} # saves match object by read length
+
+
+    def parse(self, r1files, r2files=None, chastity_filter=True):
+        """Parses barcodes from files.
+
+        Args:
+            `r1file` (str or list)
+                Name of R1 FASTQ file, or list of such files
+                Can optionally be gzipped.
+            `r2file` (`None`, str, or list)
+                `None` of not using R2, otherwise like R1.
+            `chastity_filter` (bool)
+                Drop any reads that fail Illumina chastity filter.
+
+        Returns:
+            The 2-tuple `(barcodes, fates)`. In this 2-tuple:
+
+                - `barcodes` is a pandas Series giving the
+                  number of observations of each barcode.
+                  The index is named "barcode", the values
+                  are named "count".
+
+                - `fates` is a pandas DataFrame giving the
+                  total number of reads with each fate. The 
+                  fates (listed below) are the index, and the
+                  values are named "count":
+
+                  - "valid barcode"
+
+                  - "invalid barcode": not in our barcode whitelist
+
+                  - "R1 / R2 disagree"
+
+                  - "low quality barcode": sequencing quality low
+
+                  - "unparseable barcode": invalid flanking sequences
+                    or N in barcode.
+        """
+        if r2files is None:
+            reads = ['R1']
+        else:
+            reads = ['R1', 'R2']
+
+        barcodes = collections.defaultdict(int)
+        fate = collections.defaultdict(int)
+
+        for name, r1, r2, q1, q2, fail in \
+                dms_tools2.utils.iteratePairedFASTQ(r1files, r2files):
+
+            if fail and chastity_filter:
+                fates['failed chastity filter'] += 1
+                continue
+
+            matches = {}
+            for read, r in zip(reads, [r1, r2]):
+                rlen = len(r)
+
+                # get or build matcher for read of this length
+                len_past_bc = rlen - self._bcend[read]
+                if len_past_bc < 0:
+                    raise ValueError(f"{read} too short: {rlen}")
+                elif rlen in self._matches[read]:
+                    matcher = self._matches[read][rlen]
+                else:
+                    if read == 'R1':
+                        match_str = (
+                                f'^({self._rcdownstream})'
+                                f'{{{s<=self.downstream_mismatch}}}' +
+                                f'(?P<bc>N{self.bclen})' +
+                                f'({self._rcupstream[ : len_past_bc]})' +
+                                f'{{{s<=self.upstream_mismatch}}}'
+                                )
+                    else:
+                        assert read == 'R2'
+                        match_str = (
+                                f'^({self.upstream})' +
+                                f'{{{s<=self.upstream_mismatch}}}' +
+                                f'(?P<bc>N{self.bclen})' +
+                                f'({self.downstream[ : len_past_bc]})' +
+                                f'{{{s<=self.downstream_mismatch}}}'
+                                )
+                    matcher = regex.compile(
+                            dms_tools2.pacbio.re_expandIUPAC(match_str),
+                            flags=regex.BESTMATCH)
+                    self._matches[read][rlen] = matcher
+
+                m = matcher.match(r)
+                if m:
+                    matches[read] = m
+                else:
+                    break
+
+            if len(matches) == len(reads):
+                bc = {}
+                bc_q = {}
+                for read, q in zip(reads, [q1, q2]):
+                    bc[read] = matches[read].group('bc')
+                    bc_q[read] = numpy.array([
+                                 ord(qi) - 33 for qi in 
+                                 q[matches[read].start('bc') :
+                                   matches[read].end('bc')]],
+                                 dtype='int')
+                if self.rc_barcode and 'R2' in reads:
+                    bc['R2'] = dms_tools2.utils.reverseComplement(bc['R2'])
+                    bc_q['R2'] = numpy.flip(bc_q['R2'])
+                else:
+                    bc['R1'] = dms_tools2.utils.reverseComplement(bc['R1'])
+                    bc_q['R1'] = numpy.flip(bc_q['R1'])
+                if len(reads) == 1:
+                    if (bc_q['R1'] >= self.minq).all():
+                        if self.valid_barcodes and (
+                                bc['R1'] not in self.valid_barcodes):
+                            fates['invalid barcode'] += 1
+                        else:
+                            barcodes[bc['R1']] += 1
+                            fates['valid barcode'] += 1
+                    else:
+                        fates['low quality barcode'] += 1
+                else:
+                    if bc['R1'] == bc['R2']:
+                        if self.valid_barcodes and (
+                                bc['R1'] not in self.valid_barcodes):
+                            fates['invalid barcode'] += 1
+                        elif (numpy.maximum(bc_q['R1'], bc_q['R2'])
+                                >= self.minq).all():
+                            barcodes[bc['R1']] += 1
+                            fates['valid barcode'] += 1
+                        else:
+                            fates['low quality barcode'] += 1
+                    else:
+                        fates['R1 / R2 disagree'] += 1
+            else:
+                # invalid flanking sequence or N in barcode
+                fates['unparseable barcode'] += 1
+
+        barcodes = (pandas.Series(barcodes)
+                    .rename_axis('barcode')
+                    .rename('count')
+                    .sort_values(ascending=False)
+                    )
+
+        fates = (pandas.Series(fates)
+                 .rename_axis('fate')
+                 .rename('count')
+                 .sort_values(ascending=False)
+                 )
+
+        return (barcodes, fates)
 
 
 if __name__ == '__main__':
