@@ -828,10 +828,10 @@ class IlluminaBarcodeParser:
                                  dtype='int')
                 if self.rc_barcode and 'R2' in reads:
                     bc['R2'] = dms_tools2.utils.reverseComplement(bc['R2'])
-                    bc_q['R2'] = numpy.flip(bc_q['R2'])
+                    bc_q['R2'] = numpy.flip(bc_q['R2'], axis=0)
                 elif 'R2' in reads:
                     bc['R1'] = dms_tools2.utils.reverseComplement(bc['R1'])
-                    bc_q['R1'] = numpy.flip(bc_q['R1'])
+                    bc_q['R1'] = numpy.flip(bc_q['R1'], axis=0)
                 if len(reads) == 1:
                     if (bc_q['R1'] >= self.minq).all():
                         if self.valid_barcodes and (
