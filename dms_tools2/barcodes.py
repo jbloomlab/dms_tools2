@@ -10,6 +10,7 @@ import re
 import os
 import collections
 import itertools
+import tempfile
 
 import numpy
 import pandas
@@ -18,6 +19,7 @@ import umi_tools.network
 
 import dms_tools2.utils
 import dms_tools2.pacbio
+from dms_tools2 import CODON_TO_AA
 
 _umi_clusterer = umi_tools.network.UMIClusterer()
 
@@ -25,7 +27,7 @@ _umi_clusterer = umi_tools.network.UMIClusterer()
 def almost_duplicated(barcodes, threshold=1):
     """Identifies nearly identical barcodes.
 
-    This function minics the pandas `duplicated`
+    This function mimics the pandas `duplicated`
     function except it can also mark as duplicated almost
     but not exactly identical sequences.
 
@@ -908,6 +910,178 @@ class IlluminaBarcodeParser:
                  )
 
         return (barcodes, fates)
+
+
+class CodonVariantTable:
+    """Associates barcodes with codon mutants of gene.
+
+    Args:
+        `barcode_variant_file` (str)
+            CSV file giving barcodes and variants. Must have
+            columns named "library", "barcode", "substitutions",
+            (nucleotide mutations in 1, ... numbering in a format
+            like "G301A A302T G856C"), and "nsequences (sequences
+            supporting barcode-variant call, more sequences =
+            more confident in call).
+        `geneseq` (str)
+            Sequence of protein-coding gene.
+
+    Attributes:
+        `sites` (list)
+            List of all codon sites in 1, 2, ... numbering.
+        `codons` (dict)
+            `codons[r]` is wildtype codon at site `r`.
+        `aas` (dict)
+            `aas[r]` is wildtype amino acid at site `r`.
+        `codonvariants_df` (pandas DataFrame)
+            DataFrame giving information in `barcode_variantfile`
+            but with an additional column "codon_substitutions"
+            giving codon-level mutations.
+        `libraries` (list)
+            List of all libraries in `barcode_variantfile`.
+
+    Initialize a :class:`CodonVariantTable`:
+
+    >>> geneseq = 'ATGGGATGA'
+    >>> variantfile = '_variantfile.csv'
+    >>> with open(variantfile, 'w') as f:
+    ...     _ = f.write(
+    ...           'library,barcode,substitutions,nsequences\\n'
+    ...           'lib_1,AAC,,2\\n'
+    ...           'lib_1,GAT,G4C A6C,1\\n'
+    ...           'lib_2,AAC,T2A G8C,2\\n'
+    ...           'lib_2,CAT,A1T T2A A6C,3'
+    ...           )
+    >>> variants = CodonVariantTable(
+    ...             barcode_variant_file=variantfile,
+    ...             geneseq=geneseq
+    ...             )
+    >>> os.remove(variantfile)
+
+    Check attributes of the :class:`CodonVariantTable`:
+
+    >>> variants.sites
+    [1, 2, 3]
+    >>> variants.codons == {1:'ATG', 2:'GGA', 3:'TGA'}
+    True
+    >>> variants.aas == {1:'M', 2:'G', 3:'*'}
+    True
+    >>> variants.libraries
+    ['lib_1', 'lib_2']
+    >>> variants.valid_barcodes('lib_1') == {'AAC', 'GAT'}
+    True
+    >>> variants.valid_barcodes('lib_2') == {'AAC', 'CAT'}
+    True
+    >>> pandas.set_option('display.max_columns', 10)
+    >>> pandas.set_option('display.width', 500)
+    >>> variants.codonvariants_df
+      library barcode substitutions  nsequences codon_substitutions
+    0   lib_1     AAC                         2                    
+    1   lib_1     GAT       G4C A6C           1             GGA2CGC
+    2   lib_2     AAC       T2A G8C           2     ATG1AAG TGA3TCA
+    3   lib_2     CAT   A1T T2A A6C           3     ATG1TAG GGA2GGC
+    """
+
+    def __init__(self, *, barcode_variant_file, geneseq):
+        """See main class doc string."""
+
+        self.geneseq = geneseq.upper()
+        if not re.match('^[ATGC]+$', self.geneseq):
+            raise ValueError(f"invalid nucleotides in {self.geneseq}")
+        if ((len(geneseq) % 3) != 0) or len(geneseq) == 0:
+            raise ValueError(f"`geneseq` of invalid length {len(self.geneseq)}")
+        self.sites = list(range(1, len(self.geneseq) // 3 + 1))
+        self.codons = {r:self.geneseq[3 * (r - 1) : 3 * r] for r in self.sites}
+        self.aas = {r:CODON_TO_AA[codon] for r, codon in self.codons.items()}
+
+        df = pandas.read_csv(barcode_variant_file)
+        required_cols = {'library', 'barcode',
+                         'substitutions', 'nsequences'}
+        if not set(df.columns).issuperset(required_cols):
+            raise ValueError("`variantfile` does not have "
+                             f"required columns {required_cols}")
+        self.libraries = sorted(df.library.unique().tolist())
+        self._valid_barcodes = {}
+        for lib in self.libraries:
+            barcodes = df.query('library == @lib').barcode
+            if len(set(barcodes)) != len(barcodes):
+                raise ValueError(f"duplicated barcodes for {lib}")
+            self._valid_barcodes[lib] = set(barcodes)
+
+        self.codonvariants_df = (
+                df
+                .assign(substitutions=lambda x: x.substitutions.fillna(''),
+                        codon_substitutions=lambda x: x.substitutions.apply(self.ntToCodonMuts))
+                )
+
+
+    def valid_barcodes(self, library):
+        """Set of valid barcodes for `library`."""
+        if library not in self.libraries:
+            raise ValueError(f"invalid `library` {library}")
+        else:
+            return self._valid_barcodes[library]
+
+
+    def ntToCodonMuts(self, nt_mut_str):
+        """Converts string of nucleotide mutations to codon mutations.
+
+        Args:
+            `nt_mut_str` (str)
+                Nucleotide mutations, delimited by a space and in
+                1, 2, ... numbering.
+
+        Returns:
+            String with codon mutations in 1, 2, ... numbering of
+            codon sites.
+
+        >>> geneseq = 'ATGGGATGA'
+        >>> with tempfile.NamedTemporaryFile(mode='w') as f:
+        ...     _ = f.write('library,barcode,substitutions,nsequences')
+        ...     f.flush()
+        ...     variants = CodonVariantTable(
+        ...                 barcode_variant_file=f.name,
+        ...                 geneseq=geneseq
+        ...                 )
+        >>> variants.ntToCodonMuts('A1G G4C A6T')
+        'ATG1GTG GGA2CGT'
+        >>> variants.ntToCodonMuts('A1G G4C G6T')
+        Traceback (most recent call last):
+        ...
+        ValueError: nucleotide 6 should be A not G
+        """
+        mut_codons = collections.defaultdict(set)
+        for mut in nt_mut_str.upper().split():
+            m = re.match('^(?P<wt>[ATCG])(?P<i>\d+)(?P<mut>[ATCG])$', mut)
+            if not m:
+                raise ValueError(f"invalid mutation {mut}")
+            wt_nt = m.group('wt')
+            i = int(m.group('i'))
+            mut_nt = m.group('mut')
+            if wt_nt == mut_nt:
+                raise ValueError(f"invalid mutation {mut}")
+            if i >= len(self.geneseq):
+                raise ValueError(f"invalid nucleotide site {i}")
+            if self.geneseq[i - 1] != wt_nt:
+                raise ValueError(f"nucleotide {i} should be "
+                                 f"{self.geneseq[i - 1]} not {wt_nt}")
+            icodon = (i - 1) // 3 + 1
+            i_nt = (i - 1) % 3
+            assert self.codons[icodon][i_nt] == wt_nt
+            if i_nt in mut_codons[icodon]:
+                raise ValueError(f"duplicate mutations {i_nt} in {icodon}")
+            mut_codons[icodon].add((i_nt, mut_nt))
+
+        codon_mut_list = []
+        for r, r_muts in sorted(mut_codons.items()):
+            wt_codon = self.codons[r]
+            mut_codon = list(wt_codon)
+            for i, mut_nt in r_muts:
+                mut_codon[i] = mut_nt
+            codon_mut_list.append(f"{wt_codon}{r}{''.join(mut_codon)}")
+
+        return ' '.join(codon_mut_list)
+
 
 
 if __name__ == '__main__':
