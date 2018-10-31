@@ -492,6 +492,12 @@ class IlluminaBarcodeParser:
         `minq` (int)
             Require at least this quality score for all bases
             in barcode.
+        `chastity_filter` (bool)
+            Drop any reads that fail Illumina chastity filter.
+        `list_all_valid_barcodes` (bool)
+            If using `valid_barcodes`, then barcode sets returned
+            by :class:`IlluminaBarcodeParser.parse` includes all
+            valid barcodes even if no counts.
 
     To use, first initialize a :class:`IlluminaBarcodeParser`, then 
     parse barcodes using :class:`IlluminaBarcodeParser.parse`.
@@ -692,13 +698,14 @@ class IlluminaBarcodeParser:
     ...              bclen=4,
     ...              upstream='ACATGA',
     ...              downstream='GACT',
-    ...              valid_barcodes={'CGTA', 'AGTA'}
+    ...              valid_barcodes={'CGTA', 'AGTA', 'TAAT'}
     ...              )
     >>> barcodes_wl, fates_wl = parser_wl.parse(r1file, r2file)
     >>> print(barcodes_wl.to_csv(sep=' ', index=False).strip())
     barcode count
     CGTA 2
     AGTA 1
+    TAAT 0
     >>> print(fates_wl.to_csv(sep=' ', index=False).strip())
     fate count
     "valid barcode" 3
@@ -719,7 +726,8 @@ class IlluminaBarcodeParser:
     def __init__(self, *, bclen,
             upstream='', downstream='',
             upstream_mismatch=0, downstream_mismatch=0,
-            valid_barcodes=None, rc_barcode=True, minq=20):
+            valid_barcodes=None, rc_barcode=True, minq=20,
+            chastity_filter=True, list_all_valid_barcodes=True):
         """See main class doc string."""
 
         # first make all arguments into attributes 
@@ -739,6 +747,8 @@ class IlluminaBarcodeParser:
             self.valid_barcodes = set(self.valid_barcodes)
         self.minq = minq
         self.rc_barcode = rc_barcode
+        self.chastity_filter = chastity_filter
+        self.list_all_valid_barcodes = list_all_valid_barcodes
 
         # specify information about R1 / R2 matches
         self._bcend = {
@@ -750,7 +760,7 @@ class IlluminaBarcodeParser:
         self._matches = {'R1':{}, 'R2':{}} # saves match object by read length
 
 
-    def parse(self, r1files, r2files=None, *, chastity_filter=True):
+    def parse(self, r1files, r2files=None):
         """Parses barcodes from files.
 
         Args:
@@ -759,8 +769,6 @@ class IlluminaBarcodeParser:
                 Can optionally be gzipped.
             `r2file` (`None`, str, or list)
                 `None` of not using R2, otherwise like R1.
-            `chastity_filter` (bool)
-                Drop any reads that fail Illumina chastity filter.
 
         Returns:
             The 2-tuple `(barcodes, fates)`. In this 2-tuple:
@@ -789,13 +797,17 @@ class IlluminaBarcodeParser:
         else:
             reads = ['R1', 'R2']
 
-        barcodes = collections.defaultdict(int)
+        if self.valid_barcodes and self.list_all_valid_barcodes:
+            barcodes = {bc:0 for bc in self.valid_barcodes}
+        else:
+            barcodes = collections.defaultdict(int)
+
         fates = collections.defaultdict(int)
 
         for name, r1, r2, q1, q2, fail in \
                 dms_tools2.utils.iteratePairedFASTQ(r1files, r2files):
 
-            if fail and chastity_filter:
+            if fail and self.chastity_filter:
                 fates['failed chastity filter'] += 1
                 continue
 
