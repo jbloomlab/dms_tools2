@@ -112,7 +112,7 @@ def almost_duplicated(barcodes, threshold=1):
 
 
 def fracIdentWithinBarcode(df, *, barcode_col='barcode',
-        variant_col='variant', sample_col=None):
+        variant_col='variant', library_col=None):
     """Gets fraction of identical variants within barcodes.
 
     This function is designed for the case when you have barcoded
@@ -130,20 +130,20 @@ def fracIdentWithinBarcode(df, *, barcode_col='barcode',
 
     Args:
         `df` (pandas Data Frame)
-            Holds barcodes, variants, and (optionally) sample names.
+            Holds barcodes, variants, and (optionally) library names.
         `barcode_col` (str)
             Name of column holding barcodes.
         `variant_col` (str)
             Name of column holding variants (these are what we
             compare to see if they are identical).
-        `sample_col` (str or None)
-            Name of samples. We do the computation separately
-            for each sample. Set to `None` if only one sample.
+        `library_col` (str or None)
+            Name of libary. We do the computation separately
+            for each library. Set to `None` if only one library.
 
     Returns:
         A pandas data frame with columns named `fraction_identical`
         and `accuracy` that contain the computed fraction identical
-        and accuracy for each sample.
+        and accuracy for each library.
 
     Here is an example. In this data frame, we see that
     of the four pairs (one for barcode *AT* and three for
@@ -158,29 +158,29 @@ def fracIdentWithinBarcode(df, *, barcode_col='barcode',
        fraction_identical  accuracy
     0                 0.5  0.707107
 
-    Now another example with two samples and non-standard column
-    names. Note that we only get results for the two samples
+    Now another example with two libraries and non-standard column
+    names. Note that we only get results for the two libraries
     with barcodes found multiple times:
 
     >>> df = pandas.DataFrame({
     ...     'bc'    :['AT', 'AT', 'TG', 'TA', 'TA', 'TA', 'TA'],
     ...     'var'   :['v1', 'v1', 'v2', 'v3', 'v4', 'v3', 'v3'],
-    ...     'sample':['s1', 's1', 's2', 's3', 's3', 's3', 's4']})
-    >>> fracIdentWithinBarcode(df, sample_col='sample',
+    ...     'library':['s1', 's1', 's2', 's3', 's3', 's3', 's4']})
+    >>> fracIdentWithinBarcode(df, library_col='library',
     ...     barcode_col='bc', variant_col='var')
-      sample  fraction_identical  accuracy
-    0     s1            1.000000   1.00000
-    1     s3            0.333333   0.57735
+      library  fraction_identical  accuracy
+    0      s1            1.000000   1.00000
+    1      s3            0.333333   0.57735
 
     """
-    if sample_col is None:
-        sample_col = 'sample'
-        drop_sample_col = True
-        df = df.assign(sample='dummy')
+    if library_col is None:
+        library_col = 'library'
+        drop_library_col = True
+        df = df.assign(library='dummy')
     else:
-        drop_sample_col = False
+        drop_library_col = False
 
-    for col in [barcode_col, variant_col, sample_col]:
+    for col in [barcode_col, variant_col, library_col]:
         if col not in df.columns:
             raise ValueError(f"No columns {col} in df")
 
@@ -189,31 +189,31 @@ def fracIdentWithinBarcode(df, *, barcode_col='barcode',
         # get just sequences that have a barcode found multiple times
         .assign(barcode_counts=1)
         .assign(barcode_counts=lambda x:
-            x.groupby([sample_col, barcode_col]).transform('count'))
+            x.groupby([library_col, barcode_col]).transform('count'))
         .query('barcode_counts > 1')
         # within each barcode, count number of sequences of each mutation combo
         .assign(dummy=1)
-        .groupby([sample_col, barcode_col, 'barcode_counts', variant_col])
+        .groupby([library_col, barcode_col, 'barcode_counts', variant_col])
         .dummy
         .count()
         .reset_index(name='sequence_counts')
         # compute Simpson diversity without replacement for each barcode
-        .groupby([sample_col, barcode_col, 'barcode_counts'])
+        .groupby([library_col, barcode_col, 'barcode_counts'])
         .apply(lambda x: (x.sequence_counts * (x.sequence_counts - 1) /
                       x.barcode_counts / (x.barcode_counts - 1)).sum())
         .reset_index(name='simpson_diversity')
         # compute weighted average of fraction identical across all pairs
         .assign(npairs=lambda x: x.barcode_counts * (x.barcode_counts - 1) / 2,
             weighted_diversity=lambda x: x.npairs * x.simpson_diversity)
-        .groupby(sample_col)
+        .groupby(library_col)
         .apply(lambda x: x.weighted_diversity.sum() / x.npairs.sum())
         .reset_index(name='fraction_identical')
         # estimate accuracy as square root of fraction identical
         .assign(accuracy=lambda x: numpy.sqrt(x.fraction_identical))
         )
 
-    if drop_sample_col:
-        result = result.drop(sample_col, axis='columns')
+    if drop_library_col:
+        result = result.drop(library_col, axis='columns')
 
     return result
 
@@ -221,7 +221,7 @@ def fracIdentWithinBarcode(df, *, barcode_col='barcode',
 def simpleConsensus(df, *,
         barcode_col='barcode', substitution_col='substitutions',
         insertion_col='insertions', deletion_col='deletions',
-        sample_col=None, max_sub_diffs=1, max_indel_diffs=2,
+        library_col=None, max_sub_diffs=1, max_indel_diffs=2,
         max_minor_muts=1):
     """Simple method to get consensus of mutations within barcode.
 
@@ -239,10 +239,10 @@ def simpleConsensus(df, *,
             Name of column holding insertions as list of strings.
         `deletion_col` (str)
             Name of column holding insertions as list of strings.
-        `sample_col` (`None` or str)
-            If we have multiple samples, analyze each barcode only
-            within its sample. In that case, `sample_col` should be
-            name of column giving sample name.
+        `library_col` (`None` or str)
+            If we have multiple libraries, analyze each barcode only
+            within its library. In that case, `library_col` should be
+            name of column giving library name.
         `max_sub_diffs` (int)
             Drop any barcode where any variant differs from all other
             variants for that barcode by more than this many substitution
@@ -262,7 +262,7 @@ def simpleConsensus(df, *,
               barcode for which we could call the consensus. The
               columns have the same names as `barcode_col`, 
               `substitution_col`, `insertion_col`, `deletion_col`,
-              and (optionally) `sample_col`--but the the three
+              and (optionally) `library_col`--but the the three
               columns for the mutations now just list the **consensus**
               mutations of that type. In addition, there is a new
               column called "nsequences" that gives the number of
@@ -276,7 +276,7 @@ def simpleConsensus(df, *,
 
     The approach is as follows:
 
-      1. Group all variants within the sample barcode and sample.
+      1. Group all variants by library and barcode.
 
       2. If there are multiple sequences, check if any of them differ
          from all the others by more than `max_diffs` mutations total
@@ -329,38 +329,38 @@ def simpleConsensus(df, *,
     ...     ('s2', 'AA', ['T6C'], [], []),
     ...     ('s3', 'AA', ['T6G'], ['ins1len1'], ['del1to2']),
     ...     ('s3', 'AA', ['T6G'], [], ['del5to7'])],
-    ...     columns=['sample', 'barcode', 'substitutions',
+    ...     columns=['library', 'barcode', 'substitutions',
     ...              'insertions', 'deletions']
     ...     )
-    >>> consensus, dropped = simpleConsensus(df, sample_col='sample')
+    >>> consensus, dropped = simpleConsensus(df, library_col='library')
     >>> consensus
-      sample barcode substitutions  insertions deletions  nsequences
-    0     s1      AG         [A2C]          []        []           2
-    1     s1      TA         [G3A]  [ins4len3]        []           1
-    2     s2      GG            []          []        []           2
-    3     s2      TA         [T6C]          []        []           3
+      library barcode substitutions  insertions deletions  nsequences
+    0      s1      AG         [A2C]          []        []           2
+    1      s1      TA         [G3A]  [ins4len3]        []           1
+    2      s2      GG            []          []        []           2
+    3      s2      TA         [T6C]          []        []           3
     >>> pandas.set_option('display.max_columns', 10)
     >>> pandas.set_option('display.width', 500)
     >>> dropped
-      sample barcode substitutions  insertions  deletions           drop_reason
-    0     s2      TG         [T6A]          []         []  excess substitutions
-    1     s2      TG         [A2G]          []         []  excess substitutions
-    2     s2      AA            []          []         []     excess minor muts
-    3     s2      AA            []          []         []     excess minor muts
-    4     s2      AA         [T6C]          []         []     excess minor muts
-    5     s2      AA         [T6C]          []         []     excess minor muts
-    6     s3      AA         [T6G]  [ins1len1]  [del1to2]         excess indels
-    7     s3      AA         [T6G]          []  [del5to7]         excess indels
+      library barcode substitutions  insertions  deletions           drop_reason
+    0      s2      TG         [T6A]          []         []  excess substitutions
+    1      s2      TG         [A2G]          []         []  excess substitutions
+    2      s2      AA            []          []         []     excess minor muts
+    3      s2      AA            []          []         []     excess minor muts
+    4      s2      AA         [T6C]          []         []     excess minor muts
+    5      s2      AA         [T6C]          []         []     excess minor muts
+    6      s3      AA         [T6G]  [ins1len1]  [del1to2]         excess indels
+    7      s3      AA         [T6G]          []  [del5to7]         excess indels
     """
-    if sample_col is None:
-        sample_col = 'sample'
-        df = df.assign(sample_col='dummy')
-        drop_sample_col = True
+    if library_col is None:
+        library_col = 'library'
+        df = df.assign(library_col='dummy')
+        drop_library_col = True
     else:
-        drop_sample_col = False
+        drop_library_col = False
 
     mut_cols = [substitution_col, insertion_col, deletion_col]
-    all_cols = [sample_col, barcode_col] + mut_cols
+    all_cols = [library_col, barcode_col] + mut_cols
 
     if not all([col in df.columns for col in all_cols]):
         raise ValueError(f"Cannot find column {col}")
@@ -376,8 +376,8 @@ def simpleConsensus(df, *,
     dropped = []
     consensus = []
 
-    for (sample, barcode), g in df[all_cols].reset_index(drop=True).groupby(
-            [sample_col, barcode_col]):
+    for (library, barcode), g in df[all_cols].reset_index(drop=True).groupby(
+            [library_col, barcode_col]):
 
         nseqs = len(g)
 
@@ -413,7 +413,7 @@ def simpleConsensus(df, *,
             continue
 
         # get consensus and see if `max_minor_muts` is satisfied
-        g_consensus = [sample, barcode]
+        g_consensus = [library, barcode]
         for col in mut_cols:
             counts = collections.Counter(
                     itertools.chain.from_iterable(g[col]))
@@ -449,9 +449,9 @@ def simpleConsensus(df, *,
     else:
         dropped = pandas.DataFrame()
 
-    if drop_sample_col:
-        dropped = dropped.drop(sample_col, axis='columns')
-        consensus = consensus.drop(sample_col, axis='columns')
+    if drop_library_col:
+        dropped = dropped.drop(library_col, axis='columns')
+        consensus = consensus.drop(library_col, axis='columns')
 
     return (consensus, dropped)
 
