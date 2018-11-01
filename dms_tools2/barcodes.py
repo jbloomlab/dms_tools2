@@ -265,8 +265,8 @@ def simpleConsensus(df, *,
               and (optionally) `library_col`--but the the three
               columns for the mutations now just list the **consensus**
               mutations of that type. In addition, there is a new
-              column called "nsequences" that gives the number of
-              sequences supporting the call of that barcode.
+              column called "variant_call_support" that gives the number
+              of sequences supporting the call of that barcode.
 
             - `dropped` simply contains all rows in the original `df`
               that correspond to sequences that were dropped due to
@@ -306,8 +306,8 @@ def simpleConsensus(df, *,
     one sequence for the barcode (in that case, this sequence is
     the consensus). This is fine--if you want to get consensus calls
     that are more strongly supported, simply filter the returned
-    `consensus` data frame for lager values of `nsequences`, as the
-    more sequences that support a barcode call the more accurate is
+    `consensus` data frame for larger values of `variant_call_support`,
+    as the more sequences that support a call the more accurate it
     is expected to be.
 
     Here is an example:
@@ -334,11 +334,11 @@ def simpleConsensus(df, *,
     ...     )
     >>> consensus, dropped = simpleConsensus(df, library_col='library')
     >>> consensus
-      library barcode substitutions  insertions deletions  nsequences
-    0      s1      AG         [A2C]          []        []           2
-    1      s1      TA         [G3A]  [ins4len3]        []           1
-    2      s2      GG            []          []        []           2
-    3      s2      TA         [T6C]          []        []           3
+      library barcode substitutions  insertions deletions  variant_call_support
+    0      s1      AG         [A2C]          []        []                     2
+    1      s1      TA         [G3A]  [ins4len3]        []                     1
+    2      s2      GG            []          []        []                     2
+    3      s2      TA         [T6C]          []        []                     3
     >>> pandas.set_option('display.max_columns', 10)
     >>> pandas.set_option('display.width', 500)
     >>> dropped
@@ -443,7 +443,7 @@ def simpleConsensus(df, *,
             consensus.append(g_consensus + [nseqs])
 
     consensus = pandas.DataFrame(consensus,
-            columns=all_cols + ['nsequences'])
+            columns=all_cols + ['variant_call_support'])
     if dropped:
         dropped = pandas.concat(dropped).sort_index().reset_index(drop=True)
     else:
@@ -920,9 +920,8 @@ class CodonVariantTable:
             CSV file giving barcodes and variants. Must have
             columns named "library", "barcode", "substitutions",
             (nucleotide mutations in 1, ... numbering in a format
-            like "G301A A302T G856C"), and "nsequences (sequences
-            supporting barcode-variant call, more sequences =
-            more confident in call).
+            like "G301A A302T G856C"), and "variant_call_support"
+            (sequences supporting barcode-variant call).
         `geneseq` (str)
             Sequence of protein-coding gene.
 
@@ -946,7 +945,7 @@ class CodonVariantTable:
     >>> variantfile = '_variantfile.csv'
     >>> with open(variantfile, 'w') as f:
     ...     _ = f.write(
-    ...           'library,barcode,substitutions,nsequences\\n'
+    ...           'library,barcode,substitutions,variant_call_support\\n'
     ...           'lib_1,AAC,,2\\n'
     ...           'lib_1,GAT,G4C A6C,1\\n'
     ...           'lib_2,AAC,T2A G8C,2\\n'
@@ -975,11 +974,11 @@ class CodonVariantTable:
     >>> pandas.set_option('display.max_columns', 10)
     >>> pandas.set_option('display.width', 500)
     >>> variants.codonvariants_df
-      library barcode substitutions  nsequences codon_substitutions
-    0   lib_1     AAC                         2                    
-    1   lib_1     GAT       G4C A6C           1             GGA2CGC
-    2   lib_2     AAC       T2A G8C           2     ATG1AAG TGA3TCA
-    3   lib_2     CAT   A1T T2A A6C           3     ATG1TAG GGA2GGC
+      library barcode substitutions  variant_call_support codon_substitutions
+    0   lib_1     AAC                                   2                    
+    1   lib_1     GAT       G4C A6C                     1             GGA2CGC
+    2   lib_2     AAC       T2A G8C                     2     ATG1AAG TGA3TCA
+    3   lib_2     CAT   A1T T2A A6C                     3     ATG1TAG GGA2GGC
     """
 
     def __init__(self, *, barcode_variant_file, geneseq):
@@ -996,7 +995,7 @@ class CodonVariantTable:
 
         df = pandas.read_csv(barcode_variant_file)
         required_cols = {'library', 'barcode',
-                         'substitutions', 'nsequences'}
+                         'substitutions', 'variant_call_support'}
         if not set(df.columns).issuperset(required_cols):
             raise ValueError("`variantfile` does not have "
                              f"required columns {required_cols}")
@@ -1037,7 +1036,7 @@ class CodonVariantTable:
 
         >>> geneseq = 'ATGGGATGA'
         >>> with tempfile.NamedTemporaryFile(mode='w') as f:
-        ...     _ = f.write('library,barcode,substitutions,nsequences')
+        ...     _ = f.write('library,barcode,substitutions,variant_call_support')
         ...     f.flush()
         ...     variants = CodonVariantTable(
         ...                 barcode_variant_file=f.name,
