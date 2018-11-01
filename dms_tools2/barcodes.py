@@ -932,10 +932,9 @@ class CodonVariantTable:
             `codons[r]` is wildtype codon at site `r`.
         `aas` (dict)
             `aas[r]` is wildtype amino acid at site `r`.
-        `codonvariants_df` (pandas DataFrame)
-            DataFrame giving information in `barcode_variantfile`
-            but with an additional column "codon_substitutions"
-            giving codon-level mutations.
+        `barcode_variant_df` (pandas DataFrame)
+            DataFrame giving information about codon mutations
+            parsed from `barcode_variantfile`.
         `libraries` (list)
             List of all libraries in `barcode_variantfile`.
 
@@ -973,12 +972,12 @@ class CodonVariantTable:
     True
     >>> pandas.set_option('display.max_columns', 10)
     >>> pandas.set_option('display.width', 500)
-    >>> variants.codonvariants_df
-      library barcode substitutions  variant_call_support codon_substitutions
-    0   lib_1     AAC                                   2                    
-    1   lib_1     GAT       G4C A6C                     1             GGA2CGC
-    2   lib_2     AAC       T2A G8C                     2     ATG1AAG TGA3TCA
-    3   lib_2     CAT   A1T T2A A6C                     3     ATG1TAG GGA2GGC
+    >>> variants.barcode_variant_df
+      library barcode  variant_call_support codon_substitutions aa_substitutions  n_codon_substitutions  n_aa_substitutions
+    0   lib_1     AAC                     2                                                           0                   0
+    1   lib_1     GAT                     1             GGA2CGC              G2R                      1                   1
+    2   lib_2     AAC                     2     ATG1AAG TGA3TCA          M1K *3S                      2                   2
+    3   lib_2     CAT                     3     ATG1TAG GGA2GGC              M1*                      2                   1
     """
 
     def __init__(self, *, barcode_variant_file, geneseq):
@@ -1007,10 +1006,27 @@ class CodonVariantTable:
                 raise ValueError(f"duplicated barcodes for {lib}")
             self._valid_barcodes[lib] = set(barcodes)
 
-        self.codonvariants_df = (
+        self.barcode_variant_df = (
                 df
-                .assign(substitutions=lambda x: x.substitutions.fillna(''),
-                        codon_substitutions=lambda x: x.substitutions.apply(self.ntToCodonMuts))
+                .assign(codon_substitutions=
+                            lambda x: x.substitutions
+                                       .fillna('')
+                                       .apply(self._ntToCodonMuts),
+                        aa_substitutions=
+                            lambda x: x.codon_substitutions
+                                       .apply(self._codonToAAMuts),
+                        n_codon_substitutions=
+                            lambda x: x.codon_substitutions
+                                       .str
+                                       .split()
+                                       .apply(len),
+                        n_aa_substitutions=
+                            lambda x: x.aa_substitutions
+                                       .str
+                                       .split()
+                                       .apply(len)
+                        )
+                .drop('substitutions', axis='columns')
                 )
 
 
@@ -1021,8 +1037,53 @@ class CodonVariantTable:
         else:
             return self._valid_barcodes[library]
 
+    def _codonToAAMuts(self, codon_mut_str):
+        """Converts string of codon mutations to amino-acid mutations.
 
-    def ntToCodonMuts(self, nt_mut_str):
+        Args:
+            `codon_mut_str` (str)
+                Codon mutations, delimited by a space and in
+                1, 2, ... numbering.
+
+        Returns:
+            String with amino acid mutations in 1, 2, ... numbering.
+
+        >>> geneseq = 'ATGGGATGA'
+        >>> with tempfile.NamedTemporaryFile(mode='w') as f:
+        ...     _ = f.write('library,barcode,substitutions,variant_call_support')
+        ...     f.flush()
+        ...     variants = CodonVariantTable(
+        ...                 barcode_variant_file=f.name,
+        ...                 geneseq=geneseq
+        ...                 )
+        >>> variants._codonToAAMuts('ATG1GTG GGA2GGC TGA3AGA')
+        'M1V *3R'
+        """
+        aa_muts = {}
+        for mut in codon_mut_str.upper().split():
+            m = re.match('^(?P<wt>[ATGC]{3})(?P<r>\d+)(?P<mut>[ATGC]{3})$',
+                         mut)
+            if not m:
+                raise ValueError(f"invalid codon mutation {mut}")
+            r = int(m.group('r'))
+            if r in aa_muts:
+                raise ValueError(f"duplicate codon mutation for {r}")
+            wt_codon = m.group('wt')
+            if self.geneseq[3 * (r - 1) : 3 * r] != wt_codon:
+                raise ValueError(f"invalid wildtype codon in {mut}")
+            mut_codon = m.group('mut')
+            if wt_codon == mut_codon:
+                raise ValueError(f"invalid mutation {mut}")
+            wt_aa = dms_tools2.CODON_TO_AA[wt_codon]
+            assert wt_aa == self.aas[r]
+            mut_aa = dms_tools2.CODON_TO_AA[mut_codon]
+            if wt_aa != mut_aa:
+                aa_muts[r] = f"{wt_aa}{r}{mut_aa}"
+
+        return ' '.join([mut_str for r, mut_str in sorted(aa_muts.items())])
+
+
+    def _ntToCodonMuts(self, nt_mut_str):
         """Converts string of nucleotide mutations to codon mutations.
 
         Args:
@@ -1042,9 +1103,9 @@ class CodonVariantTable:
         ...                 barcode_variant_file=f.name,
         ...                 geneseq=geneseq
         ...                 )
-        >>> variants.ntToCodonMuts('A1G G4C A6T')
+        >>> variants._ntToCodonMuts('A1G G4C A6T')
         'ATG1GTG GGA2CGT'
-        >>> variants.ntToCodonMuts('A1G G4C G6T')
+        >>> variants._ntToCodonMuts('A1G G4C G6T')
         Traceback (most recent call last):
         ...
         ValueError: nucleotide 6 should be A not G
