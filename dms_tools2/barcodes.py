@@ -644,14 +644,14 @@ class IlluminaBarcodeParser:
     >>> print(barcodes.to_csv(sep=' ', index=False).strip())
     barcode count
     CGTA 2
-    GCCG 1
     AGTA 1
+    GCCG 1
     >>> print(fates.to_csv(sep=' ', index=False).strip())
     fate count
     "valid barcode" 4
     "unparseable barcode" 3
-    "low quality barcode" 1
     "R1 / R2 disagree" 1
+    "low quality barcode" 1
 
     Now we parse just using R1. We gain the barcode where R1 and
     R2 disagree, but lose the one where R1 is low quality at a
@@ -661,8 +661,8 @@ class IlluminaBarcodeParser:
     >>> print(barcodes.to_csv(sep=' ', index=False).strip())
     barcode count
     CGTA 2
-    GCCG 1
     AAGT 1
+    GCCG 1
     >>> print(fates.to_csv(sep=' ', index=False).strip())
     fate count
     "valid barcode" 4
@@ -683,15 +683,15 @@ class IlluminaBarcodeParser:
     >>> print(barcodes_mismatch.to_csv(sep=' ', index=False).strip())
     barcode count
     CGTA 2
-    GGAG 1
-    GCCG 1
     AGTA 1
+    GCCG 1
+    GGAG 1
     >>> print(fates_mismatch.to_csv(sep=' ', index=False).strip())
     fate count
     "valid barcode" 5
     "unparseable barcode" 2
-    "low quality barcode" 1
     "R1 / R2 disagree" 1
+    "low quality barcode" 1
 
     Now parse the barcodes using `valid_barcodes` to set a
     barcode whitelist:
@@ -710,11 +710,11 @@ class IlluminaBarcodeParser:
     TAAT 0
     >>> print(fates_wl.to_csv(sep=' ', index=False).strip())
     fate count
-    "valid barcode" 3
     "unparseable barcode" 3
-    "low quality barcode" 1
-    "invalid barcode" 1
+    "valid barcode" 3
     "R1 / R2 disagree" 1
+    "invalid barcode" 1
+    "low quality barcode" 1
 
     Remove the test FASTQ files:
 
@@ -898,14 +898,16 @@ class IlluminaBarcodeParser:
         barcodes = (pandas.DataFrame(
                         list(barcodes.items()),
                         columns=['barcode', 'count'])
-                    .sort_values(['count', 'barcode'], ascending=False)
+                    .sort_values(['count', 'barcode'],
+                                 ascending=[False, True])
                     .reset_index(drop=True)
                     )
 
         fates = (pandas.DataFrame(
                     list(fates.items()),
                     columns=['fate', 'count'])
-                 .sort_values(['count', 'fate'], ascending=False)
+                 .sort_values(['count', 'fate'],
+                              ascending=[False, True])
                  .reset_index(drop=True)
                  )
 
@@ -932,11 +934,17 @@ class CodonVariantTable:
             `codons[r]` is wildtype codon at site `r`.
         `aas` (dict)
             `aas[r]` is wildtype amino acid at site `r`.
-        `barcode_variant_df` (pandas DataFrame)
-            DataFrame giving information about codon mutations
-            parsed from `barcode_variantfile`.
         `libraries` (list)
             List of all libraries in `barcode_variantfile`.
+        `barcode_variant_df` (pandas DataFrame)
+            Info about codon mutations parsed from `barcode_variantfile`.
+        `variant_count_df` (pandas DataFrame or None)
+            Initially `None`, but after data are added with
+            :class:`CodonVariantTable.addSampleCounts`, holds
+            counts of each variant for each sample. Differs from
+            `barcode_variant_df` in that the former just holds
+            initial barcode-variant data, whereas `variant_count_df`
+            is updated with variant counts for samples.
 
     Initialize a :class:`CodonVariantTable`:
 
@@ -947,8 +955,8 @@ class CodonVariantTable:
     ...           'library,barcode,substitutions,variant_call_support\\n'
     ...           'lib_1,AAC,,2\\n'
     ...           'lib_1,GAT,G4C A6C,1\\n'
-    ...           'lib_2,AAC,T2A G8C,2\\n'
-    ...           'lib_2,CAT,A1T T2A A6C,3'
+    ...           'lib_2,AAC,T2A G4T,2\\n'
+    ...           'lib_2,CAT,A6C,3'
     ...           )
     >>> variants = CodonVariantTable(
     ...             barcode_variant_file=variantfile,
@@ -976,8 +984,66 @@ class CodonVariantTable:
       library barcode  variant_call_support codon_substitutions aa_substitutions  n_codon_substitutions  n_aa_substitutions
     0   lib_1     AAC                     2                                                           0                   0
     1   lib_1     GAT                     1             GGA2CGC              G2R                      1                   1
-    2   lib_2     AAC                     2     ATG1AAG TGA3TCA          M1K *3S                      2                   2
-    3   lib_2     CAT                     3     ATG1TAG GGA2GGC              M1*                      2                   1
+    2   lib_2     AAC                     2     ATG1AAG GGA2TGA          M1K G2*                      2                   2
+    3   lib_2     CAT                     3             GGA2GGC                                       1                   0
+
+    Initially we haven't added any barcode count information
+    for any samples:
+
+    >>> all(variants.samples(lib) == [] for lib in variants.libraries)
+    True
+    >>> variants.variant_count_df is None
+    True
+
+    Now we add barcode count information for a sample named
+    "input" from library 1:
+
+    >>> counts_lib1_input = pandas.DataFrame(
+    ...         {'barcode':['AAC', 'GAT'],
+    ...          'count'  :[  253,  1101]})
+    >>> variants.addSampleCounts('lib_1', 'input', counts_lib1_input)
+    >>> variants.variant_count_df
+      barcode  count library sample  variant_call_support codon_substitutions aa_substitutions  n_codon_substitutions  n_aa_substitutions
+    0     GAT   1101   lib_1  input                     1             GGA2CGC              G2R                      1                   1
+    1     AAC    253   lib_1  input                     2                                                           0                   0
+
+    We get an error if we try to add these same data again,
+    as they are already added for that sample to that library:
+
+    >>> variants.addSampleCounts('lib_1', 'input', counts_lib1_input)
+    Traceback (most recent call last):
+    ...
+    ValueError: `library` lib_1 already has `sample` input
+
+    But, we can add barcode counts for another
+    sample (named "selected" in this case) to library 1:
+
+    >>> counts_lib1_selected = pandas.DataFrame(
+    ...         {'barcode':['AAC', 'GAT'],
+    ...          'count'  :[  513,  401]})
+    >>> variants.addSampleCounts('lib_1', 'selected', counts_lib1_selected)
+
+    As well as barcode counts for the same two samples
+    ("input" and "selected") to our other library (library 2):
+
+    >>> counts_lib2_input = pandas.DataFrame(
+    ...         {'barcode':['AAC', 'CAT'],
+    ...          'count'  :[ 1253,  923]})
+    >>> variants.addSampleCounts('lib_2', 'input', counts_lib2_input)
+    >>> counts_lib2_selected = pandas.DataFrame(
+    ...         {'barcode':['AAC', 'CAT'],
+    ...          'count'  :[  113,  1200]})
+    >>> variants.addSampleCounts('lib_2', 'selected', counts_lib2_selected)
+    >>> variants.variant_count_df
+      barcode  count library    sample  variant_call_support codon_substitutions aa_substitutions  n_codon_substitutions  n_aa_substitutions
+    0     GAT   1101   lib_1     input                     1             GGA2CGC              G2R                      1                   1
+    1     AAC    253   lib_1     input                     2                                                           0                   0
+    2     AAC    513   lib_1  selected                     2                                                           0                   0
+    3     GAT    401   lib_1  selected                     1             GGA2CGC              G2R                      1                   1
+    4     AAC   1253   lib_2     input                     2     ATG1AAG GGA2TGA          M1K G2*                      2                   2
+    5     CAT    923   lib_2     input                     3             GGA2GGC                                       1                   0
+    6     CAT   1200   lib_2  selected                     3             GGA2GGC                                       1                   0
+    7     AAC    113   lib_2  selected                     2     ATG1AAG GGA2TGA          M1K G2*                      2                   2
     """
 
     def __init__(self, *, barcode_variant_file, geneseq):
@@ -1006,8 +1072,12 @@ class CodonVariantTable:
                 raise ValueError(f"duplicated barcodes for {lib}")
             self._valid_barcodes[lib] = set(barcodes)
 
+        self._samples = {lib:[] for lib in self.libraries}
+        self.variant_count_df = None
+
         self.barcode_variant_df = (
                 df
+                # info about codon and amino-acid substitutions
                 .assign(codon_substitutions=
                             lambda x: x.substitutions
                                        .fillna('')
@@ -1026,7 +1096,119 @@ class CodonVariantTable:
                                        .split()
                                        .apply(len)
                         )
+                # we no longer need initial `substitutions` column
                 .drop('substitutions', axis='columns')
+                # sort to ensure consistent order
+                .assign(library=lambda x:
+                                pandas.Categorical(
+                                    x.library,
+                                    categories=self.libraries,
+                                    ordered=True
+                                    )
+                        )
+                .sort_values(['library', 'barcode'])
+                .reset_index(drop=True)
+                )
+
+
+    def samples(self, library):
+        """List of all samples for `library`.
+
+        Args:
+            `library` (str)
+                Valid `library` for the :class:`CodonVariantTable`.
+
+        Returns:
+            List of all samples for which barcode counts have
+            been added.
+        """
+        try:
+            return self._samples[library]
+        except KeyError:
+            raise ValueError(f"invalid `library` {library}")
+
+
+    def addSampleCounts(self, library, sample, barcodecounts):
+        """Add variant counts for a sample to `variant_count_df`.
+
+        Args:
+            `library` (str)
+                Valid `library` for the :class:`CodonVariantTable`.
+            `sample` (str)
+                Sample name, must **not** already be in
+                :class:`CodonVariantTable.samples` for `library`.
+            `barcodecounts` (pandas DataFrame)
+                Gives counts for each variant by barcode. Must
+                have columns named "barcode" and "count". The
+                "barcode" column must contain all the barcodes
+                in :class:`CodonVariantTable.valid_barcodes` for
+                `library`. Such data frames are returned
+                by :class:`IlluminaBarcodeParser.parse`.
+        """
+        if library not in self.libraries:
+            raise ValueError(f"invalid library {library}")
+
+        if sample in self.samples(library):
+            raise ValueError(f"`library` {library} already "
+                             f"has `sample` {sample}")
+
+        req_cols = ['barcode', 'count']
+        if not set(barcodecounts.columns).issuperset(set(req_cols)):
+            raise ValueError(f"`barcodecounts` lacks columns {req_cols}")
+        if len(barcodecounts) != len(set(barcodecounts.barcode.unique())):
+            raise ValueError("`barcodecounts` has non-unique barcodes")
+        if set(barcodecounts.barcode.unique()) != self.valid_barcodes(library):
+            raise ValueError("barcodes in `barcodecounts` do not match "
+                             f"those expected for `library` {library}")
+
+        self._samples[library].append(sample)
+
+        df = (barcodecounts
+              [req_cols]
+              .assign(library=library, sample=sample)
+              .merge(self.barcode_variant_df,
+                     how='inner',
+                     on=['library', 'barcode'],
+                     sort=False,
+                     validate='one_to_one')
+              )
+
+        if self.variant_count_df is None:
+            self.variant_count_df = df
+        else:
+            self.variant_count_df = pandas.concat(
+                              [self.variant_count_df, df],
+                              axis='index',
+                              ignore_index=True,
+                              sort=False
+                              )
+
+        # samples in order added after ordering by library, getting
+        # unique ones as here: https://stackoverflow.com/a/39835527
+        unique_samples = list(collections.OrderedDict.fromkeys(
+                itertools.chain.from_iterable(
+                    [self.samples(lib) for lib in self.libraries])
+                ))
+
+        # make library and sample categorical and sort
+        self.variant_count_df = (
+                self.variant_count_df
+                .assign(library=lambda x:
+                                pandas.Categorical(
+                                    x.library,
+                                    categories=self.libraries,
+                                    ordered=True
+                                    ),
+                        sample=lambda x:
+                               pandas.Categorical(
+                                    x['sample'],
+                                    categories=unique_samples,
+                                    ordered=True
+                                    )
+                         )
+                .sort_values(['library', 'sample', 'count'],
+                             ascending=[True, True, False])
+                .reset_index(drop=True)
                 )
 
 
@@ -1036,6 +1218,7 @@ class CodonVariantTable:
             raise ValueError(f"invalid `library` {library}")
         else:
             return self._valid_barcodes[library]
+
 
     def _codonToAAMuts(self, codon_mut_str):
         """Converts string of codon mutations to amino-acid mutations.
