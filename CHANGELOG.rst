@@ -7,7 +7,7 @@ Change Log
 
 * Some updates to `dms_tools2.minimap2.Mutations` objects.
 
-* Added functionality to `dms_tools2.barcodes` to get identity within barcodes and take consensus of sequences with same barcode.
+* Added functionality to `dms_tools2.barcodes` to get identity within barcodes, take consensus of sequences with same barcode, and then use barcoded codon variants to call mutations.
 
 * `pacbio.CCS` handles FASTQ as well as BAM input.
 

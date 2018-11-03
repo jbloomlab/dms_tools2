@@ -17,6 +17,10 @@ import pandas
 import regex
 import umi_tools.network
 
+# use plotnine for plotting
+from plotnine import *
+
+import dms_tools2.plot
 import dms_tools2.utils
 import dms_tools2.pacbio
 from dms_tools2 import CODON_TO_AA
@@ -1218,6 +1222,164 @@ class CodonVariantTable:
             raise ValueError(f"invalid `library` {library}")
         else:
             return self._valid_barcodes[library]
+
+
+    def plotNumMutsHistogram(self, mut_type, *,
+            libraries='all', samples='all', plotfile=None,
+            orientation='h', widthscale=1, heightscale=1,
+            max_muts=None):
+        """Plot histograms of number of mutations per variant.
+
+        Args:
+            `mut_type` (str)
+                Type of mutation to plot: "codon" or "aa".
+            `libraries` (the str "all" or list)
+                Which libraries do we plot? Set to "all" to plot
+                all libraries plus sum over libraries, or a list
+                of libraries to plot in indicated order.
+            `samples` (the str "all", `None`, or list)
+                Which samples do we plot? Set to "all" to plot all
+                samples, `None` to plot counts of barcoded variants,
+                or a list of samples to plot in indicated order.
+            `plotfile` (`None` or str)
+                Name of file to which we save plot.
+            `orientation` (the str 'h' or 'v')
+                Do we facet libraries horizontally or vertically?
+            `widthscale` (float or int)
+                Expand width of plot by this much.
+            `heightscale` (float or int)
+                Expand height of plot by this much.
+            `max_muts` (int or `None`)
+                In histogram, group together all variants with
+                >= this many mutations; set to `None` for no
+                cutoff.
+
+        Returns:
+            A `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
+            plot; can be displayed in a Jupyter notebook with `p.draw()`.
+        """
+        df, nlibraries, nsamples = self._getPlotData(libraries, samples)
+
+        if mut_type == 'aa':
+            mut_col = 'n_aa_substitutions'
+            xlabel = 'amino-acid mutations'
+        elif mut_type == 'codon':
+            mut_col = 'n_codon_substitutions'
+            xlabel = 'codon mutations'
+        else:
+            raise ValueError(f"invalid mut_type {mut_type}")
+
+        df[mut_col] = numpy.clip(df[mut_col], None, max_muts)
+
+        if orientation == 'h':
+            facet_str = 'sample ~ library'
+            width = widthscale * (1 + 1.2 * nlibraries)
+            height = heightscale * (0.8 + 1.2 * nsamples)
+        elif orientation == 'v':
+            facet_str = 'library ~ sample'
+            width = widthscale * (1 + 1.2 * nsamples)
+            height = heightscale * (0.8 + 1.2 * nlibraries)
+        else:
+            raise ValueError(f"invalid `orientation` {orientation}")
+
+        p = (ggplot(df, aes(mut_col)) +
+             geom_histogram(binwidth=1, center=0) +
+             facet_grid(facet_str) +
+             xlab(xlabel) +
+             theme(figure_size=(width, height))
+             )
+
+        if plotfile:
+            p.save(plotfile, height=height, width=width, verbose=False)
+
+        return p
+
+
+    def _getPlotData(self, libraries, samples):
+        """Gets data to plot from library and sample filters.
+
+        Args:
+            `libraries` and `samples` have same meaning as
+            for :class:`CodonVariantTable.plotNumMutsHistogram`.
+
+        Returns:
+            The 3-tuple `(df, nlibraries, nsamples)` where:
+
+                - `df`: DataFrame with data to plot.
+
+                - `nlibraries`: number of libraries being plotted.
+
+                - `nsamples`: number of samples being plotted.
+        """
+        if samples is None:
+            df = (self.barcode_variant_df
+                  .assign(sample='barcoded variants')
+                  )
+        elif samples == 'all':
+            if self.variant_count_df is None:
+                raise ValueError('no samples have been added')
+            df = self.variant_count_df
+        elif isinstance(samples, list):
+            all_samples = set(itertools.chain.from_iterable(
+                    self.samples(lib) for lib in self.libraries))
+            if not all_samples.issuperset(set(samples)):
+                raise ValueError(f"invalid sample(s) in {samples}")
+            if len(samples) != len(set(samples)):
+                raise ValueError(f"duplicate samples in {samples}")
+            df = (df
+                  .query('sample in @samples')
+                  .assign(sample=lambda x:
+                                 pandas.Categorical(
+                                   x['sample'],
+                                   categories=samples,
+                                   ordered=True)
+                          )
+                  )
+        else:
+            raise ValueError(f"invalid `samples` {samples}")
+        if not len(df):
+            raise ValueError(f"no samples {samples}")
+        else:
+            nsamples = len(df['sample'].unique())
+
+        if libraries == 'all':
+            all_lib_name = 'all libraries'
+            if all_lib_name in self.libraries:
+                raise ValueError(f"library named {all_lib_name}")
+            df = (pandas.concat([df, df.assign(library=all_lib_name)],
+                                axis='index',
+                                ignore_index=True,
+                                sort=False)
+                  .assign(library=lambda x:
+                                  pandas.Categorical(
+                                   x['library'],
+                                   categories=self.libraries +
+                                              [all_lib_name],
+                                   ordered=True)
+                          )
+                  )
+        elif isinstance(libraries, list):
+            if not set(self.libraries).issuperset(set(libraries)):
+                raise ValueError(f"invalid library in {libraries}")
+            if len(libraries) != len(set(libraries)):
+                raise ValueError(f"duplicate library in {libraries}")
+            df = (df
+                  .query('library in @libraries')
+                  .assign(library=lambda x:
+                                  pandas.Categorical(
+                                   x['library'],
+                                   categories=libraries,
+                                   ordered=True)
+                          )
+                  )
+        else:
+            raise ValueError(f"invalid `libraries` {libraries}")
+        if not len(df):
+            raise ValueError(f"no libraries {libraries}")
+        else:
+            nlibraries = len(df['library'].unique())
+
+        return (df, nlibraries, nsamples)
 
 
     def _codonToAAMuts(self, codon_mut_str):
