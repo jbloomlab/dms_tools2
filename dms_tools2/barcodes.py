@@ -1303,7 +1303,7 @@ class CodonVariantTable:
             mut_nt = m.group('mut')
             if wt_nt == mut_nt:
                 raise ValueError(f"invalid mutation {mut}")
-            if i >= len(self.geneseq):
+            if i > len(self.geneseq):
                 raise ValueError(f"invalid nucleotide site {i}")
             if self.geneseq[i - 1] != wt_nt:
                 raise ValueError(f"nucleotide {i} should be "
