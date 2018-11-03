@@ -21,6 +21,7 @@ import umi_tools.network
 from plotnine import *
 
 import dms_tools2.plot
+from dms_tools2.plot import COLOR_BLIND_PALETTE_GRAY
 import dms_tools2.utils
 import dms_tools2.pacbio
 from dms_tools2 import CODON_TO_AA
@@ -1224,10 +1225,102 @@ class CodonVariantTable:
             return self._valid_barcodes[library]
 
 
+    def plotNumCodonMutsByType(self, variant_type, *,
+            libraries='all', samples='all', plotfile=None,
+            orientation='h', widthscale=1, heightscale=1,
+            min_support=1):
+        """Nonsynonymous, synonymous, stop mutations per variant.
+
+        Args:
+            `variant_type` ("single" or "all")
+                Include just single-codon mutants and wildtype,
+                or include all mutants.
+            Other args:
+                Same meaning as for
+                :class:`CodonVariantTable.plotnNumMutsHistogram`
+
+        Returns:
+            A `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
+        """
+        df, nlibraries, nsamples = self._getPlotData(libraries,
+                                                     samples,
+                                                     min_support)
+
+        if variant_type == 'single':
+            df = df.query('n_codon_substitutions <= 1')
+        elif variant_type != 'all':
+            raise ValueError(f"invalid variant_type {variant_type}")
+
+        if orientation == 'h':
+            facet_str = 'sample ~ library'
+            width = widthscale * (1 + 1.3 * nlibraries)
+            height = heightscale * (1 + 1.2 * nsamples)
+        elif orientation == 'v':
+            facet_str = 'library ~ sample'
+            width = widthscale * (1 + 1.2 * nsamples)
+            height = heightscale * (1 + 1.2 * nlibraries)
+        else:
+            raise ValueError(f"invalid `orientation` {orientation}")
+
+        if height > 3:
+            ylabel = f'mutations per variant ({variant_type} mutants)'
+        else:
+            ylabel = f'mutations per variant\n({variant_type} mutants)'
+
+        codon_mut_types = ['nonsynonymous', 'synonymous', 'stop']
+
+        # mutations from stop to another amino-acid counted as nonsyn
+        df = (df
+              .assign(
+                  synonymous=lambda x: x.n_codon_substitutions -
+                                       x.n_aa_substitutions,
+                stop=lambda x: x.aa_substitutions.str
+                               .findall('[A-Z]\d+\*').apply(len),
+                nonsynonymous=lambda x: x.n_codon_substitutions -
+                                        x.synonymous - x.stop
+                )
+              .melt(id_vars=['library', 'sample'],
+                    value_vars=codon_mut_types,
+                    var_name='mutation_type',
+                    value_name='number')
+              .assign(
+                  mutation_type=lambda x:
+                                pandas.Categorical(
+                                 x.mutation_type,
+                                 categories=codon_mut_types,
+                                 ordered=True),
+                  nvariants=1
+                  )
+              .groupby(['library', 'sample', 'mutation_type'])
+              .aggregate({'number':'sum', 'nvariants':'count'})
+              .reset_index()
+              .assign(number=lambda x: x.number / x.nvariants)
+              )
+
+        p = (ggplot(df, aes('mutation_type', 'number',
+                            fill='mutation_type', label='number')) +
+             geom_bar(stat='identity') +
+             geom_text(size=8, va='bottom', format_string='{0:.3f}') +
+             facet_grid(facet_str) +
+             scale_y_continuous(name=ylabel,
+                                expand=(0.03, 0, 0.12, 0)) +
+             scale_fill_manual(COLOR_BLIND_PALETTE_GRAY[1 : ]) +
+             theme(figure_size=(width, height),
+                   axis_title_x=element_blank(),
+                   axis_text_x=element_text(angle=90, size=11),
+                   legend_position='none')
+             )
+
+        if plotfile:
+            p.save(plotfile, height=height, width=width, verbose=False)
+
+        return p
+
+
     def plotNumMutsHistogram(self, mut_type, *,
             libraries='all', samples='all', plotfile=None,
             orientation='h', widthscale=1, heightscale=1,
-            max_muts=None):
+            min_support=1, max_muts=None):
         """Plot histograms of number of mutations per variant.
 
         Args:
@@ -1249,6 +1342,9 @@ class CodonVariantTable:
                 Expand width of plot by this much.
             `heightscale` (float or int)
                 Expand height of plot by this much.
+            `min_support` (int)
+                Only plot variants with at least this large
+                of a variant call support.
             `max_muts` (int or `None`)
                 In histogram, group together all variants with
                 >= this many mutations; set to `None` for no
@@ -1258,7 +1354,9 @@ class CodonVariantTable:
             A `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
             plot; can be displayed in a Jupyter notebook with `p.draw()`.
         """
-        df, nlibraries, nsamples = self._getPlotData(libraries, samples)
+        df, nlibraries, nsamples = self._getPlotData(libraries,
+                                                     samples,
+                                                     min_support)
 
         if mut_type == 'aa':
             mut_col = 'n_aa_substitutions'
@@ -1295,11 +1393,11 @@ class CodonVariantTable:
         return p
 
 
-    def _getPlotData(self, libraries, samples):
+    def _getPlotData(self, libraries, samples, min_support):
         """Gets data to plot from library and sample filters.
 
         Args:
-            `libraries` and `samples` have same meaning as
+            `libraries`, `samples`, `min_support` have meaning as
             for :class:`CodonVariantTable.plotNumMutsHistogram`.
 
         Returns:
@@ -1337,6 +1435,9 @@ class CodonVariantTable:
                   )
         else:
             raise ValueError(f"invalid `samples` {samples}")
+
+        df = df.query('variant_call_support >= @min_support')
+
         if not len(df):
             raise ValueError(f"no samples {samples}")
         else:
