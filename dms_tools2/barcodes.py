@@ -24,7 +24,7 @@ import dms_tools2.plot
 from dms_tools2.plot import COLOR_BLIND_PALETTE_GRAY
 import dms_tools2.utils
 import dms_tools2.pacbio
-from dms_tools2 import CODON_TO_AA
+from dms_tools2 import CODON_TO_AA, CODONS, AAS_WITHSTOP
 
 _umi_clusterer = umi_tools.network.UMIClusterer()
 
@@ -940,7 +940,7 @@ class CodonVariantTable:
         `aas` (dict)
             `aas[r]` is wildtype amino acid at site `r`.
         `libraries` (list)
-            List of all libraries in `barcode_variantfile`.
+            List of libraries in `barcode_variantfile`.
         `barcode_variant_df` (pandas DataFrame)
             Info about codon mutations parsed from `barcode_variantfile`.
         `variant_count_df` (pandas DataFrame or None)
@@ -991,6 +991,57 @@ class CodonVariantTable:
     1   lib_1     GAT                     1             GGA2CGC              G2R                      1                   1
     2   lib_2     AAC                     2     ATG1AAG GGA2TGA          M1K G2*                      2                   2
     3   lib_2     CAT                     3             GGA2GGC                                       1                   0
+
+    If we want to combine the data for the two libraries, we can use
+    :class:`CodonVariantTable.addMergedLibraries`, which creates a
+    new combined library called "all libraries":
+    
+    >>> variants.addMergedLibraries(variants.barcode_variant_df)
+             library    barcode  variant_call_support codon_substitutions aa_substitutions  n_codon_substitutions  n_aa_substitutions
+    0          lib_1        AAC                     2                                                           0                   0
+    1          lib_1        GAT                     1             GGA2CGC              G2R                      1                   1
+    2          lib_2        AAC                     2     ATG1AAG GGA2TGA          M1K G2*                      2                   2
+    3          lib_2        CAT                     3             GGA2GGC                                       1                   0
+    4  all libraries  lib_1-AAC                     2                                                           0                   0
+    5  all libraries  lib_1-GAT                     1             GGA2CGC              G2R                      1                   1
+    6  all libraries  lib_2-AAC                     2     ATG1AAG GGA2TGA          M1K G2*                      2                   2
+    7  all libraries  lib_2-CAT                     3             GGA2GGC                                       1                   0
+
+    Note however that :class:`CodonVariantTable.addMergedLibraries`
+    doesn't do anything if there is only one library:
+
+    >>> variants.addMergedLibraries(variants.barcode_variant_df
+    ...                             .query('library == "lib_1"'))
+      library barcode  variant_call_support codon_substitutions aa_substitutions  n_codon_substitutions  n_aa_substitutions
+    0   lib_1     AAC                     2                                                           0                   0
+    1   lib_1     GAT                     1             GGA2CGC              G2R                      1                   1
+
+    Count number of barcoded variants with each mutation:
+
+    >>> variants.mutCounts('all', 'aa', samples=None)[ : 2]
+      library             sample mutation  count  mutation_type
+    0   lib_1  barcoded variants      G2R      1  nonsynonymous
+    1   lib_1  barcoded variants      *3A      0  nonsynonymous
+
+    We can do the same for codon mutations (here for only a
+    single library), first for all variants:
+
+    >>> variants.mutCounts('all', 'codon', samples=None,
+    ...         libraries=['lib_2'])[ : 4]
+      library             sample mutation  count  mutation_type
+    0   lib_2  barcoded variants  ATG1AAG      1  nonsynonymous
+    1   lib_2  barcoded variants  GGA2GGC      1     synonymous
+    2   lib_2  barcoded variants  GGA2TGA      1           stop
+    3   lib_2  barcoded variants  ATG1AAA      0  nonsynonymous
+
+    Then for just single-mutant variants:
+
+    >>> variants.mutCounts('single', 'codon', samples=None,
+    ...         libraries=['lib_2'])[ : 3]
+      library             sample mutation  count  mutation_type
+    0   lib_2  barcoded variants  GGA2GGC      1     synonymous
+    1   lib_2  barcoded variants  ATG1AAA      0  nonsynonymous
+    2   lib_2  barcoded variants  ATG1AAC      0  nonsynonymous
 
     Initially we haven't added any barcode count information
     for any samples:
@@ -1115,6 +1166,13 @@ class CodonVariantTable:
                 .reset_index(drop=True)
                 )
 
+        # define some colors for plotting
+        self._mutation_type_colors = {
+                'nonsynonymous':COLOR_BLIND_PALETTE_GRAY[1],
+                'synonymous':COLOR_BLIND_PALETTE_GRAY[2],
+                'stop':COLOR_BLIND_PALETTE_GRAY[3]
+                }
+
 
     def samples(self, library):
         """List of all samples for `library`.
@@ -1225,6 +1283,197 @@ class CodonVariantTable:
             return self._valid_barcodes[library]
 
 
+    def mutCounts(self, variant_type, mut_type, *,
+            libraries='all', samples='all', min_support=1):
+        """Get counts of each individual mutation.
+
+        Args:
+            `variant_type` ("single" or "all")
+                Include just single mutants, or all mutants?
+            Other args:
+                Same meaning as for
+                :class:`CodonVariantTable.plotNumMutsHistogram`
+
+        Returns:
+            A tidy data frame with columns named "library",
+            "sample", "mutation", "count", and "mutation_type"
+            that give count and mutation type (e.g., nonsynonymous)
+            of each mutation in each library / sample.
+        """
+        df, nlibraries, nsamples = self._getPlotData(libraries,
+                                                     samples,
+                                                     min_support)
+
+        samplelist = df['sample'].unique().tolist()
+        librarylist = df['library'].unique().tolist()
+
+        if mut_type == 'codon':
+            wts = self.codons
+            chars = CODONS
+            mutation_types = ['nonsynonymous', 'synonymous', 'stop']
+        elif mut_type == 'aa':
+            wts = self.aas
+            chars = AAS_WITHSTOP
+            mutation_types = ['nonsynonymous', 'stop']
+        else:
+            raise ValueError(f"invalid mut_type {mut_type}")
+
+        # data frame listing all mutations with count 0
+        mut_list = []
+        for r, wt in wts.items():
+            for mut in chars:
+                if mut != wt:
+                    mut_list.append(f'{wt}{r}{mut}')
+        all_muts = pandas.concat([
+                    pandas.DataFrame({'mutation':mut_list,
+                                     'library':library,
+                                     'sample':sample,
+                                     'count':0})
+                    for library, sample in 
+                    itertools.product(librarylist, samplelist)])
+
+        if variant_type == 'single':
+            df = df.query(f'n_{mut_type}_substitutions == 1')
+        elif variant_type == 'all':
+            df = df.query(f'n_{mut_type}_substitutions >= 1')
+        else:
+            raise ValueError(f"invalid variant_type {variant_type}")
+
+        def _classify_mutation(mut_str):
+            if mut_type == 'aa':
+                m = re.match('^(?P<wt>[A-Z\*])\d+(?P<mut>[A-Z\*])$',
+                             mut_str)
+                wt_aa = m.group('wt')
+                mut_aa = m.group('mut')
+            else:
+                m = re.match('^(?P<wt>[ACTG]{3})\d+(?P<mut>[ACTG]{3})$',
+                             mut_str)
+                wt_aa = CODON_TO_AA[m.group('wt')]
+                mut_aa = CODON_TO_AA[m.group('mut')]
+            if wt_aa == mut_aa:
+                return 'synonymous'
+            elif mut_aa == '*':
+                return 'stop'
+            else:
+                return 'nonsynonymous'
+
+        df = (df
+              .rename(columns=
+                  {f"{mut_type}_substitutions":"mutation"}
+                  )
+              [['library', 'sample', 'mutation']]
+              .pipe(tidy_split, column='mutation')
+              .assign(count=1)
+              .merge(all_muts, how='outer')
+              .groupby(['library', 'sample', 'mutation'])
+              .aggregate({'count':'sum'})
+              .reset_index()
+              .assign(
+                library=lambda x:
+                         pandas.Categorical(
+                          x['library'],
+                          librarylist,
+                          ordered=True),
+                sample=lambda x:
+                         pandas.Categorical(
+                          x['sample'],
+                          samplelist,
+                          ordered=True),
+                mutation_type=lambda x:
+                         pandas.Categorical(
+                          x['mutation'].apply(_classify_mutation),
+                          mutation_types,
+                          ordered=True)
+                )
+              .sort_values(
+                ['library', 'sample', 'count', 'mutation'],
+                ascending=[True, True, False, True])
+              .reset_index(drop=True)
+              )
+
+        return df
+
+
+    def plotCumulMutCoverage(self, variant_type, mut_type, *,
+            libraries='all', samples='all', plotfile=None,
+            orientation='h', widthscale=1, heightscale=1,
+            min_support=1, max_count=None):
+        """Fraction of mutation seen <= some number of times.
+
+        Args:
+            `variant_type` ("single" or "all")
+                Include just single mutants, or all mutants?
+                Mutations are counted relative to `mut_type`.
+            `max_count` (`None` or int)
+                Plot cumulative fraction plot out to this
+                number of observations of mutation. If `None`,
+                a reasonable value is automatically determined.
+            Other args:
+                Same meaning as for
+                :class:`CodonVariantTable.plotNumMutsHistogram`
+
+        Returns:
+            A `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
+        """
+
+        df = self.mutCounts(variant_type, mut_type, samples=samples,
+                            libraries=libraries, min_support=min_support)
+
+        # add one to counts to plot fraction found < this many
+        # as stat_ecdf by default does <=
+        df = df.assign(count=lambda x: x['count'] + 1)
+
+        if max_count is None:
+            max_count = df['count'].quantile(0.75)
+
+        nlibraries = len(df['library'].unique())
+        nsamples = len(df['sample'].unique())
+
+        if orientation == 'h':
+            facet_str = 'sample ~ library'
+            width = widthscale * (1.6 + 1.3 * nlibraries)
+            height = heightscale * (1 + 1.2 * nsamples)
+        elif orientation == 'v':
+            facet_str = 'library ~ sample'
+            width = widthscale * (1.5 + 1.3 * nsamples)
+            height = heightscale * (1 + 1.2 * nlibraries)
+        else:
+            raise ValueError(f"invalid `orientation` {orientation}")
+
+        if width > 4:
+            xlabel = f'counts among {variant_type} mutants'
+        else:
+            xlabel = f'counts among\n{variant_type} mutants'
+
+        mut_desc = {'aa':'amino-acid', 'codon':'codon'}[mut_type]
+        if height > 3:
+            ylabel = f'frac {mut_desc} mutations found < this many times'
+        else:
+            ylabel = f'frac {mut_desc} mutations\nfound < this many times'
+
+        p = (ggplot(df, aes('count', color='mutation_type')) +
+             stat_ecdf(geom='step', size=0.75) +
+             coord_cartesian(xlim=(0, max_count)) +
+             scale_color_manual(
+                [self._mutation_type_colors[m] for m in
+                 df.mutation_type.unique().sort_values().tolist()],
+                name='mutation type'
+                ) +
+             xlab(xlabel) +
+             ylab(ylabel) +
+             facet_grid(facet_str) +
+             theme(figure_size=(width, height),
+                   legend_key=element_blank(),
+                   legend_text=element_text(size=11)
+                   )
+             )
+
+        if plotfile:
+            p.save(plotfile, height=height, width=width, verbose=False)
+
+        return p
+
+
     def plotNumCodonMutsByType(self, variant_type, *,
             libraries='all', samples='all', plotfile=None,
             orientation='h', widthscale=1, heightscale=1,
@@ -1237,7 +1486,7 @@ class CodonVariantTable:
                 or include all mutants.
             Other args:
                 Same meaning as for
-                :class:`CodonVariantTable.plotnNumMutsHistogram`
+                :class:`CodonVariantTable.plotNumMutsHistogram`
 
         Returns:
             A `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
@@ -1257,7 +1506,7 @@ class CodonVariantTable:
             height = heightscale * (1 + 1.2 * nsamples)
         elif orientation == 'v':
             facet_str = 'library ~ sample'
-            width = widthscale * (1 + 1.2 * nsamples)
+            width = widthscale * (1 + 1.3 * nsamples)
             height = heightscale * (1 + 1.2 * nlibraries)
         else:
             raise ValueError(f"invalid `orientation` {orientation}")
@@ -1272,8 +1521,8 @@ class CodonVariantTable:
         # mutations from stop to another amino-acid counted as nonsyn
         df = (df
               .assign(
-                  synonymous=lambda x: x.n_codon_substitutions -
-                                       x.n_aa_substitutions,
+                synonymous=lambda x: x.n_codon_substitutions -
+                                     x.n_aa_substitutions,
                 stop=lambda x: x.aa_substitutions.str
                                .findall('[A-Z]\d+\*').apply(len),
                 nonsynonymous=lambda x: x.n_codon_substitutions -
@@ -1304,7 +1553,10 @@ class CodonVariantTable:
              facet_grid(facet_str) +
              scale_y_continuous(name=ylabel,
                                 expand=(0.03, 0, 0.12, 0)) +
-             scale_fill_manual(COLOR_BLIND_PALETTE_GRAY[1 : ]) +
+             scale_fill_manual(
+                [self._mutation_type_colors[m] for m in
+                 df.mutation_type.unique().sort_values().tolist()]
+                ) +
              theme(figure_size=(width, height),
                    axis_title_x=element_blank(),
                    axis_text_x=element_text(angle=90, size=11),
@@ -1325,15 +1577,15 @@ class CodonVariantTable:
 
         Args:
             `mut_type` (str)
-                Type of mutation to plot: "codon" or "aa".
+                Type of mutation: "codon" or "aa".
             `libraries` (the str "all" or list)
-                Which libraries do we plot? Set to "all" to plot
-                all libraries plus sum over libraries, or a list
-                of libraries to plot in indicated order.
+                Set to "all" to include all libraries (plus merged
+                of libraries merged if multiple libraries), or
+                specify a list of libraries.
             `samples` (the str "all", `None`, or list)
-                Which samples do we plot? Set to "all" to plot all
-                samples, `None` to plot counts of barcoded variants,
-                or a list of samples to plot in indicated order.
+                Set to "all" to include all samples, `None` to
+                just count each barcoded variant once, or specify
+                a list of samples.
             `plotfile` (`None` or str)
                 Name of file to which we save plot.
             `orientation` (the str 'h' or 'v')
@@ -1343,7 +1595,7 @@ class CodonVariantTable:
             `heightscale` (float or int)
                 Expand height of plot by this much.
             `min_support` (int)
-                Only plot variants with at least this large
+                Only include variants with at least this large
                 of a variant call support.
             `max_muts` (int or `None`)
                 In histogram, group together all variants with
@@ -1351,7 +1603,7 @@ class CodonVariantTable:
                 cutoff.
 
         Returns:
-            A `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
+            `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
             plot; can be displayed in a Jupyter notebook with `p.draw()`.
         """
         df, nlibraries, nsamples = self._getPlotData(libraries,
@@ -1391,6 +1643,54 @@ class CodonVariantTable:
             p.save(plotfile, height=height, width=width, verbose=False)
 
         return p
+
+    @staticmethod
+    def addMergedLibraries(df, *, all_lib='all libraries'):
+        """Add data to `df` for all libraries merged.
+
+        Args:
+            `df` (pandas DataFrame)
+                DataFrame that includes columns named
+                "library" and "barcode".
+            `all_lib` (str)
+                Name given to library that is merge of all
+                other libraries.
+
+        Returns:
+            If `df` only has data for one library, just returns
+            `df`. Otherwise returns a copy of `df` that has a
+            new library with the name given by `all_lib`
+            and contains the data for all individual libraries,
+            with the "barcode" column giving the original
+            library name followed by a hyphen and the barcode.
+        """
+        libs = df.library.unique().tolist()
+
+        if len(libs) <= 1:
+            return df
+
+        if all_lib in libs:
+            raise ValueError(f"library {all_lib} already exists")
+
+        df = (pandas.concat([df, 
+                             df.assign(
+                                barcode=lambda x: 
+                                    x.library.str
+                                     .cat(x.barcode, sep='-'),
+                                library=all_lib)
+                             ],
+                            axis='index',
+                            ignore_index=True,
+                            sort=False)
+              .assign(library=lambda x:
+                              pandas.Categorical(
+                               x['library'],
+                               categories=libs + [all_lib],
+                               ordered=True)
+                      )
+              )
+
+        return df
 
 
     def _getPlotData(self, libraries, samples, min_support):
@@ -1444,21 +1744,7 @@ class CodonVariantTable:
             nsamples = len(df['sample'].unique())
 
         if libraries == 'all':
-            all_lib_name = 'all libraries'
-            if all_lib_name in self.libraries:
-                raise ValueError(f"library named {all_lib_name}")
-            df = (pandas.concat([df, df.assign(library=all_lib_name)],
-                                axis='index',
-                                ignore_index=True,
-                                sort=False)
-                  .assign(library=lambda x:
-                                  pandas.Categorical(
-                                   x['library'],
-                                   categories=self.libraries +
-                                              [all_lib_name],
-                                   ordered=True)
-                          )
-                  )
+            df = self.addMergedLibraries(df)
         elif isinstance(libraries, list):
             if not set(self.libraries).issuperset(set(libraries)):
                 raise ValueError(f"invalid library in {libraries}")
@@ -1588,6 +1874,44 @@ class CodonVariantTable:
 
         return ' '.join(codon_mut_list)
 
+
+def tidy_split(df, column, sep=' ', keep=False):
+    """
+    Split the values of a column and expand so the new DataFrame has one split
+    value per row. Filters rows where the column is missing.
+
+    Taken from https://stackoverflow.com/a/39946744
+
+    Params
+    ------
+    df : pandas.DataFrame
+        dataframe with the column to split and expand
+    column : str
+        the column to split and expand
+    sep : str
+        the string used to split the column's values
+    keep : bool
+        whether to retain the presplit value as it's own row
+
+    Returns
+    -------
+    pandas.DataFrame
+        Returns a dataframe with the same columns as `df`.
+    """
+    indexes = list()
+    new_values = list()
+    df = df.dropna(subset=[column])
+    for i, presplit in enumerate(df[column].astype(str)):
+        values = presplit.split(sep)
+        if keep and len(values) > 1:
+            indexes.append(i)
+            new_values.append(presplit)
+        for value in values:
+            indexes.append(i)
+            new_values.append(value)
+    new_df = df.iloc[indexes, :].copy()
+    new_df[column] = new_values
+    return new_df
 
 
 if __name__ == '__main__':
