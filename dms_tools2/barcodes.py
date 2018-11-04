@@ -992,6 +992,26 @@ class CodonVariantTable:
     2   lib_2     AAC                     2     ATG1AAG GGA2TGA          M1K G2*                      2                   2
     3   lib_2     CAT                     3             GGA2GGC                                       1                   0
 
+    We can also look at the number of variants; we get this
+    by calling :class:`CodonVariantTable.n_variants_df` with
+    `samples=None` since we don't have samples, and just want
+    stats across barcoded variants:
+
+    >>> variants.n_variants_df(samples=None)
+             library             sample  count
+    0          lib_1  barcoded variants      2
+    1          lib_2  barcoded variants      2
+    2  all libraries  barcoded variants      4
+
+    We can also see how these numbers change if we require a
+    variant call support of at least 2:
+
+    >>> variants.n_variants_df(samples=None, min_support=2)
+             library             sample  count
+    0          lib_1  barcoded variants      1
+    1          lib_2  barcoded variants      2
+    2  all libraries  barcoded variants      3
+
     If we want to combine the data for the two libraries, we can use
     :class:`CodonVariantTable.addMergedLibraries`, which creates a
     new combined library called "all libraries":
@@ -1019,29 +1039,29 @@ class CodonVariantTable:
     Count number of barcoded variants with each mutation:
 
     >>> variants.mutCounts('all', 'aa', samples=None)[ : 2]
-      library             sample mutation  count  mutation_type
-    0   lib_1  barcoded variants      G2R      1  nonsynonymous
-    1   lib_1  barcoded variants      *3A      0  nonsynonymous
+      library             sample mutation  count  mutation_type  site
+    0   lib_1  barcoded variants      G2R      1  nonsynonymous     2
+    1   lib_1  barcoded variants      *3A      0  nonsynonymous     3
 
     We can do the same for codon mutations (here for only a
     single library), first for all variants:
 
     >>> variants.mutCounts('all', 'codon', samples=None,
     ...         libraries=['lib_2'])[ : 4]
-      library             sample mutation  count  mutation_type
-    0   lib_2  barcoded variants  ATG1AAG      1  nonsynonymous
-    1   lib_2  barcoded variants  GGA2GGC      1     synonymous
-    2   lib_2  barcoded variants  GGA2TGA      1           stop
-    3   lib_2  barcoded variants  ATG1AAA      0  nonsynonymous
+      library             sample mutation  count  mutation_type  site
+    0   lib_2  barcoded variants  ATG1AAG      1  nonsynonymous     1
+    1   lib_2  barcoded variants  GGA2GGC      1     synonymous     2
+    2   lib_2  barcoded variants  GGA2TGA      1           stop     2
+    3   lib_2  barcoded variants  ATG1AAA      0  nonsynonymous     1
 
     Then for just single-mutant variants:
 
     >>> variants.mutCounts('single', 'codon', samples=None,
     ...         libraries=['lib_2'])[ : 3]
-      library             sample mutation  count  mutation_type
-    0   lib_2  barcoded variants  GGA2GGC      1     synonymous
-    1   lib_2  barcoded variants  ATG1AAA      0  nonsynonymous
-    2   lib_2  barcoded variants  ATG1AAC      0  nonsynonymous
+      library             sample mutation  count  mutation_type  site
+    0   lib_2  barcoded variants  GGA2GGC      1     synonymous     2
+    1   lib_2  barcoded variants  ATG1AAA      0  nonsynonymous     1
+    2   lib_2  barcoded variants  ATG1AAC      0  nonsynonymous     1
 
     Initially we haven't added any barcode count information
     for any samples:
@@ -1100,6 +1120,20 @@ class CodonVariantTable:
     5     CAT    923   lib_2     input                     3             GGA2GGC                                       1                   0
     6     CAT   1200   lib_2  selected                     3             GGA2GGC                                       1                   0
     7     AAC    113   lib_2  selected                     2     ATG1AAG GGA2TGA          M1K G2*                      2                   2
+
+    We can also use :class:`CodonVariantTable.plotMutCounts`
+    to look at total counts of each mutation:
+
+    >>> variants.mutCounts('all', 'aa')[ : 2]
+      library sample mutation  count  mutation_type  site
+    0   lib_1  input      G2R   1101  nonsynonymous     2
+    1   lib_1  input      *3A      0  nonsynonymous     3
+
+    >>> variants.mutCounts('all', 'aa', libraries=['lib_2'])[ : 3]
+      library sample mutation  count  mutation_type  site
+    0   lib_2  input      G2*   1253           stop     2
+    1   lib_2  input      M1K   1253  nonsynonymous     1
+    2   lib_2  input      *3A      0  nonsynonymous     3
     """
 
     def __init__(self, *, barcode_variant_file, geneseq):
@@ -1283,6 +1317,29 @@ class CodonVariantTable:
             return self._valid_barcodes[library]
 
 
+    def n_variants_df(self, *, libraries='all', samples='all',
+                      min_support=1):
+        """Number of variants per library / sample.
+
+        Args:
+            Same meaning as for
+            :class:`CodonVariantTable.plotNumMutsHistogram`.
+
+        Returns:
+            DataFrame giving number of variants per library /
+            sample.
+        """
+        df, nlibraries, nsamples = self._getPlotData(libraries,
+                                                     samples,
+                                                     min_support)
+
+        return (df
+                .groupby(['library', 'sample'])
+                .aggregate({'count':'sum'})
+                .reset_index()
+                )
+
+
     def mutCounts(self, variant_type, mut_type, *,
             libraries='all', samples='all', min_support=1):
         """Get counts of each individual mutation.
@@ -1296,9 +1353,9 @@ class CodonVariantTable:
 
         Returns:
             A tidy data frame with columns named "library",
-            "sample", "mutation", "count", and "mutation_type"
-            that give count and mutation type (e.g., nonsynonymous)
-            of each mutation in each library / sample.
+            "sample", "mutation", "count", "mutation_type", "site"
+            that give count, mutation type (e.g., nonsynonymous),
+            and site of each mutation in each library / sample.
         """
         df, nlibraries, nsamples = self._getPlotData(libraries,
                                                      samples,
@@ -1357,13 +1414,22 @@ class CodonVariantTable:
             else:
                 return 'nonsynonymous'
 
+        def _get_site(mut_str):
+            if mut_type == 'aa':
+                m = re.match('^[A-Z\*](?P<site>\d+)[A-Z\*]$', mut_str)
+                return int(m.group('site'))
+            else:
+                m = re.match('^[ACTG]{3}(?P<site>\d+)[ACTG]{3}$', mut_str)
+            site = int(m.group('site'))
+            assert site in self.sites
+            return site
+
         df = (df
               .rename(columns=
                   {f"{mut_type}_substitutions":"mutation"}
                   )
-              [['library', 'sample', 'mutation']]
+              [['library', 'sample', 'mutation', 'count']]
               .pipe(tidy_split, column='mutation')
-              .assign(count=1)
               .merge(all_muts, how='outer')
               .groupby(['library', 'sample', 'mutation'])
               .aggregate({'count':'sum'})
@@ -1383,7 +1449,8 @@ class CodonVariantTable:
                          pandas.Categorical(
                           x['mutation'].apply(_classify_mutation),
                           mutation_types,
-                          ordered=True)
+                          ordered=True),
+                site=lambda x: x['mutation'].apply(_get_site)
                 )
               .sort_values(
                 ['library', 'sample', 'count', 'mutation'],
@@ -1392,6 +1459,88 @@ class CodonVariantTable:
               )
 
         return df
+
+
+    def plotMutFreqs(self, variant_type, mut_type, *,
+            libraries='all', samples='all', plotfile=None,
+            orientation='h', widthscale=1, heightscale=1,
+            min_support=1):
+        """Mutation frequency along length of gene.
+
+        Args:
+            Args have same meaning as for
+            :CodonVariantTable.plotCumulMutCoverage`.
+
+        Returns:
+            A `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
+        """
+
+        df = self.mutCounts(variant_type, mut_type, samples=samples,
+                            libraries=libraries, min_support=min_support)
+
+        n_variants = (self.n_variants_df(libraries=libraries,
+                                         samples=samples,
+                                         min_support=min_support)
+                      .rename(columns={'count':'nseqs'})
+                      )
+
+        df = (df
+              .groupby(['library', 'sample', 'mutation_type', 'site'])
+              .aggregate({'count':'sum'})
+              .reset_index()
+              .merge(n_variants, on=['library', 'sample'])
+              .assign(freq=lambda x: x['count'] / x['nseqs'])
+              )
+
+        nlibraries = len(df['library'].unique())
+        nsamples = len(df['sample'].unique())
+
+        if orientation == 'h':
+            facet_str = 'sample ~ library'
+            width = widthscale * (1.6 + 1.8 * nlibraries)
+            height = heightscale * (0.8 + 1 * nsamples)
+        elif orientation == 'v':
+            facet_str = 'library ~ sample'
+            width = widthscale * (1.6 + 1.8 * nsamples)
+            height = heightscale * (0.8 + 1 * nlibraries)
+        else:
+            raise ValueError(f"invalid `orientation` {orientation}")
+
+        if mut_type == 'aa':
+            mut_desc = 'amino-acid'
+        else:
+            mut_desc = mut_type
+
+        if height < 3:
+            ylabel = (f'{mut_desc} mutation\nfrequency '
+                      f'({variant_type} mutants)')
+        else:
+            ylabel = (f'{mut_desc} mutation frequency '
+                      f'({variant_type} mutants)')
+
+        p = (ggplot(df, aes('site', 'freq', color='mutation_type')) +
+             geom_step() + 
+             scale_color_manual(
+                [self._mutation_type_colors[m] for m in
+                 df.mutation_type.unique().sort_values().tolist()],
+                name='mutation type'
+                ) +
+             scale_x_continuous(
+                name=f'{mut_desc} site',
+                limits=(min(self.sites), max(self.sites))
+                ) +
+             ylab(ylabel) +
+             facet_grid(facet_str) +
+             theme(figure_size=(width, height),
+                   legend_key=element_blank(),
+                   legend_text=element_text(size=11)
+                   )
+             )
+
+        if plotfile:
+            p.save(plotfile, height=height, width=width, verbose=False)
+
+        return p
 
 
     def plotCumulMutCoverage(self, variant_type, mut_type, *,
@@ -1435,7 +1584,7 @@ class CodonVariantTable:
             height = heightscale * (1 + 1.2 * nsamples)
         elif orientation == 'v':
             facet_str = 'library ~ sample'
-            width = widthscale * (1.5 + 1.3 * nsamples)
+            width = widthscale * (1.6 + 1.3 * nsamples)
             height = heightscale * (1 + 1.2 * nlibraries)
         else:
             raise ValueError(f"invalid `orientation` {orientation}")
@@ -1579,8 +1728,8 @@ class CodonVariantTable:
             `mut_type` (str)
                 Type of mutation: "codon" or "aa".
             `libraries` (the str "all" or list)
-                Set to "all" to include all libraries (plus merged
-                of libraries merged if multiple libraries), or
+                Set to "all" to include all libraries (plus
+                libraries merged if multiple libraries), or
                 specify a list of libraries.
             `samples` (the str "all", `None`, or list)
                 Set to "all" to include all samples, `None` to
@@ -1712,6 +1861,7 @@ class CodonVariantTable:
         if samples is None:
             df = (self.barcode_variant_df
                   .assign(sample='barcoded variants')
+                  .assign(count=1)
                   )
         elif samples == 'all':
             if self.variant_count_df is None:
