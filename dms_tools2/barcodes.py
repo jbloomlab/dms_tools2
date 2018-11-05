@@ -1121,7 +1121,7 @@ class CodonVariantTable:
     6     CAT   1200   lib_2  selected                     3             GGA2GGC                                       1                   0
     7     AAC    113   lib_2  selected                     2     ATG1AAG GGA2TGA          M1K G2*                      2                   2
 
-    We can also use :class:`CodonVariantTable.plotMutCounts`
+    We can also use :class:`CodonVariantTable.mutCounts`
     to look at total counts of each mutation:
 
     >>> variants.mutCounts('all', 'aa')[ : 2]
@@ -1353,9 +1353,8 @@ class CodonVariantTable:
 
         Returns:
             A tidy data frame with columns named "library",
-            "sample", "mutation", "count", "mutation_type", "site"
-            that give count, mutation type (e.g., nonsynonymous),
-            and site of each mutation in each library / sample.
+            "sample", "mutation", "count", "mutation_type",
+            and "site".
         """
         df, nlibraries, nsamples = self._getPlotData(libraries,
                                                      samples,
@@ -1417,7 +1416,6 @@ class CodonVariantTable:
         def _get_site(mut_str):
             if mut_type == 'aa':
                 m = re.match('^[A-Z\*](?P<site>\d+)[A-Z\*]$', mut_str)
-                return int(m.group('site'))
             else:
                 m = re.match('^[ACTG]{3}(?P<site>\d+)[ACTG]{3}$', mut_str)
             site = int(m.group('site'))
@@ -1450,7 +1448,7 @@ class CodonVariantTable:
                           x['mutation'].apply(_classify_mutation),
                           mutation_types,
                           ordered=True),
-                site=lambda x: x['mutation'].apply(_get_site)
+                site=lambda x: x['mutation'].apply(_get_site),
                 )
               .sort_values(
                 ['library', 'sample', 'count', 'mutation'],
@@ -1459,6 +1457,85 @@ class CodonVariantTable:
               )
 
         return df
+
+
+    def plotMutHeatmap(self, variant_type, mut_type,
+            count_or_freq, *,
+            libraries='all', samples='all', plotfile=None,
+            orientation='h', widthscale=1, heightscale=1,
+            min_support=1):
+        """Heatmap of mutation counts or frequencies.
+
+        Args:
+            `count_or_freq` ("count" or "freq")
+                Plot mutation counts of frequencies?
+            All other args have same meaning as for
+            :CodonVariantTable.plotCumulMutCoverage`.
+
+        Returns:
+            A `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
+        """
+
+        df = self.mutCounts(variant_type, mut_type, samples=samples,
+                            libraries=libraries, min_support=min_support)
+
+        n_variants = (self.n_variants_df(libraries=libraries,
+                                         samples=samples,
+                                         min_support=min_support)
+                      .rename(columns={'count':'nseqs'})
+                      )
+
+        df = (df
+              [['library', 'sample', 'mutation', 'site', 'count']]
+              .merge(n_variants, on=['library', 'sample'])
+              .assign(freq=lambda x: x['count'] / x['nseqs'],
+                      mut_char=lambda x: x.mutation.str.extract(
+                        '^[A-Z\*]+\d+(?P<mut_char>[A-Z\*]+)$')
+                        .mut_char
+                      )
+              )
+
+        if count_or_freq not in {'count', 'freq'}:
+            raise ValueError(f"invalid count_or_freq {count_or_freq}")
+
+        nlibraries = len(df['library'].unique())
+        nsamples = len(df['sample'].unique())
+
+        if mut_type == 'codon':
+            height_per = 1.2
+        else:
+            height_per = 1.8
+
+        if orientation == 'h':
+            facet_str = 'sample ~ library'
+            width = widthscale * (1.6 + 3 * nlibraries)
+            height = heightscale * (0.8 + height_per * nsamples)
+        elif orientation == 'v':
+            facet_str = 'library ~ sample'
+            width = widthscale * (1.6 + 3 * nsamples)
+            height = heightscale * (0.8 + height_per * nlibraries)
+        else:
+            raise ValueError(f"invalid `orientation` {orientation}")
+
+        p = (ggplot(df, aes('site', 'mut_char', fill=count_or_freq)) +
+             geom_tile() +
+             facet_grid(facet_str) +
+             theme(figure_size=(width, height),
+                   legend_key=element_blank(),
+                   legend_text=element_text(size=11)
+                   ) +
+             scale_x_continuous(
+                name=f'{mut_type} site',
+                limits=(min(self.sites) - 1, max(self.sites) + 1),
+                expand=(0, 0)
+                )
+             )
+
+
+        if plotfile:
+            p.save(plotfile, height=height, width=width, verbose=False)
+
+        return p
 
 
     def plotMutFreqs(self, variant_type, mut_type, *,
@@ -1727,10 +1804,11 @@ class CodonVariantTable:
         Args:
             `mut_type` (str)
                 Type of mutation: "codon" or "aa".
-            `libraries` (the str "all" or list)
-                Set to "all" to include all libraries (plus
-                libraries merged if multiple libraries), or
-                specify a list of libraries.
+            `libraries` ("all", "all_only", or list)
+                Set to "all" to include all libraries including
+                a merge of the libraries, "all_only" to only
+                include the merge of the libraries, or a list
+                of libraries.
             `samples` (the str "all", `None`, or list)
                 Set to "all" to include all samples, `None` to
                 just count each barcoded variant once, or specify
@@ -1895,6 +1973,10 @@ class CodonVariantTable:
 
         if libraries == 'all':
             df = self.addMergedLibraries(df)
+        elif libraries == 'all_only':
+            df = (self.addMergedLibraries(df)
+                  .query('library == "all libraries"')
+                  )
         elif isinstance(libraries, list):
             if not set(self.libraries).issuperset(set(libraries)):
                 raise ValueError(f"invalid library in {libraries}")
