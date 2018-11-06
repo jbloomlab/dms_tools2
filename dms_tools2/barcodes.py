@@ -468,7 +468,7 @@ class IlluminaBarcodeParser:
     The barcodes should be read by R1 and optionally R2.
     The arrangement of elements is shown below::
 
-        5'-[R2_start]-upstream-barcode-downstream-R1_start-3'
+        5'-[R2_start]-upstream-barcode-downstream-[R1_start]-3'
 
     R1 anneals downstream of the barcode and reads backwards. If 
     R2 is used, it anneals upstream of the barcode and reads forward.
