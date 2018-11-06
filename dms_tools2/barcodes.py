@@ -16,6 +16,7 @@ import numpy
 import pandas
 import regex
 import umi_tools.network
+import Bio.SeqUtils.ProtParamData
 
 # use plotnine for plotting
 from plotnine import *
@@ -24,7 +25,7 @@ import dms_tools2.plot
 from dms_tools2.plot import COLOR_BLIND_PALETTE_GRAY
 import dms_tools2.utils
 import dms_tools2.pacbio
-from dms_tools2 import CODON_TO_AA, CODONS, AAS_WITHSTOP
+from dms_tools2 import CODON_TO_AA, CODONS, AAS_WITHSTOP, AA_TO_CODONS
 
 _umi_clusterer = umi_tools.network.UMIClusterer()
 
@@ -1459,16 +1460,16 @@ class CodonVariantTable:
         return df
 
 
-    def plotMutHeatmap(self, variant_type, mut_type,
-            count_or_freq, *,
+    def plotMutHeatmap(self, variant_type, mut_type, *,
+            count_or_frequency='frequency',
             libraries='all', samples='all', plotfile=None,
             orientation='h', widthscale=1, heightscale=1,
             min_support=1):
         """Heatmap of mutation counts or frequencies.
 
         Args:
-            `count_or_freq` ("count" or "freq")
-                Plot mutation counts of frequencies?
+            `count_or_frequency` ("count" or "frequency")
+                Plot mutation counts or frequencies?
             All other args have same meaning as for
             :CodonVariantTable.plotCumulMutCoverage`.
 
@@ -1485,50 +1486,70 @@ class CodonVariantTable:
                       .rename(columns={'count':'nseqs'})
                       )
 
+        # order amino acids by Kyte-Doolittle hydrophobicity,
+        # codons by the amino acid they encode
+        aa_order = [tup[0] for tup in sorted(
+                    Bio.SeqUtils.ProtParamData.kd.items(),
+                    key=lambda tup: tup[1])] + ['*']
+        codon_order = list(itertools.chain.from_iterable(
+                        [AA_TO_CODONS[aa] for aa in aa_order]))
+
         df = (df
               [['library', 'sample', 'mutation', 'site', 'count']]
               .merge(n_variants, on=['library', 'sample'])
-              .assign(freq=lambda x: x['count'] / x['nseqs'],
-                      mut_char=lambda x: x.mutation.str.extract(
-                        '^[A-Z\*]+\d+(?P<mut_char>[A-Z\*]+)$')
-                        .mut_char
+              .assign(frequency=lambda x: x['count'] / x['nseqs'],
+                      mut_char=lambda x: 
+                        pandas.Categorical(
+                         x.mutation.str.extract(
+                            '^[A-Z\*]+\d+(?P<mut_char>[A-Z\*]+)$')
+                            .mut_char,
+                         {'aa':aa_order, 'codon':codon_order}[mut_type],
+                         ordered=True)
                       )
               )
 
-        if count_or_freq not in {'count', 'freq'}:
-            raise ValueError(f"invalid count_or_freq {count_or_freq}")
+        if count_or_frequency not in {'count', 'frequency'}:
+            raise ValueError(f"invalid count_or_frequency "
+                             f"{count_or_frequency}")
 
         nlibraries = len(df['library'].unique())
         nsamples = len(df['sample'].unique())
 
         if mut_type == 'codon':
-            height_per = 1.2
+            height_per = 5.5
+            mut_desc = 'codon'
+        elif mut_type == 'aa':
+            height_per = 1.7
+            mut_desc = 'amino acid'
         else:
-            height_per = 1.8
+            raise ValueError(f"invalid mut_type {mut_type}")
 
         if orientation == 'h':
             facet_str = 'sample ~ library'
-            width = widthscale * (1.6 + 3 * nlibraries)
+            width = widthscale * (1.6 + 3.5 * nlibraries)
             height = heightscale * (0.8 + height_per * nsamples)
         elif orientation == 'v':
             facet_str = 'library ~ sample'
-            width = widthscale * (1.6 + 3 * nsamples)
+            width = widthscale * (1.6 + 3.5 * nsamples)
             height = heightscale * (0.8 + height_per * nlibraries)
         else:
             raise ValueError(f"invalid `orientation` {orientation}")
 
-        p = (ggplot(df, aes('site', 'mut_char', fill=count_or_freq)) +
+        p = (ggplot(df, aes('site', 'mut_char',
+                            fill=count_or_frequency)) +
              geom_tile() +
              facet_grid(facet_str) +
              theme(figure_size=(width, height),
                    legend_key=element_blank(),
-                   legend_text=element_text(size=11)
+                   axis_text_y=element_text(size=6)
                    ) +
              scale_x_continuous(
-                name=f'{mut_type} site',
+                name=f'{mut_desc} site',
                 limits=(min(self.sites) - 1, max(self.sites) + 1),
                 expand=(0, 0)
-                )
+                ) +
+             ylab(mut_desc) +
+             scale_fill_cmap('gnuplot')
              )
 
 
