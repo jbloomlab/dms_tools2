@@ -1554,7 +1554,8 @@ class CodonVariantTable:
 
 
         if plotfile:
-            p.save(plotfile, height=height, width=width, verbose=False)
+            p.save(plotfile, height=height, width=width,
+                   verbose=False, limitsize=False)
 
         return p
 
