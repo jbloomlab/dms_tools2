@@ -1749,12 +1749,12 @@ class CodonVariantTable:
 
         if orientation == 'h':
             facet_str = 'sample ~ library'
-            width = widthscale * (1 + 1.3 * nlibraries)
-            height = heightscale * (1 + 1.2 * nsamples)
+            width = widthscale * (1 + 1.4 * nlibraries)
+            height = heightscale * (1 + 1.3 * nsamples)
         elif orientation == 'v':
             facet_str = 'library ~ sample'
-            width = widthscale * (1 + 1.3 * nsamples)
-            height = heightscale * (1 + 1.2 * nlibraries)
+            width = widthscale * (1 + 1.4 * nsamples)
+            height = heightscale * (1 + 1.3 * nlibraries)
         else:
             raise ValueError(f"invalid `orientation` {orientation}")
 
@@ -1775,22 +1775,22 @@ class CodonVariantTable:
                 nonsynonymous=lambda x: x.n_codon_substitutions -
                                         x.synonymous - x.stop
                 )
-              .melt(id_vars=['library', 'sample'],
+              .melt(id_vars=['library', 'sample', 'count'],
                     value_vars=codon_mut_types,
                     var_name='mutation_type',
-                    value_name='number')
+                    value_name='num_muts')
               .assign(
                   mutation_type=lambda x:
                                 pandas.Categorical(
                                  x.mutation_type,
                                  categories=codon_mut_types,
                                  ordered=True),
-                  nvariants=1
+                  num_muts_count=lambda x: x.num_muts * x['count']
                   )
               .groupby(['library', 'sample', 'mutation_type'])
-              .aggregate({'number':'sum', 'nvariants':'count'})
+              .aggregate({'num_muts_count':'sum', 'count':'sum'})
               .reset_index()
-              .assign(number=lambda x: x.number / x.nvariants)
+              .assign(number=lambda x: x.num_muts_count / x['count'])
               )
 
         p = (ggplot(df, aes('mutation_type', 'number',
@@ -1867,23 +1867,30 @@ class CodonVariantTable:
         else:
             raise ValueError(f"invalid mut_type {mut_type}")
 
-        df[mut_col] = numpy.clip(df[mut_col], None, max_muts)
-
         if orientation == 'h':
             facet_str = 'sample ~ library'
-            width = widthscale * (1 + 1.2 * nlibraries)
-            height = heightscale * (0.8 + 1.2 * nsamples)
+            width = widthscale * (1 + 1.5 * nlibraries)
+            height = heightscale * (0.6 + 1.5 * nsamples)
         elif orientation == 'v':
             facet_str = 'library ~ sample'
-            width = widthscale * (1 + 1.2 * nsamples)
-            height = heightscale * (0.8 + 1.2 * nlibraries)
+            width = widthscale * (1 + 1.5 * nsamples)
+            height = heightscale * (0.6 + 1.5 * nlibraries)
         else:
             raise ValueError(f"invalid `orientation` {orientation}")
 
-        p = (ggplot(df, aes(mut_col)) +
-             geom_histogram(binwidth=1, center=0) +
+        df[mut_col] = numpy.clip(df[mut_col], None, max_muts)
+
+        df = (df
+              .groupby(['library', 'sample', mut_col])
+              .aggregate({'count':'sum'})
+              .reset_index()
+              )
+
+        p = (ggplot(df, aes(mut_col, 'count')) +
+             geom_bar(stat='identity') +
              facet_grid(facet_str) +
              xlab(xlabel) +
+             scale_y_continuous(labels=dms_tools2.plot.latexSciNot) +
              theme(figure_size=(width, height))
              )
 
