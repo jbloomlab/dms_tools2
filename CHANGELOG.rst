@@ -3,6 +3,8 @@ Change Log
 
 2.4.dev0
 -----------
+* added `highlighted_sites` option to `plot.plotSiteDiffSel`
+
 * Improve matching of termini tags when there are mismatches in `dms_tools2.pacbio`
 
 * Some updates to `dms_tools2.minimap2.Mutations` objects.

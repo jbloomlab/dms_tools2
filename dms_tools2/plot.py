@@ -703,12 +703,10 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
 
 
 def plotSiteDiffSel(names, diffselfiles, plotfile, 
-        diffseltype, maxcol=2, white_bg=False):
+        diffseltype, highlighted_sites=None, maxcol=2, white_bg=False):
     """Plot site diffsel or fracsurvive along sequence.
-
     Despite the function name, this function can be used to
     plot either differential selection or fraction surviving.
-
     Args:
         `names` (list or series)
             Names of samples for which we plot statistics.
@@ -727,18 +725,21 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
                 - `maxfracsurvive`: max mutfracsurvive at site
         `maxcol` (int)
             Number of columns in faceted plot.
+        `highlighted_sites` (list)
+            Highlight sites of interest (passed in string format) in grey.
         `white_bg` (bool)
             Plots will have a white background with limited other formatting.
-
+            
+        DOCUMENT CHANGES
     """
     assert len(names) == len(diffselfiles) == len(set(names)) > 0
     assert os.path.splitext(plotfile)[1].lower() == '.pdf'
 
-    diffsels = [pandas.read_csv(f).assign(name=name) for (name, f) 
+    diffsels = [pd.read_csv(f).assign(name=name) for (name, f) 
             in zip(names, diffselfiles)]
     assert all([set(diffsels[0]['site']) == set(df['site']) for df in 
             diffsels]), "diffselfiles not all for same sites"
-    diffsel = pandas.concat(diffsels, ignore_index=True)
+    diffsel = pd.concat(diffsels, ignore_index=True)
 
     ylabel = 'differential selection'
     if diffseltype == 'positive':
@@ -763,28 +764,38 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
                             var_name='direction')
                       )
 
-
+    y_lim = diffsel['diffsel'].max() #get a maximum value used to plot the overlay
     # natural sort by site: https://stackoverflow.com/a/29582718
     diffsel = diffsel.reindex(index=natsort.order_by_index(
             diffsel.index, natsort.index_natsorted(diffsel.site,
             signed=True)))
     # now some manipulations to make site str while siteindex is int
     diffsel['site'] = diffsel['site'].apply(str)
-    diffsel['siteindex'] = pandas.Categorical(diffsel['site'],
+    diffsel['siteindex'] = pd.Categorical(diffsel['site'],
             diffsel['site'].unique()).codes
     
     ncol = min(maxcol, len(names))
     nrow = math.ceil(len(names) / float(ncol))
 
     # make name a category to preserve order
+<<<<<<< HEAD
+    diffsel['name'] = diffsel['name'].astype('category', 
+            categories=names)
+    
+    (xbreaks, xlabels) = dms_tools2.plot.breaksAndLabels(diffsel['siteindex'].unique(), 
+=======
     diffsel['name'] = diffsel['name'].astype(
             pandas.api.types.CategoricalDtype(categories=names))
 
     (xbreaks, xlabels) = breaksAndLabels(diffsel['siteindex'].unique(), 
+>>>>>>> b89e7fd08be2d5b79d2de9eec8accd7dbde6ba92
             diffsel['site'].unique(), n=6)
+    diffsel['highlight'] = diffsel['site'].isin(highlighted_sites) 
+    diffsel['highlight'] =np.where(diffsel['highlight']==True , y_lim, 0)
     if white_bg:
         p = (ggplot(diffsel, aes(x='siteindex', y='diffsel',
                     color='direction', fill='direction'))
+             + geom_bar(aes(y='highlight'), alpha=0.5, stat="identity", color="#d9d9d9", size=0.3, show_legend=False) 
              + geom_step(size=0.3)
              + xlab('site')
              + ylab(ylabel)
@@ -799,9 +810,10 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
                      panel_border=element_blank(),
                      strip_background=element_blank()
                      )
-             )
+            )
     else:
         p = (ggplot(diffsel, aes(x='siteindex', y='diffsel', color='direction'))
+             + geom_bar(aes(y='highlight'), alpha=0.5, stat="identity", color="#d9d9d9", size=0.3, show_legend=False) 
              + geom_step(size=0.4)
              + xlab('site')
              + ylab(ylabel)
