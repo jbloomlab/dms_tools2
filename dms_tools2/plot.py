@@ -704,7 +704,7 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
 
 def plotSiteDiffSel(names, diffselfiles, plotfile, 
         diffseltype, maxcol=2, white_bg=False,
-        highlighted_sites=None):
+        highlighted_sites=[]):
     """Plot site diffsel or fracsurvive along sequence.
     Despite the function name, this function can be used to
     plot either differential selection or fraction surviving.
@@ -763,7 +763,7 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
                             var_name='direction')
                       )
 
-    y_lim = diffsel['diffsel'].max() #get a maximum value used to plot the overlay
+    y_lim = diffsel['diffsel'].max() #get max value used to plot the overlay
     # natural sort by site: https://stackoverflow.com/a/29582718
     diffsel = diffsel.reindex(index=natsort.order_by_index(
             diffsel.index, natsort.index_natsorted(diffsel.site,
@@ -782,8 +782,13 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
 
     (xbreaks, xlabels) = breaksAndLabels(diffsel['siteindex'].unique(), 
             diffsel['site'].unique(), n=6)
+
+    if highlighted_sites is None:
+        highlighted_sites = []
     diffsel['highlight'] = diffsel['site'].isin(highlighted_sites) 
-    diffsel['highlight'] = numpy.where(diffsel['highlight']==True , y_lim, 0)
+    diffsel['highlight'] = numpy.where(diffsel['highlight'] == True,
+                                       y_lim, 0)
+
     if white_bg:
         p = (ggplot(diffsel, aes(x='siteindex', y='diffsel',
                     color='direction', fill='direction'))
