@@ -74,7 +74,8 @@ def versionInfo():
 
 
 def siteSubsetGGSeqLogo(logodata, chars, plotfile, width, height,
-        yname='', char_colors=AA_COLORS_FG, ylimits=None):
+        yname='', char_colors=AA_COLORS_FG, ylimits=None,
+        title=''):
     """Creates one-row logo plot with subset of sites.
 
     Designed to show logo plot for a subset of sites. This
@@ -106,6 +107,8 @@ def siteSubsetGGSeqLogo(logodata, chars, plotfile, width, height,
         `ylimits` (`None` or 2-tuple)
             If not `None`, should give the ylimits for the plot
             as `(ymin, ymax)`
+        `title` (str)
+            Title to place above plot.
 
     Here is an example that creates a plot for a subset of
     sites for two characters:
@@ -193,7 +196,8 @@ def siteSubsetGGSeqLogo(logodata, chars, plotfile, width, height,
                 yname=yname,
                 chars=StrVector(chars),
                 char_colors=StrVector([char_colors[x] for x in chars]),
-                ylimits=ylimits
+                ylimits=ylimits,
+                title=title
                 )
 
     if not os.path.isfile(plotfile):

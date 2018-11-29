@@ -10,6 +10,7 @@
 #' @param chars vector of characters in logo
 #' @param char_colors vector of colors for each character
 #' @param ylimits vector giving y minimum and maximum
+#' @param title string giving title to put above plot
 siteSubsetGGSeqLogo <- function(mat,
                                 plotfile,
                                 width,
@@ -19,7 +20,8 @@ siteSubsetGGSeqLogo <- function(mat,
                                 yname,
                                 chars,
                                 char_colors,
-                                ylimits=NULL) {
+                                ylimits=NULL,
+                                title='') {
   p <- ggseqlogo(mat, method='custom', ncol=length(xlabels),
          col_scheme=make_col_scheme(chars=chars, cols=char_colors)) +
        scale_x_continuous('', breaks=1:length(xlabels),
@@ -47,6 +49,10 @@ siteSubsetGGSeqLogo <- function(mat,
          axis.text=element_text(size=12),
          axis.title=element_text(size=13),
          )
+
+  if (nchar(trimws(title))) {
+    p <- p + ggtitle(title) + theme(plot.title=element_text(hjust=0.5))
+  }
   
   ggsave(plotfile, plot=p, width=width, height=height)
 }
