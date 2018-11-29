@@ -48,10 +48,11 @@ siteSubsetGGSeqLogo <- function(mat,
          axis.line.y=axis.line.y,
          axis.text=element_text(size=12),
          axis.title=element_text(size=13),
+         plot.title=element_text(hjust=0.5)
          )
 
   if (nchar(trimws(title))) {
-    p <- p + ggtitle(title) + theme(plot.title=element_text(hjust=0.5))
+    p <- p + ggtitle(title)
   }
   
   ggsave(plotfile, plot=p, width=width, height=height)
