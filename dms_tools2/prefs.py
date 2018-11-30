@@ -16,12 +16,15 @@ import math
 import tempfile
 import pickle
 import random
+import collections
+
 import natsort
 import numpy
 import numpy.random
 import pandas
 import Bio.SeqIO
 import pystan
+
 import dms_tools2
 
 #: minimum value for Dirichlet prior elements
@@ -695,6 +698,80 @@ def inferSitePrefs(charlist, wtchar, error_model, counts,
                 return (False, pi_means, pi_95credint, '\n'.join(logstring))
 
 
+def prefsToMutFromWtEffects(prefs, charlist, wts):
+    """Converts preferences effects of mutations away from wildtype.
+
+    This function is similar to :func:`prefsToMutEffects` but
+    computes the effects of mutations away from a given wildtype
+    sequence.
+
+    Args:
+        `prefs`
+            Same meaning as for :func:`prefsToMutEffects`.
+        `charlist`
+            Same meaning as for :func:`prefsToMutEffects`.
+        `wts` (pandas DataFrame)
+            Has columns named "site" and "wildtype" giving the
+            wildtype amino acid for each site. The sites must
+            match those in `prefs`.
+
+    Returns:
+        A pandas DataFrame similar to that returned by
+        :func:`prefsToMutEffects` except that it only
+        contains mutations away from the wildtype character
+        at each site, and the columns specifying the wildtype
+        and mutant characters are named "wildtype" and "mutant"
+        rather than "initial" and "final".
+
+    >>> charlist = ['A', 'C', 'G']
+    >>> prefs = pandas.DataFrame({
+    ...         'site':[1, 2],
+    ...         'A':[0.25, 0.25],
+    ...         'C':[0.25, 0.5],
+    ...         'G':[0.5, 0.25],
+    ...         })
+    >>> wts = pandas.DataFrame({
+    ...         'site':[1, 2],
+    ...         'wildtype':['G', 'C']
+    ...         })
+    >>> prefsToMutFromWtEffects(prefs, charlist, wts)
+       site wildtype mutant mutation  effect  log2effect
+    0     1        G      A      G1A     0.5        -1.0
+    1     1        G      C      G1C     0.5        -1.0
+    2     1        G      G      G1G     1.0         0.0
+    3     2        C      A      C2A     0.5        -1.0
+    4     2        C      C      C2C     1.0         0.0
+    5     2        C      G      C2G     0.5        -1.0
+    """
+    muteffects = prefsToMutEffects(prefs, charlist)
+
+    if not ({'wildtype', 'site'} <= set(wts.columns)):
+        raise ValueError("`wts` doesn't have site and wildtype cols")
+
+    if not (set(wts.wildtype) <= set(charlist)):
+        raise ValueError("wildtype not all in `charlist`")
+
+    if (prefs.site.sort_values() != wts.site.sort_values()).any():
+        raise ValueError("`prefs` and `wts` do not have same sites")
+
+    assert 'site' in muteffects.columns
+    assert 'wildtype' not in muteffects.columns
+
+    muteffects_from_wt = (
+        muteffects
+        .merge(wts[['site', 'wildtype']], on='site')
+        .query('initial == wildtype')
+        .drop(columns=['initial'])
+        .rename(columns={'final':'mutant'})
+        [['site', 'wildtype', 'mutant', 'mutation',
+          'effect', 'log2effect']]
+        .sort_values(['site', 'mutant'])
+        .reset_index(drop=True)
+        )
+
+    return muteffects_from_wt
+
+
 def prefsToMutEffects(prefs, charlist):
     """Converts amino acid preferences to effects of specific mutations.
 
@@ -750,7 +827,9 @@ def prefsToMutEffects(prefs, charlist):
     >>> numpy.allclose(effects['effect'], 2**effects['log2effect'])
     True
     """
-    assert set(prefs.columns) <= set(['site'] + charlist)
+    if not (set(prefs.columns) <= set(['site'] + charlist)):
+        raise ValueError("`prefs` contain extra columns")
+
     initial = prefs.melt(id_vars='site', value_vars=charlist,
                 var_name='initial', value_name='initial_pref')
     final = initial.rename(columns=
@@ -966,10 +1045,11 @@ def aafreqsFromAlignment(alignmentfile, codon_to_aa,
     >>> aas_nocounts = [a for a in dms_tools2.AAS if a not in aas_counts]
     >>> (0 == aafreqs[aas_nocounts].values).all()
     True
-    >>> expected_counts = pandas.DataFrame.from_items([
+    >>> expected_counts = pandas.DataFrame.from_dict(
+    ...         collections.OrderedDict([
     ...         ('site', [1, 2, 3]), ('M', [1.0, 0.0, 0.0]),
     ...         ('G', [0.0, 0.5, 0]), ('R', [0.0, 0.5, 0.0]),
-    ...         ('Q', [0.0, 0.0, 1.0])])
+    ...         ('Q', [0.0, 0.0, 1.0])]))
     >>> expected_counts.equals(aafreqs[['site'] + aas_counts])
     True
     """
