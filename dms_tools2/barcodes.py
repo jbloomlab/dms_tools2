@@ -1470,8 +1470,9 @@ class CodonVariantTable:
         Args:
             `count_or_frequency` ("count" or "frequency")
                 Plot mutation counts or frequencies?
-            All other args have same meaning as for
-            :CodonVariantTable.plotCumulMutCoverage`.
+            All other args
+                Same meaning as for
+                :meth:`CodonVariantTable.plotCumulMutCoverage`.
 
         Returns:
             A `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
@@ -2143,21 +2144,19 @@ def tidy_split(df, column, sep=' ', keep=False):
 
     Taken from https://stackoverflow.com/a/39946744
 
-    Params
-    ------
-    df : pandas.DataFrame
-        dataframe with the column to split and expand
-    column : str
-        the column to split and expand
-    sep : str
-        the string used to split the column's values
-    keep : bool
-        whether to retain the presplit value as it's own row
+    Args:
+        df : pandas.DataFrame
+            dataframe with the column to split and expand
+        column : str
+            the column to split and expand
+        sep : str
+            the string used to split the column's values
+        keep : bool
+            whether to retain the presplit value as it's own row
 
-    Returns
-    -------
-    pandas.DataFrame
-        Returns a dataframe with the same columns as `df`.
+    Returns:
+        pandas.DataFrame
+            Returns a dataframe with the same columns as `df`.
     """
     indexes = list()
     new_values = list()

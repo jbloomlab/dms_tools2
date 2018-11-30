@@ -706,8 +706,10 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
         diffseltype, maxcol=2, white_bg=False,
         highlighted_sites=[]):
     """Plot site diffsel or fracsurvive along sequence.
+
     Despite the function name, this function can be used to
     plot either differential selection or fraction surviving.
+
     Args:
         `names` (list or series)
             Names of samples for which we plot statistics.

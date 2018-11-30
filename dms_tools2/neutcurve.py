@@ -179,8 +179,7 @@ class fourParamLogistic:
             as the fraction surviving should always be one
             at sufficiently low antibody concentration.
 
-    After initialization, you can access the following
-    attributes:
+    After initialization, has the following attributes:
         `cs` (numpy array)
             Array of the concentration measurements we have
             fitted, sorted from lowest to highest. 

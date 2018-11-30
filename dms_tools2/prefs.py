@@ -515,39 +515,53 @@ def inferSitePrefs(charlist, wtchar, error_model, counts,
             Specifies how errors are estimated. Passing error model
             objects is faster if calling this function repeatedly
             as they will not need to be compiled. Can be:
+
               - The str `none` or instance of `StanModelNoneErr`:
                 no errors (:math:`\\boldsymbol{\mathbf{\epsilon_r}} = \\boldsymbol{\mathbf{\\rho_r}} = \mathbf{0}`)
+
               - The str `same` or instance of `StanModelSameErr`: 
                 same error rates  pre and post-selection 
                 (:math:`\\boldsymbol{\mathbf{\epsilon_r}} = \\boldsymbol{\mathbf{\\rho_r}}`).
+
               - The str `different` or instance of `StanModelDifferentErr`: 
                 different error rates pre- and post-selection
                 (:math:`\\boldsymbol{\mathbf{\epsilon_r}} \\ne \\boldsymbol{\mathbf{\\rho_r}}`).
+
         `counts` (dict)
             Deep sequencing counts. Each string key should specify
             a dict keyed by all characters in `charlist` with
             the values giving integer counts for that character. The keys:
+
                 - `pre`: :math:`\\boldsymbol{\mathbf{n_r^{\\rm{pre}}}}`
+
                 - `post`: :math:`\\boldsymbol{\mathbf{n_r^{\\rm{post}}}}`
+
                 - *err*: required if `error_model` is `same`, specifies
                   :math:`\\boldsymbol{\mathbf{n_r^{\\rm{err,pre}}}} = \\boldsymbol{\mathbf{n_r^{\\rm{err,post}}}}`
+
                 - `errpre` and `errpost`: required if `error_model` is
                   `different`, specify 
                   :math:`\\boldsymbol{\mathbf{n_r^{\\rm{err,pre}}}}` and
                   :math:`\\boldsymbol{\mathbf{n_r^{\\rm{err,post}}}}`.
+
         `priors` (dict)
             Specifies parameter vectors for Dirichlet priors. Each string
             key should specify a dict keyed by all characters and values
             giving the prior for that character. Values less than 
             `PRIOR_MIN_VALUE` are set to `PRIOR_MIN_VALUE`. Keys are
+
                 - `pir_prior_params`: :math:`\\boldsymbol{\mathbf{a_{\pi,r}}}`
+
                 - `mur_prior_params`: :math:`\\boldsymbol{\mathbf{a_{\mu,r}}}`
+
                 - `epsilonr_prior_params`: only required if `error_model` is 
                   `same` or `different`, specifies 
                   :math:`\\boldsymbol{\mathbf{a_{\epsilon,r}}}`
+
                 - `rhor_prior_params` : only required if `error_model` is 
                   `different`, specifies
                   :math:`\\boldsymbol{\mathbf{a_{\\rho,r}}}`
+
         `seed` (int)
             Random number seed for MCMC. 
         `n_jobs` (int)
