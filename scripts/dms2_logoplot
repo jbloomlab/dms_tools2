@@ -65,9 +65,10 @@ def main():
     prog = parser.prog
 
     # what type of data are we plotting?
-    datatype = [x for x in ['prefs', 'diffsel', 'fracsurvive', 'diffprefs']
-            if args[x]]
-    assert len(datatype) == 1
+    datatype = [x for x in ['prefs', 'diffsel', 'fracsurvive',
+                'diffprefs', 'muteffects'] if args[x]]
+    if len(datatype) != 1:
+        raise ValueError("Did not recognize a valid data type")
     datatype = datatype[0]
 
     # define output file names
@@ -140,7 +141,7 @@ def main():
             data = (data.pivot_table(index='site', values='mutfracsurvive',
                                 columns='mutation')
                         .fillna(0)
-                        .reindex_axis(sites)
+                        .reindex(sites, axis='rows')
                         .reset_index()
                         )
             args['letterheight'] *= 2 # taller letter stacks for diffsel
@@ -167,7 +168,7 @@ def main():
             data = (data.pivot_table(index='site', values='mutdiffsel',
                                 columns='mutation')
                         .fillna(0)
-                        .reindex_axis(sites)
+                        .reindex(sites, axis='rows')
                         )
             if args['restrictdiffsel'] == 'positive':
                 data = data.clip(0, None)
@@ -191,7 +192,8 @@ def main():
                         .max()
                         )
             if args['diffselrange']:
-                if (ylimits[0] > ymin) or (ylimits[0] < ymax):
+                diffselrange = args['diffselrange']
+                if (diffselrange[0] > ymin) or (diffselrange[0] < ymax):
                     raise ValueError("Invalid diffselrange does not "
                             "fully include data range of {0} to {1}"
                             .format(ymin, ymax))
@@ -201,7 +203,46 @@ def main():
             ylimits = (ymin - 0.02 * dy, ymax + 0.02 * dy)
             if args['scalebar']:
                 scalebar = (float(args['scalebar'][0]),
-                        args['scalebar'][1])
+                            args['scalebar'][1])
+
+        elif datatype == 'muteffects':
+            plotdatatype = 'diffsel'
+            data = (data.pivot_table(index='site', values='log2effect',
+                                columns='mutant')
+                        .fillna(0)
+                        .reindex(sites, axis='rows')
+                        .reset_index()
+                        )
+
+            nosepline = {'no':True, 'yes':False}[args['sepline']]
+            args['letterheight'] *= 2 # taller letter stacks
+
+            ymin = (data.drop('site', axis=1)
+                        .clip(None, 0)
+                        .sum(axis=1)
+                        .min()
+                        )
+            ymax = (data.drop('site', axis=1)
+                        .clip(0, None)
+                        .sum(axis=1)
+                        .max()
+                        )
+
+            if args['muteffectrange']:
+                muteffectrange = args['muteffectrange']
+                if (muteffectrange[0] > ymin) or (muteffectrange[0] < ymax):
+                    raise ValueError("Invalid `muteffectrange` does not "
+                            "fully include data range of {0} to {1}"
+                            .format(ymin, ymax))
+                ymin = muteffectrange[0]
+                ymax = muteffectrange[1]
+
+            dy = ymax - ymin
+            ylimits = (ymin - 0.02 * dy, ymax + 0.02 * dy)
+
+            if args['scalebar']:
+                scalebar = (float(args['scalebar'][0]),
+                            args['scalebar'][1])
 
         elif datatype == 'diffprefs':
             nosepline = {'no':True, 'yes':False}[args['sepline']]

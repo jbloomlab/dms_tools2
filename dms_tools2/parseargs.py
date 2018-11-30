@@ -497,6 +497,8 @@ def logoplotParser():
             'fraction surviving.')
     group.add_argument('--diffprefs', help='CSV file of differences in '
             'amino-acid preferences.')
+    group.add_argument('--muteffects', help='CSV file of amino-acid '
+            'mutational effects.')
 
     parser.add_argument('--name', required=True, 
             help='Name used for output files.')
@@ -521,6 +523,11 @@ def logoplotParser():
     parser.add_argument('--diffselrange', nargs=2, type=float,
             metavar=('MINDIFFSEL', 'MAXDIFFSEL'), 
             help='Specify a fixed range for `diffsel`. Otherwise '
+            'determined from data range.')
+
+    parser.add_argument('--muteffectrange', nargs=2, type=float,
+            metavar=('MINMUTEFFECT', 'MAXMUTEFFECT'),
+            help='Specify a fixed range for `muteffects`. Otherwise '
             'determined from data range.')
 
     parser.add_argument('--fracsurvivemax', type=float,
@@ -566,8 +573,8 @@ def logoplotParser():
 
     parser.add_argument('--scalebar', default=None, nargs=2,
             metavar=('BARHEIGHT', 'LABEL'), help='Plot a scale bar '
-            'indicating BARHEIGHT with LABEL. Only for `diffsel` and '
-            '`fracsurvive`.')
+            'indicating BARHEIGHT with LABEL. Only for `diffsel`, '
+            '`fracsurvive`, and `muteffects`.')
 
     parser.add_argument('--overlaycolormap', default='jet', help="`matplotlib "
             "color map <http://matplotlib.org/users/colormaps.html>`_ for"

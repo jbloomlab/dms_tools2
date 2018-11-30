@@ -3,7 +3,11 @@ Change Log
 
 2.4.dev0
 -----------
+* added `muteffects` data type to ``dms2_logoplot``
+
 * added `highlighted_sites` option to `plot.plotSiteDiffSel`
+
+* added `title` to `siteSubsetGGSeqLogo`
 
 * Improve matching of termini tags when there are mismatches in `dms_tools2.pacbio`
 
