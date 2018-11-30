@@ -8,6 +8,7 @@ Module for fitting neutralization curves.
 
 import math
 import io
+import collections
 
 import pandas
 import scipy
@@ -470,12 +471,12 @@ class fourParamLogistic:
         if ic50_in_name:
             samplename += ' (IC50 = {0})'.format(self.ic50_str())
 
-        return pandas.DataFrame.from_items([
+        return pandas.DataFrame.from_dict(collections.OrderedDict([
                 ('concentration', concentrations),
                 ('sample', [samplename] * n),
                 ('points', points),
                 ('fit', fit),
-                ])
+                ]))
 
 
     def plot(self, plotfile, samplename,
