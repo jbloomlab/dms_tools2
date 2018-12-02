@@ -1,0 +1,52 @@
+LOCUS       RecA_PacBio_amplicon    1342 bp ds-DNA     linear       06-AUG-2018
+DEFINITION  .
+ACCESSION   
+VERSION     
+SOURCE      Danny Lawrence
+  ORGANISM  .
+COMMENT     PacBio amplicon for RecA libraries.
+COMMENT     There are single nucleotide tags in the 5' and 3' termini to measure strand exchange.
+FEATURES             Location/Qualifiers
+     termini5        1..147
+                     /label="termini 5' of gene"
+     gene            148..1206
+                     /label="RecA gene"
+     spacer          1207..1285
+                     /label="spacer between gene & barcode"
+     barcode         1286..1303
+                     /label="18 nucleotide barcode"
+     termini3        1304..1342
+                     /label="termini 3' of barcode"
+     variant_tag     33..33
+                     /label="5' variant tag"
+                     /variant_1=A
+                     /variant_2=G
+     variant_tag     1311..1311
+                     /label="3' variant tag"
+                     /variant_1=T
+                     /variant_2=C
+ORIGIN
+        1 gcacggcgtc acactttgct atgccatagc atRtttatcc ataagattag cggatcctac
+       61 ctgacgcttt ttatcgcaac tctctactgt ttctccataa cagaacatat tgactatccg
+      121 gtattacccg gcatgacagg agtaaaaATG GCTATCGACG AAAACAAACA GAAAGCGTTG
+      181 GCGGCAGCAC TGGGCCAGAT TGAGAAACAA TTTGGTAAAG GCTCCATCAT GCGCCTGGGT
+      241 GAAGACCGTT CCATGGATGT GGAAACCATC TCTACCGGTT CGCTTTCACT GGATATCGCG
+      301 CTTGGGGCAG GTGGTCTGCC GATGGGCCGT ATCGTCGAAA TCTACGGACC GGAATCTTCC
+      361 GGTAAAACCA CGCTGACGCT GCAGGTGATC GCCGCAGCGC AGCGTGAAGG TAAAACCTGT
+      421 GCGTTTATCG ATGCTGAACA CGCGCTGGAC CCAATCTACG CACGTAAACT GGGCGTCGAT
+      481 ATCGACAACC TGCTGTGCTC CCAGCCGGAC ACCGGCGAGC AGGCACTGGA AATCTGTGAC
+      541 GCCCTGGCGC GTTCTGGCGC AGTAGACGTT ATCGTCGTTG ACTCCGTGGC GGCACTGACG
+      601 CCGAAAGCGG AAATCGAAGG CGAAATCGGC GACTCTCATA TGGGCCTTGC GGCACGTATG
+      661 ATGAGCCAGG CGATGCGTAA GCTGGCGGGT AACCTGAAGC AGTCCAACAC GCTGCTGATC
+      721 TTCATCAACC AGATCCGTAT GAAAATTGGT GTGATGTTCG GCAACCCGGA AACCACTACC
+      781 GGTGGTAACG CGCTGAAATT CTACGCCTCT GTTCGTCTCG ACATCCGTCG TATCGGCGCG
+      841 GTGAAAGAGG GCGAAAACGT GGTGGGTAGC GAAACCCGCG TGAAAGTGGT GAAGAACAAA
+      901 ATCGCTGCGC CGTTTAAACA GGCTGAATTC CAGATCCTCT ACGGCGAAGG TATCAACTTC
+      961 TACGGCGAAC TGGTTGACCT GGGCGTAAAA GAGAAGCTGA TCGAGAAAGC AGGCGCGTGG
+     1021 TACAGCTACA AAGGTGAGAA GATCGGTCAG GGTAAAGCGA ATGCGACTGC CTGGCTGAAA
+     1081 GATAACCCGG AAACCGCGAA AGAGATCGAG AAGAAAGTAC GTGAGTTGCT GCTGAGCAAC
+     1141 CCGAACTCAA CGCCGGATTT CTCTGTAGAT GATAGCGAAG GCGTAGCAGA AACTAACGAA
+     1201 GATTTTTAAt cgtcttgttt gatacacaag ggtcgcatct gcggcccttt tgctttttta
+     1261 agttgtaagg atatgccatt ctagannnnn nnnnnnnnnn nnnagatcgg Yagagcgtcg
+     1321 tgtagggaaa gagtgtggta cc   
+//

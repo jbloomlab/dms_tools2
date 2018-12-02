@@ -1,0 +1,12 @@
+fate,count,library,sample,run
+invalid barcode,1739,library-1,plasmid,run-1
+low quality barcode,480,library-1,plasmid,run-1
+unparseable barcode,281,library-1,plasmid,run-1
+invalid barcode,1761,library-1,uninduced,run-1
+low quality barcode,374,library-1,uninduced,run-1
+unparseable barcode,362,library-1,uninduced,run-1
+valid barcode,3,library-1,uninduced,run-1
+invalid barcode,1844,library-2,plasmid,run-1
+low quality barcode,435,library-2,plasmid,run-1
+unparseable barcode,220,library-2,plasmid,run-1
+valid barcode,1,library-2,plasmid,run-1
