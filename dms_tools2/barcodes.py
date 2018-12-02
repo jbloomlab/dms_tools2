@@ -125,7 +125,7 @@ def fracIdentWithinBarcode(df, *, barcode_col='barcode',
     variants, and you want to determine how often the variants
     with the same barcode are identical. To calculate this, all
     variants with the same barcode are grouped, and for every pair
-    of variants within a barcode we compute the fraction that 
+    of variants within a barcode we compute the fraction that
     are identical (note that this fraction is the
     `Simpson diversity index without replacement <https://en.wikipedia.org/wiki/Diversity_index>`_.
     We then compute the average of this fraction over all pairs.
@@ -233,7 +233,7 @@ def simpleConsensus(df, *,
 
     Args:
         `df` (pandas Data Frame)
-            Holds variants and their barcodes. Each row gives a 
+            Holds variants and their barcodes. Each row gives a
             sequence variant and its barcode. There need to be
             columns with the names given by the next four arguments
             described below.
@@ -266,7 +266,7 @@ def simpleConsensus(df, *,
 
             - `consensus` is a new data frame with a row for each
               barcode for which we could call the consensus. The
-              columns have the same names as `barcode_col`, 
+              columns have the same names as `barcode_col`,
               `substitution_col`, `insertion_col`, `deletion_col`,
               and (optionally) `library_col`--but the the three
               columns for the mutations now just list the **consensus**
@@ -470,7 +470,7 @@ class IlluminaBarcodeParser:
 
         5'-[R2_start]-upstream-barcode-downstream-[R1_start]-3'
 
-    R1 anneals downstream of the barcode and reads backwards. If 
+    R1 anneals downstream of the barcode and reads backwards. If
     R2 is used, it anneals upstream of the barcode and reads forward.
     There can be sequences (`upstream` and `downstream`) on either
     side of the barcode: `downstream` must fully cover the
@@ -507,7 +507,7 @@ class IlluminaBarcodeParser:
             by :class:`IlluminaBarcodeParser.parse` includes all
             valid barcodes even if no counts.
 
-    To use, first initialize a :class:`IlluminaBarcodeParser`, then 
+    To use, first initialize a :class:`IlluminaBarcodeParser`, then
     parse barcodes using :class:`IlluminaBarcodeParser.parse`.
     Barcodes are retained as valid only if R1 and R2 agree at every
     nucleotide in barcode and if at each site at least one read has
@@ -738,7 +738,7 @@ class IlluminaBarcodeParser:
             chastity_filter=True, list_all_valid_barcodes=True):
         """See main class doc string."""
 
-        # first make all arguments into attributes 
+        # first make all arguments into attributes
         self.bclen = bclen
         if re.match(f"^[{self.VALID_NTS}]*$", upstream):
             self.upstream = upstream
@@ -864,7 +864,7 @@ class IlluminaBarcodeParser:
                 for read, q in zip(reads, [q1, q2]):
                     bc[read] = matches[read].group('bc')
                     bc_q[read] = numpy.array([
-                                 ord(qi) - 33 for qi in 
+                                 ord(qi) - 33 for qi in
                                  q[matches[read].start('bc') :
                                    matches[read].end('bc')]],
                                  dtype='int')
@@ -1016,7 +1016,7 @@ class CodonVariantTable:
     If we want to combine the data for the two libraries, we can use
     :class:`CodonVariantTable.addMergedLibraries`, which creates a
     new combined library called "all libraries":
-    
+
     >>> variants.addMergedLibraries(variants.barcode_variant_df)
              library    barcode  variant_call_support codon_substitutions aa_substitutions  n_codon_substitutions  n_aa_substitutions
     0          lib_1        AAC                     2                                                           0                   0
@@ -1135,6 +1135,56 @@ class CodonVariantTable:
     0   lib_2  input      G2*   1253           stop     2
     1   lib_2  input      M1K   1253  nonsynonymous     1
     2   lib_2  input      *3A      0  nonsynonymous     3
+
+    We can use :class:`CodonVariantTable.writeCodonCounts` to
+    write codon count files. First for only **single** mutants:
+
+    >>> with tempfile.TemporaryDirectory() as tmpdir:
+    ...     countfiles = variants.writeCodonCounts("single", outdir=tmpdir)
+    ...     lib1_input = pandas.read_csv(f'{tmpdir}/lib_1_input_codoncounts.csv')
+    ...     all_sel = pandas.read_csv(f'{tmpdir}/all-libraries_selected_codoncounts.csv')
+
+    Make sure we created expected countfiles:
+
+    >>> countfiles.assign(countfile=lambda x: x.countfile.apply(os.path.basename))
+             library    sample                               countfile
+    0          lib_1     input             lib_1_input_codoncounts.csv
+    1          lib_1  selected          lib_1_selected_codoncounts.csv
+    2          lib_2     input             lib_2_input_codoncounts.csv
+    3          lib_2  selected          lib_2_selected_codoncounts.csv
+    4  all-libraries     input     all-libraries_input_codoncounts.csv
+    5  all-libraries  selected  all-libraries_selected_codoncounts.csv
+
+    Check for expected values in a few of these counts files, only
+    showing columns with non-zero entries:
+
+    >>> lib1_input.iloc[:, (lib1_input != 0).any(axis='rows').values]
+       site wildtype  ATG   CGC  GGA  TGA
+    0     1      ATG  253     0    0    0
+    1     2      GGA    0  1101  253    0
+    2     3      TGA    0     0    0  253
+    >>> all_sel.iloc[:, (all_sel != 0).any(axis='rows').values]
+       site wildtype  ATG  CGC  GGA   GGC  TGA
+    0     1      ATG  513    0    0     0    0
+    1     2      GGA    0  401  513  1200    0
+    2     3      TGA    0    0    0     0  513
+
+    Now write codon counts files for **all** mutants:
+
+    >>> with tempfile.TemporaryDirectory() as tmpdir:
+    ...     _ = variants.writeCodonCounts("all", outdir=tmpdir)
+    ...     lib1_input_all = pandas.read_csv(f'{tmpdir}/lib_1_input_codoncounts.csv')
+    ...     all_sel_all = pandas.read_csv(f'{tmpdir}/all-libraries_selected_codoncounts.csv')
+    >>> lib1_input_all.iloc[:, (lib1_input_all != 0).any(axis='rows').values]
+       site wildtype   ATG   CGC  GGA   TGA
+    0     1      ATG  1354     0    0     0
+    1     2      GGA     0  1101  253     0
+    2     3      TGA     0     0    0  1354
+    >>> all_sel_all.iloc[:, (all_sel_all != 0).any(axis='rows').values]
+       site wildtype  AAG   ATG  CGC  GGA   GGC   TGA
+    0     1      ATG  113  2114    0    0     0     0
+    1     2      GGA    0     0  401  513  1200   113
+    2     3      TGA    0     0    0    0     0  2227
     """
 
     def __init__(self, *, barcode_variant_file, geneseq):
@@ -1386,7 +1436,7 @@ class CodonVariantTable:
                                      'library':library,
                                      'sample':sample,
                                      'count':0})
-                    for library, sample in 
+                    for library, sample in
                     itertools.product(librarylist, samplelist)])
 
         if variant_type == 'single':
@@ -1499,7 +1549,7 @@ class CodonVariantTable:
               [['library', 'sample', 'mutation', 'site', 'count']]
               .merge(n_variants, on=['library', 'sample'])
               .assign(frequency=lambda x: x['count'] / x['nseqs'],
-                      mut_char=lambda x: 
+                      mut_char=lambda x:
                         pandas.Categorical(
                          x.mutation.str.extract(
                             '^[A-Z\*]+\d+(?P<mut_char>[A-Z\*]+)$')
@@ -1619,7 +1669,7 @@ class CodonVariantTable:
                       f'({variant_type} mutants)')
 
         p = (ggplot(df, aes('site', 'freq', color='mutation_type')) +
-             geom_step() + 
+             geom_step() +
              scale_color_manual(
                 [self._mutation_type_colors[m] for m in
                  df.mutation_type.unique().sort_values().tolist()],
@@ -1901,6 +1951,127 @@ class CodonVariantTable:
 
         return p
 
+
+    def writeCodonCounts(self, single_or_all, *, outdir=None):
+        """Writes codon counts files for all libraries and samples.
+
+        Files are written in
+        `format <https://jbloomlab.github.io/dms_tools2/dms2_bcsubamp.html#id12>`_
+        produced by
+        `dms2_bcsubamp <https://jbloomlab.github.io/dms_tools2/dms2_bcsubamp.html>`_.
+
+        Args:
+            `single_or_all` ("single" or "all")
+                If "single", then counts are just from single-codon
+                mutants and wildtype, and we count all wildtype codons
+                and just mutated codon for single-codon mutants. If
+                "all", we count all codons for all variants at all
+                sites. This is appropriate if enrichment of each mutation
+                is supposed to represent its effect for "single", and if
+                enrichment of mutation is supposed to represent its
+                average effect across genetic backgrounds in the library
+                for "all" provided mutations are Poisson distributed.
+            `outdir` (`None` or str)
+                Name of directory into which we write counts,
+                created if it does not exist. Use `None` to
+                write to current directory.
+
+        Returns:
+            A pandas data frame with the columns "library", "sample",
+            ("all-libraries" is one library) and "countfile".
+            The "countfile" column gives the name of the created
+            file, which is ``<library>_<sample>_codoncounts.csv``.
+        """
+
+        codonmatch = re.compile(f'^(?P<wt>{"|".join(CODONS)})'
+                                 '(?P<r>\d+)'
+                                f'(?P<mut>{"|".join(CODONS)})$'
+                                )
+        def _parseCodonMut(mutstr):
+            m = codonmatch.match(mutstr)
+            return (m.group('wt'), int(m.group('r')), m.group('mut'))
+
+        if self.variant_count_df is None:
+            raise ValueError("no samples with counts")
+
+        if single_or_all not in {'single', 'all'}:
+            raise ValueError(f"invalid `single_or_all` {single_or_all}")
+
+        if outdir is not None:
+            os.makedirs(outdir, exist_ok=True)
+        else:
+            outdir = ''
+
+        df = self.addMergedLibraries(self.variant_count_df,
+                                     all_lib='all-libraries')
+
+        countfiles = []
+        liblist = []
+        samplelist = []
+
+        for lib, sample in itertools.product(
+                            df['library'].unique().tolist(),
+                            df['sample'].unique().tolist()
+                            ):
+
+            countfile = os.path.join(outdir,
+                            f'{lib}_{sample}_codoncounts.csv')
+            countfiles.append(countfile)
+            liblist.append(lib)
+            samplelist.append(sample)
+
+            i_df = df.query('library == @lib & sample == @sample')
+
+            codoncounts = {codon:[0] * len(self.sites) for codon
+                           in CODONS}
+
+            if single_or_all == 'single':
+                n_wt = (i_df
+                        .query('n_codon_substitutions == 0')
+                        ['count']
+                        .sum()
+                        )
+                for isite, site in enumerate(self.sites):
+                    codoncounts[self.codons[site]][isite] += n_wt
+                for mut, count in (i_df
+                                   .query('n_codon_substitutions == 1')
+                                   [['codon_substitutions', 'count']]
+                                   .itertuples(index=False, name=None)
+                                   ):
+                    wtcodon, r, mutcodon = _parseCodonMut(mut)
+                    codoncounts[mutcodon][r - 1] += count
+
+            elif single_or_all == 'all':
+                n_wt = i_df['count'].sum()
+                for isite, site in enumerate(self.sites):
+                    codoncounts[self.codons[site]][isite] += n_wt
+                for muts, count in (i_df
+                                   .query('n_codon_substitutions > 0')
+                                   [['codon_substitutions', 'count']]
+                                   .itertuples(index=False, name=None)
+                                   ):
+                    for mut in muts.split():
+                        wtcodon, r, mutcodon = _parseCodonMut(mut)
+                        codoncounts[mutcodon][r - 1] += count
+                        codoncounts[wtcodon][r - 1] -= count
+
+            else:
+                raise ValueError(f"invalid `single_or_all` {single_or_all}")
+
+            counts_df = pandas.DataFrame(collections.OrderedDict(
+                         [('site', self.sites),
+                          ('wildtype', [self.codons[r] for r in self.sites])] +
+                         [(codon, codoncounts[codon]) for codon in CODONS]
+                         ))
+            counts_df.to_csv(countfile, index=False)
+
+        assert all(map(os.path.isfile, countfiles))
+
+        return pandas.DataFrame({'library':liblist,
+                                 'sample':samplelist,
+                                 'countfile':countfiles})
+
+
     @staticmethod
     def addMergedLibraries(df, *, all_lib='all libraries'):
         """Add data to `df` for all libraries merged.
@@ -1929,9 +2100,9 @@ class CodonVariantTable:
         if all_lib in libs:
             raise ValueError(f"library {all_lib} already exists")
 
-        df = (pandas.concat([df, 
+        df = (pandas.concat([df,
                              df.assign(
-                                barcode=lambda x: 
+                                barcode=lambda x:
                                     x.library.str
                                      .cat(x.barcode, sep='-'),
                                 library=all_lib)
