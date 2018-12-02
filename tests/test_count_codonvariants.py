@@ -31,7 +31,7 @@ class test_count_codonvariants(unittest.TestCase):
         indir = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                              'count_codonvariant_files/')
         outdir = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                              'test_count_codonvariants/')
+                              'test_count_codonvariants_files/')
         os.makedirs(outdir, exist_ok=True)
 
         barcode_variant_file = os.path.join(indir, 'barcode_variant_table.csv')
