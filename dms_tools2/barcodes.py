@@ -1363,7 +1363,8 @@ class CodonVariantTable:
     def valid_barcodes(self, library):
         """Set of valid barcodes for `library`."""
         if library not in self.libraries:
-            raise ValueError(f"invalid `library` {library}")
+            raise ValueError(f"invalid `library` {library}; "
+                             f"valid libraries are {self.libraries}")
         else:
             return self._valid_barcodes[library]
 
