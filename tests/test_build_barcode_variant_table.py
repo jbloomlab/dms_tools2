@@ -27,8 +27,10 @@ class test_build_barcode_variant_table(unittest.TestCase):
     
     def test_build_barcode_variant_table(self):
 
-        indir = 'build_barcode_variant_table_files/'
-        outdir = 'test_build_barcode_variant_table/'
+        indir = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                            'build_barcode_variant_table_files/')
+        outdir = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                              'test_build_barcode_variant_table/')
         os.makedirs(outdir, exist_ok=True)
 
         lookup_table = os.path.join(outdir, 'barcode_variant_table.csv')
