@@ -14,6 +14,10 @@ It uses a slightly modified version of `weblogo`_ to make the logo plots themsel
 
 If you run it using ``--prefs`` to specify the input file, then the plot will visualize :ref:`prefs`.
 
+If you run it using ``--muteffects`` to specify the input file, then the plot will visualize the logarithm base 2 of the mutational effect.
+You can calculate mutational effects from :ref:`prefs` using the function :func:`dms_tools2.prefs.prefsToMutFromWtEffects`.
+The mutational effect calculated by this function is just the ratio of the preference for the mutant amino acid over the preference for the wildtype amino acid.
+
 If you run it using ``--diffsel`` to specify the input file, then the plot will visualize :ref:`diffsel`.
 
 If you run it using ``--fracsurvive`` to specify the input file, then the plot will visualize the :ref:`fracsurvive` for each mutation.
@@ -47,6 +51,8 @@ If you run with ``--diffsel``, then the logo plot will be a file with the suffix
 An example of such a logo plot is in the `Doud2017 example`_.
 
 If you run with ``--fracsurvive``, then the logo plot will be a file with the suffix ``_fracsurvive.pdf``.
+
+If you run with ``--muteffects``, then the logo plot will be a file with the suffix ``_muteffects.pdf``.
 
 If you run with ``--diffprefs``, then the logo plot will be a file with the suffix ``_diffprefs.pdf``.
 

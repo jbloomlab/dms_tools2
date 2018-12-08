@@ -7,9 +7,9 @@ Installation
 .. contents::
    :local:
 
-Make sure you have Python **3**
----------------------------------
-`dms_tools2`_ requires `Python`_ 3.5 or higher.
+Make sure you have Python **3.6** or higher
+--------------------------------------------
+`dms_tools2`_ requires `Python`_ **3.6** or higher.
 Most computers have both Python 2 and Python 3 installed.
 You can check your current version of `Python`_ (and the Python installation program `pip`_) with::
 
@@ -44,7 +44,7 @@ The simplest solution is to install locally via the ``--user`` option to ``pip``
 In order for locally installed programs to be accessible, you need to add ``~/.local/bin/`` to the ``PATH`` variable, and ``~/.local/lib/`` to the ``PYTHONPATH`` variable. If you are using the `bash shell`_, you would do this by adding the following lines to your ``~/.bashrc`` file::
 
     PATH=$HOME/.local/bin/:$PATH
-    export PYTHONPATH=$HOME/.local/lib/python3.5:$PATH
+    export PYTHONPATH=$HOME/.local/lib/python3.6:$PATH
 
 You then want to make sure that your ``~/.bash_profile`` file simple sources your ``~/.bashrc`` file as `described here <http://www.joshstaiger.org/archives/2005/07/bash_profile_vs.html>`_ by making ``~/.bash_profile`` consist of the following contents::
 
@@ -52,7 +52,7 @@ You then want to make sure that your ``~/.bash_profile`` file simple sources you
         source ~/.bashrc
     fi
 
-On Mac OS X, the default directory for ``--user`` may be ``$HOME/Library/Python/x.y/`` rather than ``~/.local/`` where ``x.y`` indicates the version number (e.g., ``3.5``.
+On Mac OS X, the default directory for ``--user`` may be ``$HOME/Library/Python/x.y/`` rather than ``~/.local/`` where ``x.y`` indicates the version number (e.g., ``3.6``.
 
 Make sure ``pip`` is installed
 ++++++++++++++++++++++++++++++++++++++++++
@@ -61,7 +61,7 @@ Check if you already have `pip`_ installed. You can do this by typing at the com
 
     pip --version
 
-If this command indicates that you have `pip`_ for Python 3.5 or higher, then you can move to the next step. 
+If this command indicates that you have `pip`_ for Python 3.6 or higher, then you can move to the next step. 
 If you do not have `pip`_, then you need to install it by following the `instructions here <https://pip.pypa.io/en/stable/installing/>`_.
 
 Use ``pip`` to install ``dms_tools2``
