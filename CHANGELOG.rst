@@ -1,7 +1,7 @@
 Change Log
 ===========
 
-2.4.dev0
+2.4.0
 -----------
 * added `muteffects` data type to ``dms2_logoplot``
 
