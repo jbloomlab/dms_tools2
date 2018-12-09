@@ -43,6 +43,7 @@
 
 
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">gzip</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">import</span> <span class="nn">math</span>
@@ -55,6 +56,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">pandas</span>
 <span class="kn">import</span> <span class="nn">pysam</span>
+<span class="kn">import</span> <span class="nn">HTSeq</span>
 <span class="kn">import</span> <span class="nn">Bio.SeqFeature</span>
 
 <span class="c1"># import dms_tools2.plot to set plotting contexts / themes</span>
@@ -72,13 +74,21 @@
 <span class="sd">    Has been tested on output of ``ccs`` version 3.0.0.</span>
 
 <span class="sd">    This class reads all data into memory, and so you</span>
-<span class="sd">    may need a lot of RAM if `bamfile` is large.</span>
+<span class="sd">    may need a lot of RAM if `ccsfile` is large.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        `samplename` (str)</span>
 <span class="sd">            Sample or sequencing run</span>
-<span class="sd">        `bamfile` (str)</span>
-<span class="sd">            BAM file created by ``ccs``</span>
+<span class="sd">        `ccsfile` (str)</span>
+<span class="sd">            File created by ``ccs`` that holds the CCSs. The</span>
+<span class="sd">            ``ccs`` program outputs BAM files. However, you</span>
+<span class="sd">            can also pass FASTQ files generated from these</span>
+<span class="sd">            BAM files using ``samtools bam2fq -T np,rq &lt;bamfile&gt;``</span>
+<span class="sd">            (note that ``-T np,rq`` flag which is needed to</span>
+<span class="sd">            preserve the number of passes and accuracy flags).</span>
+<span class="sd">            The file format is determined from the file extension,</span>
+<span class="sd">            and can be ``*.bam``, ``*.fastq``, ``*.fq``,</span>
+<span class="sd">            ``*.fastq.gz``, or ``*.fq.gz``.</span>
 <span class="sd">        `reportfile` (str or `None`)</span>
 <span class="sd">            Report file created by ``ccs``, or</span>
 <span class="sd">            `None` if you have no reports.</span>
@@ -86,7 +96,7 @@
 <span class="sd">    Attributes:</span>
 <span class="sd">        `samplename` (str)</span>
 <span class="sd">            Name set at initialization</span>
-<span class="sd">        `bamfile` (str)</span>
+<span class="sd">        `ccsfile` (str)</span>
 <span class="sd">            ``ccs`` BAM file set at initialization</span>
 <span class="sd">        `reportfile` (str or `None`)</span>
 <span class="sd">            ``ccs`` report file set at initialization</span>
@@ -97,7 +107,7 @@
 <span class="sd">        `subread_report` (pandas.DataFrame or `None`)</span>
 <span class="sd">            Like `zmw_report` but for subreads.</span>
 <span class="sd">        `df` (pandas.DataFrame)</span>
-<span class="sd">            The CCSs in `bamfile`. Each row is a different CCS</span>
+<span class="sd">            The CCSs in `ccsfile`. Each row is a different CCS</span>
 <span class="sd">            On creation, there will be the following columns (you</span>
 <span class="sd">            can modify to add more): </span>
 
@@ -155,7 +165,7 @@
 <span class="sd">    ...                      iccs in ccs_seqs])</span>
 
 <span class="sd">    Create small SAM file with these sequences, then</span>
-<span class="sd">    convert to BAM file used to initialize a `CCS` object</span>
+<span class="sd">    convert to BAM file used to initialize a :class:`CCS`</span>
 <span class="sd">    (note this requires ``samtools`` to be installed):</span>
 
 <span class="sd">    &gt;&gt;&gt; samfile = &#39;_temp.sam&#39;</span>
@@ -166,6 +176,45 @@
 <span class="sd">    ...         &#39;-b&#39;, &#39;-o&#39;, bamfile, samfile])</span>
 <span class="sd">    &gt;&gt;&gt; ccs = CCS(&#39;test&#39;, bamfile, None)</span>
 <span class="sd">    &gt;&gt;&gt; os.remove(samfile)</span>
+
+<span class="sd">    We also sometimes create the BAM files created by PacBio</span>
+<span class="sd">    ``ccs`` to FASTQ. Do that using ``samtools bam2fq -T np,rq``</span>
+<span class="sd">    to keep flags with number of passes and overall read quality:</span>
+
+<span class="sd">    &gt;&gt;&gt; fastq_data = subprocess.check_output(</span>
+<span class="sd">    ...         [&#39;samtools&#39;, &#39;bam2fq&#39;, &#39;-T&#39;, &#39;np,rq&#39;, bamfile])</span>
+
+<span class="sd">    Show how the resulting FASTQ data keeps the *np* and *rq* tags:</span>
+
+<span class="sd">    &gt;&gt;&gt; print(fastq_data.decode(&#39;utf-8&#39;).strip().replace(&#39;\\t&#39;, &#39; &#39;))</span>
+<span class="sd">    @barcoded_TTC_0.999_plus np:i:6 rq:f:0.999</span>
+<span class="sd">    ACGTTCACGCTT</span>
+<span class="sd">    +</span>
+<span class="sd">    ????????????</span>
+<span class="sd">    @barcoded_AGA_0.995_minus np:i:6 rq:f:0.998144</span>
+<span class="sd">    TAAGTGCTCTCGTA</span>
+<span class="sd">    +</span>
+<span class="sd">    ???????9?5????</span>
+<span class="sd">    @invalid np:i:6 rq:f:0.999</span>
+<span class="sd">    GGGCATGCACTT</span>
+<span class="sd">    +</span>
+<span class="sd">    ????????????</span>
+
+<span class="sd">    Write the FASTQ to a file, and check that :class:`CCS`</span>
+<span class="sd">    initialized from the FASTQ is the same as one from the BAM:</span>
+
+<span class="sd">    &gt;&gt;&gt; fastqfile = &#39;_temp.fastq&#39;</span>
+<span class="sd">    &gt;&gt;&gt; gzfastqfile = &#39;_temp.fastq.gz&#39;</span>
+<span class="sd">    &gt;&gt;&gt; with open(fastqfile, &#39;wb&#39;) as f:</span>
+<span class="sd">    ...     _ = f.write(fastq_data)</span>
+<span class="sd">    &gt;&gt;&gt; with gzip.open(gzfastqfile, &#39;wb&#39;) as f:</span>
+<span class="sd">    ...     _ = f.write(fastq_data)</span>
+<span class="sd">    &gt;&gt;&gt; ccs_fastq = CCS(&#39;test&#39;, fastqfile, None)</span>
+<span class="sd">    &gt;&gt;&gt; ccs_gzfastq = CCS(&#39;test&#39;, gzfastqfile, None)</span>
+<span class="sd">    &gt;&gt;&gt; pandas.testing.assert_frame_equal(ccs_fastq.df, ccs.df)</span>
+<span class="sd">    &gt;&gt;&gt; pandas.testing.assert_frame_equal(ccs_gzfastq.df, ccs.df)</span>
+<span class="sd">    &gt;&gt;&gt; os.remove(fastqfile)</span>
+<span class="sd">    &gt;&gt;&gt; os.remove(gzfastqfile)</span>
 <span class="sd">    &gt;&gt;&gt; os.remove(bamfile)</span>
 
 <span class="sd">    Check `ccs.df` has correct names, samplename, CCS sequences,</span>
@@ -226,12 +275,12 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">samplename</span><span class="p">,</span> <span class="n">bamfile</span><span class="p">,</span> <span class="n">reportfile</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">samplename</span><span class="p">,</span> <span class="n">ccsfile</span><span class="p">,</span> <span class="n">reportfile</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;See main class doc string.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">samplename</span> <span class="o">=</span> <span class="n">samplename</span>
 
-        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">bamfile</span><span class="p">),</span> <span class="s2">&quot;can&#39;t find </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">bamfile</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bamfile</span> <span class="o">=</span> <span class="n">bamfile</span>
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">ccsfile</span><span class="p">),</span> <span class="n">f</span><span class="s2">&quot;can&#39;t find </span><span class="si">{ccsfile}</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ccsfile</span> <span class="o">=</span> <span class="n">ccsfile</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">reportfile</span> <span class="o">=</span> <span class="n">reportfile</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reportfile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -243,7 +292,11 @@
             <span class="c1"># set `zmw_report` and `subread_report`</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_parse_report</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_build_df_from_bamfile</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_build_df_from_ccsfile</span><span class="p">()</span>
+
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span>
 
 
     <span class="k">def</span> <span class="nf">_parse_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -270,20 +323,54 @@
             <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_type</span> <span class="o">+</span> <span class="s1">&#39;_report&#39;</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
 
 
-    <span class="k">def</span> <span class="nf">_build_df_from_bamfile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Builds `df` from `bamfile`.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_build_df_from_ccsfile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Builds `df` from `ccsfile`.&quot;&quot;&quot;</span>
         <span class="c1"># read into dictionary</span>
         <span class="n">d</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">pysam</span><span class="o">.</span><span class="n">AlignmentFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bamfile</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">,</span>
-                <span class="n">check_sq</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">query_sequence</span><span class="p">)</span>
-            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS_qvals&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">query_qualities</span><span class="p">,</span>
-                                                <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int&#39;</span><span class="p">))</span>
-            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">query_name</span><span class="p">)</span>
-            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;passes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">get_tag</span><span class="p">(</span><span class="s1">&#39;np&#39;</span><span class="p">))</span>
-            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS_accuracy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">get_tag</span><span class="p">(</span><span class="s1">&#39;rq&#39;</span><span class="p">))</span>
-            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS_length&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">query_length</span><span class="p">)</span>
-            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;samplename&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samplename</span><span class="p">)</span>
+
+        <span class="c1"># get file type by extensions</span>
+        <span class="n">base</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ccsfile</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">ext</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;.gz&#39;</span><span class="p">,</span> <span class="s1">&#39;.gzip&#39;</span><span class="p">}:</span>
+            <span class="n">gzipped</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">base</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">gzipped</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># extract data based on file extension</span>
+        <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s1">&#39;.bam&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">gzipped</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot handle gzipped BAM&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">pysam</span><span class="o">.</span><span class="n">AlignmentFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ccsfile</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">,</span>
+                                         <span class="n">check_sq</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">query_sequence</span><span class="p">)</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS_qvals&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">query_qualities</span><span class="p">,</span>
+                                                    <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int&#39;</span><span class="p">))</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">query_name</span><span class="p">)</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;passes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">get_tag</span><span class="p">(</span><span class="s1">&#39;np&#39;</span><span class="p">))</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS_accuracy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">get_tag</span><span class="p">(</span><span class="s1">&#39;rq&#39;</span><span class="p">))</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS_length&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">query_length</span><span class="p">)</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;samplename&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samplename</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">ext</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;.fq&#39;</span><span class="p">,</span> <span class="s1">&#39;.fastq&#39;</span><span class="p">}:</span>
+            <span class="n">headmatch</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;^(?P&lt;name&gt;\S+)\s+&#39;</span>
+                                   <span class="s1">&#39;np:i:(?P&lt;passes&gt;\d+)\s+&#39;</span>
+                                   <span class="s1">&#39;rq:f:(?P&lt;accuracy&gt;\d+\.{0,1}\d*)&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">head</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">qs</span> <span class="ow">in</span> <span class="n">HTSeq</span><span class="o">.</span><span class="n">FastqReader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ccsfile</span><span class="p">,</span>
+                                                    <span class="n">raw_iterator</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">headmatch</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">head</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;could not match </span><span class="si">{head}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+                <span class="n">qvals</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">ord</span><span class="p">(</span><span class="n">qi</span><span class="p">)</span> <span class="o">-</span> <span class="mi">33</span> <span class="k">for</span> <span class="n">qi</span> <span class="ow">in</span> <span class="n">q</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS_qvals&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">qvals</span><span class="p">)</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">))</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;passes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;passes&#39;</span><span class="p">)))</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS_accuracy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;accuracy&#39;</span><span class="p">)))</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS_length&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;samplename&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samplename</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid file extension </span><span class="si">{ext}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># create data frame</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
@@ -520,6 +607,7 @@
         <span class="n">barcode_fuzziness</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">termini3_fuzziness</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">targetvariants</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mutationcaller</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">terminiVariantTagCaller</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">tagged_termini_remove_indels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">rc_barcode_umi</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Identify CCSs that match pattern and align them.</span>
 
@@ -578,6 +666,14 @@
 <span class="sd">            Call mutations. See docs for same argument to :meth:`alignSeqs`.</span>
 <span class="sd">        `terminiVariantTagCaller` (:class:`TerminiVariantTagCaller`)</span>
 <span class="sd">            Call variants in termini.</span>
+<span class="sd">        `tagged_termini_remove_indels` (bool)</span>
+<span class="sd">            If `terminiVariantTagCaller` is being used and this,</span>
+<span class="sd">            is `True`, then use `remove_indels` flag when calling</span>
+<span class="sd">            `matchSeqs` for the termini. This is useful if</span>
+<span class="sd">            using fuzzy matching from the termini, as it aids</span>
+<span class="sd">            in the calling of tags as it doesn&#39;t cause indels</span>
+<span class="sd">            to misplace the tag. Has no meaning if</span>
+<span class="sd">            `terminiVariantTagCaller` is not being used.</span>
 <span class="sd">        `rc_barcode_umi` (bool)</span>
 <span class="sd">            Do we reverse complement the `barcode` and `UMI` in the</span>
 <span class="sd">            returned data frame relative to the orientation of</span>
@@ -692,34 +788,40 @@
     <span class="n">match_str</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">termini5</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;termini5&#39;</span><span class="p">]</span> <span class="o">=</span> \
-                <span class="n">f</span><span class="s1">&#39;(?b)(?P&lt;termini5&gt;</span><span class="si">{termini5}</span><span class="s1">){{e&lt;=</span><span class="si">{termini5_fuzziness}</span><span class="s1">}}&#39;</span>
+                <span class="n">f</span><span class="s1">&#39;(?P&lt;termini5&gt;</span><span class="si">{termini5}</span><span class="s1">){{e&lt;=</span><span class="si">{termini5_fuzziness}</span><span class="s1">}}&#39;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;termini5&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;gene&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;(?b)(?P&lt;gene&gt;</span><span class="si">{gene}</span><span class="s1">){{e&lt;=</span><span class="si">{gene_fuzziness}</span><span class="s1">}}&#39;</span>
+    <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;gene&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;(?P&lt;gene&gt;</span><span class="si">{gene}</span><span class="s1">){{e&lt;=</span><span class="si">{gene_fuzziness}</span><span class="s1">}}&#39;</span>
 
     <span class="k">if</span> <span class="n">spacer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;spacer&#39;</span><span class="p">]</span> <span class="o">=</span> \
-                <span class="n">f</span><span class="s1">&#39;(?b)(?P&lt;spacer&gt;</span><span class="si">{spacer}</span><span class="s1">){{e&lt;=</span><span class="si">{spacer_fuzziness}</span><span class="s1">}}&#39;</span>
+                <span class="n">f</span><span class="s1">&#39;(?P&lt;spacer&gt;</span><span class="si">{spacer}</span><span class="s1">){{e&lt;=</span><span class="si">{spacer_fuzziness}</span><span class="s1">}}&#39;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;spacer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">if</span> <span class="n">umi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;umi&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;(?b)(?P&lt;UMI&gt;</span><span class="si">{umi}</span><span class="s1">){{e&lt;=</span><span class="si">{umi_fuzziness}</span><span class="s1">}}&#39;</span>
+        <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;umi&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;(?P&lt;UMI&gt;</span><span class="si">{umi}</span><span class="s1">){{e&lt;=</span><span class="si">{umi_fuzziness}</span><span class="s1">}}&#39;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;umi&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">if</span> <span class="n">barcode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;barcode&#39;</span><span class="p">]</span> <span class="o">=</span> \
-                <span class="n">f</span><span class="s1">&#39;(?b)(?P&lt;barcode&gt;</span><span class="si">{barcode}</span><span class="s1">){{e&lt;=</span><span class="si">{barcode_fuzziness}</span><span class="s1">}}&#39;</span>
+                <span class="n">f</span><span class="s1">&#39;(?P&lt;barcode&gt;</span><span class="si">{barcode}</span><span class="s1">){{e&lt;=</span><span class="si">{barcode_fuzziness}</span><span class="s1">}}&#39;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;barcode&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">if</span> <span class="n">termini3</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;termini3&#39;</span><span class="p">]</span> <span class="o">=</span> \
-                <span class="n">f</span><span class="s1">&#39;(?b)(?P&lt;termini3&gt;</span><span class="si">{termini3}</span><span class="s1">){{e&lt;=</span><span class="si">{termini3_fuzziness}</span><span class="s1">}}&#39;</span>
+                <span class="n">f</span><span class="s1">&#39;(?P&lt;termini3&gt;</span><span class="si">{termini3}</span><span class="s1">){{e&lt;=</span><span class="si">{termini3_fuzziness}</span><span class="s1">}}&#39;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">match_str</span><span class="p">[</span><span class="s1">&#39;termini3&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">tagged_termini_remove_indels</span> <span class="ow">and</span> <span class="p">(</span>
+            <span class="n">terminiVariantTagCaller</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">remove_indels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;termini5&#39;</span><span class="p">,</span> <span class="s1">&#39;termini3&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">remove_indels</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="c1"># now create df</span>
     <span class="n">df</span> <span class="o">=</span> <span class="p">(</span>
@@ -730,7 +832,8 @@
               <span class="n">match_str</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">match_str</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
                     <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">),</span>
               <span class="n">col_to_match</span><span class="o">=</span><span class="s1">&#39;CCS&#39;</span><span class="p">,</span>
-              <span class="n">match_col</span><span class="o">=</span><span class="s1">&#39;barcoded&#39;</span><span class="p">)</span>
+              <span class="n">match_col</span><span class="o">=</span><span class="s1">&#39;barcoded&#39;</span><span class="p">,</span>
+              <span class="n">remove_indels</span><span class="o">=</span><span class="n">remove_indels</span><span class="p">)</span>
     
         <span class="c1"># look for just termini or spacer</span>
         <span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">pacbio</span><span class="o">.</span><span class="n">matchSeqs</span><span class="p">,</span> 
@@ -781,7 +884,7 @@
 
 
 <div class="viewcode-block" id="matchSeqs"><a class="viewcode-back" href="../../dms_tools2.pacbio.html#dms_tools2.pacbio.matchSeqs">[docs]</a><span class="k">def</span> <span class="nf">matchSeqs</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">match_str</span><span class="p">,</span> <span class="n">col_to_match</span><span class="p">,</span> <span class="n">match_col</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
-        <span class="n">add_polarity</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_group_cols</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">add_polarity</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_group_cols</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">remove_indels</span><span class="o">=</span><span class="p">[],</span>
         <span class="n">add_accuracy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_qvals</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">expandIUPAC</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Identify sequences in a dataframe that match a specific pattern.</span>
@@ -796,7 +899,8 @@
 <span class="sd">            parameter, which simplifies writing `match_str`.</span>
 <span class="sd">            If `None` we just return `df`. Note that we use</span>
 <span class="sd">            `regex` rather than `re`, so fuzzy matching is</span>
-<span class="sd">            enabled.</span>
+<span class="sd">            enabled. Note that the matching uses the *BESTMATCH*</span>
+<span class="sd">            flag to find the best match.</span>
 <span class="sd">        `col_to_match` (str)</span>
 <span class="sd">            Name of column in `df` that contains the sequences</span>
 <span class="sd">            to match.</span>
@@ -809,6 +913,15 @@
 <span class="sd">        `add_group_cols` (bool)</span>
 <span class="sd">            Add columns with the sequence of every group in</span>
 <span class="sd">            `match_str`?</span>
+<span class="sd">        `remove_indels` (list)</span>
+<span class="sd">            Only meaningful if `match_str` specifies to allow</span>
+<span class="sd">            fuzzy matching for a group, and `add_group_cols`</span>
+<span class="sd">            is `True`. Then for each named group in `match_str`,</span>
+<span class="sd">            in sequence for that group that is added to the</span>
+<span class="sd">            returned `df`, indicate indels by adding a `-`</span>
+<span class="sd">            gap character for deletions, and removing the</span>
+<span class="sd">            inserted nucleotide called by regex if there</span>
+<span class="sd">            is an insertion.</span>
 <span class="sd">        `add_accuracy` (bool)</span>
 <span class="sd">            For each group in the match, add a column giving</span>
 <span class="sd">            the accuracy of that group&#39;s sequence? Only used</span>
@@ -872,14 +985,61 @@
 
 <span class="sd">    &gt;&gt;&gt; gene = &#39;ATGGCT&#39;</span>
 <span class="sd">    &gt;&gt;&gt; polyA = &#39;AAAACAAAA&#39;</span>
-<span class="sd">    &gt;&gt;&gt; df = pandas.DataFrame({&#39;CCS&#39;:[gene + polyA]})</span>
+<span class="sd">    &gt;&gt;&gt; df_in = pandas.DataFrame({&#39;CCS&#39;:[gene + polyA]})</span>
 <span class="sd">    &gt;&gt;&gt; match_str = &#39;(?P&lt;gene&gt;N+)(?P&lt;polyA&gt;AA(A{5,}){e&lt;=1}AA)&#39;</span>
-<span class="sd">    &gt;&gt;&gt; df = matchSeqs(df, match_str, &#39;CCS&#39;, &#39;matched&#39;,</span>
+<span class="sd">    &gt;&gt;&gt; df = matchSeqs(df_in, match_str, &#39;CCS&#39;, &#39;matched&#39;,</span>
 <span class="sd">    ...         add_accuracy=False, add_qvals=False)</span>
 <span class="sd">    &gt;&gt;&gt; expected = df.assign(gene=gene, polyA=polyA,</span>
 <span class="sd">    ...         matched=True, matched_polarity=1)</span>
 <span class="sd">    &gt;&gt;&gt; (df.sort_index(axis=1) == expected.sort_index(axis=1)).all().all()</span>
 <span class="sd">    True</span>
+
+<span class="sd">    Here is a short example with fuzzy matching that uses the</span>
+<span class="sd">    `remove_indels` option.</span>
+<span class="sd">    First, do not remove the indels:</span>
+
+<span class="sd">    &gt;&gt;&gt; termini5 = &#39;ACAT&#39;</span>
+<span class="sd">    &gt;&gt;&gt; termini3 = &#39;ATAC&#39;</span>
+<span class="sd">    &gt;&gt;&gt; match_str2 = &#39;^(?P&lt;termini5&gt;AAT){e&lt;=1}(?P&lt;gene&gt;ATGGCT){e&lt;=1}(?P&lt;termini3&gt;ATGAC){e&lt;=1}$&#39;</span>
+<span class="sd">    &gt;&gt;&gt; df_in2 = pandas.DataFrame({&#39;CCS&#39;:[termini5 + gene + termini3]})</span>
+<span class="sd">    &gt;&gt;&gt; df2 = matchSeqs(df_in2, match_str2, &#39;CCS&#39;, &#39;matched&#39;,</span>
+<span class="sd">    ...         add_accuracy=False, add_qvals=False)</span>
+<span class="sd">    &gt;&gt;&gt; df2.gene.values[0] == gene</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; df2.termini5.values[0] == termini5</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; df2.termini3.values[0] == termini3</span>
+<span class="sd">    True</span>
+
+<span class="sd">    Now remove the indels in just *termini3*:</span>
+
+<span class="sd">    &gt;&gt;&gt; df2_rm = matchSeqs(df_in2, match_str2, &#39;CCS&#39;, &#39;matched&#39;,</span>
+<span class="sd">    ...         remove_indels=[&#39;termini3&#39;],</span>
+<span class="sd">    ...         add_accuracy=False, add_qvals=False)</span>
+<span class="sd">    &gt;&gt;&gt; df2_rm.gene.values[0] == gene</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; df2_rm.termini5.values[0] == termini5</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; df2_rm.termini3.values[0] == termini3</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; df2_rm.termini3.values[0]</span>
+<span class="sd">    &#39;AT-AC&#39;</span>
+
+<span class="sd">    Now remove indels in **both** termini:</span>
+
+<span class="sd">    &gt;&gt;&gt; df2_rm2 = matchSeqs(df_in2, match_str2, &#39;CCS&#39;, &#39;matched&#39;,</span>
+<span class="sd">    ...         remove_indels=[&#39;termini5&#39;, &#39;termini3&#39;],</span>
+<span class="sd">    ...         add_accuracy=False, add_qvals=False)</span>
+<span class="sd">    &gt;&gt;&gt; df2_rm2.gene.values[0] == gene</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; df2_rm2.termini5.values[0] == termini5</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; df2_rm2.termini5.values[0]</span>
+<span class="sd">    &#39;AAT&#39;</span>
+<span class="sd">    &gt;&gt;&gt; df2_rm2.termini3.values[0] == termini3</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; df2_rm2.termini3.values[0]</span>
+<span class="sd">    &#39;AT-AC&#39;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="n">match_str</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -890,7 +1050,7 @@
 
     <span class="k">if</span> <span class="n">expandIUPAC</span><span class="p">:</span>
         <span class="n">match_str</span> <span class="o">=</span> <span class="n">re_expandIUPAC</span><span class="p">(</span><span class="n">match_str</span><span class="p">)</span>
-    <span class="n">matcher</span> <span class="o">=</span> <span class="n">regex</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">match_str</span><span class="p">)</span>
+    <span class="n">matcher</span> <span class="o">=</span> <span class="n">regex</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">match_str</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">regex</span><span class="o">.</span><span class="n">BESTMATCH</span><span class="p">)</span>
 
     <span class="n">newcols</span> <span class="o">=</span> <span class="p">[</span><span class="n">match_col</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">add_polarity</span><span class="p">:</span>
@@ -913,8 +1073,17 @@
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;To use `add_accuracy` or &quot;</span>
                         <span class="s2">&quot;`add_qvals`, you need a column in `df` &quot;</span>
                         <span class="s2">&quot;named </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">match_qvals_col</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">remove_indels</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">remove_indels</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">set</span><span class="p">(</span><span class="n">remove_indels</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`remove_indels` specifies &quot;</span>
+                        <span class="s2">&quot;unknown group(s)&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">remove_indels</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">groupnames</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">remove_indels</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;can&#39;t use `remove_indels` without &quot;</span>
+                             <span class="s2">&quot;using `add_group_cols`&quot;</span><span class="p">)</span>
 
     <span class="c1"># make sure created columns don&#39;t already exist</span>
     <span class="n">dup_cols</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">newcols</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
@@ -941,13 +1110,47 @@
             <span class="n">match_d</span><span class="p">[</span><span class="n">match_col</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">add_polarity</span><span class="p">:</span>
                 <span class="n">match_d</span><span class="p">[</span><span class="n">polarity_col</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">polarity</span><span class="p">)</span>
+            <span class="n">ins_sites</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">fuzzy_changes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">del_sites</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">fuzzy_changes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">groupnames</span><span class="p">:</span>
-                <span class="n">match_d</span><span class="p">[</span><span class="n">g</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="n">g</span><span class="p">))</span>
+                <span class="n">g_start</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+                <span class="n">g_end</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">remove_indels</span><span class="p">:</span>
+                    <span class="n">g_ins_sites</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ins_sites</span>
+                                  <span class="k">if</span> <span class="n">g_start</span> <span class="o">&lt;=</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">g_end</span><span class="p">]</span>
+                    <span class="n">g_del_sites</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">del_sites</span>
+                                   <span class="k">if</span> <span class="n">g_start</span> <span class="o">&lt;=</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">g_end</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">g_ins_sites</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">g_del_sites</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">if</span> <span class="n">add_qvals</span><span class="p">:</span>
-                    <span class="n">match_d</span><span class="p">[</span><span class="n">g</span> <span class="o">+</span> <span class="s1">&#39;_qvals&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">qs</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="p">:</span> <span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="n">g</span><span class="p">)])</span>
+                    <span class="n">g_qs</span> <span class="o">=</span> <span class="n">qs</span><span class="p">[</span><span class="n">g_start</span> <span class="p">:</span> <span class="n">g_end</span><span class="p">]</span>
+                    <span class="n">g_qs_list</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">if</span> <span class="n">g_ins_sites</span> <span class="ow">or</span> <span class="n">g_del_sites</span><span class="p">:</span>
+                    <span class="n">g_seq</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="n">g</span><span class="p">)):</span>
+                        <span class="k">if</span> <span class="n">i</span> <span class="o">+</span> <span class="n">g_start</span> <span class="ow">in</span> <span class="n">g_ins_sites</span><span class="p">:</span>
+                            <span class="k">pass</span>
+                        <span class="k">elif</span> <span class="n">i</span> <span class="o">+</span> <span class="n">g_start</span> <span class="ow">in</span> <span class="n">g_del_sites</span><span class="p">:</span>
+                            <span class="n">g_seq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">add_qvals</span><span class="p">:</span>
+                                <span class="n">g_qs_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">g_qs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                                <span class="n">g_qs_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">g_seq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">add_qvals</span><span class="p">:</span>
+                                <span class="n">g_qs_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">g_qs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="n">g_seq</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">g_seq</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">add_qvals</span><span class="p">:</span>
+                        <span class="n">g_qs</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">g_qs_list</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">g_seq</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+                <span class="n">match_d</span><span class="p">[</span><span class="n">g</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">g_seq</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">add_qvals</span><span class="p">:</span>
+                    <span class="n">match_d</span><span class="p">[</span><span class="n">g</span> <span class="o">+</span> <span class="s1">&#39;_qvals&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">g_qs</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">add_accuracy</span><span class="p">:</span>
                     <span class="n">match_d</span><span class="p">[</span><span class="n">g</span> <span class="o">+</span> <span class="s1">&#39;_accuracy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">qvalsToAccuracy</span><span class="p">(</span>
-                            <span class="n">qs</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="p">:</span> <span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="n">g</span><span class="p">)]))</span>
+                            <span class="n">qs</span><span class="p">[</span><span class="n">g_start</span> <span class="p">:</span> <span class="n">g_end</span><span class="p">]))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">match_d</span><span class="p">[</span><span class="n">match_col</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">add_polarity</span><span class="p">:</span>
@@ -989,6 +1192,8 @@
 <span class="sd">            we align are specified when initializing `mapper`.</span>
 <span class="sd">        `query_col` (str)</span>
 <span class="sd">            Name of column in `df` with query sequences to align.</span>
+<span class="sd">            If we are to use Q-values, there must also be a column</span>
+<span class="sd">            with this name suffixed by &quot;_qvals&quot;.</span>
 <span class="sd">        `aligned_col` (str)</span>
 <span class="sd">            Name of column added to `df`. Elements of column are</span>
 <span class="sd">            `True` if `query_col` aligns, and `False` otherwise.</span>
@@ -1106,17 +1311,20 @@
         <span class="n">n_additional_difftarget_col</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">aligned_col</span> <span class="o">+</span> <span class="s1">&#39;_n_additional_difftarget&#39;</span><span class="p">)</span>
         <span class="n">newcols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n_additional_difftarget_col</span><span class="p">)</span>
+    <span class="n">qvals_col</span> <span class="o">=</span> <span class="n">query_col</span> <span class="o">+</span> <span class="s1">&#39;_qvals&#39;</span>
+    <span class="k">if</span> <span class="n">qvals_col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">qvals</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">qvals_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                              <span class="n">index</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">qvals</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">targetvariants</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">targetvariant_col</span> <span class="o">=</span> <span class="n">aligned_col</span> <span class="o">+</span> <span class="s1">&#39;_target_variant&#39;</span>
         <span class="n">newcols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">targetvariant_col</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">targetvariants</span><span class="o">.</span><span class="n">variantsites_min_acc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">qvals_col</span> <span class="o">=</span> <span class="n">query_col</span> <span class="o">+</span> <span class="s1">&#39;_qvals&#39;</span>
             <span class="k">if</span> <span class="n">qvals_col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot use `variantsites_min_acc` &quot;</span>
                         <span class="s2">&quot;of `targetvariants` as there is not a column &quot;</span>
                         <span class="s2">&quot;in `df` named </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">qvals_col</span><span class="p">))</span>
-            <span class="n">qvals</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">qvals_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-                                  <span class="n">index</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">mutationcaller</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">mutations_col</span> <span class="o">=</span> <span class="n">aligned_col</span> <span class="o">+</span> <span class="s1">&#39;_mutations&#39;</span>
         <span class="n">newcols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mutations_col</span><span class="p">)</span>
@@ -1255,7 +1463,7 @@
             <span class="n">qvals</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">qvals</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">qvals</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">qvals</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span>
 
     <span class="k">if</span> <span class="n">encoding</span> <span class="o">==</span> <span class="s1">&#39;numbers&#39;</span><span class="p">:</span>
         <span class="k">pass</span>
@@ -1279,15 +1487,20 @@
 <span class="sd">            `CCS` objects to summarize</span>
 <span class="sd">        `report_type` (str &quot;zmw&quot; or &quot;subread&quot;)</span>
 <span class="sd">            Which type of report to summarize</span>
-<span class="sd">        `plotfile` (str)</span>
-<span class="sd">            Name of created bar plot</span>
+<span class="sd">        `plotfile` (str or `None`)</span>
+<span class="sd">            Name of created bar plot, or `None`</span>
+<span class="sd">            if you want to return the created plot.</span>
 <span class="sd">        `plotminfrac` (float)</span>
 <span class="sd">            Only plot status categories with &gt;=</span>
 <span class="sd">            this fraction in at least one `CCS`</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Returns a pandas DataFrame aggregating the reports,</span>
-<span class="sd">        and creates `plotfile`.</span>
+
+<span class="sd">        - If `plotfile` is a str, returns a pandas DataFrame</span>
+<span class="sd">          aggregating the reports and creates `plotfile`.</span>
+
+<span class="sd">        - If `plotfile` is `None`, returns the 2-tuple</span>
+<span class="sd">          containing the data frame and the plot.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ccslist</span><span class="p">,</span> <span class="n">CCS</span><span class="p">):</span>
         <span class="n">ccslist</span> <span class="o">=</span> <span class="p">[</span><span class="n">ccslist</span><span class="p">]</span>
@@ -1321,13 +1534,16 @@
     <span class="k">if</span> <span class="n">nstatus</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">COLOR_BLIND_PALETTE</span><span class="p">):</span>
         <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">scale_fill_manual</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span>
                 <span class="n">COLOR_BLIND_PALETTE</span><span class="p">[</span> <span class="p">:</span> <span class="n">nstatus</span><span class="p">])))</span>
-    <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">,</span> 
-           <span class="n">height</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-           <span class="n">width</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">ccslist</span><span class="p">)),</span>
-           <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-    <span class="k">return</span> <span class="n">df</span></div>
+    <span class="k">if</span> <span class="n">plotfile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">,</span> 
+               <span class="n">height</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+               <span class="n">width</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">ccslist</span><span class="p">)),</span>
+               <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">df</span></div>
 
 <div class="viewcode-block" id="re_expandIUPAC"><a class="viewcode-back" href="../../dms_tools2.pacbio.html#dms_tools2.pacbio.re_expandIUPAC">[docs]</a><span class="k">def</span> <span class="nf">re_expandIUPAC</span><span class="p">(</span><span class="n">re_str</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Expand IUPAC ambiguous nucleotide codes in `re` search string.</span>
@@ -1408,7 +1624,7 @@
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -1451,6 +1667,14 @@
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -1459,8 +1683,8 @@
       &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

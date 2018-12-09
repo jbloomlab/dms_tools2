@@ -109,7 +109,8 @@
 
 
 <div class="viewcode-block" id="siteSubsetGGSeqLogo"><a class="viewcode-back" href="../../dms_tools2.rplot.html#dms_tools2.rplot.siteSubsetGGSeqLogo">[docs]</a><span class="k">def</span> <span class="nf">siteSubsetGGSeqLogo</span><span class="p">(</span><span class="n">logodata</span><span class="p">,</span> <span class="n">chars</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span>
-        <span class="n">yname</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">char_colors</span><span class="o">=</span><span class="n">AA_COLORS_FG</span><span class="p">,</span> <span class="n">ylimits</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">yname</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">char_colors</span><span class="o">=</span><span class="n">AA_COLORS_FG</span><span class="p">,</span> <span class="n">ylimits</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Creates one-row logo plot with subset of sites.</span>
 
 <span class="sd">    Designed to show logo plot for a subset of sites. This</span>
@@ -141,6 +142,8 @@
 <span class="sd">        `ylimits` (`None` or 2-tuple)</span>
 <span class="sd">            If not `None`, should give the ylimits for the plot</span>
 <span class="sd">            as `(ymin, ymax)`</span>
+<span class="sd">        `title` (str)</span>
+<span class="sd">            Title to place above plot.</span>
 
 <span class="sd">    Here is an example that creates a plot for a subset of</span>
 <span class="sd">    sites for two characters:</span>
@@ -228,7 +231,8 @@
                 <span class="n">yname</span><span class="o">=</span><span class="n">yname</span><span class="p">,</span>
                 <span class="n">chars</span><span class="o">=</span><span class="n">StrVector</span><span class="p">(</span><span class="n">chars</span><span class="p">),</span>
                 <span class="n">char_colors</span><span class="o">=</span><span class="n">StrVector</span><span class="p">([</span><span class="n">char_colors</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">chars</span><span class="p">]),</span>
-                <span class="n">ylimits</span><span class="o">=</span><span class="n">ylimits</span>
+                <span class="n">ylimits</span><span class="o">=</span><span class="n">ylimits</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="n">title</span>
                 <span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">plotfile</span><span class="p">):</span>
@@ -389,7 +393,7 @@
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -432,6 +436,14 @@
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -440,8 +452,8 @@
       &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

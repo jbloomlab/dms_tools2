@@ -63,12 +63,12 @@ Command-line usage
     Underscores are **not** allowed as they are a LaTex special character.
 
    \-\-alignspecs
-    It is important to set ``--alignspecs`` so that you don't count the part of the subamplicon that is the barocde or in the primer binding site, since the nucleotide identities in this region do not come from the templates being sequenced. See the `Barcoded subamplicon sequencing`_ above for an example.
+    It is important to set ``--alignspecs`` so that you don't count the part of the subamplicon that is the barocde or in the primer binding site, since the nucleotide identities in this region do not come from the templates being sequenced. See :ref:`bcsubamp` for an example.
 
     The alignments will fail if you don't set ``--alignspecs`` exactly correctly for each subamplicon. So if you have reads failing to align to part of your gene, carefully check ``--alignspecs`` to make sure it is correct.
 
    \-\-bclen
-    This is the length of the barcode on **each** primer. So a value of 8 corresponds to a total of 16 ``N`` nucleotides on the two primers. See the `Barcoded subamplicon sequencing`_ section above for an example of primers with 8 ``N`` nucleotides.
+    This is the length of the barcode on **each** primer. So a value of 8 corresponds to a total of 16 ``N`` nucleotides on the two primers. See :ref:`bcsubamp` for an example of primers with 8 ``N`` nucleotides.
 
    \-\-R1
     You can specify multiple files using the ``*`` wildcard character, as in ``reads_R1_L*.fastq.gz``.

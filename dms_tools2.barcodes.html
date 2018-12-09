@@ -37,11 +37,861 @@
   <span class="target" id="module-dms_tools2.barcodes"></span><div class="section" id="barcodes">
 <h1>barcodes<a class="headerlink" href="#barcodes" title="Permalink to this headline">¶</a></h1>
 <p>Operations for sequence barcodes and UMIs.</p>
+<dl class="class">
+<dt id="dms_tools2.barcodes.CodonVariantTable">
+<em class="property">class </em><code class="descclassname">dms_tools2.barcodes.</code><code class="descname">CodonVariantTable</code><span class="sig-paren">(</span><em>*</em>, <em>barcode_variant_file</em>, <em>geneseq</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#CodonVariantTable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.CodonVariantTable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Associates barcodes with codon mutants of gene.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>barcode_variant_file</cite> (str)</dt>
+<dd>CSV file giving barcodes and variants. Must have
+columns named “library”, “barcode”, “substitutions”,
+(nucleotide mutations in 1, … numbering in a format
+like “G301A A302T G856C”), and “variant_call_support”
+(sequences supporting barcode-variant call).</dd>
+<dt><cite>geneseq</cite> (str)</dt>
+<dd>Sequence of protein-coding gene.</dd>
+</dl>
+</dd>
+<dt>Attributes:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>sites</cite> (list)</dt>
+<dd>List of all codon sites in 1, 2, … numbering.</dd>
+<dt><cite>codons</cite> (dict)</dt>
+<dd><cite>codons[r]</cite> is wildtype codon at site <cite>r</cite>.</dd>
+<dt><cite>aas</cite> (dict)</dt>
+<dd><cite>aas[r]</cite> is wildtype amino acid at site <cite>r</cite>.</dd>
+<dt><cite>libraries</cite> (list)</dt>
+<dd>List of libraries in <cite>barcode_variantfile</cite>.</dd>
+<dt><cite>barcode_variant_df</cite> (pandas DataFrame)</dt>
+<dd>Info about codon mutations parsed from <cite>barcode_variantfile</cite>.</dd>
+<dt><cite>variant_count_df</cite> (pandas DataFrame or None)</dt>
+<dd>Initially <cite>None</cite>, but after data are added with
+<a class="reference internal" href="#dms_tools2.barcodes.CodonVariantTable.addSampleCounts" title="dms_tools2.barcodes.CodonVariantTable.addSampleCounts"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.addSampleCounts</span></code></a>, holds
+counts of each variant for each sample. Differs from
+<cite>barcode_variant_df</cite> in that the former just holds
+initial barcode-variant data, whereas <cite>variant_count_df</cite>
+is updated with variant counts for samples.</dd>
+</dl>
+</dd>
+</dl>
+<p>Initialize a <a class="reference internal" href="#dms_tools2.barcodes.CodonVariantTable" title="dms_tools2.barcodes.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">geneseq</span> <span class="o">=</span> <span class="s1">&#39;ATGGGATGA&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variantfile</span> <span class="o">=</span> <span class="s1">&#39;_variantfile.csv&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">variantfile</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="gp">... </span>          <span class="s1">&#39;library,barcode,substitutions,variant_call_support</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>          <span class="s1">&#39;lib_1,AAC,,2</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>          <span class="s1">&#39;lib_1,GAT,G4C A6C,1</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>          <span class="s1">&#39;lib_2,AAC,T2A G4T,2</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>          <span class="s1">&#39;lib_2,CAT,A6C,3&#39;</span>
+<span class="gp">... </span>          <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span> <span class="o">=</span> <span class="n">CodonVariantTable</span><span class="p">(</span>
+<span class="gp">... </span>            <span class="n">barcode_variant_file</span><span class="o">=</span><span class="n">variantfile</span><span class="p">,</span>
+<span class="gp">... </span>            <span class="n">geneseq</span><span class="o">=</span><span class="n">geneseq</span>
+<span class="gp">... </span>            <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">variantfile</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Check attributes of the <a class="reference internal" href="#dms_tools2.barcodes.CodonVariantTable" title="dms_tools2.barcodes.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">sites</span>
+<span class="go">[1, 2, 3]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">codons</span> <span class="o">==</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span><span class="s1">&#39;ATG&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span><span class="s1">&#39;GGA&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span><span class="s1">&#39;TGA&#39;</span><span class="p">}</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">aas</span> <span class="o">==</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span><span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span><span class="s1">&#39;*&#39;</span><span class="p">}</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span>
+<span class="go">[&#39;lib_1&#39;, &#39;lib_2&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">valid_barcodes</span><span class="p">(</span><span class="s1">&#39;lib_1&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;AAC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAT&#39;</span><span class="p">}</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">valid_barcodes</span><span class="p">(</span><span class="s1">&#39;lib_2&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;AAC&#39;</span><span class="p">,</span> <span class="s1">&#39;CAT&#39;</span><span class="p">}</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pandas</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.max_columns&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pandas</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.width&#39;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">barcode_variant_df</span>
+<span class="go">  library barcode  variant_call_support codon_substitutions aa_substitutions  n_codon_substitutions  n_aa_substitutions</span>
+<span class="go">0   lib_1     AAC                     2                                                           0                   0</span>
+<span class="go">1   lib_1     GAT                     1             GGA2CGC              G2R                      1                   1</span>
+<span class="go">2   lib_2     AAC                     2     ATG1AAG GGA2TGA          M1K G2*                      2                   2</span>
+<span class="go">3   lib_2     CAT                     3             GGA2GGC                                       1                   0</span>
+</pre></div>
+</div>
+<p>We can also look at the number of variants; we get this
+by calling <a class="reference internal" href="#dms_tools2.barcodes.CodonVariantTable.n_variants_df" title="dms_tools2.barcodes.CodonVariantTable.n_variants_df"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.n_variants_df</span></code></a> with
+<cite>samples=None</cite> since we don’t have samples, and just want
+stats across barcoded variants:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">n_variants_df</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="go">         library             sample  count</span>
+<span class="go">0          lib_1  barcoded variants      2</span>
+<span class="go">1          lib_2  barcoded variants      2</span>
+<span class="go">2  all libraries  barcoded variants      4</span>
+</pre></div>
+</div>
+<p>We can also see how these numbers change if we require a
+variant call support of at least 2:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">n_variants_df</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_support</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">         library             sample  count</span>
+<span class="go">0          lib_1  barcoded variants      1</span>
+<span class="go">1          lib_2  barcoded variants      2</span>
+<span class="go">2  all libraries  barcoded variants      3</span>
+</pre></div>
+</div>
+<p>If we want to combine the data for the two libraries, we can use
+<a class="reference internal" href="#dms_tools2.barcodes.CodonVariantTable.addMergedLibraries" title="dms_tools2.barcodes.CodonVariantTable.addMergedLibraries"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.addMergedLibraries</span></code></a>, which creates a
+new combined library called “all libraries”:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">addMergedLibraries</span><span class="p">(</span><span class="n">variants</span><span class="o">.</span><span class="n">barcode_variant_df</span><span class="p">)</span>
+<span class="go">         library    barcode  variant_call_support codon_substitutions aa_substitutions  n_codon_substitutions  n_aa_substitutions</span>
+<span class="go">0          lib_1        AAC                     2                                                           0                   0</span>
+<span class="go">1          lib_1        GAT                     1             GGA2CGC              G2R                      1                   1</span>
+<span class="go">2          lib_2        AAC                     2     ATG1AAG GGA2TGA          M1K G2*                      2                   2</span>
+<span class="go">3          lib_2        CAT                     3             GGA2GGC                                       1                   0</span>
+<span class="go">4  all libraries  lib_1-AAC                     2                                                           0                   0</span>
+<span class="go">5  all libraries  lib_1-GAT                     1             GGA2CGC              G2R                      1                   1</span>
+<span class="go">6  all libraries  lib_2-AAC                     2     ATG1AAG GGA2TGA          M1K G2*                      2                   2</span>
+<span class="go">7  all libraries  lib_2-CAT                     3             GGA2GGC                                       1                   0</span>
+</pre></div>
+</div>
+<p>Note however that <a class="reference internal" href="#dms_tools2.barcodes.CodonVariantTable.addMergedLibraries" title="dms_tools2.barcodes.CodonVariantTable.addMergedLibraries"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.addMergedLibraries</span></code></a>
+doesn’t do anything if there is only one library:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">addMergedLibraries</span><span class="p">(</span><span class="n">variants</span><span class="o">.</span><span class="n">barcode_variant_df</span>
+<span class="gp">... </span>                            <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;library == &quot;lib_1&quot;&#39;</span><span class="p">))</span>
+<span class="go">  library barcode  variant_call_support codon_substitutions aa_substitutions  n_codon_substitutions  n_aa_substitutions</span>
+<span class="go">0   lib_1     AAC                     2                                                           0                   0</span>
+<span class="go">1   lib_1     GAT                     1             GGA2CGC              G2R                      1                   1</span>
+</pre></div>
+</div>
+<p>Count number of barcoded variants with each mutation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">mutCounts</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="s1">&#39;aa&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span> <span class="p">:</span> <span class="mi">2</span><span class="p">]</span>
+<span class="go">  library             sample mutation  count  mutation_type  site</span>
+<span class="go">0   lib_1  barcoded variants      G2R      1  nonsynonymous     2</span>
+<span class="go">1   lib_1  barcoded variants      *3A      0  nonsynonymous     3</span>
+</pre></div>
+</div>
+<p>We can do the same for codon mutations (here for only a
+single library), first for all variants:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">mutCounts</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">libraries</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;lib_2&#39;</span><span class="p">])[</span> <span class="p">:</span> <span class="mi">4</span><span class="p">]</span>
+<span class="go">  library             sample mutation  count  mutation_type  site</span>
+<span class="go">0   lib_2  barcoded variants  ATG1AAG      1  nonsynonymous     1</span>
+<span class="go">1   lib_2  barcoded variants  GGA2GGC      1     synonymous     2</span>
+<span class="go">2   lib_2  barcoded variants  GGA2TGA      1           stop     2</span>
+<span class="go">3   lib_2  barcoded variants  ATG1AAA      0  nonsynonymous     1</span>
+</pre></div>
+</div>
+<p>Then for just single-mutant variants:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">mutCounts</span><span class="p">(</span><span class="s1">&#39;single&#39;</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">libraries</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;lib_2&#39;</span><span class="p">])[</span> <span class="p">:</span> <span class="mi">3</span><span class="p">]</span>
+<span class="go">  library             sample mutation  count  mutation_type  site</span>
+<span class="go">0   lib_2  barcoded variants  GGA2GGC      1     synonymous     2</span>
+<span class="go">1   lib_2  barcoded variants  ATG1AAA      0  nonsynonymous     1</span>
+<span class="go">2   lib_2  barcoded variants  ATG1AAC      0  nonsynonymous     1</span>
+</pre></div>
+</div>
+<p>Initially we haven’t added any barcode count information
+for any samples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">variants</span><span class="o">.</span><span class="n">samples</span><span class="p">(</span><span class="n">lib</span><span class="p">)</span> <span class="o">==</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">variant_count_df</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Now we add barcode count information for a sample named
+“input” from library 1:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">counts_lib1_input</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s1">&#39;barcode&#39;</span><span class="p">:[</span><span class="s1">&#39;AAC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAT&#39;</span><span class="p">],</span>
+<span class="gp">... </span>         <span class="s1">&#39;count&#39;</span>  <span class="p">:[</span>  <span class="mi">253</span><span class="p">,</span>  <span class="mi">1101</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">addSampleCounts</span><span class="p">(</span><span class="s1">&#39;lib_1&#39;</span><span class="p">,</span> <span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="n">counts_lib1_input</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">variant_count_df</span>
+<span class="go">  barcode  count library sample  variant_call_support codon_substitutions aa_substitutions  n_codon_substitutions  n_aa_substitutions</span>
+<span class="go">0     GAT   1101   lib_1  input                     1             GGA2CGC              G2R                      1                   1</span>
+<span class="go">1     AAC    253   lib_1  input                     2                                                           0                   0</span>
+</pre></div>
+</div>
+<p>We get an error if we try to add these same data again,
+as they are already added for that sample to that library:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">addSampleCounts</span><span class="p">(</span><span class="s1">&#39;lib_1&#39;</span><span class="p">,</span> <span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="n">counts_lib1_input</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">ValueError</span>: <span class="n">`library` lib_1 already has `sample` input</span>
+</pre></div>
+</div>
+<p>But, we can add barcode counts for another
+sample (named “selected” in this case) to library 1:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">counts_lib1_selected</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s1">&#39;barcode&#39;</span><span class="p">:[</span><span class="s1">&#39;AAC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAT&#39;</span><span class="p">],</span>
+<span class="gp">... </span>         <span class="s1">&#39;count&#39;</span>  <span class="p">:[</span>  <span class="mi">513</span><span class="p">,</span>  <span class="mi">401</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">addSampleCounts</span><span class="p">(</span><span class="s1">&#39;lib_1&#39;</span><span class="p">,</span> <span class="s1">&#39;selected&#39;</span><span class="p">,</span> <span class="n">counts_lib1_selected</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As well as barcode counts for the same two samples
+(“input” and “selected”) to our other library (library 2):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">counts_lib2_input</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s1">&#39;barcode&#39;</span><span class="p">:[</span><span class="s1">&#39;AAC&#39;</span><span class="p">,</span> <span class="s1">&#39;CAT&#39;</span><span class="p">],</span>
+<span class="gp">... </span>         <span class="s1">&#39;count&#39;</span>  <span class="p">:[</span> <span class="mi">1253</span><span class="p">,</span>  <span class="mi">923</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">addSampleCounts</span><span class="p">(</span><span class="s1">&#39;lib_2&#39;</span><span class="p">,</span> <span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="n">counts_lib2_input</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">counts_lib2_selected</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s1">&#39;barcode&#39;</span><span class="p">:[</span><span class="s1">&#39;AAC&#39;</span><span class="p">,</span> <span class="s1">&#39;CAT&#39;</span><span class="p">],</span>
+<span class="gp">... </span>         <span class="s1">&#39;count&#39;</span>  <span class="p">:[</span>  <span class="mi">113</span><span class="p">,</span>  <span class="mi">1200</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">addSampleCounts</span><span class="p">(</span><span class="s1">&#39;lib_2&#39;</span><span class="p">,</span> <span class="s1">&#39;selected&#39;</span><span class="p">,</span> <span class="n">counts_lib2_selected</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">variant_count_df</span>
+<span class="go">  barcode  count library    sample  variant_call_support codon_substitutions aa_substitutions  n_codon_substitutions  n_aa_substitutions</span>
+<span class="go">0     GAT   1101   lib_1     input                     1             GGA2CGC              G2R                      1                   1</span>
+<span class="go">1     AAC    253   lib_1     input                     2                                                           0                   0</span>
+<span class="go">2     AAC    513   lib_1  selected                     2                                                           0                   0</span>
+<span class="go">3     GAT    401   lib_1  selected                     1             GGA2CGC              G2R                      1                   1</span>
+<span class="go">4     AAC   1253   lib_2     input                     2     ATG1AAG GGA2TGA          M1K G2*                      2                   2</span>
+<span class="go">5     CAT    923   lib_2     input                     3             GGA2GGC                                       1                   0</span>
+<span class="go">6     CAT   1200   lib_2  selected                     3             GGA2GGC                                       1                   0</span>
+<span class="go">7     AAC    113   lib_2  selected                     2     ATG1AAG GGA2TGA          M1K G2*                      2                   2</span>
+</pre></div>
+</div>
+<p>We can also use <a class="reference internal" href="#dms_tools2.barcodes.CodonVariantTable.mutCounts" title="dms_tools2.barcodes.CodonVariantTable.mutCounts"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.mutCounts</span></code></a>
+to look at total counts of each mutation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">mutCounts</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="s1">&#39;aa&#39;</span><span class="p">)[</span> <span class="p">:</span> <span class="mi">2</span><span class="p">]</span>
+<span class="go">  library sample mutation  count  mutation_type  site</span>
+<span class="go">0   lib_1  input      G2R   1101  nonsynonymous     2</span>
+<span class="go">1   lib_1  input      *3A      0  nonsynonymous     3</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">mutCounts</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="s1">&#39;aa&#39;</span><span class="p">,</span> <span class="n">libraries</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;lib_2&#39;</span><span class="p">])[</span> <span class="p">:</span> <span class="mi">3</span><span class="p">]</span>
+<span class="go">  library sample mutation  count  mutation_type  site</span>
+<span class="go">0   lib_2  input      G2*   1253           stop     2</span>
+<span class="go">1   lib_2  input      M1K   1253  nonsynonymous     1</span>
+<span class="go">2   lib_2  input      *3A      0  nonsynonymous     3</span>
+</pre></div>
+</div>
+<p>We can use <a class="reference internal" href="#dms_tools2.barcodes.CodonVariantTable.writeCodonCounts" title="dms_tools2.barcodes.CodonVariantTable.writeCodonCounts"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.writeCodonCounts</span></code></a> to
+write codon count files. First for only <strong>single</strong> mutants:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">countfiles</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">writeCodonCounts</span><span class="p">(</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="n">outdir</span><span class="o">=</span><span class="n">tmpdir</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">lib1_input</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{tmpdir}</span><span class="s1">/lib_1_input_codoncounts.csv&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">all_sel</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{tmpdir}</span><span class="s1">/all-libraries_selected_codoncounts.csv&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Make sure we created expected countfiles:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">countfiles</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">countfile</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">countfile</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">))</span>
+<span class="go">         library    sample                               countfile</span>
+<span class="go">0          lib_1     input             lib_1_input_codoncounts.csv</span>
+<span class="go">1          lib_1  selected          lib_1_selected_codoncounts.csv</span>
+<span class="go">2          lib_2     input             lib_2_input_codoncounts.csv</span>
+<span class="go">3          lib_2  selected          lib_2_selected_codoncounts.csv</span>
+<span class="go">4  all-libraries     input     all-libraries_input_codoncounts.csv</span>
+<span class="go">5  all-libraries  selected  all-libraries_selected_codoncounts.csv</span>
+</pre></div>
+</div>
+<p>Check for expected values in a few of these counts files, only
+showing columns with non-zero entries:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lib1_input</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="p">(</span><span class="n">lib1_input</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;rows&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">]</span>
+<span class="go">   site wildtype  ATG   CGC  GGA  TGA</span>
+<span class="go">0     1      ATG  253     0    0    0</span>
+<span class="go">1     2      GGA    0  1101  253    0</span>
+<span class="go">2     3      TGA    0     0    0  253</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">all_sel</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="p">(</span><span class="n">all_sel</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;rows&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">]</span>
+<span class="go">   site wildtype  ATG  CGC  GGA   GGC  TGA</span>
+<span class="go">0     1      ATG  513    0    0     0    0</span>
+<span class="go">1     2      GGA    0  401  513  1200    0</span>
+<span class="go">2     3      TGA    0    0    0     0  513</span>
+</pre></div>
+</div>
+<p>Now write codon counts files for <strong>all</strong> mutants:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">writeCodonCounts</span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">outdir</span><span class="o">=</span><span class="n">tmpdir</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">lib1_input_all</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{tmpdir}</span><span class="s1">/lib_1_input_codoncounts.csv&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">all_sel_all</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{tmpdir}</span><span class="s1">/all-libraries_selected_codoncounts.csv&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lib1_input_all</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="p">(</span><span class="n">lib1_input_all</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;rows&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">]</span>
+<span class="go">   site wildtype   ATG   CGC  GGA   TGA</span>
+<span class="go">0     1      ATG  1354     0    0     0</span>
+<span class="go">1     2      GGA     0  1101  253     0</span>
+<span class="go">2     3      TGA     0     0    0  1354</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">all_sel_all</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="p">(</span><span class="n">all_sel_all</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;rows&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">]</span>
+<span class="go">   site wildtype  AAG   ATG  CGC  GGA   GGC   TGA</span>
+<span class="go">0     1      ATG  113  2114    0    0     0     0</span>
+<span class="go">1     2      GGA    0     0  401  513  1200   113</span>
+<span class="go">2     3      TGA    0     0    0    0     0  2227</span>
+</pre></div>
+</div>
+<dl class="staticmethod">
+<dt id="dms_tools2.barcodes.CodonVariantTable.addMergedLibraries">
+<em class="property">static </em><code class="descname">addMergedLibraries</code><span class="sig-paren">(</span><em>df</em>, <em>*</em>, <em>all_lib='all libraries'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#CodonVariantTable.addMergedLibraries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.CodonVariantTable.addMergedLibraries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add data to <cite>df</cite> for all libraries merged.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>df</cite> (pandas DataFrame)</dt>
+<dd>DataFrame that includes columns named
+“library” and “barcode”.</dd>
+<dt><cite>all_lib</cite> (str)</dt>
+<dd>Name given to library that is merge of all
+other libraries.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>If <cite>df</cite> only has data for one library, just returns
+<cite>df</cite>. Otherwise returns a copy of <cite>df</cite> that has a
+new library with the name given by <cite>all_lib</cite>
+and contains the data for all individual libraries,
+with the “barcode” column giving the original
+library name followed by a hyphen and the barcode.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_tools2.barcodes.CodonVariantTable.addSampleCounts">
+<code class="descname">addSampleCounts</code><span class="sig-paren">(</span><em>library</em>, <em>sample</em>, <em>barcodecounts</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#CodonVariantTable.addSampleCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.CodonVariantTable.addSampleCounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add variant counts for a sample to <cite>variant_count_df</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>library</cite> (str)</dt>
+<dd>Valid <cite>library</cite> for the <a class="reference internal" href="#dms_tools2.barcodes.CodonVariantTable" title="dms_tools2.barcodes.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>.</dd>
+<dt><cite>sample</cite> (str)</dt>
+<dd>Sample name, must <strong>not</strong> already be in
+<a class="reference internal" href="#dms_tools2.barcodes.CodonVariantTable.samples" title="dms_tools2.barcodes.CodonVariantTable.samples"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.samples</span></code></a> for <cite>library</cite>.</dd>
+<dt><cite>barcodecounts</cite> (pandas DataFrame)</dt>
+<dd>Gives counts for each variant by barcode. Must
+have columns named “barcode” and “count”. The
+“barcode” column must contain all the barcodes
+in <a class="reference internal" href="#dms_tools2.barcodes.CodonVariantTable.valid_barcodes" title="dms_tools2.barcodes.CodonVariantTable.valid_barcodes"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.valid_barcodes</span></code></a> for
+<cite>library</cite>. Such data frames are returned
+by <a class="reference internal" href="#dms_tools2.barcodes.IlluminaBarcodeParser.parse" title="dms_tools2.barcodes.IlluminaBarcodeParser.parse"><code class="xref py py-class docutils literal notranslate"><span class="pre">IlluminaBarcodeParser.parse</span></code></a>.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_tools2.barcodes.CodonVariantTable.mutCounts">
+<code class="descname">mutCounts</code><span class="sig-paren">(</span><em>variant_type</em>, <em>mut_type</em>, <em>*</em>, <em>libraries='all'</em>, <em>samples='all'</em>, <em>min_support=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#CodonVariantTable.mutCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.CodonVariantTable.mutCounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get counts of each individual mutation.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>variant_type</cite> (“single” or “all”)</dt>
+<dd>Include just single mutants, or all mutants?</dd>
+<dt>Other args:</dt>
+<dd>Same meaning as for
+<a class="reference internal" href="#dms_tools2.barcodes.CodonVariantTable.plotNumMutsHistogram" title="dms_tools2.barcodes.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a></dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A tidy data frame with columns named “library”,
+“sample”, “mutation”, “count”, “mutation_type”,
+and “site”.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_tools2.barcodes.CodonVariantTable.n_variants_df">
+<code class="descname">n_variants_df</code><span class="sig-paren">(</span><em>*</em>, <em>libraries='all'</em>, <em>samples='all'</em>, <em>min_support=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#CodonVariantTable.n_variants_df"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.CodonVariantTable.n_variants_df" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of variants per library / sample.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>Same meaning as for
+<a class="reference internal" href="#dms_tools2.barcodes.CodonVariantTable.plotNumMutsHistogram" title="dms_tools2.barcodes.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a>.</dd>
+<dt>Returns:</dt>
+<dd>DataFrame giving number of variants per library /
+sample.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_tools2.barcodes.CodonVariantTable.plotCumulMutCoverage">
+<code class="descname">plotCumulMutCoverage</code><span class="sig-paren">(</span><em>variant_type</em>, <em>mut_type</em>, <em>*</em>, <em>libraries='all'</em>, <em>samples='all'</em>, <em>plotfile=None</em>, <em>orientation='h'</em>, <em>widthscale=1</em>, <em>heightscale=1</em>, <em>min_support=1</em>, <em>max_count=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#CodonVariantTable.plotCumulMutCoverage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.CodonVariantTable.plotCumulMutCoverage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fraction of mutation seen &lt;= some number of times.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>variant_type</cite> (“single” or “all”)</dt>
+<dd>Include just single mutants, or all mutants?
+Mutations are counted relative to <cite>mut_type</cite>.</dd>
+<dt><cite>max_count</cite> (<cite>None</cite> or int)</dt>
+<dd>Plot cumulative fraction plot out to this
+number of observations of mutation. If <cite>None</cite>,
+a reasonable value is automatically determined.</dd>
+<dt>Other args:</dt>
+<dd>Same meaning as for
+<a class="reference internal" href="#dms_tools2.barcodes.CodonVariantTable.plotNumMutsHistogram" title="dms_tools2.barcodes.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a></dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A <a class="reference external" href="https://plotnine.readthedocs.io/en/stable/">plotnine</a></dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_tools2.barcodes.CodonVariantTable.plotMutFreqs">
+<code class="descname">plotMutFreqs</code><span class="sig-paren">(</span><em>variant_type</em>, <em>mut_type</em>, <em>*</em>, <em>libraries='all'</em>, <em>samples='all'</em>, <em>plotfile=None</em>, <em>orientation='h'</em>, <em>widthscale=1</em>, <em>heightscale=1</em>, <em>min_support=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#CodonVariantTable.plotMutFreqs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.CodonVariantTable.plotMutFreqs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mutation frequency along length of gene.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>Args have same meaning as for
+:CodonVariantTable.plotCumulMutCoverage`.</dd>
+<dt>Returns:</dt>
+<dd>A <a class="reference external" href="https://plotnine.readthedocs.io/en/stable/">plotnine</a></dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_tools2.barcodes.CodonVariantTable.plotMutHeatmap">
+<code class="descname">plotMutHeatmap</code><span class="sig-paren">(</span><em>variant_type</em>, <em>mut_type</em>, <em>*</em>, <em>count_or_frequency='frequency'</em>, <em>libraries='all'</em>, <em>samples='all'</em>, <em>plotfile=None</em>, <em>orientation='h'</em>, <em>widthscale=1</em>, <em>heightscale=1</em>, <em>min_support=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#CodonVariantTable.plotMutHeatmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.CodonVariantTable.plotMutHeatmap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Heatmap of mutation counts or frequencies.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>count_or_frequency</cite> (“count” or “frequency”)</dt>
+<dd>Plot mutation counts or frequencies?</dd>
+<dt>All other args</dt>
+<dd>Same meaning as for
+<a class="reference internal" href="#dms_tools2.barcodes.CodonVariantTable.plotCumulMutCoverage" title="dms_tools2.barcodes.CodonVariantTable.plotCumulMutCoverage"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.plotCumulMutCoverage()</span></code></a>.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A <a class="reference external" href="https://plotnine.readthedocs.io/en/stable/">plotnine</a></dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_tools2.barcodes.CodonVariantTable.plotNumCodonMutsByType">
+<code class="descname">plotNumCodonMutsByType</code><span class="sig-paren">(</span><em>variant_type</em>, <em>*</em>, <em>libraries='all'</em>, <em>samples='all'</em>, <em>plotfile=None</em>, <em>orientation='h'</em>, <em>widthscale=1</em>, <em>heightscale=1</em>, <em>min_support=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#CodonVariantTable.plotNumCodonMutsByType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.CodonVariantTable.plotNumCodonMutsByType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Nonsynonymous, synonymous, stop mutations per variant.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>variant_type</cite> (“single” or “all”)</dt>
+<dd>Include just single-codon mutants and wildtype,
+or include all mutants.</dd>
+<dt>Other args:</dt>
+<dd>Same meaning as for
+<a class="reference internal" href="#dms_tools2.barcodes.CodonVariantTable.plotNumMutsHistogram" title="dms_tools2.barcodes.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a></dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A <a class="reference external" href="https://plotnine.readthedocs.io/en/stable/">plotnine</a></dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_tools2.barcodes.CodonVariantTable.plotNumMutsHistogram">
+<code class="descname">plotNumMutsHistogram</code><span class="sig-paren">(</span><em>mut_type</em>, <em>*</em>, <em>libraries='all'</em>, <em>samples='all'</em>, <em>plotfile=None</em>, <em>orientation='h'</em>, <em>widthscale=1</em>, <em>heightscale=1</em>, <em>min_support=1</em>, <em>max_muts=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#CodonVariantTable.plotNumMutsHistogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.CodonVariantTable.plotNumMutsHistogram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot histograms of number of mutations per variant.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>mut_type</cite> (str)</dt>
+<dd>Type of mutation: “codon” or “aa”.</dd>
+<dt><cite>libraries</cite> (“all”, “all_only”, or list)</dt>
+<dd>Set to “all” to include all libraries including
+a merge of the libraries, “all_only” to only
+include the merge of the libraries, or a list
+of libraries.</dd>
+<dt><cite>samples</cite> (the str “all”, <cite>None</cite>, or list)</dt>
+<dd>Set to “all” to include all samples, <cite>None</cite> to
+just count each barcoded variant once, or specify
+a list of samples.</dd>
+<dt><cite>plotfile</cite> (<cite>None</cite> or str)</dt>
+<dd>Name of file to which we save plot.</dd>
+<dt><cite>orientation</cite> (the str ‘h’ or ‘v’)</dt>
+<dd>Do we facet libraries horizontally or vertically?</dd>
+<dt><cite>widthscale</cite> (float or int)</dt>
+<dd>Expand width of plot by this much.</dd>
+<dt><cite>heightscale</cite> (float or int)</dt>
+<dd>Expand height of plot by this much.</dd>
+<dt><cite>min_support</cite> (int)</dt>
+<dd>Only include variants with at least this large
+of a variant call support.</dd>
+<dt><cite>max_muts</cite> (int or <cite>None</cite>)</dt>
+<dd>In histogram, group together all variants with
+&gt;= this many mutations; set to <cite>None</cite> for no
+cutoff.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><a class="reference external" href="https://plotnine.readthedocs.io/en/stable/">plotnine</a>
+plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_tools2.barcodes.CodonVariantTable.samples">
+<code class="descname">samples</code><span class="sig-paren">(</span><em>library</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#CodonVariantTable.samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.CodonVariantTable.samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of all samples for <cite>library</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>library</cite> (str)</dt>
+<dd>Valid <cite>library</cite> for the <a class="reference internal" href="#dms_tools2.barcodes.CodonVariantTable" title="dms_tools2.barcodes.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>List of all samples for which barcode counts have
+been added.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_tools2.barcodes.CodonVariantTable.valid_barcodes">
+<code class="descname">valid_barcodes</code><span class="sig-paren">(</span><em>library</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#CodonVariantTable.valid_barcodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.CodonVariantTable.valid_barcodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set of valid barcodes for <cite>library</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_tools2.barcodes.CodonVariantTable.writeCodonCounts">
+<code class="descname">writeCodonCounts</code><span class="sig-paren">(</span><em>single_or_all</em>, <em>*</em>, <em>outdir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#CodonVariantTable.writeCodonCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.CodonVariantTable.writeCodonCounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes codon counts files for all libraries and samples.</p>
+<p>Files are written in
+<a class="reference external" href="https://jbloomlab.github.io/dms_tools2/dms2_bcsubamp.html#id12">format</a>
+produced by
+<a class="reference external" href="https://jbloomlab.github.io/dms_tools2/dms2_bcsubamp.html">dms2_bcsubamp</a>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>single_or_all</cite> (“single” or “all”)</dt>
+<dd>If “single”, then counts are just from single-codon
+mutants and wildtype, and we count all wildtype codons
+and just mutated codon for single-codon mutants. If
+“all”, we count all codons for all variants at all
+sites. This is appropriate if enrichment of each mutation
+is supposed to represent its effect for “single”, and if
+enrichment of mutation is supposed to represent its
+average effect across genetic backgrounds in the library
+for “all” provided mutations are Poisson distributed.</dd>
+<dt><cite>outdir</cite> (<cite>None</cite> or str)</dt>
+<dd>Name of directory into which we write counts,
+created if it does not exist. Use <cite>None</cite> to
+write to current directory.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A pandas data frame with the columns “library”, “sample”,
+(“all-libraries” is one library) and “countfile”.
+The “countfile” column gives the name of the created
+file, which is <code class="docutils literal notranslate"><span class="pre">&lt;library&gt;_&lt;sample&gt;_codoncounts.csv</span></code>.</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dms_tools2.barcodes.IlluminaBarcodeParser">
+<em class="property">class </em><code class="descclassname">dms_tools2.barcodes.</code><code class="descname">IlluminaBarcodeParser</code><span class="sig-paren">(</span><em>*</em>, <em>bclen</em>, <em>upstream=''</em>, <em>downstream=''</em>, <em>upstream_mismatch=0</em>, <em>downstream_mismatch=0</em>, <em>valid_barcodes=None</em>, <em>rc_barcode=True</em>, <em>minq=20</em>, <em>chastity_filter=True</em>, <em>list_all_valid_barcodes=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#IlluminaBarcodeParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.IlluminaBarcodeParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Parser for Illumina barcodes.</p>
+<p>The barcodes should be read by R1 and optionally R2.
+The arrangement of elements is shown below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">5</span><span class="s1">&#39;-[R2_start]-upstream-barcode-downstream-[R1_start]-3&#39;</span>
+</pre></div>
+</div>
+<p>R1 anneals downstream of the barcode and reads backwards. If
+R2 is used, it anneals upstream of the barcode and reads forward.
+There can be sequences (<cite>upstream</cite> and <cite>downstream</cite>) on either
+side of the barcode: <cite>downstream</cite> must fully cover the
+region between where R1 starts and the barcode, and if you are
+using R2 then <cite>upstream</cite> must fully cover the region between
+where R2 starts and the barcode. However, it is fine if R1
+reads backwards past <cite>upstream</cite>, and if <cite>R2</cite> reads forward
+past <cite>downstream</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>bclen</cite> (int)</dt>
+<dd>Length of the barcode.</dd>
+<dt><cite>upstream</cite> (str)</dt>
+<dd>Sequence upstream of the barcode.</dd>
+<dt><cite>downstream</cite> (str)</dt>
+<dd>Sequence downstream of barcode.</dd>
+<dt><cite>upstream_mismatch</cite> (int)</dt>
+<dd>Max number of mismatches allowed in <cite>upstream</cite>.</dd>
+<dt><cite>downstream_mismatch</cite> (int)</dt>
+<dd>Like <cite>upstream_mismatches</cite> but for <cite>downstream</cite>.</dd>
+<dt><cite>valid_barcodes</cite> (<cite>None</cite> or iterable such as list, Series)</dt>
+<dd>If not <cite>None</cite>, only retain barcodes listed here.
+Use if you know the set of possible valid barcodes.</dd>
+<dt><cite>rc_barcode</cite> (bool)</dt>
+<dd>Parse the reverse complement of the barcode (the
+orientation read by R1).</dd>
+<dt><cite>minq</cite> (int)</dt>
+<dd>Require at least this quality score for all bases
+in barcode.</dd>
+<dt><cite>chastity_filter</cite> (bool)</dt>
+<dd>Drop any reads that fail Illumina chastity filter.</dd>
+<dt><cite>list_all_valid_barcodes</cite> (bool)</dt>
+<dd>If using <cite>valid_barcodes</cite>, then barcode sets returned
+by <a class="reference internal" href="#dms_tools2.barcodes.IlluminaBarcodeParser.parse" title="dms_tools2.barcodes.IlluminaBarcodeParser.parse"><code class="xref py py-class docutils literal notranslate"><span class="pre">IlluminaBarcodeParser.parse</span></code></a> includes all
+valid barcodes even if no counts.</dd>
+</dl>
+</dd>
+</dl>
+<p>To use, first initialize a <a class="reference internal" href="#dms_tools2.barcodes.IlluminaBarcodeParser" title="dms_tools2.barcodes.IlluminaBarcodeParser"><code class="xref py py-class docutils literal notranslate"><span class="pre">IlluminaBarcodeParser</span></code></a>, then
+parse barcodes using <a class="reference internal" href="#dms_tools2.barcodes.IlluminaBarcodeParser.parse" title="dms_tools2.barcodes.IlluminaBarcodeParser.parse"><code class="xref py py-class docutils literal notranslate"><span class="pre">IlluminaBarcodeParser.parse</span></code></a>.
+Barcodes are retained as valid only if R1 and R2 agree at every
+nucleotide in barcode and if at each site at least one read has
+a quality of at least <cite>minq</cite>.</p>
+<p>Here is an example. Imagine we are parsing 4 nucleotide barcodes
+that have the following construction:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">5</span><span class="s1">&#39;-[R2 binding site]-ACATGA-NNNN-GACT-[R1 binding site]-3&#39;</span>
+</pre></div>
+</div>
+<p>First, we initialize an appropriate <a class="reference internal" href="#dms_tools2.barcodes.IlluminaBarcodeParser" title="dms_tools2.barcodes.IlluminaBarcodeParser"><code class="xref py py-class docutils literal notranslate"><span class="pre">IlluminaBarcodeParser</span></code></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span> <span class="o">=</span> <span class="n">IlluminaBarcodeParser</span><span class="p">(</span>
+<span class="gp">... </span>             <span class="n">bclen</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<span class="gp">... </span>             <span class="n">upstream</span><span class="o">=</span><span class="s1">&#39;ACATGA&#39;</span><span class="p">,</span>
+<span class="gp">... </span>             <span class="n">downstream</span><span class="o">=</span><span class="s1">&#39;GACT&#39;</span>
+<span class="gp">... </span>             <span class="p">)</span>
+</pre></div>
+</div>
+<p>Now we write some test FASTQ files. We write valid test
+reads and some invalid reads. The header for each read
+explains why it is valid / invalid. We use quality scores
+of <code class="docutils literal notranslate"><span class="pre">?</span></code> (30) or <code class="docutils literal notranslate"><span class="pre">+</span></code> (10) for high- and low-quality bases:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">r1file</span> <span class="o">=</span> <span class="s1">&#39;_temp_R1.fastq&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r2file</span> <span class="o">=</span> <span class="s1">&#39;_temp_R2.fastq&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">r1file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f1</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">r2file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f2</span><span class="p">:</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="c1"># valid TACG barcode, full flanking regions</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f1</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s1">&#39;@valid_CGTA_barcode_full_flanking_region</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;AGTCCGTATCATGT</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;??????????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s1">&#39;@valid_CGTA_barcode_full_flanking_region</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;ACATGATACGGACT</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;??????????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="c1"># valid CGTA barcode, partial flanking regions</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f1</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s1">&#39;@valid_CGTA_barcode_partial_flanking_region</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;AGTCCGTATCAT</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;??????????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s1">&#39;@valid_CGTA_barcode_partial_flanking_region</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;ACATGATACG</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;??????????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="c1"># valid GCCG barcode, extended flanking regions</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f1</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s1">&#39;@valid_GCCG_barcode_extended_flanking_region</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;AGTCGCCGTCATGTTAC</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;??????????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s1">&#39;@valid_GCCG_barcode_extended_flanking_region</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;ACATGACGGCGACTGAC</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;??????????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="c1"># AAGT barcode in R1 but R2 differs</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f1</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s1">&#39;@AAGT_R1_barcode_but_R2_differs</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;AGTCAAGTTCATGT</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;??????????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s1">&#39;@AAGT_R1_barcode_but_R2_differs</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;ACATGAACTAGACT</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;??????????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="c1"># same site low quality in R1 and R2</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f1</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s1">&#39;@low_quality_site_in_R1_and_R2</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;AGTCCGTATCATGT</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;?????+????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s1">&#39;@low_quality_site_in_R1_and_R2</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;ACATGATACGGACT</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;????????+?????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="c1"># different site low quality in R1 and R2</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f1</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s1">&#39;@AGTA_with_low_quality_site_in_R1</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;AGTCAGTATCATGT</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;?????+????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s1">&#39;@AGTA_with_low_quality_site_in_R1</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;ACATGATACTGACT</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;?????????+????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="c1"># N in barcode</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f1</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s1">&#39;@N_in_barcode</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;AGTCCGTNTCATGT</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;??????????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s1">&#39;@N_in_barcode</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;ACATGATACGGACT</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;??????????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="c1"># GGAG barcode, one mismatch in each flanking region</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f1</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s1">&#39;@GGAG_barcode_one_mismatch_per_flank</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;GGTCGGAGTCATGA</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;??????????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s1">&#39;@GGAG_barcode_one_mismatch_per_flank</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;TCATGACTCCGACG</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;??????????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="c1"># GGAG barcode, two mismatch in a flanking region</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f1</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s1">&#39;@GGAG_barcode_two_mismatch_in_a_flank</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;GGTCGGAGTCATAA</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;??????????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s1">&#39;@GGAG_barcode_two_mismatch_in_a_flank</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;TCATGACTCCGACG</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;??????????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now parse the barcodes using both the R1 and R2 files:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">barcodes</span><span class="p">,</span> <span class="n">fates</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">r1file</span><span class="p">,</span> <span class="n">r2file</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">barcodes</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+<span class="go">barcode count</span>
+<span class="go">CGTA 2</span>
+<span class="go">AGTA 1</span>
+<span class="go">GCCG 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">fates</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+<span class="go">fate count</span>
+<span class="go">&quot;valid barcode&quot; 4</span>
+<span class="go">&quot;unparseable barcode&quot; 3</span>
+<span class="go">&quot;R1 / R2 disagree&quot; 1</span>
+<span class="go">&quot;low quality barcode&quot; 1</span>
+</pre></div>
+</div>
+<p>Now we parse just using R1. We gain the barcode where R1 and
+R2 disagree, but lose the one where R1 is low quality at a
+position where R2 is OK:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">barcodes</span><span class="p">,</span> <span class="n">fates</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">r1file</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">barcodes</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+<span class="go">barcode count</span>
+<span class="go">CGTA 2</span>
+<span class="go">AAGT 1</span>
+<span class="go">GCCG 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">fates</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+<span class="go">fate count</span>
+<span class="go">&quot;valid barcode&quot; 4</span>
+<span class="go">&quot;unparseable barcode&quot; 3</span>
+<span class="go">&quot;low quality barcode&quot; 2</span>
+</pre></div>
+</div>
+<p>Now create a parser that allows a mismatch in each flanking
+region, and check that we recover a “GGAG” barcode:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parser_mismatch</span> <span class="o">=</span> <span class="n">IlluminaBarcodeParser</span><span class="p">(</span>
+<span class="gp">... </span>             <span class="n">bclen</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<span class="gp">... </span>             <span class="n">upstream</span><span class="o">=</span><span class="s1">&#39;ACATGA&#39;</span><span class="p">,</span>
+<span class="gp">... </span>             <span class="n">downstream</span><span class="o">=</span><span class="s1">&#39;GACT&#39;</span><span class="p">,</span>
+<span class="gp">... </span>             <span class="n">upstream_mismatch</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>             <span class="n">downstream_mismatch</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>             <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">barcodes_mismatch</span><span class="p">,</span> <span class="n">fates_mismatch</span> <span class="o">=</span> <span class="n">parser_mismatch</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">r1file</span><span class="p">,</span> <span class="n">r2file</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">barcodes_mismatch</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+<span class="go">barcode count</span>
+<span class="go">CGTA 2</span>
+<span class="go">AGTA 1</span>
+<span class="go">GCCG 1</span>
+<span class="go">GGAG 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">fates_mismatch</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+<span class="go">fate count</span>
+<span class="go">&quot;valid barcode&quot; 5</span>
+<span class="go">&quot;unparseable barcode&quot; 2</span>
+<span class="go">&quot;R1 / R2 disagree&quot; 1</span>
+<span class="go">&quot;low quality barcode&quot; 1</span>
+</pre></div>
+</div>
+<p>Now parse the barcodes using <cite>valid_barcodes</cite> to set a
+barcode whitelist:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parser_wl</span> <span class="o">=</span> <span class="n">IlluminaBarcodeParser</span><span class="p">(</span>
+<span class="gp">... </span>             <span class="n">bclen</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<span class="gp">... </span>             <span class="n">upstream</span><span class="o">=</span><span class="s1">&#39;ACATGA&#39;</span><span class="p">,</span>
+<span class="gp">... </span>             <span class="n">downstream</span><span class="o">=</span><span class="s1">&#39;GACT&#39;</span><span class="p">,</span>
+<span class="gp">... </span>             <span class="n">valid_barcodes</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;CGTA&#39;</span><span class="p">,</span> <span class="s1">&#39;AGTA&#39;</span><span class="p">,</span> <span class="s1">&#39;TAAT&#39;</span><span class="p">}</span>
+<span class="gp">... </span>             <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">barcodes_wl</span><span class="p">,</span> <span class="n">fates_wl</span> <span class="o">=</span> <span class="n">parser_wl</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">r1file</span><span class="p">,</span> <span class="n">r2file</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">barcodes_wl</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+<span class="go">barcode count</span>
+<span class="go">CGTA 2</span>
+<span class="go">AGTA 1</span>
+<span class="go">TAAT 0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">fates_wl</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+<span class="go">fate count</span>
+<span class="go">&quot;unparseable barcode&quot; 3</span>
+<span class="go">&quot;valid barcode&quot; 3</span>
+<span class="go">&quot;R1 / R2 disagree&quot; 1</span>
+<span class="go">&quot;invalid barcode&quot; 1</span>
+<span class="go">&quot;low quality barcode&quot; 1</span>
+</pre></div>
+</div>
+<p>Remove the test FASTQ files:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">r1file</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">r2file</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<dt id="dms_tools2.barcodes.IlluminaBarcodeParser.VALID_NTS">
+<code class="descname">VALID_NTS</code><em class="property"> = 'ACGTN'</em><a class="headerlink" href="#dms_tools2.barcodes.IlluminaBarcodeParser.VALID_NTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>valid nucleotide characters</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_tools2.barcodes.IlluminaBarcodeParser.parse">
+<code class="descname">parse</code><span class="sig-paren">(</span><em>r1files</em>, <em>r2files=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#IlluminaBarcodeParser.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.IlluminaBarcodeParser.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses barcodes from files.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>r1file</cite> (str or list)</dt>
+<dd>Name of R1 FASTQ file, or list of such files
+Can optionally be gzipped.</dd>
+<dt><cite>r2file</cite> (<cite>None</cite>, str, or list)</dt>
+<dd><cite>None</cite> of not using R2, otherwise like R1.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><p class="first">The 2-tuple <cite>(barcodes, fates)</cite>. In this 2-tuple:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li><cite>barcodes</cite> is a pandas DataFrame giving the
+number of observations of each barcode. The
+columns are named “barcode” and “count”.</li>
+<li><cite>fates</cite> is a pandas DataFrame giving the
+total number of reads with each fate. The
+columns are named “fate” and “count”.<ul>
+<li>“valid barcode”</li>
+<li>“invalid barcode”: not in our barcode whitelist</li>
+<li>“R1 / R2 disagree”</li>
+<li>“low quality barcode”: sequencing quality low</li>
+<li>“unparseable barcode”: invalid flanking sequences
+or N in barcode.</li>
+</ul>
+</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="function">
 <dt id="dms_tools2.barcodes.almost_duplicated">
 <code class="descclassname">dms_tools2.barcodes.</code><code class="descname">almost_duplicated</code><span class="sig-paren">(</span><em>barcodes</em>, <em>threshold=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#almost_duplicated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.almost_duplicated" title="Permalink to this definition">¶</a></dt>
 <dd><p>Identifies nearly identical barcodes.</p>
-<p>This function minics the pandas <cite>duplicated</cite>
+<p>This function mimics the pandas <cite>duplicated</cite>
 function except it can also mark as duplicated almost
 but not exactly identical sequences.</p>
 <dl class="docutils">
@@ -96,6 +946,235 @@ barcode (‘ATG’):</p>
 </div>
 </dd></dl>
 
+<dl class="function">
+<dt id="dms_tools2.barcodes.fracIdentWithinBarcode">
+<code class="descclassname">dms_tools2.barcodes.</code><code class="descname">fracIdentWithinBarcode</code><span class="sig-paren">(</span><em>df</em>, <em>*</em>, <em>barcode_col='barcode'</em>, <em>variant_col='variant'</em>, <em>library_col=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#fracIdentWithinBarcode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.fracIdentWithinBarcode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets fraction of identical variants within barcodes.</p>
+<p>This function is designed for the case when you have barcoded
+variants, and you want to determine how often the variants
+with the same barcode are identical. To calculate this, all
+variants with the same barcode are grouped, and for every pair
+of variants within a barcode we compute the fraction that
+are identical (note that this fraction is the
+<a class="reference external" href="https://en.wikipedia.org/wiki/Diversity_index">Simpson diversity index without replacement</a>.
+We then compute the average of this fraction over all pairs.</p>
+<p>In the case where we are sequencing barcoded genes, the square
+root of this fraction can be interpreted as the sequencing accuracy
+per variant.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>df</cite> (pandas Data Frame)</dt>
+<dd>Holds barcodes, variants, and (optionally) library names.</dd>
+<dt><cite>barcode_col</cite> (str)</dt>
+<dd>Name of column holding barcodes.</dd>
+<dt><cite>variant_col</cite> (str)</dt>
+<dd>Name of column holding variants (these are what we
+compare to see if they are identical).</dd>
+<dt><cite>library_col</cite> (str or None)</dt>
+<dd>Name of libary. We do the computation separately
+for each library. Set to <cite>None</cite> if only one library.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A pandas data frame with columns named <cite>fraction_identical</cite>
+and <cite>accuracy</cite> that contain the computed fraction identical
+and accuracy for each library.</dd>
+</dl>
+<p>Here is an example. In this data frame, we see that
+of the four pairs (one for barcode <em>AT</em> and three for
+barcode <em>TA</em>), two are identical. As you can see
+the function correctly calculates that 50% are identical,
+and computes an accuracy that is the square root of 0.5:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+<span class="gp">... </span>    <span class="s1">&#39;barcode&#39;</span><span class="p">:[</span><span class="s1">&#39;AT&#39;</span><span class="p">,</span> <span class="s1">&#39;AT&#39;</span><span class="p">,</span> <span class="s1">&#39;TG&#39;</span><span class="p">,</span> <span class="s1">&#39;TA&#39;</span><span class="p">,</span> <span class="s1">&#39;TA&#39;</span><span class="p">,</span> <span class="s1">&#39;TA&#39;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="s1">&#39;variant&#39;</span><span class="p">:[</span><span class="s1">&#39;v1&#39;</span><span class="p">,</span> <span class="s1">&#39;v1&#39;</span><span class="p">,</span> <span class="s1">&#39;v2&#39;</span><span class="p">,</span> <span class="s1">&#39;v3&#39;</span><span class="p">,</span> <span class="s1">&#39;v4&#39;</span><span class="p">,</span> <span class="s1">&#39;v3&#39;</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fracIdentWithinBarcode</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="go">   fraction_identical  accuracy</span>
+<span class="go">0                 0.5  0.707107</span>
+</pre></div>
+</div>
+<p>Now another example with two libraries and non-standard column
+names. Note that we only get results for the two libraries
+with barcodes found multiple times:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+<span class="gp">... </span>    <span class="s1">&#39;bc&#39;</span>    <span class="p">:[</span><span class="s1">&#39;AT&#39;</span><span class="p">,</span> <span class="s1">&#39;AT&#39;</span><span class="p">,</span> <span class="s1">&#39;TG&#39;</span><span class="p">,</span> <span class="s1">&#39;TA&#39;</span><span class="p">,</span> <span class="s1">&#39;TA&#39;</span><span class="p">,</span> <span class="s1">&#39;TA&#39;</span><span class="p">,</span> <span class="s1">&#39;TA&#39;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="s1">&#39;var&#39;</span>   <span class="p">:[</span><span class="s1">&#39;v1&#39;</span><span class="p">,</span> <span class="s1">&#39;v1&#39;</span><span class="p">,</span> <span class="s1">&#39;v2&#39;</span><span class="p">,</span> <span class="s1">&#39;v3&#39;</span><span class="p">,</span> <span class="s1">&#39;v4&#39;</span><span class="p">,</span> <span class="s1">&#39;v3&#39;</span><span class="p">,</span> <span class="s1">&#39;v3&#39;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="s1">&#39;library&#39;</span><span class="p">:[</span><span class="s1">&#39;s1&#39;</span><span class="p">,</span> <span class="s1">&#39;s1&#39;</span><span class="p">,</span> <span class="s1">&#39;s2&#39;</span><span class="p">,</span> <span class="s1">&#39;s3&#39;</span><span class="p">,</span> <span class="s1">&#39;s3&#39;</span><span class="p">,</span> <span class="s1">&#39;s3&#39;</span><span class="p">,</span> <span class="s1">&#39;s4&#39;</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fracIdentWithinBarcode</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">library_col</span><span class="o">=</span><span class="s1">&#39;library&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">barcode_col</span><span class="o">=</span><span class="s1">&#39;bc&#39;</span><span class="p">,</span> <span class="n">variant_col</span><span class="o">=</span><span class="s1">&#39;var&#39;</span><span class="p">)</span>
+<span class="go">  library  fraction_identical  accuracy</span>
+<span class="go">0      s1            1.000000   1.00000</span>
+<span class="go">1      s3            0.333333   0.57735</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.barcodes.simpleConsensus">
+<code class="descclassname">dms_tools2.barcodes.</code><code class="descname">simpleConsensus</code><span class="sig-paren">(</span><em>df</em>, <em>*</em>, <em>barcode_col='barcode'</em>, <em>substitution_col='substitutions'</em>, <em>insertion_col='insertions'</em>, <em>deletion_col='deletions'</em>, <em>library_col=None</em>, <em>max_sub_diffs=1</em>, <em>max_indel_diffs=2</em>, <em>max_minor_muts=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#simpleConsensus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.simpleConsensus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simple method to get consensus of mutations within barcode.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>df</cite> (pandas Data Frame)</dt>
+<dd>Holds variants and their barcodes. Each row gives a
+sequence variant and its barcode. There need to be
+columns with the names given by the next four arguments
+described below.</dd>
+<dt><cite>barcode_col</cite> (str)</dt>
+<dd>Name of column holding barcodes.</dd>
+<dt><cite>substitution_col</cite> (str)</dt>
+<dd>Name of column holding substitutions as list of strings.</dd>
+<dt><cite>insertion_col</cite> (str)</dt>
+<dd>Name of column holding insertions as list of strings.</dd>
+<dt><cite>deletion_col</cite> (str)</dt>
+<dd>Name of column holding insertions as list of strings.</dd>
+<dt><cite>library_col</cite> (<cite>None</cite> or str)</dt>
+<dd>If we have multiple libraries, analyze each barcode only
+within its library. In that case, <cite>library_col</cite> should be
+name of column giving library name.</dd>
+<dt><cite>max_sub_diffs</cite> (int)</dt>
+<dd>Drop any barcode where any variant differs from all other
+variants for that barcode by more than this many substitution
+(point mutation) differences.</dd>
+<dt><cite>max_indel_diffs</cite> (int)</dt>
+<dd>Drop any barcode where any variant differs from all other
+variants for that barcode by more than this many indel
+(insertion or deletion) differences.</dd>
+<dt><cite>max_minor_muts</cite> (int)</dt>
+<dd>Drop any barcode where there is a minor (non-consensus)
+mutation found more than this many times.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><p class="first">The 2-tuple <cite>(consensus, dropped)</cite>. These are each data frames:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li><cite>consensus</cite> is a new data frame with a row for each
+barcode for which we could call the consensus. The
+columns have the same names as <cite>barcode_col</cite>,
+<cite>substitution_col</cite>, <cite>insertion_col</cite>, <cite>deletion_col</cite>,
+and (optionally) <cite>library_col</cite>–but the the three
+columns for the mutations now just list the <strong>consensus</strong>
+mutations of that type. In addition, there is a new
+column called “variant_call_support” that gives the number
+of sequences supporting the call of that barcode.</li>
+<li><cite>dropped</cite> simply contains all rows in the original <cite>df</cite>
+that correspond to sequences that were dropped due to
+<cite>max_diffs</cite> or <cite>max_minor_muts</cite> not being satisfied.
+There is also a column called “drop_reason” that gives
+the reason that the barcode was dropped.</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+<p>The approach is as follows:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Group all variants by library and barcode.</li>
+<li>If there are multiple sequences, check if any of them differ
+from all the others by more than <cite>max_diffs</cite> mutations total
+(taking substitutions, insertions, and deletions together).
+If so, drop the entire barcode. The reason is that if there
+are variants that are very different, it becomes likely that
+it isn’t just sequencing error, but rather something is wrong
+with that barcode (multiple variants with same barcode or
+strand exchange).</li>
+<li>Take the consensus of the sequences, which means keeping
+mutations that are present in <strong>greater</strong> than half of the
+variants. Note that this calling scheme means that the
+consensus being called is dependent on the reference used
+to call the mutations, which is an important caveat if you
+are calling variants relative to multiple different parent
+sequences.</li>
+<li>If there are any minor mutations (mutations not in consensus)
+that are present in more than <cite>max_minor_muts</cite> variants or missing
+from more than <cite>max_minor_muts</cite> variants, then
+drop that barcode. The reason is that recurring minor mutations
+also suggest some problem more complex than sequencing error
+that may render the whole barcode family invalid.</li>
+</ol>
+</div></blockquote>
+<p>Note that this method returns a consensus even if there is just
+one sequence for the barcode (in that case, this sequence is
+the consensus). This is fine–if you want to get consensus calls
+that are more strongly supported, simply filter the returned
+<cite>consensus</cite> data frame for larger values of <cite>variant_call_support</cite>,
+as the more sequences that support a call the more accurate it
+is expected to be.</p>
+<p>Here is an example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="s1">&#39;s1&#39;</span><span class="p">,</span> <span class="s1">&#39;AG&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;A2C&#39;</span><span class="p">],</span> <span class="p">[],</span> <span class="p">[</span><span class="s1">&#39;del5to7&#39;</span><span class="p">]),</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="s1">&#39;s1&#39;</span><span class="p">,</span> <span class="s1">&#39;AG&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;A2C&#39;</span><span class="p">],</span> <span class="p">[],</span> <span class="p">[]),</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="s1">&#39;s1&#39;</span><span class="p">,</span> <span class="s1">&#39;TA&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;G3A&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;ins4len3&#39;</span><span class="p">],</span> <span class="p">[]),</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="s1">&#39;s2&#39;</span><span class="p">,</span> <span class="s1">&#39;TA&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;C5A&#39;</span><span class="p">,</span> <span class="s1">&#39;T6C&#39;</span><span class="p">],</span> <span class="p">[],</span> <span class="p">[]),</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="s1">&#39;s2&#39;</span><span class="p">,</span> <span class="s1">&#39;TA&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;T6C&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;ins5len1&#39;</span><span class="p">],</span> <span class="p">[]),</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="s1">&#39;s2&#39;</span><span class="p">,</span> <span class="s1">&#39;TA&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;T6C&#39;</span><span class="p">],</span> <span class="p">[],</span> <span class="p">[]),</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="s1">&#39;s2&#39;</span><span class="p">,</span> <span class="s1">&#39;TG&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;T6A&#39;</span><span class="p">],</span> <span class="p">[],</span> <span class="p">[]),</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="s1">&#39;s2&#39;</span><span class="p">,</span> <span class="s1">&#39;TG&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;A2G&#39;</span><span class="p">],</span> <span class="p">[],</span> <span class="p">[]),</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="s1">&#39;s2&#39;</span><span class="p">,</span> <span class="s1">&#39;GG&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[</span><span class="s1">&#39;del1to4&#39;</span><span class="p">]),</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="s1">&#39;s2&#39;</span><span class="p">,</span> <span class="s1">&#39;GG&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;A1C&#39;</span><span class="p">],</span> <span class="p">[],</span> <span class="p">[]),</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="s1">&#39;s2&#39;</span><span class="p">,</span> <span class="s1">&#39;AA&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]),</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="s1">&#39;s2&#39;</span><span class="p">,</span> <span class="s1">&#39;AA&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]),</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="s1">&#39;s2&#39;</span><span class="p">,</span> <span class="s1">&#39;AA&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;T6C&#39;</span><span class="p">],</span> <span class="p">[],</span> <span class="p">[]),</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="s1">&#39;s2&#39;</span><span class="p">,</span> <span class="s1">&#39;AA&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;T6C&#39;</span><span class="p">],</span> <span class="p">[],</span> <span class="p">[]),</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="s1">&#39;s3&#39;</span><span class="p">,</span> <span class="s1">&#39;AA&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;T6G&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;ins1len1&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;del1to2&#39;</span><span class="p">]),</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="s1">&#39;s3&#39;</span><span class="p">,</span> <span class="s1">&#39;AA&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;T6G&#39;</span><span class="p">],</span> <span class="p">[],</span> <span class="p">[</span><span class="s1">&#39;del5to7&#39;</span><span class="p">])],</span>
+<span class="gp">... </span>    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;substitutions&#39;</span><span class="p">,</span>
+<span class="gp">... </span>             <span class="s1">&#39;insertions&#39;</span><span class="p">,</span> <span class="s1">&#39;deletions&#39;</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">consensus</span><span class="p">,</span> <span class="n">dropped</span> <span class="o">=</span> <span class="n">simpleConsensus</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">library_col</span><span class="o">=</span><span class="s1">&#39;library&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">consensus</span>
+<span class="go">  library barcode substitutions  insertions deletions  variant_call_support</span>
+<span class="go">0      s1      AG         [A2C]          []        []                     2</span>
+<span class="go">1      s1      TA         [G3A]  [ins4len3]        []                     1</span>
+<span class="go">2      s2      GG            []          []        []                     2</span>
+<span class="go">3      s2      TA         [T6C]          []        []                     3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pandas</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.max_columns&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pandas</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.width&#39;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dropped</span>
+<span class="go">  library barcode substitutions  insertions  deletions           drop_reason</span>
+<span class="go">0      s2      TG         [T6A]          []         []  excess substitutions</span>
+<span class="go">1      s2      TG         [A2G]          []         []  excess substitutions</span>
+<span class="go">2      s2      AA            []          []         []     excess minor muts</span>
+<span class="go">3      s2      AA            []          []         []     excess minor muts</span>
+<span class="go">4      s2      AA         [T6C]          []         []     excess minor muts</span>
+<span class="go">5      s2      AA         [T6C]          []         []     excess minor muts</span>
+<span class="go">6      s3      AA         [T6G]  [ins1len1]  [del1to2]         excess indels</span>
+<span class="go">7      s3      AA         [T6G]          []  [del5to7]         excess indels</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.barcodes.tidy_split">
+<code class="descclassname">dms_tools2.barcodes.</code><code class="descname">tidy_split</code><span class="sig-paren">(</span><em>df</em>, <em>column</em>, <em>sep=' '</em>, <em>keep=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#tidy_split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.tidy_split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split the values of a column and expand so the new DataFrame has one split
+value per row. Filters rows where the column is missing.</p>
+<p>Taken from <a class="reference external" href="https://stackoverflow.com/a/39946744">https://stackoverflow.com/a/39946744</a></p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>df <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
+<dd>dataframe with the column to split and expand</dd>
+<dt>column <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>the column to split and expand</dd>
+<dt>sep <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>the string used to split the column’s values</dd>
+<dt>keep <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd>whether to retain the presplit value as it’s own row</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt>pandas.DataFrame</dt>
+<dd>Returns a dataframe with the same columns as <cite>df</cite>.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 
 
@@ -133,7 +1212,7 @@ barcode (‘ATG’):</p>
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -183,6 +1262,14 @@ barcode (‘ATG’):</p>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -191,8 +1278,8 @@ barcode (‘ATG’):</p>
       &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/dms_tools2.barcodes.rst.txt"

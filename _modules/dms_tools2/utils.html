@@ -143,14 +143,14 @@
 
 
 <div class="viewcode-block" id="iteratePairedFASTQ"><a class="viewcode-back" href="../../dms_tools2.utils.html#dms_tools2.utils.iteratePairedFASTQ">[docs]</a><span class="k">def</span> <span class="nf">iteratePairedFASTQ</span><span class="p">(</span><span class="n">r1files</span><span class="p">,</span> <span class="n">r2files</span><span class="p">,</span> <span class="n">r1trim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">r2trim</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Iterates over FASTQ file pairs for paired-end sequencing reads.</span>
+    <span class="sd">&quot;&quot;&quot;Iterates over FASTQ files for single or paired-end sequencing.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        `r1files` (list or str)</span>
 <span class="sd">            Name of R1 FASTQ file or list of such files. Can optionally</span>
 <span class="sd">            be gzipped.</span>
-<span class="sd">        `r2files` (list or str)</span>
-<span class="sd">            Like `r1files` but for R2 files.</span>
+<span class="sd">        `r2files` (list or str or `None`)</span>
+<span class="sd">            Like `r1files` but for R2 files, or `None` if no R2.</span>
 <span class="sd">        `r1trim` (int or `None`)</span>
 <span class="sd">            If not `None`, trim `r1` and `q1` to be no longer than this.</span>
 <span class="sd">        `r2trim` (int or `None`)</span>
@@ -161,9 +161,11 @@
 
 <span class="sd">            - `name` is a string giving the read name</span>
 
-<span class="sd">            - `r1` and `r2` are strings giving the reads</span>
+<span class="sd">            - `r1` and `r2` are strings giving the reads; `r2`</span>
+<span class="sd">              is `None` if no R2.</span>
 
-<span class="sd">            - `q1` and `q2` are strings giving the PHRED Q scores</span>
+<span class="sd">            - `q1` and `q2` are strings giving the PHRED Q scores;</span>
+<span class="sd">              `q2` is none if no R2.</span>
 
 <span class="sd">            - `fail` is `True` if either read failed Illumina chastity</span>
 <span class="sd">              filter, `False` if both passed, `None` if info not present.</span>
@@ -179,25 +181,45 @@
 <span class="sd">    &gt;&gt;&gt; q2_1 = &#39;G&lt;GGGIII&#39;</span>
 <span class="sd">    &gt;&gt;&gt; tf = tempfile.NamedTemporaryFile</span>
 <span class="sd">    &gt;&gt;&gt; with tf(mode=&#39;w&#39;) as r1file, tf(mode=&#39;w&#39;) as r2file:</span>
-<span class="sd">    ...     dummyvar = r1file.write(&#39;\\n&#39;.join([</span>
+<span class="sd">    ...     _ = r1file.write(&#39;\\n&#39;.join([</span>
 <span class="sd">    ...             n1_1, r1_1, &#39;+&#39;, q1_1,</span>
 <span class="sd">    ...             n1_1.replace(&#39;:N:&#39;, &#39;:Y:&#39;), r1_1, &#39;+&#39;, q1_1,</span>
 <span class="sd">    ...             n1_1.split()[0], r1_1, &#39;+&#39;, q1_1,</span>
 <span class="sd">    ...             ]))</span>
 <span class="sd">    ...     r1file.flush()</span>
-<span class="sd">    ...     dummyvar = r2file.write(&#39;\\n&#39;.join([</span>
+<span class="sd">    ...     _ = r2file.write(&#39;\\n&#39;.join([</span>
 <span class="sd">    ...             n2_1, r2_1, &#39;+&#39;, q2_1,</span>
 <span class="sd">    ...             n2_1, r2_1, &#39;+&#39;, q2_1,</span>
 <span class="sd">    ...             n2_1, r2_1, &#39;+&#39;, q2_1,</span>
 <span class="sd">    ...             ]))</span>
 <span class="sd">    ...     r2file.flush()</span>
 <span class="sd">    ...     itr = iteratePairedFASTQ(r1file.name, r2file.name, r1trim=4, r2trim=5)</span>
-<span class="sd">    ...     next(itr) == (n1_1.split()[0][1 : ], r1_1[ : 4], </span>
+<span class="sd">    ...     next(itr) == (n1_1.split()[0][1 : ], r1_1[ : 4],</span>
 <span class="sd">    ...             r2_1[ : 5], q1_1[ : 4], q2_1[ : 5], False)</span>
-<span class="sd">    ...     next(itr) == (n1_1.split()[0][1 : ], r1_1[ : 4], </span>
+<span class="sd">    ...     next(itr) == (n1_1.split()[0][1 : ], r1_1[ : 4],</span>
 <span class="sd">    ...             r2_1[ : 5], q1_1[ : 4], q2_1[ : 5], True)</span>
-<span class="sd">    ...     next(itr) == (n1_1.split()[0][1 : ], r1_1[ : 4], </span>
+<span class="sd">    ...     next(itr) == (n1_1.split()[0][1 : ], r1_1[ : 4],</span>
 <span class="sd">    ...             r2_1[ : 5], q1_1[ : 4], q2_1[ : 5], None)</span>
+<span class="sd">    True</span>
+<span class="sd">    True</span>
+<span class="sd">    True</span>
+
+<span class="sd">    Now do the same test but for just R1:</span>
+
+<span class="sd">    &gt;&gt;&gt; with tf(mode=&#39;w&#39;) as r1file:</span>
+<span class="sd">    ...     _ = r1file.write(&#39;\\n&#39;.join([</span>
+<span class="sd">    ...             n1_1, r1_1, &#39;+&#39;, q1_1,</span>
+<span class="sd">    ...             n1_1.replace(&#39;:N:&#39;, &#39;:Y:&#39;), r1_1, &#39;+&#39;, q1_1,</span>
+<span class="sd">    ...             n1_1.split()[0], r1_1, &#39;+&#39;, q1_1,</span>
+<span class="sd">    ...             ]))</span>
+<span class="sd">    ...     r1file.flush()</span>
+<span class="sd">    ...     itr_R1 = iteratePairedFASTQ(r1file.name, None, r1trim=4)</span>
+<span class="sd">    ...     next(itr_R1) == (n1_1.split()[0][1 : ], r1_1[ : 4],</span>
+<span class="sd">    ...             None, q1_1[ : 4], None, False)</span>
+<span class="sd">    ...     next(itr_R1) == (n1_1.split()[0][1 : ], r1_1[ : 4],</span>
+<span class="sd">    ...             None, q1_1[ : 4], None, True)</span>
+<span class="sd">    ...     next(itr_R1) == (n1_1.split()[0][1 : ], r1_1[ : 4],</span>
+<span class="sd">    ...             None, q1_1[ : 4], None, None)</span>
 <span class="sd">    True</span>
 <span class="sd">    True</span>
 <span class="sd">    True</span>
@@ -205,39 +227,51 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r1files</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">r1files</span> <span class="o">=</span> <span class="p">[</span><span class="n">r1files</span><span class="p">]</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r2files</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
-        <span class="n">r2files</span> <span class="o">=</span> <span class="p">[</span><span class="n">r2files</span><span class="p">]</span>
-    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">r1files</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">r2files</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
-    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r1files</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r2files</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">r2files</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">r2files</span> <span class="o">=</span> <span class="p">[</span><span class="n">r2files</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">r2files</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">r2files</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">r1files</span><span class="p">)</span>
     <span class="k">for</span> <span class="p">(</span><span class="n">r1file</span><span class="p">,</span> <span class="n">r2file</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">r1files</span><span class="p">,</span> <span class="n">r2files</span><span class="p">):</span>
         <span class="n">r1reader</span> <span class="o">=</span> <span class="n">HTSeq</span><span class="o">.</span><span class="n">FastqReader</span><span class="p">(</span><span class="n">r1file</span><span class="p">,</span> <span class="n">raw_iterator</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">r2reader</span> <span class="o">=</span> <span class="n">HTSeq</span><span class="o">.</span><span class="n">FastqReader</span><span class="p">(</span><span class="n">r2file</span><span class="p">,</span> <span class="n">raw_iterator</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">for</span> <span class="p">((</span><span class="n">r1</span><span class="p">,</span> <span class="n">id1</span><span class="p">,</span> <span class="n">q1</span><span class="p">,</span> <span class="n">qs1</span><span class="p">),</span> <span class="p">(</span><span class="n">r2</span><span class="p">,</span> <span class="n">id2</span><span class="p">,</span> <span class="n">q2</span><span class="p">,</span> <span class="n">qs2</span><span class="p">))</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
-                <span class="n">r1reader</span><span class="p">,</span> <span class="n">r2reader</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">r2file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">read_iterator</span> <span class="o">=</span> <span class="n">r1reader</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">r2reader</span> <span class="o">=</span> <span class="n">HTSeq</span><span class="o">.</span><span class="n">FastqReader</span><span class="p">(</span><span class="n">r2file</span><span class="p">,</span> <span class="n">raw_iterator</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">read_iterator</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">r1reader</span><span class="p">,</span> <span class="n">r2reader</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">read_iterator</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">r2file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+               <span class="n">r1</span><span class="p">,</span> <span class="n">id1</span><span class="p">,</span> <span class="n">q1</span><span class="p">,</span> <span class="n">qs1</span> <span class="o">=</span> <span class="n">tup</span>
+               <span class="n">r2</span> <span class="o">=</span> <span class="n">q2</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="p">(</span><span class="n">r1</span><span class="p">,</span> <span class="n">id1</span><span class="p">,</span> <span class="n">q1</span><span class="p">,</span> <span class="n">qs1</span><span class="p">),</span> <span class="p">(</span><span class="n">r2</span><span class="p">,</span> <span class="n">id2</span><span class="p">,</span> <span class="n">q2</span><span class="p">,</span> <span class="n">qs2</span><span class="p">)</span> <span class="o">=</span> <span class="n">tup</span>
+                <span class="n">id2</span> <span class="o">=</span> <span class="n">id2</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="n">name2</span> <span class="o">=</span> <span class="n">id2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">id1</span> <span class="o">=</span> <span class="n">id1</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-            <span class="n">id2</span> <span class="o">=</span> <span class="n">id2</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
             <span class="n">name1</span> <span class="o">=</span> <span class="n">id1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">name2</span> <span class="o">=</span> <span class="n">id2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="c1"># next check trims last two chars, need for SRA downloaded files</span>
-            <span class="k">if</span> <span class="n">name1</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span> <span class="p">:</span> <span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;.1&#39;</span> <span class="ow">and</span> <span class="n">name2</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span> <span class="p">:</span> <span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;.2&#39;</span><span class="p">:</span>
-                <span class="n">name1</span> <span class="o">=</span> <span class="n">name1</span><span class="p">[</span> <span class="p">:</span> <span class="o">-</span><span class="mi">2</span><span class="p">]</span>
-                <span class="n">name2</span> <span class="o">=</span> <span class="n">name2</span><span class="p">[</span> <span class="p">:</span> <span class="o">-</span><span class="mi">2</span><span class="p">]</span>
-            <span class="k">assert</span> <span class="n">name1</span> <span class="o">==</span> <span class="n">name2</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> vs </span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name1</span><span class="p">,</span> <span class="n">name2</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">r2file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># trims last two chars, need for SRA downloaded files</span>
+                <span class="k">if</span> <span class="n">name1</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span> <span class="p">:</span> <span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;.1&#39;</span> <span class="ow">and</span> <span class="n">name2</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span> <span class="p">:</span> <span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;.2&#39;</span><span class="p">:</span>
+                    <span class="n">name1</span> <span class="o">=</span> <span class="n">name1</span><span class="p">[</span> <span class="p">:</span> <span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="n">name2</span> <span class="o">=</span> <span class="n">name2</span><span class="p">[</span> <span class="p">:</span> <span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">name1</span> <span class="o">!=</span> <span class="n">name2</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;name mismatch </span><span class="si">{name1}</span><span class="s2"> vs </span><span class="si">{name2}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="c1"># parse chastity filter assuming CASAVA 1.8 header</span>
-            <span class="n">fail</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">f1</span> <span class="o">=</span> <span class="n">id1</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
-                <span class="n">f2</span> <span class="o">=</span> <span class="n">id2</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">r2file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">f2</span> <span class="o">=</span> <span class="s1">&#39;N&#39;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">f2</span> <span class="o">=</span> <span class="n">id2</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">f1</span> <span class="o">==</span> <span class="s1">&#39;N&#39;</span> <span class="ow">and</span> <span class="n">f2</span> <span class="o">==</span> <span class="s1">&#39;N&#39;</span><span class="p">:</span>
                     <span class="n">fail</span> <span class="o">=</span> <span class="kc">False</span>
                 <span class="k">elif</span> <span class="n">f1</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">f2</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">]:</span>
                     <span class="n">fail</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
-                <span class="k">pass</span> <span class="c1"># header does not specify chastity filter</span>
+                <span class="n">fail</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># header does not specify chastity filter</span>
             <span class="k">if</span> <span class="n">r1trim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">r1</span> <span class="o">=</span> <span class="n">r1</span><span class="p">[</span> <span class="p">:</span> <span class="n">r1trim</span><span class="p">]</span>
                 <span class="n">q1</span> <span class="o">=</span> <span class="n">q1</span><span class="p">[</span> <span class="p">:</span> <span class="n">r1trim</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">r2trim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">r2trim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">r2file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
                 <span class="n">r2</span> <span class="o">=</span> <span class="n">r2</span><span class="p">[</span> <span class="p">:</span> <span class="n">r2trim</span><span class="p">]</span>
                 <span class="n">q2</span> <span class="o">=</span> <span class="n">q2</span><span class="p">[</span> <span class="p">:</span> <span class="n">r2trim</span><span class="p">]</span>
             <span class="k">yield</span> <span class="p">(</span><span class="n">name1</span><span class="p">,</span> <span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">q1</span><span class="p">,</span> <span class="n">q2</span><span class="p">,</span> <span class="n">fail</span><span class="p">)</span></div>
@@ -1172,7 +1206,7 @@
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -1215,6 +1249,14 @@
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -1223,8 +1265,8 @@
       &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

@@ -43,6 +43,7 @@
 
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">collections</span>
 
 <span class="kn">import</span> <span class="nn">pandas</span>
 <span class="kn">import</span> <span class="nn">scipy</span>
@@ -213,8 +214,7 @@
 <span class="sd">            as the fraction surviving should always be one</span>
 <span class="sd">            at sufficiently low antibody concentration.</span>
 
-<span class="sd">    After initialization, you can access the following</span>
-<span class="sd">    attributes:</span>
+<span class="sd">    After initialization, has the following attributes:</span>
 <span class="sd">        `cs` (numpy array)</span>
 <span class="sd">            Array of the concentration measurements we have</span>
 <span class="sd">            fitted, sorted from lowest to highest. </span>
@@ -505,12 +505,12 @@
         <span class="k">if</span> <span class="n">ic50_in_name</span><span class="p">:</span>
             <span class="n">samplename</span> <span class="o">+=</span> <span class="s1">&#39; (IC50 = </span><span class="si">{0}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ic50_str</span><span class="p">())</span>
 
-        <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_items</span><span class="p">([</span>
+        <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">([</span>
                 <span class="p">(</span><span class="s1">&#39;concentration&#39;</span><span class="p">,</span> <span class="n">concentrations</span><span class="p">),</span>
                 <span class="p">(</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">samplename</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span><span class="p">),</span>
                 <span class="p">(</span><span class="s1">&#39;points&#39;</span><span class="p">,</span> <span class="n">points</span><span class="p">),</span>
                 <span class="p">(</span><span class="s1">&#39;fit&#39;</span><span class="p">,</span> <span class="n">fit</span><span class="p">),</span>
-                <span class="p">])</span>
+                <span class="p">]))</span>
 
 
 <div class="viewcode-block" id="fourParamLogistic.plot"><a class="viewcode-back" href="../../dms_tools2.neutcurve.html#dms_tools2.neutcurve.fourParamLogistic.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span> <span class="n">samplename</span><span class="p">,</span>
@@ -589,7 +589,7 @@
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -632,6 +632,14 @@
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -640,8 +648,8 @@
       &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

@@ -66,7 +66,7 @@ It then creates the summary plots described in <a class="reference internal" hre
 </div>
 <div class="section" id="command-line-usage">
 <span id="batch-diffsel-commandlineusage"></span><h2><a class="toc-backref" href="#id4">Command-line usage</a><a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
-<p>Perform many runs of <code class="docutils literal notranslate"><span class="pre">dms2_diffsel</span></code> and summarize results. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.3.0) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
+<p>Perform many runs of <code class="docutils literal notranslate"><span class="pre">dms2_diffsel</span></code> and summarize results. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.4.0) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">dms2_batch_diffsel</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">outdir</span> <span class="n">OUTDIR</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">ncpus</span> <span class="n">NCPUS</span><span class="p">]</span>
                           <span class="p">[</span><span class="o">--</span><span class="n">use_existing</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">indir</span> <span class="n">INDIR</span><span class="p">]</span>
                           <span class="p">[</span><span class="o">--</span><span class="n">chartype</span> <span class="p">{</span><span class="n">codon_to_aa</span><span class="p">}]</span> <span class="p">[</span><span class="o">--</span><span class="n">excludestop</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span>
@@ -125,19 +125,19 @@ It then creates the summary plots described in <a class="reference internal" hre
 <tr><td class="option-group">
 <kbd>--batchfile</kbd></td>
 <td><p class="first">CSV file specifying each <code class="docutils literal notranslate"><span class="pre">dms2_diffsel</span></code> run. Must have these columns: <cite>name</cite>, <cite>sel</cite>, <cite>mock</cite>. Can also have these: <cite>err</cite>, <cite>group</cite>, <cite>grouplabel</cite>. If <cite>group</cite> is used, samples are grouped in summary plots labeled by <cite>group</cite>, or by <cite>grouplabel</cite> if specified. Other columns are ignored, so other <code class="docutils literal notranslate"><span class="pre">dms2_diffsel</span></code> args should be passed as separate command line args rather than in <code class="docutils literal notranslate"><span class="pre">--batchfile</span></code>.</p>
-<p>Each of the arguments name, sel, mock, and optionally err gives the value of the same parameter passed to dms2_diffsel.
-If group is being used, then the group is pre-pended to name for that sample.
-In addition, group is used to organize output for similar runs that should be grouped when calculating means / medians and plotting.</p>
-<p class="last">If you are running with no error-control counts, then do not specify –err.</p>
+<p>Each of the arguments <cite>name</cite>, <cite>sel</cite>, <cite>mock</cite>, and optionally <cite>err</cite> gives the value of the same parameter passed to <code class="docutils literal notranslate"><span class="pre">dms2_diffsel</span></code>.
+If <cite>group</cite> is being used, then the <cite>group</cite> is pre-pended to <cite>name</cite> for that sample.
+In addition, <cite>group</cite> is used to organize output for similar runs that should be grouped when calculating means / medians and plotting.</p>
+<p class="last">If you are running with no error-control counts, then do <strong>not</strong> specify <code class="docutils literal notranslate"><span class="pre">--err</span></code>.</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd>--summaryprefix</kbd></td>
 </tr>
 <tr><td>&#160;</td><td><p class="first">Prefix of output summary files and plots.</p>
-<p class="last">As detailed in Output files below, dms2_batch_diffsel creates a variety of plots summarizing the output.
-These files are in the directory specified by –outdir, and have the prefix specified here.
+<p class="last">As detailed in <cite>Output files</cite> below, <code class="docutils literal notranslate"><span class="pre">dms2_batch_diffsel</span></code> creates a variety of plots summarizing the output.
+These files are in the directory specified by <code class="docutils literal notranslate"><span class="pre">--outdir</span></code>, and have the prefix specified here.
 This name should only contain letters, numbers, dashes, and spaces.
-Underscores are not allowed as they are a LaTex special character.</p>
+Underscores are <strong>not</strong> allowed as they are a LaTex special character.</p>
 </td></tr>
 </tbody>
 </table>
@@ -263,7 +263,7 @@ For instance, if you run <code class="docutils literal notranslate"><span class=
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -319,6 +319,14 @@ For instance, if you run <code class="docutils literal notranslate"><span class=
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -327,8 +335,8 @@ For instance, if you run <code class="docutils literal notranslate"><span class=
       &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/dms2_batch_diffsel.rst.txt"

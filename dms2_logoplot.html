@@ -52,7 +52,7 @@
 It uses a slightly modified version of <a class="reference external" href="https://code.google.com/p/weblogo/">weblogo</a> to make the logo plots themselves.</p>
 <p>If you run it using <code class="docutils literal notranslate"><span class="pre">--prefs</span></code> to specify the input file, then the plot will visualize <a class="reference internal" href="prefs.html#prefs"><span class="std std-ref">Amino-acid preferences</span></a>.</p>
 <p>If you run it using <code class="docutils literal notranslate"><span class="pre">--muteffects</span></code> to specify the input file, then the plot will visualize the logarithm base 2 of the mutational effect.
-You can calculate mutational effects from <a class="reference internal" href="prefs.html#prefs"><span class="std std-ref">Amino-acid preferences</span></a> using the function <code class="xref py py-func docutils literal notranslate"><span class="pre">dms_tools2.prefs.prefsToMutFromWtEffects()</span></code>.
+You can calculate mutational effects from <a class="reference internal" href="prefs.html#prefs"><span class="std std-ref">Amino-acid preferences</span></a> using the function <a class="reference internal" href="dms_tools2.prefs.html#dms_tools2.prefs.prefsToMutFromWtEffects" title="dms_tools2.prefs.prefsToMutFromWtEffects"><code class="xref py py-func docutils literal notranslate"><span class="pre">dms_tools2.prefs.prefsToMutFromWtEffects()</span></code></a>.
 The mutational effect calculated by this function is just the ratio of the preference for the mutant amino acid over the preference for the wildtype amino acid.</p>
 <p>If you run it using <code class="docutils literal notranslate"><span class="pre">--diffsel</span></code> to specify the input file, then the plot will visualize <a class="reference internal" href="diffsel.html#diffsel"><span class="std std-ref">Differential selection</span></a>.</p>
 <p>If you run it using <code class="docutils literal notranslate"><span class="pre">--fracsurvive</span></code> to specify the input file, then the plot will visualize the <a class="reference internal" href="fracsurvive.html#fracsurvive"><span class="std std-ref">Fraction surviving</span></a> for each mutation.</p>
@@ -60,15 +60,16 @@ The mutational effect calculated by this function is just the ratio of the prefe
 </div>
 <div class="section" id="command-line-usage">
 <span id="logoplot-commandlineusage"></span><h2><a class="toc-backref" href="#id4">Command-line usage</a><a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
-<p>Create logo plot visualization. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.3.0) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
+<p>Create logo plot visualization. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.4.0) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">dms2_logoplot</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">outdir</span> <span class="n">OUTDIR</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">ncpus</span> <span class="n">NCPUS</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">use_existing</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span>
-                     <span class="p">(</span><span class="o">--</span><span class="n">prefs</span> <span class="n">PREFS</span> <span class="o">|</span> <span class="o">--</span><span class="n">diffsel</span> <span class="n">DIFFSEL</span> <span class="o">|</span> <span class="o">--</span><span class="n">fracsurvive</span> <span class="n">FRACSURVIVE</span> <span class="o">|</span> <span class="o">--</span><span class="n">diffprefs</span> <span class="n">DIFFPREFS</span><span class="p">)</span>
+                     <span class="p">(</span><span class="o">--</span><span class="n">prefs</span> <span class="n">PREFS</span> <span class="o">|</span> <span class="o">--</span><span class="n">diffsel</span> <span class="n">DIFFSEL</span> <span class="o">|</span> <span class="o">--</span><span class="n">fracsurvive</span> <span class="n">FRACSURVIVE</span> <span class="o">|</span> <span class="o">--</span><span class="n">diffprefs</span> <span class="n">DIFFPREFS</span> <span class="o">|</span> <span class="o">--</span><span class="n">muteffects</span> <span class="n">MUTEFFECTS</span><span class="p">)</span>
                      <span class="o">--</span><span class="n">name</span> <span class="n">NAME</span> <span class="p">[</span><span class="o">--</span><span class="n">nperline</span> <span class="n">NPERLINE</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">numberevery</span> <span class="n">NUMBEREVERY</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">excludestop</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">stringency</span> <span class="n">STRINGENCY</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">restrictdiffsel</span> <span class="p">{</span><span class="nb">all</span><span class="p">,</span><span class="n">positive</span><span class="p">,</span><span class="n">negative</span><span class="p">}]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">diffselrange</span> <span class="n">MINDIFFSEL</span> <span class="n">MAXDIFFSEL</span><span class="p">]</span>
+                     <span class="p">[</span><span class="o">--</span><span class="n">muteffectrange</span> <span class="n">MINMUTEFFECT</span> <span class="n">MAXMUTEFFECT</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">fracsurvivemax</span> <span class="n">FRACSURVIVEMAX</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">sortsites</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">mapmetric</span> <span class="p">{</span><span class="n">kd</span><span class="p">,</span><span class="n">mw</span><span class="p">,</span><span class="n">charge</span><span class="p">,</span><span class="n">functionalgroup</span><span class="p">}]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">colormap</span> <span class="n">COLORMAP</span><span class="p">]</span>
@@ -117,10 +118,13 @@ The mutational effect calculated by this function is just the ratio of the prefe
 <kbd>--diffprefs</kbd></td>
 <td>CSV file of differences in amino-acid preferences.</td></tr>
 <tr><td class="option-group">
+<kbd>--muteffects</kbd></td>
+<td>CSV file of amino-acid mutational effects.</td></tr>
+<tr><td class="option-group">
 <kbd>--name</kbd></td>
 <td><p class="first">Name used for output files.</p>
 <p class="last">This name should only contain letters, numbers, dashes, and spaces.
-Underscores are not allowed as they are a LaTex special character.</p>
+Underscores are <strong>not</strong> allowed as they are a LaTex special character.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd>--nperline</kbd></td>
@@ -153,6 +157,10 @@ Underscores are not allowed as they are a LaTex special character.</p>
 <tr><td class="option-group">
 <kbd>--diffselrange</kbd></td>
 <td>Specify a fixed range for <cite>diffsel</cite>. Otherwise determined from data range.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd>--muteffectrange</kbd></td>
+</tr>
+<tr><td>&#160;</td><td>Specify a fixed range for <cite>muteffects</cite>. Otherwise determined from data range.</td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd>--fracsurvivemax</kbd></td>
 </tr>
@@ -191,7 +199,7 @@ Underscores are not allowed as they are a LaTex special character.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd>--scalebar</kbd></td>
-<td>Plot a scale bar indicating BARHEIGHT with LABEL. Only for <cite>diffsel</cite> and <cite>fracsurvive</cite>.</td></tr>
+<td>Plot a scale bar indicating BARHEIGHT with LABEL. Only for <cite>diffsel</cite>, <cite>fracsurvive</cite>, and <cite>muteffects</cite>.</td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd>--overlaycolormap</kbd></td>
 </tr>
@@ -269,7 +277,7 @@ An example of such a logo plot is in the <a class="reference external" href="htt
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -325,6 +333,14 @@ An example of such a logo plot is in the <a class="reference external" href="htt
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -333,8 +349,8 @@ An example of such a logo plot is in the <a class="reference external" href="htt
       &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/dms2_logoplot.rst.txt"

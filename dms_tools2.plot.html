@@ -377,8 +377,9 @@ or single string if <cite>xlist</cite> is a number.</dd>
 <dd><dl class="first last docutils">
 <dt><cite>df</cite> (pandas DataFrame)</dt>
 <dd>Data frame with data to plot.</dd>
-<dt><cite>plotfile</cite> (str)</dt>
-<dd>Name of created plot.</dd>
+<dt><cite>plotfile</cite> (str or <cite>None</cite>)</dt>
+<dd>Name of created plot, or <cite>None</cite> if you want
+plot returned.</dd>
 <dt><cite>cols</cite> (list)</dt>
 <dd>List of columns in <cite>df</cite> to plot.</dd>
 <dt><cite>lower_filter</cite> (<cite>None</cite> or str)</dt>
@@ -391,6 +392,10 @@ data for which this query is <cite>True</cite>.</dd>
 <dd>See argument of same name to <a class="reference internal" href="#dms_tools2.plot.hist_bins_intsafe" title="dms_tools2.plot.hist_bins_intsafe"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hist_bins_intsafe()</span></code></a>.</dd>
 </dl>
 </dd>
+<dt>Returns:</dt>
+<dd>If <cite>plotfile</cite> is a string, makes the plot and does
+not return anything. If <cite>plotfile</cite> is <cite>None</cite>, returns
+the plot.</dd>
 </dl>
 </dd></dl>
 
@@ -653,7 +658,7 @@ of &gt;= this.</dd>
 
 <dl class="function">
 <dt id="dms_tools2.plot.plotSiteDiffSel">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotSiteDiffSel</code><span class="sig-paren">(</span><em>names</em>, <em>diffselfiles</em>, <em>plotfile</em>, <em>diffseltype</em>, <em>maxcol=2</em>, <em>white_bg=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotSiteDiffSel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotSiteDiffSel" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotSiteDiffSel</code><span class="sig-paren">(</span><em>names</em>, <em>diffselfiles</em>, <em>plotfile</em>, <em>diffseltype</em>, <em>maxcol=2</em>, <em>white_bg=False</em>, <em>highlighted_sites=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotSiteDiffSel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotSiteDiffSel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot site diffsel or fracsurvive along sequence.</p>
 <p>Despite the function name, this function can be used to
 plot either differential selection or fraction surviving.</p>
@@ -685,6 +690,8 @@ plot either differential selection or fraction surviving.</p>
 <dd>Number of columns in faceted plot.</dd>
 <dt><cite>white_bg</cite> (bool)</dt>
 <dd>Plots will have a white background with limited other formatting.</dd>
+<dt><cite>highlighted_sites</cite> (list)</dt>
+<dd>Highlight sites of interest (passed in string format) in grey.</dd>
 </dl>
 </dd>
 </dl>
@@ -727,7 +734,7 @@ plot either differential selection or fraction surviving.</p>
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -777,6 +784,14 @@ plot either differential selection or fraction surviving.</p>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -785,8 +800,8 @@ plot either differential selection or fraction surviving.</p>
       &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/dms_tools2.plot.rst.txt"

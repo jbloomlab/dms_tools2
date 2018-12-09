@@ -105,10 +105,11 @@ giving frequencies in alignment.</dd>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">aas_nocounts</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">AAS</span> <span class="k">if</span> <span class="n">a</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">aas_counts</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="mi">0</span> <span class="o">==</span> <span class="n">aafreqs</span><span class="p">[</span><span class="n">aas_nocounts</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 <span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">expected_counts</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_items</span><span class="p">([</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">expected_counts</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">([</span>
 <span class="gp">... </span>        <span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span>
 <span class="gp">... </span>        <span class="p">(</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="p">(</span><span class="s1">&#39;R&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span>
-<span class="gp">... </span>        <span class="p">(</span><span class="s1">&#39;Q&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])])</span>
+<span class="gp">... </span>        <span class="p">(</span><span class="s1">&#39;Q&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])]))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">expected_counts</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">aafreqs</span><span class="p">[[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">aas_counts</span><span class="p">])</span>
 <span class="go">True</span>
 </pre></div>
@@ -503,6 +504,57 @@ a column for every character in <cite>charlist</cite>.</dd>
 </dd></dl>
 
 <dl class="function">
+<dt id="dms_tools2.prefs.prefsToMutFromWtEffects">
+<code class="descclassname">dms_tools2.prefs.</code><code class="descname">prefsToMutFromWtEffects</code><span class="sig-paren">(</span><em>prefs</em>, <em>charlist</em>, <em>wts</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#prefsToMutFromWtEffects"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.prefsToMutFromWtEffects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts preferences effects of mutations away from wildtype.</p>
+<p>This function is similar to <a class="reference internal" href="#dms_tools2.prefs.prefsToMutEffects" title="dms_tools2.prefs.prefsToMutEffects"><code class="xref py py-func docutils literal notranslate"><span class="pre">prefsToMutEffects()</span></code></a> but
+computes the effects of mutations away from a given wildtype
+sequence.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>prefs</cite></dt>
+<dd>Same meaning as for <a class="reference internal" href="#dms_tools2.prefs.prefsToMutEffects" title="dms_tools2.prefs.prefsToMutEffects"><code class="xref py py-func docutils literal notranslate"><span class="pre">prefsToMutEffects()</span></code></a>.</dd>
+<dt><cite>charlist</cite></dt>
+<dd>Same meaning as for <a class="reference internal" href="#dms_tools2.prefs.prefsToMutEffects" title="dms_tools2.prefs.prefsToMutEffects"><code class="xref py py-func docutils literal notranslate"><span class="pre">prefsToMutEffects()</span></code></a>.</dd>
+<dt><cite>wts</cite> (pandas DataFrame)</dt>
+<dd>Has columns named “site” and “wildtype” giving the
+wildtype amino acid for each site. The sites must
+match those in <cite>prefs</cite>.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A pandas DataFrame similar to that returned by
+<a class="reference internal" href="#dms_tools2.prefs.prefsToMutEffects" title="dms_tools2.prefs.prefsToMutEffects"><code class="xref py py-func docutils literal notranslate"><span class="pre">prefsToMutEffects()</span></code></a> except that it only
+contains mutations away from the wildtype character
+at each site, and the columns specifying the wildtype
+and mutant characters are named “wildtype” and “mutant”
+rather than “initial” and “final”.</dd>
+</dl>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">charlist</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">prefs</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+<span class="gp">... </span>        <span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;A&#39;</span><span class="p">:[</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;C&#39;</span><span class="p">:[</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;G&#39;</span><span class="p">:[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wts</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+<span class="gp">... </span>        <span class="s1">&#39;site&#39;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s1">&#39;wildtype&#39;</span><span class="p">:[</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">]</span>
+<span class="gp">... </span>        <span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">prefsToMutFromWtEffects</span><span class="p">(</span><span class="n">prefs</span><span class="p">,</span> <span class="n">charlist</span><span class="p">,</span> <span class="n">wts</span><span class="p">)</span>
+<span class="go">   site wildtype mutant mutation  effect  log2effect</span>
+<span class="go">0     1        G      A      G1A     0.5        -1.0</span>
+<span class="go">1     1        G      C      G1C     0.5        -1.0</span>
+<span class="go">2     1        G      G      G1G     1.0         0.0</span>
+<span class="go">3     2        C      A      C2A     0.5        -1.0</span>
+<span class="go">4     2        C      C      C2C     1.0         0.0</span>
+<span class="go">5     2        C      G      C2G     0.5        -1.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
 <dt id="dms_tools2.prefs.rescalePrefs">
 <code class="descclassname">dms_tools2.prefs.</code><code class="descname">rescalePrefs</code><span class="sig-paren">(</span><em>prefs</em>, <em>stringency</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#rescalePrefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.rescalePrefs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Re-scale amino acid preferences by stringency parameter.</p>
@@ -582,7 +634,7 @@ re-scaled preferences.</dd>
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -632,6 +684,14 @@ re-scaled preferences.</dd>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -640,8 +700,8 @@ re-scaled preferences.</dd>
       &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/dms_tools2.prefs.rst.txt"

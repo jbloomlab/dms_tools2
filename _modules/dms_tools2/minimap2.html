@@ -186,6 +186,8 @@
 <span class="sd">    When initializing, set Q-values to `math.nan` if they are</span>
 <span class="sd">    not known. The Q-values are used to calculate accuracy</span>
 <span class="sd">    of mutations via :meth:`dms_tools2.pacbio.qvalsToAccuracy`.</span>
+<span class="sd">    Likewise, pass `math.nan` for homopolymer lengths if they</span>
+<span class="sd">    are not known.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        `substitution_tuples` (list)</span>
@@ -193,13 +195,13 @@
 <span class="sd">            `i` is the site number, `mut_str` is a string</span>
 <span class="sd">            describing substitution, and `q` is the Q-value.</span>
 <span class="sd">        `insertion_tuples` (list)</span>
-<span class="sd">            Insertions `(i, ins_len, mut_str, q, hplen)` where `i`</span>
+<span class="sd">            Insertions `(i, ins_len, mut_str, qs, hplen)` where `i`</span>
 <span class="sd">            is site **after** insertion, `inslen` is insertion length,</span>
 <span class="sd">            `mut_str` is string describing insertion, `qs` is</span>
 <span class="sd">            numpy array of Q-values, and `hplen` is length of homopolymer</span>
 <span class="sd">            in which insertion occurs.</span>
 <span class="sd">        `deletion_tuples` (list)</span>
-<span class="sd">            Deletions `(istart, iend, mut_str`, q, hplen)` where</span>
+<span class="sd">            Deletions `(istart, iend, mut_str, q, hplen)` where</span>
 <span class="sd">            `istart` is first site of deletion, `iend` is</span>
 <span class="sd">            last site of deletion (so a single nucleotide</span>
 <span class="sd">            deletion has `istart == iend`), `mut_str` is string</span>
@@ -208,8 +210,13 @@
 <span class="sd">            `PacBio CCS &lt;https://github.com/PacificBiosciences/unanimity/blob/develop/doc/PBCCS.md#interpretting-qual-values&gt;`_</span>
 <span class="sd">            specification, and `hplen` is length of homopolymer</span>
 <span class="sd">            in which deletion occurs.</span>
+<span class="sd">        `acc_not_q` (bool)</span>
+<span class="sd">            If `True`, then the tuples used to pass the mutations</span>
+<span class="sd">            should give the accuracy rather than the Q-values.</span>
 
-<span class="sd">    After intialization, use the methods described below to get</span>
+<span class="sd">    You can also create objects using :class:`Mutations.from_str`.</span>
+
+<span class="sd">    After initialization, use the methods described below to get</span>
 <span class="sd">    information about the mutations. All of the methods that</span>
 <span class="sd">    return lists of mutations do them ordered by site (first to last).</span>
 
@@ -266,14 +273,252 @@
 <span class="sd">    [2]</span>
 <span class="sd">    &gt;&gt;&gt; muts.insertions(returnval=&#39;homopolymer_length&#39;)</span>
 <span class="sd">    [1]</span>
+
+<span class="sd">    Show how we can get string representations with</span>
+<span class="sd">    `repr` and `str`:</span>
+
+<span class="sd">    &gt;&gt;&gt; str(muts) == repr(muts)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; str(muts)</span>
+<span class="sd">    &#39;A1T; G13A (accuracy = 0.990000); C15A (accuracy = 0.999000); ins5len2 (accuracy = 0.994500, homopolymer length = 1); del8to10 (accuracy = 0.990000, homopolymer length = 2)&#39;</span>
+
+<span class="sd">    Note that when Q-values or homopolymer lengths are not provided,</span>
+<span class="sd">    then the aren&#39;t printed in the `str` representation:</span>
+
+<span class="sd">    &gt;&gt;&gt; str(Mutations(substitution_tuples=[], insertion_tuples=[],</span>
+<span class="sd">    ...         deletion_tuples=[(8, 10, &#39;del8to10&#39;, math.nan, math.nan),</span>
+<span class="sd">    ...                          (12, 14, &#39;del12to14&#39;, math.nan, 4)]))</span>
+<span class="sd">    &#39;del8to10; del12to14 (homopolymer length = 4)&#39;</span>
+
+<span class="sd">    Also show what these representations look like when there</span>
+<span class="sd">    are no mutations:</span>
+
+<span class="sd">    &gt;&gt;&gt; str(Mutations(substitution_tuples=[], insertion_tuples=[],</span>
+<span class="sd">    ...         deletion_tuples=[]))</span>
+<span class="sd">    &#39;no mutations&#39;</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">substitution_tuples</span><span class="p">,</span> <span class="n">insertion_tuples</span><span class="p">,</span>
-            <span class="n">deletion_tuples</span><span class="p">):</span>
+            <span class="n">deletion_tuples</span><span class="p">,</span> <span class="n">acc_not_q</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;See main class doc string.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_substitution_tuples</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">substitution_tuples</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_insertion_tuples</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">insertion_tuples</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_deletion_tuples</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">deletion_tuples</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_substitution_tuples</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">mut_str</span><span class="p">,</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">substitution_tuples</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">acc_not_q</span><span class="p">:</span>
+                <span class="n">acc</span> <span class="o">=</span> <span class="n">q</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">acc</span> <span class="o">=</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">pacbio</span><span class="o">.</span><span class="n">qvalsToAccuracy</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_substitution_tuples</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">mut_str</span><span class="p">,</span> <span class="n">acc</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_insertion_tuples</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ins_len</span><span class="p">,</span> <span class="n">mut_str</span><span class="p">,</span> <span class="n">qs</span><span class="p">,</span> <span class="n">hplen</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">insertion_tuples</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">acc_not_q</span><span class="p">:</span>
+                <span class="n">acc</span> <span class="o">=</span> <span class="n">qs</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">acc</span> <span class="o">=</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">pacbio</span><span class="o">.</span><span class="n">qvalsToAccuracy</span><span class="p">(</span><span class="n">qs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">hplen</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">hplen</span><span class="p">):</span>
+                <span class="n">hplen</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_insertion_tuples</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">ins_len</span><span class="p">,</span> <span class="n">mut_str</span><span class="p">,</span> <span class="n">acc</span><span class="p">,</span> <span class="n">hplen</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_deletion_tuples</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="n">mut_str</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">hplen</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">deletion_tuples</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">acc_not_q</span><span class="p">:</span>
+                <span class="n">acc</span> <span class="o">=</span> <span class="n">q</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">acc</span> <span class="o">=</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">pacbio</span><span class="o">.</span><span class="n">qvalsToAccuracy</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">hplen</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">hplen</span><span class="p">):</span>
+                <span class="n">hplen</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_deletion_tuples</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="n">mut_str</span><span class="p">,</span> <span class="n">acc</span><span class="p">,</span> <span class="n">hplen</span><span class="p">))</span>
+
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span>
+
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">mut_str</span><span class="p">,</span> <span class="n">acc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_substitution_tuples</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">acc</span><span class="p">):</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mut_str</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{mut_str}</span><span class="s1"> (accuracy = </span><span class="si">{acc:.6f}</span><span class="s1">)&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ins_len</span><span class="p">,</span> <span class="n">mut_str</span><span class="p">,</span> <span class="n">acc</span><span class="p">,</span> <span class="n">hplen</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_insertion_tuples</span><span class="p">:</span>
+            <span class="n">i_str</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">acc</span><span class="p">):</span>
+                <span class="n">i_str</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;accuracy = </span><span class="si">{acc:.6f}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">hplen</span><span class="p">):</span>
+                <span class="n">i_str</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;homopolymer length = </span><span class="si">{hplen}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i_str</span><span class="p">:</span>
+                <span class="n">i_str</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">i_str</span><span class="p">)</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{mut_str}</span><span class="s1"> (</span><span class="si">{i_str}</span><span class="s1">)&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mut_str</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="n">mut_str</span><span class="p">,</span> <span class="n">acc</span><span class="p">,</span> <span class="n">hplen</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deletion_tuples</span><span class="p">:</span>
+            <span class="n">i_str</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">acc</span><span class="p">):</span>
+                <span class="n">i_str</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;accuracy = </span><span class="si">{acc:.6f}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">hplen</span><span class="p">):</span>
+                <span class="n">i_str</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;homopolymer length = </span><span class="si">{hplen}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i_str</span><span class="p">:</span>
+                <span class="n">i_str</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">i_str</span><span class="p">)</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{mut_str}</span><span class="s1"> (</span><span class="si">{i_str}</span><span class="s1">)&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mut_str</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;no mutations&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s1">&#39;; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Mutations.from_str"><a class="viewcode-back" href="../../dms_tools2.minimap2.html#dms_tools2.minimap2.Mutations.from_str">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_str</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">mut_str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create :class:`Mutations` from str representation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            `mut_str` (str)</span>
+<span class="sd">                String representation as returned by `str(mut)`</span>
+<span class="sd">                where `mut` is a :class:`Mutations` object.</span>
+<span class="sd">                See the examples below for more details.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :class:`Mutations` object.</span>
+
+<span class="sd">        Examples of creating :class:`Mutations.from_str`.</span>
+<span class="sd">        First, a single substitution without an accuracy:</span>
+
+<span class="sd">        &gt;&gt;&gt; m = Mutations.from_str(&#39;A1T&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; str(m)</span>
+<span class="sd">        &#39;A1T&#39;</span>
+<span class="sd">        &gt;&gt;&gt; str(m) == str(Mutations(substitution_tuples=[(1, &#39;A1T&#39;, math.nan)],</span>
+<span class="sd">        ...         deletion_tuples=[], insertion_tuples=[]))</span>
+<span class="sd">        True</span>
+
+<span class="sd">        And now substitutions with Q-values:</span>
+
+<span class="sd">        &gt;&gt;&gt; m2 = Mutations.from_str(&#39;A1T (accuracy = 0.99); G3A (accuracy = 0.999)&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; m2 == Mutations.from_str(str(m2))</span>
+<span class="sd">        True</span>
+
+<span class="sd">        Now including deletions:</span>
+
+<span class="sd">        &gt;&gt;&gt; m3 = Mutations.from_str(</span>
+<span class="sd">        ...         &#39;del1to3 (accuracy = 0.99); &#39;</span>
+<span class="sd">        ...         &#39;A6T (accuracy = 0.995); &#39;</span>
+<span class="sd">        ...         &#39;del8to9 (accuracy = 0.999, homopolymer length = 2)&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; str(m3)</span>
+<span class="sd">        &#39;A6T (accuracy = 0.995000); del1to3 (accuracy = 0.990000); del8to9 (accuracy = 0.999000, homopolymer length = 2)&#39;</span>
+
+<span class="sd">        An insertion:</span>
+
+<span class="sd">        &gt;&gt;&gt; m4 = Mutations.from_str(&#39;ins5len2 (accuracy = 0.99, homopolymer length = 3)&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; str(m4)</span>
+<span class="sd">        &#39;ins5len2 (accuracy = 0.990000, homopolymer length = 3)&#39;</span>
+
+<span class="sd">        Example of a null mutation:</span>
+
+<span class="sd">        &gt;&gt;&gt; m_null = Mutations.from_str(&#39;no mutations&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; m_null2 = Mutations.from_str(&#39;&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; m_null == m_null2</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; str(m_null) == str(m_null2)</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; str(m_null)</span>
+<span class="sd">        &#39;no mutations&#39;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sub_tups</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">ins_tups</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">del_tups</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">mut_str</span><span class="p">)</span> <span class="ow">or</span> <span class="n">mut_str</span><span class="o">.</span><span class="n">isspace</span><span class="p">()</span> <span class="ow">or</span> <span class="n">mut_str</span> <span class="o">==</span> <span class="s1">&#39;no mutations&#39;</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sub_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+                    <span class="s1">&#39;^(?P&lt;wt&gt;[ACGT])(?P&lt;i&gt;\d+)(?P&lt;mut&gt;[ACGT])&#39;</span>
+                    <span class="s1">&#39;(?: \(accuracy = (?P&lt;acc&gt;\d+\.{0,1}\d*)\)){0,1}$&#39;</span><span class="p">)</span>
+
+            <span class="n">del_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+                    <span class="s1">&#39;^del(?P&lt;istart&gt;\d+)to(?P&lt;iend&gt;\d+)&#39;</span>
+                    <span class="s1">&#39;(?: \((?:accuracy = (?P&lt;acc&gt;\d+\.{0,1}\d*)){0,1}(?:\, ){0,1}&#39;</span>
+                    <span class="s1">&#39;(?:homopolymer length = (?P&lt;hplen&gt;\d+)){0,1}\)){0,1}$&#39;</span><span class="p">)</span>
+
+            <span class="n">ins_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+                    <span class="s1">&#39;ins(?P&lt;i&gt;\d+)len(?P&lt;ins_len&gt;\d+)&#39;</span>
+                    <span class="s1">&#39;(?: \((?:accuracy = (?P&lt;acc&gt;\d+\.{0,1}\d*)){0,1}(?:\, ){0,1}&#39;</span>
+                    <span class="s1">&#39;(?:homopolymer length = (?P&lt;hplen&gt;\d+)){0,1}\)){0,1}$&#39;</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">strip</span><span class="p">,</span> <span class="n">mut_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="p">)):</span>
+
+                <span class="n">m</span> <span class="o">=</span> <span class="n">sub_match</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+                    <span class="n">acc</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;acc&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">acc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">acc</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">acc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">acc</span><span class="p">)</span>
+                    <span class="n">sub_tups</span><span class="o">.</span><span class="n">append</span><span class="p">((</span>
+                            <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;i&#39;</span><span class="p">)),</span>
+                            <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;i&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;mut&#39;</span><span class="p">),</span>
+                            <span class="n">acc</span>
+                            <span class="p">))</span>
+                    <span class="k">continue</span>
+
+                <span class="n">m</span> <span class="o">=</span> <span class="n">del_match</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+                    <span class="n">acc</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;acc&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">acc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">acc</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">acc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">acc</span><span class="p">)</span>
+                    <span class="n">hplen</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;hplen&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">hplen</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">hplen</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">hplen</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hplen</span><span class="p">)</span>
+                    <span class="n">del_tups</span><span class="o">.</span><span class="n">append</span><span class="p">((</span>
+                            <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;istart&#39;</span><span class="p">)),</span>
+                            <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;iend&#39;</span><span class="p">)),</span>
+                            <span class="s1">&#39;del&#39;</span> <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;istart&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;to&#39;</span> <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;iend&#39;</span><span class="p">),</span>
+                            <span class="n">acc</span><span class="p">,</span>
+                            <span class="n">hplen</span>
+                            <span class="p">))</span>
+                    <span class="k">continue</span>
+
+                <span class="n">m</span> <span class="o">=</span> <span class="n">ins_match</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+                    <span class="n">acc</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;acc&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">acc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">acc</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">acc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">acc</span><span class="p">)</span>
+                    <span class="n">hplen</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;hplen&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">hplen</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">hplen</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">hplen</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hplen</span><span class="p">)</span>
+                    <span class="n">ins_tups</span><span class="o">.</span><span class="n">append</span><span class="p">((</span>
+                            <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;i&#39;</span><span class="p">)),</span>
+                            <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;ins_len&#39;</span><span class="p">)),</span>
+                            <span class="s1">&#39;ins&#39;</span> <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;i&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;len&#39;</span> <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;ins_len&#39;</span><span class="p">),</span>
+                            <span class="n">acc</span><span class="p">,</span>
+                            <span class="n">hplen</span>
+                            <span class="p">))</span>
+                    <span class="k">continue</span>
+
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;could not match </span><span class="si">{s}</span><span class="s2"> in </span><span class="si">{mut_str}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;could not match </span><span class="si">{s}</span><span class="s2"> in </span><span class="si">{mut_str}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">substitution_tuples</span><span class="o">=</span><span class="n">sub_tups</span><span class="p">,</span>
+                   <span class="n">insertion_tuples</span><span class="o">=</span><span class="n">ins_tups</span><span class="p">,</span>
+                   <span class="n">deletion_tuples</span><span class="o">=</span><span class="n">del_tups</span><span class="p">,</span>
+                   <span class="n">acc_not_q</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Mutations.substitutions"><a class="viewcode-back" href="../../dms_tools2.minimap2.html#dms_tools2.minimap2.Mutations.substitutions">[docs]</a>    <span class="k">def</span> <span class="nf">substitutions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">returnval</span><span class="o">=</span><span class="s1">&#39;mutation&#39;</span><span class="p">,</span> <span class="n">min_acc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -303,8 +548,7 @@
         <span class="k">if</span> <span class="n">min_acc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">subtups</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_substitution_tuples</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">accs</span> <span class="o">=</span> <span class="p">[</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">pacbio</span><span class="o">.</span><span class="n">qvalsToAccuracy</span><span class="p">(</span><span class="n">tup</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-                    <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_substitution_tuples</span><span class="p">]</span>
+            <span class="n">accs</span> <span class="o">=</span> <span class="p">[</span><span class="n">tup</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_substitution_tuples</span><span class="p">]</span>
             <span class="n">subtups</span> <span class="o">=</span> <span class="p">[</span><span class="n">tup</span> <span class="k">for</span> <span class="n">tup</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_substitution_tuples</span><span class="p">,</span> <span class="n">accs</span><span class="p">)</span> <span class="k">if</span>
                     <span class="p">(</span><span class="n">a</span> <span class="o">&gt;=</span> <span class="n">min_acc</span><span class="p">)</span> <span class="ow">or</span> <span class="p">((</span><span class="ow">not</span> <span class="n">min_acc_filter_nan</span><span class="p">)</span> <span class="ow">and</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">a</span><span class="p">))]</span>
 
@@ -313,8 +557,7 @@
         <span class="k">elif</span> <span class="n">returnval</span> <span class="o">==</span> <span class="s1">&#39;site&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">tup</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">subtups</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">returnval</span> <span class="o">==</span> <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">[</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">pacbio</span><span class="o">.</span><span class="n">qvalsToAccuracy</span><span class="p">(</span><span class="n">tup</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-                    <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">subtups</span><span class="p">]</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">tup</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">subtups</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;invalid `returnval` </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">returnval</span><span class="p">))</span></div>
 
@@ -353,8 +596,7 @@
         <span class="k">if</span> <span class="n">min_acc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">instups</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_insertion_tuples</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">accs</span> <span class="o">=</span> <span class="p">[</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">pacbio</span><span class="o">.</span><span class="n">qvalsToAccuracy</span><span class="p">(</span><span class="n">tup</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-                    <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_insertion_tuples</span><span class="p">]</span>
+            <span class="n">accs</span> <span class="o">=</span> <span class="p">[</span><span class="n">tup</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_insertion_tuples</span><span class="p">]</span>
             <span class="n">instups</span> <span class="o">=</span> <span class="p">[</span><span class="n">tup</span> <span class="k">for</span> <span class="n">tup</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_insertion_tuples</span><span class="p">,</span> <span class="n">accs</span><span class="p">)</span> <span class="k">if</span>
                     <span class="p">(</span><span class="n">a</span> <span class="o">&gt;=</span> <span class="n">min_acc</span><span class="p">)</span> <span class="ow">or</span> <span class="p">((</span><span class="ow">not</span> <span class="n">min_acc_filter_nan</span><span class="p">)</span> <span class="ow">and</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">a</span><span class="p">))]</span>
 
@@ -365,8 +607,7 @@
         <span class="k">elif</span> <span class="n">returnval</span> <span class="o">==</span> <span class="s1">&#39;length&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">instups</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">returnval</span> <span class="o">==</span> <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">[</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">pacbio</span><span class="o">.</span><span class="n">qvalsToAccuracy</span><span class="p">(</span><span class="n">tup</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-                    <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">instups</span><span class="p">]</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">tup</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">instups</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">returnval</span> <span class="o">==</span> <span class="s1">&#39;homopolymer_length&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">tup</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">instups</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -407,8 +648,7 @@
         <span class="k">if</span> <span class="n">min_acc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">deltups</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deletion_tuples</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">accs</span> <span class="o">=</span> <span class="p">[</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">pacbio</span><span class="o">.</span><span class="n">qvalsToAccuracy</span><span class="p">(</span><span class="n">tup</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-                    <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deletion_tuples</span><span class="p">]</span>
+            <span class="n">accs</span> <span class="o">=</span> <span class="p">[</span><span class="n">tup</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deletion_tuples</span><span class="p">]</span>
             <span class="n">deltups</span> <span class="o">=</span> <span class="p">[</span><span class="n">tup</span> <span class="k">for</span> <span class="n">tup</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_deletion_tuples</span><span class="p">,</span> <span class="n">accs</span><span class="p">)</span> <span class="k">if</span>
                     <span class="p">(</span><span class="n">a</span> <span class="o">&gt;=</span> <span class="n">min_acc</span><span class="p">)</span> <span class="ow">or</span> <span class="p">((</span><span class="ow">not</span> <span class="n">min_acc_filter_nan</span><span class="p">)</span> <span class="ow">and</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">a</span><span class="p">))]</span>
 
@@ -419,8 +659,7 @@
         <span class="k">elif</span> <span class="n">returnval</span> <span class="o">==</span> <span class="s1">&#39;length&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">tup</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">deltups</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">returnval</span> <span class="o">==</span> <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">[</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">pacbio</span><span class="o">.</span><span class="n">qvalsToAccuracy</span><span class="p">(</span><span class="n">tup</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-                    <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">deltups</span><span class="p">]</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">tup</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">deltups</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">returnval</span> <span class="o">==</span> <span class="s1">&#39;homopolymer_length&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">tup</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">deltups</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -2509,7 +2748,7 @@
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -2552,6 +2791,14 @@
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -2560,8 +2807,8 @@
       &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

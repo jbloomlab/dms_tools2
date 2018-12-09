@@ -51,12 +51,15 @@
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">pickle</span>
 <span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+
 <span class="kn">import</span> <span class="nn">natsort</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">numpy.random</span>
 <span class="kn">import</span> <span class="nn">pandas</span>
 <span class="kn">import</span> <span class="nn">Bio.SeqIO</span>
 <span class="kn">import</span> <span class="nn">pystan</span>
+
 <span class="kn">import</span> <span class="nn">dms_tools2</span>
 
 <span class="c1">#: minimum value for Dirichlet prior elements</span>
@@ -547,39 +550,53 @@
 <span class="sd">            Specifies how errors are estimated. Passing error model</span>
 <span class="sd">            objects is faster if calling this function repeatedly</span>
 <span class="sd">            as they will not need to be compiled. Can be:</span>
+
 <span class="sd">              - The str `none` or instance of `StanModelNoneErr`:</span>
 <span class="sd">                no errors (:math:`\\boldsymbol{\mathbf{\epsilon_r}} = \\boldsymbol{\mathbf{\\rho_r}} = \mathbf{0}`)</span>
+
 <span class="sd">              - The str `same` or instance of `StanModelSameErr`: </span>
 <span class="sd">                same error rates  pre and post-selection </span>
 <span class="sd">                (:math:`\\boldsymbol{\mathbf{\epsilon_r}} = \\boldsymbol{\mathbf{\\rho_r}}`).</span>
+
 <span class="sd">              - The str `different` or instance of `StanModelDifferentErr`: </span>
 <span class="sd">                different error rates pre- and post-selection</span>
 <span class="sd">                (:math:`\\boldsymbol{\mathbf{\epsilon_r}} \\ne \\boldsymbol{\mathbf{\\rho_r}}`).</span>
+
 <span class="sd">        `counts` (dict)</span>
 <span class="sd">            Deep sequencing counts. Each string key should specify</span>
 <span class="sd">            a dict keyed by all characters in `charlist` with</span>
 <span class="sd">            the values giving integer counts for that character. The keys:</span>
+
 <span class="sd">                - `pre`: :math:`\\boldsymbol{\mathbf{n_r^{\\rm{pre}}}}`</span>
+
 <span class="sd">                - `post`: :math:`\\boldsymbol{\mathbf{n_r^{\\rm{post}}}}`</span>
+
 <span class="sd">                - *err*: required if `error_model` is `same`, specifies</span>
 <span class="sd">                  :math:`\\boldsymbol{\mathbf{n_r^{\\rm{err,pre}}}} = \\boldsymbol{\mathbf{n_r^{\\rm{err,post}}}}`</span>
+
 <span class="sd">                - `errpre` and `errpost`: required if `error_model` is</span>
 <span class="sd">                  `different`, specify </span>
 <span class="sd">                  :math:`\\boldsymbol{\mathbf{n_r^{\\rm{err,pre}}}}` and</span>
 <span class="sd">                  :math:`\\boldsymbol{\mathbf{n_r^{\\rm{err,post}}}}`.</span>
+
 <span class="sd">        `priors` (dict)</span>
 <span class="sd">            Specifies parameter vectors for Dirichlet priors. Each string</span>
 <span class="sd">            key should specify a dict keyed by all characters and values</span>
 <span class="sd">            giving the prior for that character. Values less than </span>
 <span class="sd">            `PRIOR_MIN_VALUE` are set to `PRIOR_MIN_VALUE`. Keys are</span>
+
 <span class="sd">                - `pir_prior_params`: :math:`\\boldsymbol{\mathbf{a_{\pi,r}}}`</span>
+
 <span class="sd">                - `mur_prior_params`: :math:`\\boldsymbol{\mathbf{a_{\mu,r}}}`</span>
+
 <span class="sd">                - `epsilonr_prior_params`: only required if `error_model` is </span>
 <span class="sd">                  `same` or `different`, specifies </span>
 <span class="sd">                  :math:`\\boldsymbol{\mathbf{a_{\epsilon,r}}}`</span>
+
 <span class="sd">                - `rhor_prior_params` : only required if `error_model` is </span>
 <span class="sd">                  `different`, specifies</span>
 <span class="sd">                  :math:`\\boldsymbol{\mathbf{a_{\\rho,r}}}`</span>
+
 <span class="sd">        `seed` (int)</span>
 <span class="sd">            Random number seed for MCMC. </span>
 <span class="sd">        `n_jobs` (int)</span>
@@ -730,6 +747,80 @@
                 <span class="k">return</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">pi_means</span><span class="p">,</span> <span class="n">pi_95credint</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">logstring</span><span class="p">))</span></div>
 
 
+<div class="viewcode-block" id="prefsToMutFromWtEffects"><a class="viewcode-back" href="../../dms_tools2.prefs.html#dms_tools2.prefs.prefsToMutFromWtEffects">[docs]</a><span class="k">def</span> <span class="nf">prefsToMutFromWtEffects</span><span class="p">(</span><span class="n">prefs</span><span class="p">,</span> <span class="n">charlist</span><span class="p">,</span> <span class="n">wts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Converts preferences effects of mutations away from wildtype.</span>
+
+<span class="sd">    This function is similar to :func:`prefsToMutEffects` but</span>
+<span class="sd">    computes the effects of mutations away from a given wildtype</span>
+<span class="sd">    sequence.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `prefs`</span>
+<span class="sd">            Same meaning as for :func:`prefsToMutEffects`.</span>
+<span class="sd">        `charlist`</span>
+<span class="sd">            Same meaning as for :func:`prefsToMutEffects`.</span>
+<span class="sd">        `wts` (pandas DataFrame)</span>
+<span class="sd">            Has columns named &quot;site&quot; and &quot;wildtype&quot; giving the</span>
+<span class="sd">            wildtype amino acid for each site. The sites must</span>
+<span class="sd">            match those in `prefs`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A pandas DataFrame similar to that returned by</span>
+<span class="sd">        :func:`prefsToMutEffects` except that it only</span>
+<span class="sd">        contains mutations away from the wildtype character</span>
+<span class="sd">        at each site, and the columns specifying the wildtype</span>
+<span class="sd">        and mutant characters are named &quot;wildtype&quot; and &quot;mutant&quot;</span>
+<span class="sd">        rather than &quot;initial&quot; and &quot;final&quot;.</span>
+
+<span class="sd">    &gt;&gt;&gt; charlist = [&#39;A&#39;, &#39;C&#39;, &#39;G&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; prefs = pandas.DataFrame({</span>
+<span class="sd">    ...         &#39;site&#39;:[1, 2],</span>
+<span class="sd">    ...         &#39;A&#39;:[0.25, 0.25],</span>
+<span class="sd">    ...         &#39;C&#39;:[0.25, 0.5],</span>
+<span class="sd">    ...         &#39;G&#39;:[0.5, 0.25],</span>
+<span class="sd">    ...         })</span>
+<span class="sd">    &gt;&gt;&gt; wts = pandas.DataFrame({</span>
+<span class="sd">    ...         &#39;site&#39;:[1, 2],</span>
+<span class="sd">    ...         &#39;wildtype&#39;:[&#39;G&#39;, &#39;C&#39;]</span>
+<span class="sd">    ...         })</span>
+<span class="sd">    &gt;&gt;&gt; prefsToMutFromWtEffects(prefs, charlist, wts)</span>
+<span class="sd">       site wildtype mutant mutation  effect  log2effect</span>
+<span class="sd">    0     1        G      A      G1A     0.5        -1.0</span>
+<span class="sd">    1     1        G      C      G1C     0.5        -1.0</span>
+<span class="sd">    2     1        G      G      G1G     1.0         0.0</span>
+<span class="sd">    3     2        C      A      C2A     0.5        -1.0</span>
+<span class="sd">    4     2        C      C      C2C     1.0         0.0</span>
+<span class="sd">    5     2        C      G      C2G     0.5        -1.0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">muteffects</span> <span class="o">=</span> <span class="n">prefsToMutEffects</span><span class="p">(</span><span class="n">prefs</span><span class="p">,</span> <span class="n">charlist</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">({</span><span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">}</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">wts</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`wts` doesn&#39;t have site and wildtype cols&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">wts</span><span class="o">.</span><span class="n">wildtype</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">charlist</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;wildtype not all in `charlist`&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">prefs</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">sort_values</span><span class="p">()</span> <span class="o">!=</span> <span class="n">wts</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">sort_values</span><span class="p">())</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`prefs` and `wts` do not have same sites&quot;</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="s1">&#39;site&#39;</span> <span class="ow">in</span> <span class="n">muteffects</span><span class="o">.</span><span class="n">columns</span>
+    <span class="k">assert</span> <span class="s1">&#39;wildtype&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">muteffects</span><span class="o">.</span><span class="n">columns</span>
+
+    <span class="n">muteffects_from_wt</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">muteffects</span>
+        <span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">wts</span><span class="p">[[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">]],</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;initial == wildtype&#39;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;initial&#39;</span><span class="p">])</span>
+        <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;final&#39;</span><span class="p">:</span><span class="s1">&#39;mutant&#39;</span><span class="p">})</span>
+        <span class="p">[[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;mutant&#39;</span><span class="p">,</span> <span class="s1">&#39;mutation&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;effect&#39;</span><span class="p">,</span> <span class="s1">&#39;log2effect&#39;</span><span class="p">]]</span>
+        <span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;mutant&#39;</span><span class="p">])</span>
+        <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">muteffects_from_wt</span></div>
+
+
 <div class="viewcode-block" id="prefsToMutEffects"><a class="viewcode-back" href="../../dms_tools2.prefs.html#dms_tools2.prefs.prefsToMutEffects">[docs]</a><span class="k">def</span> <span class="nf">prefsToMutEffects</span><span class="p">(</span><span class="n">prefs</span><span class="p">,</span> <span class="n">charlist</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Converts amino acid preferences to effects of specific mutations.</span>
 
@@ -785,7 +876,9 @@
 <span class="sd">    &gt;&gt;&gt; numpy.allclose(effects[&#39;effect&#39;], 2**effects[&#39;log2effect&#39;])</span>
 <span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">prefs</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">charlist</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">prefs</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">charlist</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`prefs` contain extra columns&quot;</span><span class="p">)</span>
+
     <span class="n">initial</span> <span class="o">=</span> <span class="n">prefs</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">value_vars</span><span class="o">=</span><span class="n">charlist</span><span class="p">,</span>
                 <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;initial&#39;</span><span class="p">,</span> <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;initial_pref&#39;</span><span class="p">)</span>
     <span class="n">final</span> <span class="o">=</span> <span class="n">initial</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span>
@@ -1001,10 +1094,11 @@
 <span class="sd">    &gt;&gt;&gt; aas_nocounts = [a for a in dms_tools2.AAS if a not in aas_counts]</span>
 <span class="sd">    &gt;&gt;&gt; (0 == aafreqs[aas_nocounts].values).all()</span>
 <span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; expected_counts = pandas.DataFrame.from_items([</span>
+<span class="sd">    &gt;&gt;&gt; expected_counts = pandas.DataFrame.from_dict(</span>
+<span class="sd">    ...         collections.OrderedDict([</span>
 <span class="sd">    ...         (&#39;site&#39;, [1, 2, 3]), (&#39;M&#39;, [1.0, 0.0, 0.0]),</span>
 <span class="sd">    ...         (&#39;G&#39;, [0.0, 0.5, 0]), (&#39;R&#39;, [0.0, 0.5, 0.0]),</span>
-<span class="sd">    ...         (&#39;Q&#39;, [0.0, 0.0, 1.0])])</span>
+<span class="sd">    ...         (&#39;Q&#39;, [0.0, 0.0, 1.0])]))</span>
 <span class="sd">    &gt;&gt;&gt; expected_counts.equals(aafreqs[[&#39;site&#39;] + aas_counts])</span>
 <span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1088,7 +1182,7 @@
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -1131,6 +1225,14 @@
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -1139,8 +1241,8 @@
       &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

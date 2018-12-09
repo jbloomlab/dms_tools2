@@ -738,7 +738,8 @@
 
 
 <div class="viewcode-block" id="plotSiteDiffSel"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.plotSiteDiffSel">[docs]</a><span class="k">def</span> <span class="nf">plotSiteDiffSel</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">diffselfiles</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span> 
-        <span class="n">diffseltype</span><span class="p">,</span> <span class="n">maxcol</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">white_bg</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">diffseltype</span><span class="p">,</span> <span class="n">maxcol</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">white_bg</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">highlighted_sites</span><span class="o">=</span><span class="p">[]):</span>
     <span class="sd">&quot;&quot;&quot;Plot site diffsel or fracsurvive along sequence.</span>
 
 <span class="sd">    Despite the function name, this function can be used to</span>
@@ -764,7 +765,8 @@
 <span class="sd">            Number of columns in faceted plot.</span>
 <span class="sd">        `white_bg` (bool)</span>
 <span class="sd">            Plots will have a white background with limited other formatting.</span>
-
+<span class="sd">        `highlighted_sites` (list)</span>
+<span class="sd">            Highlight sites of interest (passed in string format) in grey.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">diffselfiles</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">names</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span>
     <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;.pdf&#39;</span>
@@ -798,7 +800,7 @@
                             <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;direction&#39;</span><span class="p">)</span>
                       <span class="p">)</span>
 
-
+    <span class="n">y_lim</span> <span class="o">=</span> <span class="n">diffsel</span><span class="p">[</span><span class="s1">&#39;diffsel&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="c1">#get max value used to plot the overlay</span>
     <span class="c1"># natural sort by site: https://stackoverflow.com/a/29582718</span>
     <span class="n">diffsel</span> <span class="o">=</span> <span class="n">diffsel</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">natsort</span><span class="o">.</span><span class="n">order_by_index</span><span class="p">(</span>
             <span class="n">diffsel</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">natsort</span><span class="o">.</span><span class="n">index_natsorted</span><span class="p">(</span><span class="n">diffsel</span><span class="o">.</span><span class="n">site</span><span class="p">,</span>
@@ -817,9 +819,18 @@
 
     <span class="p">(</span><span class="n">xbreaks</span><span class="p">,</span> <span class="n">xlabels</span><span class="p">)</span> <span class="o">=</span> <span class="n">breaksAndLabels</span><span class="p">(</span><span class="n">diffsel</span><span class="p">[</span><span class="s1">&#39;siteindex&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">(),</span> 
             <span class="n">diffsel</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">(),</span> <span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">highlighted_sites</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">highlighted_sites</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">diffsel</span><span class="p">[</span><span class="s1">&#39;highlight&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">diffsel</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">highlighted_sites</span><span class="p">)</span> 
+    <span class="n">diffsel</span><span class="p">[</span><span class="s1">&#39;highlight&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">diffsel</span><span class="p">[</span><span class="s1">&#39;highlight&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">True</span><span class="p">,</span>
+                                       <span class="n">y_lim</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="n">white_bg</span><span class="p">:</span>
         <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">diffsel</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;siteindex&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;diffsel&#39;</span><span class="p">,</span>
                     <span class="n">color</span><span class="o">=</span><span class="s1">&#39;direction&#39;</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="s1">&#39;direction&#39;</span><span class="p">))</span>
+             <span class="o">+</span> <span class="n">geom_bar</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="s1">&#39;highlight&#39;</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">stat</span><span class="o">=</span><span class="s2">&quot;identity&quot;</span><span class="p">,</span>
+                        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#d9d9d9&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> 
              <span class="o">+</span> <span class="n">geom_step</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
              <span class="o">+</span> <span class="n">xlab</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
              <span class="o">+</span> <span class="n">ylab</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
@@ -834,9 +845,11 @@
                      <span class="n">panel_border</span><span class="o">=</span><span class="n">element_blank</span><span class="p">(),</span>
                      <span class="n">strip_background</span><span class="o">=</span><span class="n">element_blank</span><span class="p">()</span>
                      <span class="p">)</span>
-             <span class="p">)</span>
+            <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">diffsel</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;siteindex&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;diffsel&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;direction&#39;</span><span class="p">))</span>
+             <span class="o">+</span> <span class="n">geom_bar</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="s1">&#39;highlight&#39;</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">stat</span><span class="o">=</span><span class="s2">&quot;identity&quot;</span><span class="p">,</span>
+                        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#d9d9d9&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> 
              <span class="o">+</span> <span class="n">geom_step</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
              <span class="o">+</span> <span class="n">xlab</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
              <span class="o">+</span> <span class="n">ylab</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
@@ -899,9 +912,9 @@
             <span class="n">scale_y_continuous</span><span class="p">(</span><span class="n">limits</span><span class="o">=</span><span class="p">(</span><span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">))</span> <span class="o">+</span>
             <span class="n">xlab</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span> <span class="o">+</span> 
             <span class="n">ylab</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span> <span class="o">+</span>
-            <span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~sample&#39;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="n">ncol</span><span class="p">)</span> 
-            <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">2.4</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.25</span> <span class="o">+</span> <span class="n">ncol</span><span class="p">),</span>
-                                 <span class="mf">1.45</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.25</span> <span class="o">+</span> <span class="n">nrow</span><span class="p">)))</span>
+            <span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~sample&#39;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="n">ncol</span><span class="p">)</span> <span class="o">+</span>
+            <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">2.4</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.25</span> <span class="o">+</span> <span class="n">ncol</span><span class="p">),</span>
+                               <span class="mf">1.45</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.25</span> <span class="o">+</span> <span class="n">nrow</span><span class="p">)))</span>
             <span class="p">)</span>
     <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
@@ -1037,7 +1050,7 @@
     <span class="c1"># plot the histogram</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">5.5</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
     <span class="p">(</span><span class="n">heights</span><span class="p">,</span> <span class="n">binedges</span><span class="p">,</span> <span class="n">patches</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">valcol</span><span class="p">],</span>
-            <span class="n">bins</span><span class="o">=</span><span class="n">binedges</span><span class="p">,</span> <span class="n">normed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">histtype</span><span class="o">=</span><span class="s1">&#39;stepfilled&#39;</span><span class="p">,</span>
+            <span class="n">bins</span><span class="o">=</span><span class="n">binedges</span><span class="p">,</span> <span class="n">density</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">histtype</span><span class="o">=</span><span class="s1">&#39;stepfilled&#39;</span><span class="p">,</span>
             <span class="n">color</span><span class="o">=</span><span class="n">COLOR_BLIND_PALETTE</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
 
     <span class="c1"># initial guess gives correct mean and variance for</span>
@@ -1120,8 +1133,9 @@
 <span class="sd">    Args:</span>
 <span class="sd">        `df` (pandas DataFrame)</span>
 <span class="sd">            Data frame with data to plot.</span>
-<span class="sd">        `plotfile` (str)</span>
-<span class="sd">            Name of created plot.</span>
+<span class="sd">        `plotfile` (str or `None`)</span>
+<span class="sd">            Name of created plot, or `None` if you want</span>
+<span class="sd">            plot returned.</span>
 <span class="sd">        `cols` (list)</span>
 <span class="sd">            List of columns in `df` to plot.</span>
 <span class="sd">        `lower_filter` (`None` or str)</span>
@@ -1132,6 +1146,11 @@
 <span class="sd">            Title of plot.</span>
 <span class="sd">        `shrink_threshold` (float)</span>
 <span class="sd">            See argument of same name to :meth:`hist_bins_intsafe`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        If `plotfile` is a string, makes the plot and does</span>
+<span class="sd">        not return anything. If `plotfile` is `None`, returns</span>
+<span class="sd">        the plot.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`cols` specifies columns not in `df`&quot;</span><span class="p">)</span>
@@ -1191,8 +1210,11 @@
     <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">g</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">)</span>
 
-    <span class="n">g</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+    <span class="k">if</span> <span class="n">plotfile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">g</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">plotfile</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="plotRarefactionCurves"><a class="viewcode-back" href="../../dms_tools2.plot.html#dms_tools2.plot.plotRarefactionCurves">[docs]</a><span class="k">def</span> <span class="nf">plotRarefactionCurves</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">rarefy_col</span><span class="p">,</span> <span class="n">plotfile</span><span class="p">,</span>
@@ -1484,7 +1506,7 @@
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -1527,6 +1549,14 @@
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -1535,8 +1565,8 @@
       &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

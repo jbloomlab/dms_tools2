@@ -100,7 +100,7 @@
 </div>
 <div class="section" id="command-line-usage">
 <span id="bcsubamp-commandlineusage"></span><h2><a class="toc-backref" href="#id5">Command-line usage</a><a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
-<p>Align barcoded subamplicons and count mutations. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.3.0) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
+<p>Align barcoded subamplicons and count mutations. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.4.0) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">dms2_bcsubamp</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">outdir</span> <span class="n">OUTDIR</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">ncpus</span> <span class="n">NCPUS</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">use_existing</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span> <span class="o">--</span><span class="n">refseq</span> <span class="n">REFSEQ</span>
                      <span class="o">--</span><span class="n">alignspecs</span> <span class="n">ALIGNSPECS</span> <span class="p">[</span><span class="n">ALIGNSPECS</span> <span class="o">...</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">bclen</span> <span class="n">BCLEN</span><span class="p">]</span>
@@ -143,31 +143,31 @@
 <tr><td class="option-group">
 <kbd>--alignspecs</kbd></td>
 <td><p class="first">Subamplicon alignment positions as ‘REFSEQSTART,REFSEQEND,R1START,R2START’. REFSEQSTART is nt (1, 2, … numbering) in ‘refseq’ where nt R1START in R1 aligns. REFSEQEND is nt in ‘refseq’ where nt R2START in R2 aligns.’</p>
-<p>It is important to set –alignspecs so that you don’t count the part of the subamplicon that is the barocde or in the primer binding site, since the nucleotide identities in this region do not come from the templates being sequenced. See the Barcoded subamplicon sequencing above for an example.</p>
-<p class="last">The alignments will fail if you don’t set –alignspecs exactly correctly for each subamplicon. So if you have reads failing to align to part of your gene, carefully check –alignspecs to make sure it is correct.</p>
+<p>It is important to set <code class="docutils literal notranslate"><span class="pre">--alignspecs</span></code> so that you don’t count the part of the subamplicon that is the barocde or in the primer binding site, since the nucleotide identities in this region do not come from the templates being sequenced. See <a class="reference internal" href="bcsubamp.html#bcsubamp"><span class="std std-ref">Barcoded-subamplicon sequencing</span></a> for an example.</p>
+<p class="last">The alignments will fail if you don’t set <code class="docutils literal notranslate"><span class="pre">--alignspecs</span></code> exactly correctly for each subamplicon. So if you have reads failing to align to part of your gene, carefully check <code class="docutils literal notranslate"><span class="pre">--alignspecs</span></code> to make sure it is correct.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd>--bclen</kbd></td>
 <td><p class="first">Length of NNN… barcode at start of each read. Assumed to be same for R1 and R2, use <cite>–bclen2</cite> if this is not the case.</p>
 <p>Default: 8</p>
-<p class="last">This is the length of the barcode on each primer. So a value of 8 corresponds to a total of 16 N nucleotides on the two primers. See the Barcoded subamplicon sequencing section above for an example of primers with 8 N nucleotides.</p>
+<p class="last">This is the length of the barcode on <strong>each</strong> primer. So a value of 8 corresponds to a total of 16 <code class="docutils literal notranslate"><span class="pre">N</span></code> nucleotides on the two primers. See <a class="reference internal" href="bcsubamp.html#bcsubamp"><span class="std std-ref">Barcoded-subamplicon sequencing</span></a> for an example of primers with 8 <code class="docutils literal notranslate"><span class="pre">N</span></code> nucleotides.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd>--fastqdir</kbd></td>
 <td><p class="first">R1 and R2 files in this directory.</p>
-<p class="last">This option can be useful if the –R1 / –R2 files are found in a common directory.
-Instead of repeatedly listing that directory name, you can just provide it here and then give the file (or subdirectory/file) names for the files via –R1 / –R2.</p>
+<p class="last">This option can be useful if the <code class="docutils literal notranslate"><span class="pre">--R1</span></code> / <code class="docutils literal notranslate"><span class="pre">--R2</span></code> files are found in a common directory.
+Instead of repeatedly listing that directory name, you can just provide it here and then give the file (or subdirectory/file) names for the files via <code class="docutils literal notranslate"><span class="pre">--R1</span></code> / <code class="docutils literal notranslate"><span class="pre">--R2</span></code>.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd>--R2</kbd></td>
 <td><p class="first">Read 2 (R2) FASTQ files assumed to have same names as R1 but with ‘_R1’ replaced by ‘_R2’. If that is not case, provide names here.</p>
-<p class="last">Most pipelines for generating Illumina FASTQ files have the read 1 sequences in a file that contains the string _R1 and the read 2 sequences in a file that contains the string _R2. If this is the case, the R2 file name can just be guessed from the R1 file name. However, you can use this option if your R2 files have a different name that you need to specify manually.</p>
+<p class="last">Most pipelines for generating Illumina FASTQ files have the read 1 sequences in a file that contains the string <code class="docutils literal notranslate"><span class="pre">_R1</span></code> and the read 2 sequences in a file that contains the string <code class="docutils literal notranslate"><span class="pre">_R2</span></code>. If this is the case, the R2 file name can just be guessed from the R1 file name. However, you can use this option if your R2 files have a different name that you need to specify manually.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd>--R1trim</kbd></td>
 <td><p class="first">Trim R1 from 3’ end to this length. One value for all reads or values for each subamplicon in <code class="docutils literal notranslate"><span class="pre">--alignspecs</span></code>.</p>
 <p>Often your reads will be longer than needed, so it is helpful to trim the low-quality nucleotides that tend to be at the end of long readfs.</p>
-<p>If you specify one number, then all R1 reads are trimmed to this length. If you specify a list of numbers equal to the entries for –alignspecs, then each read is trimmed differently depending on which subamplicon it aligns to.</p>
+<p>If you specify one number, then <strong>all</strong> R1 reads are trimmed to this length. If you specify a list of numbers equal to the entries for <code class="docutils literal notranslate"><span class="pre">--alignspecs</span></code>, then each read is trimmed differently depending on which subamplicon it aligns to.</p>
 <p class="last">Note that the trimming is done to the initial read, and so the trimmed length specifies here includes the barcode, the primer binding site, and then the part of the read that provides useful sequence information.</p>
 </td></tr>
 <tr><td class="option-group">
@@ -181,7 +181,7 @@ Instead of repeatedly listing that directory name, you can just provide it here 
 <td><p class="first">Possible choices: codon</p>
 <p>Character type for which we count mutations.</p>
 <p>Default: “codon”</p>
-<p class="last">If chartype is codon then –refseq must provide a valid coding sequence (length a multiple of 3).</p>
+<p class="last">If <code class="docutils literal notranslate"><span class="pre">chartype</span></code> is <code class="docutils literal notranslate"><span class="pre">codon</span></code> then <code class="docutils literal notranslate"><span class="pre">--refseq</span></code> must provide a valid coding sequence (length a multiple of 3).</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd>--maxmuts</kbd></td>
@@ -215,13 +215,13 @@ Instead of repeatedly listing that directory name, you can just provide it here 
 <kbd>--purgeread</kbd></td>
 <td><p class="first">Randomly purge read pairs with this probability to subsample data.</p>
 <p>Default: 0</p>
-<p class="last">Why would you want to purge some of the read pairs? You may be trying to determine whether sequencing to a higher depth will improve your results. If you set –purgeread to a value &gt; 0 (say 0.5), you’ll see how the results would be affected if you had fewer reads. If these results are noticeably worse, this supports that idea that you might be in regime where more reads would help.</p>
+<p class="last">Why would you want to purge some of the read pairs? You may be trying to determine whether sequencing to a higher depth will improve your results. If you set <code class="docutils literal notranslate"><span class="pre">--purgeread</span></code> to a value &gt; 0 (say 0.5), you’ll see how the results would be affected if you had fewer reads. If these results are noticeably worse, this supports that idea that you might be in regime where more reads would help.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd>--purgebc</kbd></td>
 <td><p class="first">Randomly purge barcodes with this probability to subsample data.</p>
 <p>Default: 0</p>
-<p class="last">This option differs from –purgeread in that it purges barcodes rather than reads. So this gives you some indication of how your results would change if you bottlenecked to fewer unique molecules prior to the round 2 PCR to attach the barcodes to each molecule.</p>
+<p class="last">This option differs from <code class="docutils literal notranslate"><span class="pre">--purgeread</span></code> in that it purges <strong>barcodes</strong> rather than reads. So this gives you some indication of how your results would change if you bottlenecked to fewer unique molecules prior to the round 2 PCR to attach the barcodes to each molecule.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd>--bcinfo</kbd></td>
@@ -232,15 +232,15 @@ Instead of repeatedly listing that directory name, you can just provide it here 
 <tr><td class="option-group">
 <kbd>--name</kbd></td>
 <td><p class="first">Sample name used for output files.</p>
-<p class="last">The Output files will have a prefix equal to the name specified here.
+<p class="last">The <a class="reference internal" href="#output-files">Output files</a> will have a prefix equal to the name specified here.
 This name should only contain letters, numbers, dashes, and spaces.
-Underscores are not allowed as they are a LaTex special character.</p>
+Underscores are <strong>not</strong> allowed as they are a LaTex special character.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd>--R1</kbd></td>
 <td><p class="first">Read 1 (R1) FASTQ files, can be gzipped. See also ‘–fastqdir’.</p>
-<p>You can specify multiple files using the * wildcard character, as in reads_R1_L*.fastq.gz.</p>
-<p class="last">If you have multiple files that are all in the same directory, it may be convenient to specify this directory using –fastqdir and then avoid repeatedly listing the directory name for each file.</p>
+<p>You can specify multiple files using the <code class="docutils literal notranslate"><span class="pre">*</span></code> wildcard character, as in <code class="docutils literal notranslate"><span class="pre">reads_R1_L*.fastq.gz</span></code>.</p>
+<p class="last">If you have multiple files that are all in the same directory, it may be convenient to specify this directory using <code class="docutils literal notranslate"><span class="pre">--fastqdir</span></code> and then avoid repeatedly listing the directory name for each file.</p>
 </td></tr>
 </tbody>
 </table>
@@ -373,7 +373,7 @@ This file is only created if you use the <code class="docutils literal notransla
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -429,6 +429,14 @@ This file is only created if you use the <code class="docutils literal notransla
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -437,8 +445,8 @@ This file is only created if you use the <code class="docutils literal notransla
       &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/dms2_bcsubamp.rst.txt"

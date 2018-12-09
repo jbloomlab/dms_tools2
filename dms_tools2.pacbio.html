@@ -39,20 +39,28 @@
 <p>Tools for processing PacBio sequencing data.</p>
 <dl class="class">
 <dt id="dms_tools2.pacbio.CCS">
-<em class="property">class </em><code class="descclassname">dms_tools2.pacbio.</code><code class="descname">CCS</code><span class="sig-paren">(</span><em>samplename</em>, <em>bamfile</em>, <em>reportfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/pacbio.html#CCS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.pacbio.CCS" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">dms_tools2.pacbio.</code><code class="descname">CCS</code><span class="sig-paren">(</span><em>samplename</em>, <em>ccsfile</em>, <em>reportfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/pacbio.html#CCS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.pacbio.CCS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Class to handle results of <code class="docutils literal notranslate"><span class="pre">ccs</span></code>.</p>
 <p>Holds results of PacBio <code class="docutils literal notranslate"><span class="pre">ccs</span></code>.
 Has been tested on output of <code class="docutils literal notranslate"><span class="pre">ccs</span></code> version 3.0.0.</p>
 <p>This class reads all data into memory, and so you
-may need a lot of RAM if <cite>bamfile</cite> is large.</p>
+may need a lot of RAM if <cite>ccsfile</cite> is large.</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
 <dt><cite>samplename</cite> (str)</dt>
 <dd>Sample or sequencing run</dd>
-<dt><cite>bamfile</cite> (str)</dt>
-<dd>BAM file created by <code class="docutils literal notranslate"><span class="pre">ccs</span></code></dd>
+<dt><cite>ccsfile</cite> (str)</dt>
+<dd>File created by <code class="docutils literal notranslate"><span class="pre">ccs</span></code> that holds the CCSs. The
+<code class="docutils literal notranslate"><span class="pre">ccs</span></code> program outputs BAM files. However, you
+can also pass FASTQ files generated from these
+BAM files using <code class="docutils literal notranslate"><span class="pre">samtools</span> <span class="pre">bam2fq</span> <span class="pre">-T</span> <span class="pre">np,rq</span> <span class="pre">&lt;bamfile&gt;</span></code>
+(note that <code class="docutils literal notranslate"><span class="pre">-T</span> <span class="pre">np,rq</span></code> flag which is needed to
+preserve the number of passes and accuracy flags).
+The file format is determined from the file extension,
+and can be <code class="docutils literal notranslate"><span class="pre">*.bam</span></code>, <code class="docutils literal notranslate"><span class="pre">*.fastq</span></code>, <code class="docutils literal notranslate"><span class="pre">*.fq</span></code>,
+<code class="docutils literal notranslate"><span class="pre">*.fastq.gz</span></code>, or <code class="docutils literal notranslate"><span class="pre">*.fq.gz</span></code>.</dd>
 <dt><cite>reportfile</cite> (str or <cite>None</cite>)</dt>
 <dd>Report file created by <code class="docutils literal notranslate"><span class="pre">ccs</span></code>, or
 <cite>None</cite> if you have no reports.</dd>
@@ -62,7 +70,7 @@ may need a lot of RAM if <cite>bamfile</cite> is large.</p>
 <dd><dl class="first last docutils">
 <dt><cite>samplename</cite> (str)</dt>
 <dd>Name set at initialization</dd>
-<dt><cite>bamfile</cite> (str)</dt>
+<dt><cite>ccsfile</cite> (str)</dt>
 <dd><code class="docutils literal notranslate"><span class="pre">ccs</span></code> BAM file set at initialization</dd>
 <dt><cite>reportfile</cite> (str or <cite>None</cite>)</dt>
 <dd><code class="docutils literal notranslate"><span class="pre">ccs</span></code> report file set at initialization</dd>
@@ -73,7 +81,7 @@ may need a lot of RAM if <cite>bamfile</cite> is large.</p>
 <dt><cite>subread_report</cite> (pandas.DataFrame or <cite>None</cite>)</dt>
 <dd>Like <cite>zmw_report</cite> but for subreads.</dd>
 <dt><cite>df</cite> (pandas.DataFrame)</dt>
-<dd><p class="first">The CCSs in <cite>bamfile</cite>. Each row is a different CCS
+<dd><p class="first">The CCSs in <cite>ccsfile</cite>. Each row is a different CCS
 On creation, there will be the following columns (you
 can modify to add more):</p>
 <blockquote class="last">
@@ -136,7 +144,7 @@ The second sequence is also reverse complemented:</p>
 </pre></div>
 </div>
 <p>Create small SAM file with these sequences, then
-convert to BAM file used to initialize a <cite>CCS</cite> object
+convert to BAM file used to initialize a <a class="reference internal" href="#dms_tools2.pacbio.CCS" title="dms_tools2.pacbio.CCS"><code class="xref py py-class docutils literal notranslate"><span class="pre">CCS</span></code></a>
 (note this requires <code class="docutils literal notranslate"><span class="pre">samtools</span></code> to be installed):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">samfile</span> <span class="o">=</span> <span class="s1">&#39;_temp.sam&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">bamfile</span> <span class="o">=</span> <span class="s1">&#39;_temp.bam&#39;</span>
@@ -146,6 +154,45 @@ convert to BAM file used to initialize a <cite>CCS</cite> object
 <span class="gp">... </span>        <span class="s1">&#39;-b&#39;</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">bamfile</span><span class="p">,</span> <span class="n">samfile</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ccs</span> <span class="o">=</span> <span class="n">CCS</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">bamfile</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">samfile</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We also sometimes create the BAM files created by PacBio
+<code class="docutils literal notranslate"><span class="pre">ccs</span></code> to FASTQ. Do that using <code class="docutils literal notranslate"><span class="pre">samtools</span> <span class="pre">bam2fq</span> <span class="pre">-T</span> <span class="pre">np,rq</span></code>
+to keep flags with number of passes and overall read quality:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fastq_data</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="p">[</span><span class="s1">&#39;samtools&#39;</span><span class="p">,</span> <span class="s1">&#39;bam2fq&#39;</span><span class="p">,</span> <span class="s1">&#39;-T&#39;</span><span class="p">,</span> <span class="s1">&#39;np,rq&#39;</span><span class="p">,</span> <span class="n">bamfile</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Show how the resulting FASTQ data keeps the <em>np</em> and <em>rq</em> tags:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">fastq_data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">))</span>
+<span class="go">@barcoded_TTC_0.999_plus np:i:6 rq:f:0.999</span>
+<span class="go">ACGTTCACGCTT</span>
+<span class="go">+</span>
+<span class="go">????????????</span>
+<span class="go">@barcoded_AGA_0.995_minus np:i:6 rq:f:0.998144</span>
+<span class="go">TAAGTGCTCTCGTA</span>
+<span class="go">+</span>
+<span class="go">???????9?5????</span>
+<span class="go">@invalid np:i:6 rq:f:0.999</span>
+<span class="go">GGGCATGCACTT</span>
+<span class="go">+</span>
+<span class="go">????????????</span>
+</pre></div>
+</div>
+<p>Write the FASTQ to a file, and check that <a class="reference internal" href="#dms_tools2.pacbio.CCS" title="dms_tools2.pacbio.CCS"><code class="xref py py-class docutils literal notranslate"><span class="pre">CCS</span></code></a>
+initialized from the FASTQ is the same as one from the BAM:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fastqfile</span> <span class="o">=</span> <span class="s1">&#39;_temp.fastq&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gzfastqfile</span> <span class="o">=</span> <span class="s1">&#39;_temp.fastq.gz&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fastqfile</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">fastq_data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">gzfastqfile</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">fastq_data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ccs_fastq</span> <span class="o">=</span> <span class="n">CCS</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">fastqfile</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ccs_gzfastq</span> <span class="o">=</span> <span class="n">CCS</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">gzfastqfile</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pandas</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_frame_equal</span><span class="p">(</span><span class="n">ccs_fastq</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="n">ccs</span><span class="o">.</span><span class="n">df</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pandas</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_frame_equal</span><span class="p">(</span><span class="n">ccs_gzfastq</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="n">ccs</span><span class="o">.</span><span class="n">df</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">fastqfile</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">gzfastqfile</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">bamfile</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -407,7 +454,9 @@ There also must be a column named “name” with unique names.</dd>
 function of <cite>mapper</cite>. Target sequence(s) to which
 we align are specified when initializing <cite>mapper</cite>.</dd>
 <dt><cite>query_col</cite> (str)</dt>
-<dd>Name of column in <cite>df</cite> with query sequences to align.</dd>
+<dd>Name of column in <cite>df</cite> with query sequences to align.
+If we are to use Q-values, there must also be a column
+with this name suffixed by “_qvals”.</dd>
 <dt><cite>aligned_col</cite> (str)</dt>
 <dd>Name of column added to <cite>df</cite>. Elements of column are
 <cite>True</cite> if <cite>query_col</cite> aligns, and <cite>False</cite> otherwise.</dd>
@@ -506,7 +555,7 @@ or <cite>None</cite> if there is no alignment.</li>
 
 <dl class="function">
 <dt id="dms_tools2.pacbio.matchAndAlignCCS">
-<code class="descclassname">dms_tools2.pacbio.</code><code class="descname">matchAndAlignCCS</code><span class="sig-paren">(</span><em>ccslist</em>, <em>mapper</em>, <em>*</em>, <em>termini5</em>, <em>gene</em>, <em>spacer</em>, <em>umi</em>, <em>barcode</em>, <em>termini3</em>, <em>termini5_fuzziness=0</em>, <em>gene_fuzziness=0</em>, <em>spacer_fuzziness=0</em>, <em>umi_fuzziness=0</em>, <em>barcode_fuzziness=0</em>, <em>termini3_fuzziness=0</em>, <em>targetvariants=None</em>, <em>mutationcaller=None</em>, <em>terminiVariantTagCaller=None</em>, <em>rc_barcode_umi=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/pacbio.html#matchAndAlignCCS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.pacbio.matchAndAlignCCS" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.pacbio.</code><code class="descname">matchAndAlignCCS</code><span class="sig-paren">(</span><em>ccslist</em>, <em>mapper</em>, <em>*</em>, <em>termini5</em>, <em>gene</em>, <em>spacer</em>, <em>umi</em>, <em>barcode</em>, <em>termini3</em>, <em>termini5_fuzziness=0</em>, <em>gene_fuzziness=0</em>, <em>spacer_fuzziness=0</em>, <em>umi_fuzziness=0</em>, <em>barcode_fuzziness=0</em>, <em>termini3_fuzziness=0</em>, <em>targetvariants=None</em>, <em>mutationcaller=None</em>, <em>terminiVariantTagCaller=None</em>, <em>tagged_termini_remove_indels=True</em>, <em>rc_barcode_umi=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/pacbio.html#matchAndAlignCCS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.pacbio.matchAndAlignCCS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Identify CCSs that match pattern and align them.</p>
 <p>This is a convenience function that runs <a class="reference internal" href="#dms_tools2.pacbio.matchSeqs" title="dms_tools2.pacbio.matchSeqs"><code class="xref py py-meth docutils literal notranslate"><span class="pre">matchSeqs()</span></code></a>
 and <a class="reference internal" href="#dms_tools2.pacbio.alignSeqs" title="dms_tools2.pacbio.alignSeqs"><code class="xref py py-meth docutils literal notranslate"><span class="pre">alignSeqs()</span></code></a> for a common use case. It takes one
@@ -564,6 +613,14 @@ flag to try to find the best fuzzy match.</dd>
 <dd>Call mutations. See docs for same argument to <a class="reference internal" href="#dms_tools2.pacbio.alignSeqs" title="dms_tools2.pacbio.alignSeqs"><code class="xref py py-meth docutils literal notranslate"><span class="pre">alignSeqs()</span></code></a>.</dd>
 <dt><cite>terminiVariantTagCaller</cite> (<a class="reference internal" href="#dms_tools2.pacbio.TerminiVariantTagCaller" title="dms_tools2.pacbio.TerminiVariantTagCaller"><code class="xref py py-class docutils literal notranslate"><span class="pre">TerminiVariantTagCaller</span></code></a>)</dt>
 <dd>Call variants in termini.</dd>
+<dt><cite>tagged_termini_remove_indels</cite> (bool)</dt>
+<dd>If <cite>terminiVariantTagCaller</cite> is being used and this,
+is <cite>True</cite>, then use <cite>remove_indels</cite> flag when calling
+<cite>matchSeqs</cite> for the termini. This is useful if
+using fuzzy matching from the termini, as it aids
+in the calling of tags as it doesn’t cause indels
+to misplace the tag. Has no meaning if
+<cite>terminiVariantTagCaller</cite> is not being used.</dd>
 <dt><cite>rc_barcode_umi</cite> (bool)</dt>
 <dd>Do we reverse complement the <cite>barcode</cite> and <cite>UMI</cite> in the
 returned data frame relative to the orientation of
@@ -637,7 +694,7 @@ and the target (or empty string).</li>
 
 <dl class="function">
 <dt id="dms_tools2.pacbio.matchSeqs">
-<code class="descclassname">dms_tools2.pacbio.</code><code class="descname">matchSeqs</code><span class="sig-paren">(</span><em>df</em>, <em>match_str</em>, <em>col_to_match</em>, <em>match_col</em>, <em>*</em>, <em>add_polarity=True</em>, <em>add_group_cols=True</em>, <em>add_accuracy=True</em>, <em>add_qvals=True</em>, <em>expandIUPAC=True</em>, <em>overwrite=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/pacbio.html#matchSeqs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.pacbio.matchSeqs" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.pacbio.</code><code class="descname">matchSeqs</code><span class="sig-paren">(</span><em>df</em>, <em>match_str</em>, <em>col_to_match</em>, <em>match_col</em>, <em>*</em>, <em>add_polarity=True</em>, <em>add_group_cols=True</em>, <em>remove_indels=[]</em>, <em>add_accuracy=True</em>, <em>add_qvals=True</em>, <em>expandIUPAC=True</em>, <em>overwrite=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/pacbio.html#matchSeqs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.pacbio.matchSeqs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Identify sequences in a dataframe that match a specific pattern.</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -651,7 +708,8 @@ subsequences as named groups. See also the <cite>expandIUPAC</cite>
 parameter, which simplifies writing <cite>match_str</cite>.
 If <cite>None</cite> we just return <cite>df</cite>. Note that we use
 <cite>regex</cite> rather than <cite>re</cite>, so fuzzy matching is
-enabled.</dd>
+enabled. Note that the matching uses the <em>BESTMATCH</em>
+flag to find the best match.</dd>
 <dt><cite>col_to_match</cite> (str)</dt>
 <dd>Name of column in <cite>df</cite> that contains the sequences
 to match.</dd>
@@ -664,6 +722,15 @@ row, and <cite>False</cite> otherwise.</dd>
 <dt><cite>add_group_cols</cite> (bool)</dt>
 <dd>Add columns with the sequence of every group in
 <cite>match_str</cite>?</dd>
+<dt><cite>remove_indels</cite> (list)</dt>
+<dd>Only meaningful if <cite>match_str</cite> specifies to allow
+fuzzy matching for a group, and <cite>add_group_cols</cite>
+is <cite>True</cite>. Then for each named group in <cite>match_str</cite>,
+in sequence for that group that is added to the
+returned <cite>df</cite>, indicate indels by adding a <cite>-</cite>
+gap character for deletions, and removing the
+inserted nucleotide called by regex if there
+is an insertion.</dd>
 <dt><cite>add_accuracy</cite> (bool)</dt>
 <dd>For each group in the match, add a column giving
 the accuracy of that group’s sequence? Only used
@@ -733,14 +800,61 @@ if there is no match for that row.</li>
 the <cite>regex</cite> model for the polyA tail:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gene</span> <span class="o">=</span> <span class="s1">&#39;ATGGCT&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">polyA</span> <span class="o">=</span> <span class="s1">&#39;AAAACAAAA&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;CCS&#39;</span><span class="p">:[</span><span class="n">gene</span> <span class="o">+</span> <span class="n">polyA</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df_in</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;CCS&#39;</span><span class="p">:[</span><span class="n">gene</span> <span class="o">+</span> <span class="n">polyA</span><span class="p">]})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">match_str</span> <span class="o">=</span> <span class="s1">&#39;(?P&lt;gene&gt;N+)(?P&lt;polyA&gt;AA(A{5,}){e&lt;=1}AA)&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">matchSeqs</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">match_str</span><span class="p">,</span> <span class="s1">&#39;CCS&#39;</span><span class="p">,</span> <span class="s1">&#39;matched&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">matchSeqs</span><span class="p">(</span><span class="n">df_in</span><span class="p">,</span> <span class="n">match_str</span><span class="p">,</span> <span class="s1">&#39;CCS&#39;</span><span class="p">,</span> <span class="s1">&#39;matched&#39;</span><span class="p">,</span>
 <span class="gp">... </span>        <span class="n">add_accuracy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_qvals</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">expected</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">gene</span><span class="o">=</span><span class="n">gene</span><span class="p">,</span> <span class="n">polyA</span><span class="o">=</span><span class="n">polyA</span><span class="p">,</span>
 <span class="gp">... </span>        <span class="n">matched</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">matched_polarity</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">expected</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 <span class="go">True</span>
+</pre></div>
+</div>
+<p>Here is a short example with fuzzy matching that uses the
+<cite>remove_indels</cite> option.
+First, do not remove the indels:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">termini5</span> <span class="o">=</span> <span class="s1">&#39;ACAT&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">termini3</span> <span class="o">=</span> <span class="s1">&#39;ATAC&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">match_str2</span> <span class="o">=</span> <span class="s1">&#39;^(?P&lt;termini5&gt;AAT){e&lt;=1}(?P&lt;gene&gt;ATGGCT){e&lt;=1}(?P&lt;termini3&gt;ATGAC){e&lt;=1}$&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df_in2</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;CCS&#39;</span><span class="p">:[</span><span class="n">termini5</span> <span class="o">+</span> <span class="n">gene</span> <span class="o">+</span> <span class="n">termini3</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">matchSeqs</span><span class="p">(</span><span class="n">df_in2</span><span class="p">,</span> <span class="n">match_str2</span><span class="p">,</span> <span class="s1">&#39;CCS&#39;</span><span class="p">,</span> <span class="s1">&#39;matched&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">add_accuracy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_qvals</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span><span class="o">.</span><span class="n">gene</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">gene</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span><span class="o">.</span><span class="n">termini5</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">termini5</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span><span class="o">.</span><span class="n">termini3</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">termini3</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Now remove the indels in just <em>termini3</em>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df2_rm</span> <span class="o">=</span> <span class="n">matchSeqs</span><span class="p">(</span><span class="n">df_in2</span><span class="p">,</span> <span class="n">match_str2</span><span class="p">,</span> <span class="s1">&#39;CCS&#39;</span><span class="p">,</span> <span class="s1">&#39;matched&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">remove_indels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;termini3&#39;</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="n">add_accuracy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_qvals</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2_rm</span><span class="o">.</span><span class="n">gene</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">gene</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2_rm</span><span class="o">.</span><span class="n">termini5</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">termini5</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2_rm</span><span class="o">.</span><span class="n">termini3</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">termini3</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2_rm</span><span class="o">.</span><span class="n">termini3</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">&#39;AT-AC&#39;</span>
+</pre></div>
+</div>
+<p>Now remove indels in <strong>both</strong> termini:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df2_rm2</span> <span class="o">=</span> <span class="n">matchSeqs</span><span class="p">(</span><span class="n">df_in2</span><span class="p">,</span> <span class="n">match_str2</span><span class="p">,</span> <span class="s1">&#39;CCS&#39;</span><span class="p">,</span> <span class="s1">&#39;matched&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">remove_indels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;termini5&#39;</span><span class="p">,</span> <span class="s1">&#39;termini3&#39;</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="n">add_accuracy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_qvals</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2_rm2</span><span class="o">.</span><span class="n">gene</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">gene</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2_rm2</span><span class="o">.</span><span class="n">termini5</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">termini5</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2_rm2</span><span class="o">.</span><span class="n">termini5</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">&#39;AAT&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2_rm2</span><span class="o">.</span><span class="n">termini3</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">termini3</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2_rm2</span><span class="o">.</span><span class="n">termini3</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">&#39;AT-AC&#39;</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -834,17 +948,24 @@ are expanded according to their definitions in the
 <dd><cite>CCS</cite> objects to summarize</dd>
 <dt><cite>report_type</cite> (str “zmw” or “subread”)</dt>
 <dd>Which type of report to summarize</dd>
-<dt><cite>plotfile</cite> (str)</dt>
-<dd>Name of created bar plot</dd>
+<dt><cite>plotfile</cite> (str or <cite>None</cite>)</dt>
+<dd>Name of created bar plot, or <cite>None</cite>
+if you want to return the created plot.</dd>
 <dt><cite>plotminfrac</cite> (float)</dt>
 <dd>Only plot status categories with &gt;=
 this fraction in at least one <cite>CCS</cite></dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>Returns a pandas DataFrame aggregating the reports,
-and creates <cite>plotfile</cite>.</dd>
 </dl>
+<p>Returns:</p>
+<blockquote>
+<div><ul class="simple">
+<li>If <cite>plotfile</cite> is a str, returns a pandas DataFrame
+aggregating the reports and creates <cite>plotfile</cite>.</li>
+<li>If <cite>plotfile</cite> is <cite>None</cite>, returns the 2-tuple
+containing the data frame and the plot.</li>
+</ul>
+</div></blockquote>
 </dd></dl>
 
 </div>
@@ -884,7 +1005,7 @@ and creates <cite>plotfile</cite>.</dd>
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -934,6 +1055,14 @@ and creates <cite>plotfile</cite>.</dd>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -942,8 +1071,8 @@ and creates <cite>plotfile</cite>.</dd>
       &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/dms_tools2.pacbio.rst.txt"

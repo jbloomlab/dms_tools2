@@ -59,7 +59,7 @@ This is because <a class="reference internal" href="dms2_batch_diffsel.html#dms2
 </div>
 <div class="section" id="command-line-usage">
 <span id="diffsel-commandlineusage"></span><h2><a class="toc-backref" href="#id4">Command-line usage</a><a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
-<p>Estimate differential selection from mutation counts. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.3.0) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
+<p>Estimate differential selection from mutation counts. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.4.0) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">dms2_diffsel</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">outdir</span> <span class="n">OUTDIR</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">ncpus</span> <span class="n">NCPUS</span><span class="p">]</span>
                     <span class="p">[</span><span class="o">--</span><span class="n">use_existing</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">indir</span> <span class="n">INDIR</span><span class="p">]</span>
                     <span class="p">[</span><span class="o">--</span><span class="n">chartype</span> <span class="p">{</span><span class="n">codon_to_aa</span><span class="p">}]</span> <span class="p">[</span><span class="o">--</span><span class="n">excludestop</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span>
@@ -121,14 +121,14 @@ Instead of repeatedly listing that directory name, you can just provide it here.
 <tr><td class="option-group">
 <kbd>--name</kbd></td>
 <td><p class="first">Name used for output files.</p>
-<p class="last">The Output files will have a prefix equal to the name specified here.
+<p class="last">The <a class="reference internal" href="#output-files">Output files</a> will have a prefix equal to the name specified here.
 This name should only contain letters, numbers, dashes, and spaces.
-Underscores are not allowed as they are a LaTex special character.</p>
+Underscores are <strong>not</strong> allowed as they are a LaTex special character.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd>--sel</kbd></td>
 <td><p class="first">Post-selection counts file or prefix used when creating this file.</p>
-<p class="last">The counts files have the format of the files created by programs such as dms2_bcsubamp.
+<p class="last">The counts files have the format of the files created by programs such as <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code>.
 Specifically, they must have the following columns: ‘site’, ‘wildtype’, and then a column for each possible character (e.g., codon).</p>
 </td></tr>
 <tr><td class="option-group">
@@ -243,7 +243,7 @@ All values in the <code class="docutils literal notranslate"><span class="pre">_
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -299,6 +299,14 @@ All values in the <code class="docutils literal notranslate"><span class="pre">_
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -307,8 +315,8 @@ All values in the <code class="docutils literal notranslate"><span class="pre">_
       &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/dms2_diffsel.rst.txt"

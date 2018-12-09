@@ -63,7 +63,7 @@ The result is the output for each individual run of <a class="reference internal
 </div>
 <div class="section" id="command-line-usage">
 <span id="batch-bcsubamp-commandlineusage"></span><h2><a class="toc-backref" href="#id4">Command-line usage</a><a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
-<p>Perform many runs of <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code> and plot results. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.3.0) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
+<p>Perform many runs of <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code> and plot results. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.4.0) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">dms2_batch_bcsubamp</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">outdir</span> <span class="n">OUTDIR</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">ncpus</span> <span class="n">NCPUS</span><span class="p">]</span>
                            <span class="p">[</span><span class="o">--</span><span class="n">use_existing</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span> <span class="o">--</span><span class="n">refseq</span> <span class="n">REFSEQ</span>
                            <span class="o">--</span><span class="n">alignspecs</span> <span class="n">ALIGNSPECS</span> <span class="p">[</span><span class="n">ALIGNSPECS</span> <span class="o">...</span><span class="p">]</span>
@@ -91,7 +91,7 @@ The result is the output for each individual run of <a class="reference internal
 <kbd>--ncpus</kbd></td>
 <td><p class="first">Number of CPUs to use, -1 is all available.</p>
 <p>Default: -1</p>
-<p class="last">Multiple runs of dms2_bcsubamp can be performed in parallel on the different samples specified by –batchfile.
+<p class="last">Multiple runs of <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code> can be performed in parallel on the different samples specified by <code class="docutils literal notranslate"><span class="pre">--batchfile</span></code>.
 This argument determines how many CPUs are used if running multiple jobs.</p>
 </td></tr>
 <tr><td class="option-group">
@@ -185,10 +185,10 @@ This argument determines how many CPUs are used if running multiple jobs.</p>
 <kbd>--summaryprefix</kbd></td>
 </tr>
 <tr><td>&#160;</td><td><p class="first">Prefix of output summary plots.</p>
-<p class="last">As detailed in Output files below, dms2_batch_bcsubamp creates a variety of plots summarizing the output.
-These files are in the directory specified by –outdir, and have the prefix specified here.
+<p class="last">As detailed in <cite>Output files</cite> below, <code class="docutils literal notranslate"><span class="pre">dms2_batch_bcsubamp</span></code> creates a variety of plots summarizing the output.
+These files are in the directory specified by <code class="docutils literal notranslate"><span class="pre">--outdir</span></code>, and have the prefix specified here.
 This prefix should only contain letters, numbers, dashes, and spaces.
-Underscores are not allowed as they are a LaTex special character.</p>
+Underscores are <strong>not</strong> allowed as they are a LaTex special character.</p>
 </td></tr>
 </tbody>
 </table>
@@ -267,7 +267,7 @@ So obviously running it multiple times in parallel with <code class="docutils li
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -323,6 +323,14 @@ So obviously running it multiple times in parallel with <code class="docutils li
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -331,8 +339,8 @@ So obviously running it multiple times in parallel with <code class="docutils li
       &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/dms2_batch_bcsubamp.rst.txt"

@@ -774,7 +774,7 @@ number of times observed, and then alphabetically.</dd>
 
 <dl class="class">
 <dt id="dms_tools2.minimap2.Mutations">
-<em class="property">class </em><code class="descclassname">dms_tools2.minimap2.</code><code class="descname">Mutations</code><span class="sig-paren">(</span><em>*</em>, <em>substitution_tuples</em>, <em>insertion_tuples</em>, <em>deletion_tuples</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#Mutations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.Mutations" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">dms_tools2.minimap2.</code><code class="descname">Mutations</code><span class="sig-paren">(</span><em>*</em>, <em>substitution_tuples</em>, <em>insertion_tuples</em>, <em>deletion_tuples</em>, <em>acc_not_q=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#Mutations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.Mutations" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Class to hold mutations.</p>
 <p>Holds three types of mutations: substitutions (point mutations),
@@ -784,7 +784,9 @@ insertions, and deletions.</p>
 number the mutations passed at initialization.</p>
 <p>When initializing, set Q-values to <cite>math.nan</cite> if they are
 not known. The Q-values are used to calculate accuracy
-of mutations via <a class="reference internal" href="dms_tools2.pacbio.html#dms_tools2.pacbio.qvalsToAccuracy" title="dms_tools2.pacbio.qvalsToAccuracy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">dms_tools2.pacbio.qvalsToAccuracy()</span></code></a>.</p>
+of mutations via <a class="reference internal" href="dms_tools2.pacbio.html#dms_tools2.pacbio.qvalsToAccuracy" title="dms_tools2.pacbio.qvalsToAccuracy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">dms_tools2.pacbio.qvalsToAccuracy()</span></code></a>.
+Likewise, pass <cite>math.nan</cite> for homopolymer lengths if they
+are not known.</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
@@ -793,13 +795,13 @@ of mutations via <a class="reference internal" href="dms_tools2.pacbio.html#dms_
 <cite>i</cite> is the site number, <cite>mut_str</cite> is a string
 describing substitution, and <cite>q</cite> is the Q-value.</dd>
 <dt><cite>insertion_tuples</cite> (list)</dt>
-<dd>Insertions <cite>(i, ins_len, mut_str, q, hplen)</cite> where <cite>i</cite>
+<dd>Insertions <cite>(i, ins_len, mut_str, qs, hplen)</cite> where <cite>i</cite>
 is site <strong>after</strong> insertion, <cite>inslen</cite> is insertion length,
 <cite>mut_str</cite> is string describing insertion, <cite>qs</cite> is
 numpy array of Q-values, and <cite>hplen</cite> is length of homopolymer
 in which insertion occurs.</dd>
 <dt><cite>deletion_tuples</cite> (list)</dt>
-<dd>Deletions <cite>(istart, iend, mut_str</cite>, q, hplen)` where
+<dd>Deletions <cite>(istart, iend, mut_str, q, hplen)</cite> where
 <cite>istart</cite> is first site of deletion, <cite>iend</cite> is
 last site of deletion (so a single nucleotide
 deletion has <cite>istart == iend</cite>), <cite>mut_str</cite> is string
@@ -808,10 +810,14 @@ site immediately <strong>after</strong> the deletion in accordance with
 <a class="reference external" href="https://github.com/PacificBiosciences/unanimity/blob/develop/doc/PBCCS.md#interpretting-qual-values">PacBio CCS</a>
 specification, and <cite>hplen</cite> is length of homopolymer
 in which deletion occurs.</dd>
+<dt><cite>acc_not_q</cite> (bool)</dt>
+<dd>If <cite>True</cite>, then the tuples used to pass the mutations
+should give the accuracy rather than the Q-values.</dd>
 </dl>
 </dd>
 </dl>
-<p>After intialization, use the methods described below to get
+<p>You can also create objects using <a class="reference internal" href="#dms_tools2.minimap2.Mutations.from_str" title="dms_tools2.minimap2.Mutations.from_str"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations.from_str</span></code></a>.</p>
+<p>After initialization, use the methods described below to get
 information about the mutations. All of the methods that
 return lists of mutations do them ordered by site (first to last).</p>
 <p>We keep track of the length of the homopolymers in which
@@ -867,6 +873,29 @@ of 0.99, and a Q-value of 30 indicates an accuracy of 0.999:</p>
 <span class="go">[1]</span>
 </pre></div>
 </div>
+<p>Show how we can get string representations with
+<cite>repr</cite> and <cite>str</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">muts</span><span class="p">)</span> <span class="o">==</span> <span class="nb">repr</span><span class="p">(</span><span class="n">muts</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">muts</span><span class="p">)</span>
+<span class="go">&#39;A1T; G13A (accuracy = 0.990000); C15A (accuracy = 0.999000); ins5len2 (accuracy = 0.994500, homopolymer length = 1); del8to10 (accuracy = 0.990000, homopolymer length = 2)&#39;</span>
+</pre></div>
+</div>
+<p>Note that when Q-values or homopolymer lengths are not provided,
+then the aren’t printed in the <cite>str</cite> representation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">Mutations</span><span class="p">(</span><span class="n">substitution_tuples</span><span class="o">=</span><span class="p">[],</span> <span class="n">insertion_tuples</span><span class="o">=</span><span class="p">[],</span>
+<span class="gp">... </span>        <span class="n">deletion_tuples</span><span class="o">=</span><span class="p">[(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;del8to10&#39;</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">),</span>
+<span class="gp">... </span>                         <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="s1">&#39;del12to14&#39;</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">4</span><span class="p">)]))</span>
+<span class="go">&#39;del8to10; del12to14 (homopolymer length = 4)&#39;</span>
+</pre></div>
+</div>
+<p>Also show what these representations look like when there
+are no mutations:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">Mutations</span><span class="p">(</span><span class="n">substitution_tuples</span><span class="o">=</span><span class="p">[],</span> <span class="n">insertion_tuples</span><span class="o">=</span><span class="p">[],</span>
+<span class="gp">... </span>        <span class="n">deletion_tuples</span><span class="o">=</span><span class="p">[]))</span>
+<span class="go">&#39;no mutations&#39;</span>
+</pre></div>
+</div>
 <dl class="method">
 <dt id="dms_tools2.minimap2.Mutations.deletions">
 <code class="descname">deletions</code><span class="sig-paren">(</span><em>*</em>, <em>returnval='mutation'</em>, <em>min_acc=None</em>, <em>min_acc_filter_nan=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#Mutations.deletions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.Mutations.deletions" title="Permalink to this definition">¶</a></dt>
@@ -899,6 +928,66 @@ of homopolymer in which deletion is found.</li>
 <dt>Returns:</dt>
 <dd>List of mutations or other value specified by <cite>returnval</cite>.</dd>
 </dl>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="dms_tools2.minimap2.Mutations.from_str">
+<em class="property">classmethod </em><code class="descname">from_str</code><span class="sig-paren">(</span><em>mut_str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#Mutations.from_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.Mutations.from_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> from str representation.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>mut_str</cite> (str)</dt>
+<dd>String representation as returned by <cite>str(mut)</cite>
+where <cite>mut</cite> is a <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> object.
+See the examples below for more details.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> object.</dd>
+</dl>
+<p>Examples of creating <a class="reference internal" href="#dms_tools2.minimap2.Mutations.from_str" title="dms_tools2.minimap2.Mutations.from_str"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations.from_str</span></code></a>.
+First, a single substitution without an accuracy:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">Mutations</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s1">&#39;A1T&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+<span class="go">&#39;A1T&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">Mutations</span><span class="p">(</span><span class="n">substitution_tuples</span><span class="o">=</span><span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;A1T&#39;</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">)],</span>
+<span class="gp">... </span>        <span class="n">deletion_tuples</span><span class="o">=</span><span class="p">[],</span> <span class="n">insertion_tuples</span><span class="o">=</span><span class="p">[]))</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>And now substitutions with Q-values:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m2</span> <span class="o">=</span> <span class="n">Mutations</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s1">&#39;A1T (accuracy = 0.99); G3A (accuracy = 0.999)&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m2</span> <span class="o">==</span> <span class="n">Mutations</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">m2</span><span class="p">))</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Now including deletions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m3</span> <span class="o">=</span> <span class="n">Mutations</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s1">&#39;del1to3 (accuracy = 0.99); &#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;A6T (accuracy = 0.995); &#39;</span>
+<span class="gp">... </span>        <span class="s1">&#39;del8to9 (accuracy = 0.999, homopolymer length = 2)&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">m3</span><span class="p">)</span>
+<span class="go">&#39;A6T (accuracy = 0.995000); del1to3 (accuracy = 0.990000); del8to9 (accuracy = 0.999000, homopolymer length = 2)&#39;</span>
+</pre></div>
+</div>
+<p>An insertion:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m4</span> <span class="o">=</span> <span class="n">Mutations</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s1">&#39;ins5len2 (accuracy = 0.99, homopolymer length = 3)&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">m4</span><span class="p">)</span>
+<span class="go">&#39;ins5len2 (accuracy = 0.990000, homopolymer length = 3)&#39;</span>
+</pre></div>
+</div>
+<p>Example of a null mutation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m_null</span> <span class="o">=</span> <span class="n">Mutations</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s1">&#39;no mutations&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m_null2</span> <span class="o">=</span> <span class="n">Mutations</span><span class="o">.</span><span class="n">from_str</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m_null</span> <span class="o">==</span> <span class="n">m_null2</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">m_null</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">m_null2</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">m_null</span><span class="p">)</span>
+<span class="go">&#39;no mutations&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="method">
@@ -1668,7 +1757,7 @@ from start or end.</dd>
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -1718,6 +1807,14 @@ from start or end.</dd>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -1726,8 +1823,8 @@ from start or end.</dd>
       &copy;2017--2018, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/dms_tools2.minimap2.rst.txt"
