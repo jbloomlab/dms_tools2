@@ -12,6 +12,7 @@ Submodules
 .. toctree::
 
    dms_tools2.barcodes
+   dms_tools2.codonvarianttable
    dms_tools2.compareprefs
    dms_tools2.diffsel
    dms_tools2.dssp
