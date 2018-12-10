@@ -44,7 +44,7 @@ class test_count_codonvariants(unittest.TestCase):
         geneseq = str(gene[0].location.extract(amplicon).seq)
 
 
-        variants = dms_tools2.barcodes.CodonVariantTable(
+        variants = dms_tools2.codonvarianttable.CodonVariantTable(
                         barcode_variant_file=barcode_variant_file,
                         geneseq=geneseq)
 

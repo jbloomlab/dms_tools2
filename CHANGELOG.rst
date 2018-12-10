@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.4.1
+----------
+* Moved `CodonVariantTable` to its own module.
+
 2.4.0
 -----------
 * added `muteffects` data type to ``dms2_logoplot``
