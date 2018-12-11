@@ -40,11 +40,25 @@ class CodonVariantTable:
             columns named "library", "barcode", "substitutions",
             (nucleotide mutations in 1, ... numbering in a format
             like "G301A A302T G856C"), and "variant_call_support"
-            (sequences supporting barcode-variant call).
+            (sequences supporting barcode-variant call). Any
+            additional columns are removed unless they are specified
+            in `extra_cols`.
         `geneseq` (str)
-            Sequence of protein-coding gene.
+            Sequence of wildtype protein-coding gene.
+        `substitutions_are_codon` (bool)
+            If `True`, then the "substitutions" column in
+            `barcode_variant_file` gives the substitutions
+            as codon rather than nucleotide mutations (e.g.,
+            "ATG1ATA GTA5CCC" for substitutions at codons
+            1 and 5 in 1, 2, ... numbering).
+        `extra_cols` (list)
+            Additional columns in `barcode_variant_file` to
+            retain when creating `barcode_variant_df` and
+            `variant_count_df` attributes.
 
     Attributes:
+        `geneseq` (str)
+            `geneseq` passed at initialization.
         `sites` (list)
             List of all codon sites in 1, 2, ... numbering.
         `codons` (dict)
@@ -63,7 +77,9 @@ class CodonVariantTable:
             initial barcode-variant data, whereas `variant_count_df`
             is updated with variant counts for samples.
 
-    Initialize a :class:`CodonVariantTable`:
+    Here is an example.
+
+    First, initialize a :class:`CodonVariantTable`:
 
     >>> geneseq = 'ATGGGATGA'
     >>> variantfile = '_variantfile.csv'
@@ -183,8 +199,8 @@ class CodonVariantTable:
     >>> variants.variant_count_df is None
     True
 
-    Now we add barcode count information for a sample named
-    "input" from library 1:
+    Now we add barcode count information for sample "input"
+    from library 1 using :class:`CodonVariantTable.addSampleCounts`:
 
     >>> counts_lib1_input = pandas.DataFrame(
     ...         {'barcode':['AAC', 'GAT'],
@@ -296,9 +312,126 @@ class CodonVariantTable:
     0     1      ATG  113  2114    0    0     0     0
     1     2      GGA    0     0  401  513  1200   113
     2     3      TGA    0     0    0    0     0  2227
+
+    We can also initialize a :class:`CodonVariantTable` from the
+    `variant_count_df` if we have written that to a CSV file.
+    We do this using :meth:`CodonVariantTable.from_variant_count_df`.
+    The example below shows how this newly initialized variant table
+    is equal to the original one used to write the CSV file:
+
+    >>> with tempfile.NamedTemporaryFile(mode='w') as f:
+    ...     variants.variant_count_df.to_csv(f, index=False)
+    ...     f.flush()
+    ...     variants_eq = CodonVariantTable.from_variant_count_df(
+    ...                     variant_count_df_file=f.name,
+    ...                     geneseq=geneseq)
+    >>> variants == variants_eq
+    True
+
+    Of course, they initializd variant table is **not** equal
+    to original one if we don't write the full `variant_count_df`
+    to the CSV file:
+
+    >>> with tempfile.NamedTemporaryFile(mode='w') as f:
+    ...     (variants
+    ...         .variant_count_df.query('sample == "input"')
+    ...         .to_csv(f, index=False)
+    ...         )
+    ...     f.flush()
+    ...     variants_ne = CodonVariantTable.from_variant_count_df(
+    ...                     variant_count_df_file=f.name,
+    ...                     geneseq=geneseq)
+    >>> variants == variants_ne
+    False
     """
 
-    def __init__(self, *, barcode_variant_file, geneseq):
+    def __eq__(self, other):
+        # following here: https://stackoverflow.com/a/390640
+        if type(other) is not type(self):
+            return False
+        elif self.__dict__.keys() != other.__dict__.keys():
+            return False
+        else:
+            for key, val in self.__dict__.items():
+                val2 = getattr(other, key)
+                if isinstance(val, pandas.DataFrame):
+                    if not val.equals(val2):
+                        return False
+                else:
+                    if val != val2:
+                        return False
+            return True
+
+
+    @classmethod
+    def from_variant_count_df(cls, *, variant_count_df_file, geneseq,
+            drop_all_libs=True):
+        """:class:`CodonVariantTable` from CSV of `variant_count_df`.
+
+        Use this method when you have written a CSV file of the
+        `variant_count_df` attribute of a :class:`CodonVariantTable`,
+        and now wish to re-initialize that :class:`CodonVariantTable`.
+
+        Args:
+            `variant_count_df_file` (str)
+                Name of CSV file containing the `variant_count_df`.
+                Must have following columns: "barcode", "library",
+                "variant_call_support", "codon_substitutions",
+                "sample", and "count".
+            `geneseq` (str)
+                Sequence of wildtype protein-coding gene.
+            `drop_all_libs` (bool)
+                If there is a library named "all libraries",
+                drop it from the list of libraries in the created
+                :class:`CodonVariantTable` as it probably was
+                added by :meth:`CodonVariantTable.addMergedLibraries`
+                and duplicates information for the individual libraries.
+
+        Returns:
+            The :class:`CodonVariantTable` used to write
+            `variant_count_df_file`.
+        """
+        df = pandas.read_csv(variant_count_df_file)
+
+        req_cols = ['barcode', 'library', 'variant_call_support',
+                    'codon_substitutions', 'sample', 'count']
+        if not (set(req_cols) < set(df.columns)):
+            raise ValueError(f"{variant_count_df} lacks required "
+                             f"columns {req_cols}")
+        else:
+            df = df[req_cols]
+
+        if drop_all_libs:
+            dropcol = "all libraries"
+            if dropcol in df['library'].unique():
+                df = df.query('library != @dropcol')
+
+        with tempfile.NamedTemporaryFile(mode='w') as f:
+            (df
+                .drop(columns=['sample', 'count'])
+                .rename(columns={'codon_substitutions':'substitutions'})
+                .drop_duplicates()
+                .to_csv(f, index=False)
+                )
+            f.flush()
+            cvt = cls(barcode_variant_file=f.name,
+                      geneseq=geneseq,
+                      substitutions_are_codon=True)
+
+        for sample in df['sample'].unique():
+            for lib in cvt.libraries:
+                idf = df.query('sample == @sample & library == @lib')
+                if len(idf):
+                    cvt.addSampleCounts(lib,
+                                        sample,
+                                        idf[['barcode', 'count']]
+                                        )
+
+        return cvt
+
+
+    def __init__(self, *, barcode_variant_file, geneseq,
+                 substitutions_are_codon=False, extra_cols=[]):
         """See main class doc string."""
 
         self.geneseq = geneseq.upper()
@@ -311,11 +444,16 @@ class CodonVariantTable:
         self.aas = {r:CODON_TO_AA[codon] for r, codon in self.codons.items()}
 
         df = pandas.read_csv(barcode_variant_file)
-        required_cols = {'library', 'barcode',
-                         'substitutions', 'variant_call_support'}
-        if not set(df.columns).issuperset(required_cols):
+        required_cols = ['library', 'barcode',
+                         'substitutions', 'variant_call_support']
+        if not set(df.columns).issuperset(set(required_cols)):
             raise ValueError("`variantfile` does not have "
                              f"required columns {required_cols}")
+        if extra_cols and not set(df.columns).issuperset(set(extra_cols)):
+            raise ValueError("`variantfile` does not have "
+                             f"`extra_cols` {extra_cols}")
+        df = df[required_cols + extra_cols]
+
         self.libraries = sorted(df.library.unique().tolist())
         self._valid_barcodes = {}
         for lib in self.libraries:
@@ -327,13 +465,18 @@ class CodonVariantTable:
         self._samples = {lib:[] for lib in self.libraries}
         self.variant_count_df = None
 
+        if substitutions_are_codon:
+            codonSubsFunc = lambda x: x
+        else:
+            codonSubsFunc = self._ntToCodonMuts
+
         self.barcode_variant_df = (
                 df
                 # info about codon and amino-acid substitutions
                 .assign(codon_substitutions=
                             lambda x: x.substitutions
                                        .fillna('')
-                                       .apply(self._ntToCodonMuts),
+                                       .apply(codonSubsFunc),
                         aa_substitutions=
                             lambda x: x.codon_substitutions
                                        .apply(self._codonToAAMuts),
@@ -361,6 +504,27 @@ class CodonVariantTable:
                 .sort_values(['library', 'barcode'])
                 .reset_index(drop=True)
                 )
+
+        # check validity of codon substitutions given `geneseq`
+        for codonmut in itertools.chain.from_iterable(
+                        self.barcode_variant_df
+                          .codon_substitutions.str.split()):
+            m = re.match('^(?P<wt>[ATGC]{3})'
+                          '(?P<r>\d+)'
+                          '(?P<mut>[ATGC]{3})$',
+                         codonmut)
+            if m is None:
+                raise ValueError(f"invalid mutation {codonmut}")
+            wt = m.group('wt')
+            r = int(m.group('r'))
+            mut = m.group('mut')
+            if r not in self.sites:
+                raise ValueError(f"invalid site {r} in codon mutation {codonmut}")
+            if self.codons[r] != wt:
+                raise ValueError(f"Wrong wildtype codon in {codonmut}. "
+                                 f"Expected wildtype of {codons[r]}.")
+            if wt == mut:
+                raise ValueError(f"invalid mutation {codonmut}")
 
         # define some colors for plotting
         self._mutation_type_colors = {

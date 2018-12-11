@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.4.dev2
+----------
+* Enhancements to `CodonVariantTable`
+
 2.4.1
 ----------
 * Moved `CodonVariantTable` to its own module.
