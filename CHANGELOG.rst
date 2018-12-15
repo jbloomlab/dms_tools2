@@ -3,7 +3,7 @@ Change Log
 
 2.4.dev2
 ----------
-* Enhancements to `CodonVariantTable`
+* Enhancements to `CodonVariantTable`, including simulating data and more plottin.
 
 2.4.1
 ----------
