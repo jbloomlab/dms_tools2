@@ -13,6 +13,8 @@ To build the documentation, you need to install:
     
     * `sphinx-argparse`_ 
 
+    * `nb2plots`_
+
 Then simply type::
 
     make html
@@ -39,3 +41,4 @@ Note that the configuration automatically created by ``sphinx-quickstart`` has b
 .. _`sphinx`: http://sphinx-doc.org/
 .. _`sphinx-argparse`: http://sphinx-argparse.readthedocs.org
 .. _`sphinx-apidoc`: http://www.sphinx-doc.org/en/stable/man/sphinx-apidoc.html
+.. _`nb2plots`: https://matthew-brett.github.io/nb2plots/
