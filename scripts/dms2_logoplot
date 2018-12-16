@@ -193,7 +193,7 @@ def main():
                         )
             if args['diffselrange']:
                 diffselrange = args['diffselrange']
-                if (diffselrange[0] > ymin) or (diffselrange[0] < ymax):
+                if (diffselrange[0] > ymin) or (diffselrange[1] < ymax):
                     raise ValueError("Invalid diffselrange does not "
                             "fully include data range of {0} to {1}"
                             .format(ymin, ymax))
