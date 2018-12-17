@@ -15,27 +15,31 @@ on barcoded codon-mutant libraries of a gene.
 Example on simulated data
 --------------------------
 
+.. code-links::
+
 Here is an example on simulated data:
 
-Import Python modules / packages:
+Import Python modules / packages. For ggplot2-like plotting,
+we use `plotnine <https://plotnine.readthedocs.io>`_.
 
 .. nbplot::
 
    >>> import collections
    >>> import os
+   >>> import math
    >>> import tempfile
-   >>> import random
    >>> import scipy
    >>> import pandas
-   >>> from dms_tools2 import CODONS, CODON_TO_AA, NTS
+   >>> from plotnine import *
+   >>> from dms_tools2 import CODONS, CODON_TO_AA, NTS, AAS_WITHSTOP
+   >>> from dms_tools2.plot import COLOR_BLIND_PALETTE_GRAY as PALETTE
    >>> NONSTOP_CODONS = [c for c in CODONS if CODON_TO_AA[c] != '*']
    >>> from dms_tools2.codonvarianttable import CodonVariantTable
 
-Seed random number generators for reproducible output:
+Seed random number generator for reproducible output:
 
 .. nbplot::
 
-   >>> random.seed(1)
    >>> scipy.random.seed(1)
 
 Set pandas display options to show large chunks of Data Frames
@@ -55,11 +59,10 @@ will all be of this sequence.
 .. nbplot::
 
     >>> genelength = 100
-    >>> random.seed(1)
-    >>> scipy.random.seed(1)
-    >>> geneseq = ''.join(random.choices(NONSTOP_CODONS, k=genelength))
+    >>> geneseq = ''.join(scipy.random.choice(NONSTOP_CODONS)
+    ...                   for _ in range(genelength))
     >>> geneseq
-    'AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAACATCCGGCTGATGATGATCCTACACAACTCCGACGCTAGTTTTTCGACTCCAGTAGGTTTACGCTCAGGACAGGATTCTTCCCTGGATAAGATGTACCGCAGGGACGGGGGCCCGCGGCTTGTTCTTCCTCTCAACAAGGGGTTGGCACGAAGGCTGTTGGTTGAATCGATGCTTTTCGATCTACAAGACTTCAAAGTTTCATGCGTCTATCTTGAGCGC'
+    'GCCGGTATAAGAAGCAGTACCATTAAACAAAACATAACTGTCTTTACGCGCTCACCAGCCCAGCCAAGTTTTGGGCTACTCATGTCAACACCTCCTGGCTATTGGCTGGAACCGATCGGCAGCACTCCGTTAAACAAATTTCACAGACGAATCTCCGTTGGGTTAAGACTGACTAATACGCCCTATTTAAATACACGATATGGTATACGGTCGCAAGTCTCCGGCCAGATTAAAACACGCGTTGAGCCTACTCGGCGCGGACCGAGCAATGCTCCTGCACGTGCCTTACATGCGAGAGAA'
 
 To initialize a :class:`CodonVariantTable`, we need a CSV
 file giving the barcodes and nucleotide substitutions in
@@ -90,15 +93,16 @@ a plausible :class:`CodonVariantTable`:
    ...     ('variant_call_support', [])])
    >>> for lib in libs:
    ...     for ivariant in range(variants_per_lib):
-   ...         barcode = ''.join(random.choices(NTS, k=bclen))
+   ...         barcode = ''.join(scipy.random.choice(NTS)
+   ...                           for _ in range(bclen))
    ...         while barcode in barcode_variant_dict['barcode']:
-   ...             barcode = ''.join(random.choices(NTS, k=bclen))
-   ...         variant_call_support = random.randint(1, 3)
+   ...             barcode = ''.join(scipy.random.choice(NTS)
+   ...                               for _ in range(bclen))
    ...         substitutions = []
    ...         ncodonmuts = scipy.random.poisson(1.3)
-   ...         for icodon in random.sample(range(1, genelength + 1), ncodonmuts):
+   ...         for icodon in scipy.random.randint(1, genelength + 1, ncodonmuts):
    ...             wtcodon = geneseq[3 * (icodon - 1) : 3 * icodon]
-   ...             mutcodon = random.choice([c for c in CODONS if c != wtcodon])
+   ...             mutcodon = scipy.random.choice([c for c in CODONS if c != wtcodon])
    ...             for i_nt, (wt_nt, mut_nt) in enumerate(zip(wtcodon, mutcodon)):
    ...                 if wt_nt != mut_nt:
    ...                     igene = 3 * (icodon - 1) + i_nt + 1 # nucleotide in gene
@@ -106,7 +110,7 @@ a plausible :class:`CodonVariantTable`:
    ...         barcode_variant_dict['library'].append(lib)  
    ...         barcode_variant_dict['barcode'].append(barcode)  
    ...         barcode_variant_dict['substitutions'].append(' '.join(substitutions))
-   ...         barcode_variant_dict['variant_call_support'].append(variant_call_support)  
+   ...         barcode_variant_dict['variant_call_support'].append(scipy.random.randint(1, 4))
    >>> barcode_variants = pandas.DataFrame(barcode_variant_dict)
 
 Here are the first and last few lines of the Data Frame. As you can
@@ -116,17 +120,17 @@ for each barcode:
 .. nbplot::
 
    >>> barcode_variants.head(n=4)
-     library           barcode                     substitutions  variant_call_support
-   0   lib_1  ATGAGCCCGGGCAAAG  C211A T212A C213G A97T T98C C99G                     1
-   1   lib_1  TATCTCCTACACTGGC                 T124C C125T G126T                     3
-   2   lib_1  CACCAATGAGTAAAGA                                                       3
-   3   lib_1  GCTTGGCGAGTGCGAA                                                       1
+     library           barcode                substitutions  variant_call_support
+   0   lib_1  GGTTTTCTTAGGGAAT  A232T A233C A234C A19C C21G                     3
+   1   lib_1  GATCTTCATATAGATT            C247G C248A T249C                     2
+   2   lib_1  GTACTCAGAAAACGAC                                                  2
+   3   lib_1  GAATGGGACGGGGTTA                        G129A                     3
    >>> barcode_variants.tail(n=4)
-         library           barcode                                    substitutions  variant_call_support
-   19996   lib_2  TCCTTCAGCAGGACTC                                A232T G233T G234T                     2
-   19997   lib_2  AGCACTGCCCGACCTG  C130A C131A A132G C211T T212A C213G T145C C146A                     1
-   19998   lib_2  TTTAGAGCGCCTGATG                                                                      1
-   19999   lib_2  ATCATTCAGTCCAAGT                    C199G T200A T201G T121C T123A                     2
+         library           barcode                                 substitutions  variant_call_support
+   19996   lib_2  ATGTACTGTGATTTAT              G118C G119A C120G T43G T44A T45C                     1
+   19997   lib_2  GCTCATTATGCCGGCC  G1A C2G C3A C226A A227G G228T A25C A26T A27G                     2
+   19998   lib_2  GACAATCTGCAACCGT                         C263G G264C A37C T39C                     1
+   19999   lib_2  TCATGTGCTGAGACGA                             A265G G266A C267A                     2
 
 We now write this Data Frame to a CSV file and use it to initialize
 a :class:`CodonVariantTable`. Obviously in a real experiment you
@@ -158,14 +162,14 @@ The codon identities at each site:
 .. nbplot::
 
    >>> variants.codons
-   OrderedDict([(1, 'AGA'), (2, 'TCC'), (3, 'GTG'), (4, 'ATT'), (5, 'CTG'), (6, 'CGT'), (7, 'GCT'), (8, 'TAC'), (9, 'ACC'), (10, 'AAC'), (11, 'TCA'), (12, 'CGG'), (13, 'GTG'), (14, 'AAA'), (15, 'CGT'), (16, 'GTA'), (17, 'ATC'), (18, 'TTA'), (19, 'TGC'), (20, 'AAC'), (21, 'AAC'), (22, 'GAC'), (23, 'TTA'), (24, 'CCT'), (25, 'ATC'), (26, 'CGC'), (27, 'AAC'), (28, 'ATC'), (29, 'CGG'), (30, 'CTG'), (31, 'ATG'), (32, 'ATG'), (33, 'ATC'), (34, 'CTA'), (35, 'CAC'), (36, 'AAC'), (37, 'TCC'), (38, 'GAC'), (39, 'GCT'), (40, 'AGT'), (41, 'TTT'), (42, 'TCG'), (43, 'ACT'), (44, 'CCA'), (45, 'GTA'), (46, 'GGT'), (47, 'TTA'), (48, 'CGC'), (49, 'TCA'), (50, 'GGA'), (51, 'CAG'), (52, 'GAT'), (53, 'TCT'), (54, 'TCC'), (55, 'CTG'), (56, 'GAT'), (57, 'AAG'), (58, 'ATG'), (59, 'TAC'), (60, 'CGC'), (61, 'AGG'), (62, 'GAC'), (63, 'GGG'), (64, 'GGC'), (65, 'CCG'), (66, 'CGG'), (67, 'CTT'), (68, 'GTT'), (69, 'CTT'), (70, 'CCT'), (71, 'CTC'), (72, 'AAC'), (73, 'AAG'), (74, 'GGG'), (75, 'TTG'), (76, 'GCA'), (77, 'CGA'), (78, 'AGG'), (79, 'CTG'), (80, 'TTG'), (81, 'GTT'), (82, 'GAA'), (83, 'TCG'), (84, 'ATG'), (85, 'CTT'), (86, 'TTC'), (87, 'GAT'), (88, 'CTA'), (89, 'CAA'), (90, 'GAC'), (91, 'TTC'), (92, 'AAA'), (93, 'GTT'), (94, 'TCA'), (95, 'TGC'), (96, 'GTC'), (97, 'TAT'), (98, 'CTT'), (99, 'GAG'), (100, 'CGC')])
+   OrderedDict([(1, 'GCC'), (2, 'GGT'), (3, 'ATA'), (4, 'AGA'), (5, 'AGC'), (6, 'AGT'), (7, 'ACC'), (8, 'ATT'), (9, 'AAA'), (10, 'CAA'), (11, 'AAC'), (12, 'ATA'), (13, 'ACT'), (14, 'GTC'), (15, 'TTT'), (16, 'ACG'), (17, 'CGC'), (18, 'TCA'), (19, 'CCA'), (20, 'GCC'), (21, 'CAG'), (22, 'CCA'), (23, 'AGT'), (24, 'TTT'), (25, 'GGG'), (26, 'CTA'), (27, 'CTC'), (28, 'ATG'), (29, 'TCA'), (30, 'ACA'), (31, 'CCT'), (32, 'CCT'), (33, 'GGC'), (34, 'TAT'), (35, 'TGG'), (36, 'CTG'), (37, 'GAA'), (38, 'CCG'), (39, 'ATC'), (40, 'GGC'), (41, 'AGC'), (42, 'ACT'), (43, 'CCG'), (44, 'TTA'), (45, 'AAC'), (46, 'AAA'), (47, 'TTT'), (48, 'CAC'), (49, 'AGA'), (50, 'CGA'), (51, 'ATC'), (52, 'TCC'), (53, 'GTT'), (54, 'GGG'), (55, 'TTA'), (56, 'AGA'), (57, 'CTG'), (58, 'ACT'), (59, 'AAT'), (60, 'ACG'), (61, 'CCC'), (62, 'TAT'), (63, 'TTA'), (64, 'AAT'), (65, 'ACA'), (66, 'CGA'), (67, 'TAT'), (68, 'GGT'), (69, 'ATA'), (70, 'CGG'), (71, 'TCG'), (72, 'CAA'), (73, 'GTC'), (74, 'TCC'), (75, 'GGC'), (76, 'CAG'), (77, 'ATT'), (78, 'AAA'), (79, 'ACA'), (80, 'CGC'), (81, 'GTT'), (82, 'GAG'), (83, 'CCT'), (84, 'ACT'), (85, 'CGG'), (86, 'CGC'), (87, 'GGA'), (88, 'CCG'), (89, 'AGC'), (90, 'AAT'), (91, 'GCT'), (92, 'CCT'), (93, 'GCA'), (94, 'CGT'), (95, 'GCC'), (96, 'TTA'), (97, 'CAT'), (98, 'GCG'), (99, 'AGA'), (100, 'GAA')])
 
 The amino-acid identities at each site:
 
 .. nbplot::
 
    >>> variants.aas
-   OrderedDict([(1, 'R'), (2, 'S'), (3, 'V'), (4, 'I'), (5, 'L'), (6, 'R'), (7, 'A'), (8, 'Y'), (9, 'T'), (10, 'N'), (11, 'S'), (12, 'R'), (13, 'V'), (14, 'K'), (15, 'R'), (16, 'V'), (17, 'I'), (18, 'L'), (19, 'C'), (20, 'N'), (21, 'N'), (22, 'D'), (23, 'L'), (24, 'P'), (25, 'I'), (26, 'R'), (27, 'N'), (28, 'I'), (29, 'R'), (30, 'L'), (31, 'M'), (32, 'M'), (33, 'I'), (34, 'L'), (35, 'H'), (36, 'N'), (37, 'S'), (38, 'D'), (39, 'A'), (40, 'S'), (41, 'F'), (42, 'S'), (43, 'T'), (44, 'P'), (45, 'V'), (46, 'G'), (47, 'L'), (48, 'R'), (49, 'S'), (50, 'G'), (51, 'Q'), (52, 'D'), (53, 'S'), (54, 'S'), (55, 'L'), (56, 'D'), (57, 'K'), (58, 'M'), (59, 'Y'), (60, 'R'), (61, 'R'), (62, 'D'), (63, 'G'), (64, 'G'), (65, 'P'), (66, 'R'), (67, 'L'), (68, 'V'), (69, 'L'), (70, 'P'), (71, 'L'), (72, 'N'), (73, 'K'), (74, 'G'), (75, 'L'), (76, 'A'), (77, 'R'), (78, 'R'), (79, 'L'), (80, 'L'), (81, 'V'), (82, 'E'), (83, 'S'), (84, 'M'), (85, 'L'), (86, 'F'), (87, 'D'), (88, 'L'), (89, 'Q'), (90, 'D'), (91, 'F'), (92, 'K'), (93, 'V'), (94, 'S'), (95, 'C'), (96, 'V'), (97, 'Y'), (98, 'L'), (99, 'E'), (100, 'R')])
+   OrderedDict([(1, 'A'), (2, 'G'), (3, 'I'), (4, 'R'), (5, 'S'), (6, 'S'), (7, 'T'), (8, 'I'), (9, 'K'), (10, 'Q'), (11, 'N'), (12, 'I'), (13, 'T'), (14, 'V'), (15, 'F'), (16, 'T'), (17, 'R'), (18, 'S'), (19, 'P'), (20, 'A'), (21, 'Q'), (22, 'P'), (23, 'S'), (24, 'F'), (25, 'G'), (26, 'L'), (27, 'L'), (28, 'M'), (29, 'S'), (30, 'T'), (31, 'P'), (32, 'P'), (33, 'G'), (34, 'Y'), (35, 'W'), (36, 'L'), (37, 'E'), (38, 'P'), (39, 'I'), (40, 'G'), (41, 'S'), (42, 'T'), (43, 'P'), (44, 'L'), (45, 'N'), (46, 'K'), (47, 'F'), (48, 'H'), (49, 'R'), (50, 'R'), (51, 'I'), (52, 'S'), (53, 'V'), (54, 'G'), (55, 'L'), (56, 'R'), (57, 'L'), (58, 'T'), (59, 'N'), (60, 'T'), (61, 'P'), (62, 'Y'), (63, 'L'), (64, 'N'), (65, 'T'), (66, 'R'), (67, 'Y'), (68, 'G'), (69, 'I'), (70, 'R'), (71, 'S'), (72, 'Q'), (73, 'V'), (74, 'S'), (75, 'G'), (76, 'Q'), (77, 'I'), (78, 'K'), (79, 'T'), (80, 'R'), (81, 'V'), (82, 'E'), (83, 'P'), (84, 'T'), (85, 'R'), (86, 'R'), (87, 'G'), (88, 'P'), (89, 'S'), (90, 'N'), (91, 'A'), (92, 'P'), (93, 'A'), (94, 'R'), (95, 'A'), (96, 'L'), (97, 'H'), (98, 'A'), (99, 'R'), (100, 'E')])
 
 The different libraries for which we have barcodes:
 
@@ -183,10 +187,10 @@ amino-acid mutations and mutation counts via the
 
    >>> variants.barcode_variant_df.head(n=4)
      library           barcode  variant_call_support codon_substitutions aa_substitutions  n_codon_substitutions  n_aa_substitutions
-   0   lib_1  AAAAAAAGTCCGTACT                     3                                                           0                   0
-   1   lib_1  AAAAAACAACGCATTT                     1   TCA49TCG GAA82ACG             E82T                      2                   1
-   2   lib_1  AAAAAAGACTTGTATG                     3            GTT68CGC             V68R                      1                   1
-   3   lib_1  AAAAACGAGAGACATG                     1   CGT15GCG CAG51ATC        R15A Q51I                      2                   2
+   0   lib_1  AAAAAAACGTCTTGAC                     2            GTT81ACA             V81T                      1                   1
+   1   lib_1  AAAAAAATGCTAGAAC                     2            ATC51CCC             I51P                      1                   1
+   2   lib_1  AAAAACGTTTTAAGTC                     1            TAT67TAC                                       1                   0
+   3   lib_1  AAAAACTAAAAGTTAA                     3                                                           0                   0
 
 The :class:`CodonVariantTable` has a large number of methods
 to get or plot information about the variants. Eventually,
@@ -216,7 +220,7 @@ we just show the first 10 for `lib_1`:
 .. nbplot::
 
    >>> sorted(variants.valid_barcodes('lib_1'))[ : 10]
-   ['AAAAAAAGTCCGTACT', 'AAAAAACAACGCATTT', 'AAAAAAGACTTGTATG', 'AAAAACGAGAGACATG', 'AAAAAGGCATTTAGGA', 'AAAAAGGGATATAATG', 'AAAAAGTACACATGAA', 'AAAAAGTTTAACCTTA', 'AAAAATCAGCCACACT', 'AAAACACTATCCCTCC']
+   ['AAAAAAACGTCTTGAC', 'AAAAAAATGCTAGAAC', 'AAAAACGTTTTAAGTC', 'AAAAACTAAAAGTTAA', 'AAAAAGAAGCTCACTC', 'AAAAAGAATTCTTGTA', 'AAAAAGCAGGCCAGAA', 'AAAAAGGGTGTAAGGA', 'AAAAATAAAAGAGTAA', 'AAAAATTAAGCCGATG']
 
 Plot information about variants
 ++++++++++++++++++++++++++++++++++++++++++++
@@ -280,10 +284,10 @@ plotted above, use :meth:`CodonVariantTable.mutCounts`:
 
    >>> variants.mutCounts('single', 'aa', samples=None).head(n=4)
      library             sample mutation  count  mutation_type  site
-   0   lib_1  barcoded variants    R100S     12  nonsynonymous   100
-   1   lib_1  barcoded variants     M32L     10  nonsynonymous    32
-   2   lib_1  barcoded variants     M58L     10  nonsynonymous    58
-   3   lib_1  barcoded variants     C95V      8  nonsynonymous    95
+   0   lib_1  barcoded variants     P88R     11  nonsynonymous    88
+   1   lib_1  barcoded variants     E82S      9  nonsynonymous    82
+   2   lib_1  barcoded variants     G40R      8  nonsynonymous    40
+   3   lib_1  barcoded variants     K46R      8  nonsynonymous    46
 
 :meth:`CodonVariantTable.plotMutFreqs` shows the frequency of
 mutations along the gene:
@@ -765,7 +769,7 @@ class CodonVariantTable:
         self.variant_count_df = None
 
         if substitutions_are_codon:
-            codonSubsFunc = lambda x: x
+            codonSubsFunc = lambda x: x.upper()
         else:
             codonSubsFunc = self._ntToCodonMuts
 
@@ -778,7 +782,7 @@ class CodonVariantTable:
                                        .apply(codonSubsFunc),
                         aa_substitutions=
                             lambda x: x.codon_substitutions
-                                       .apply(self._codonToAAMuts),
+                                       .apply(self.codonToAAMuts),
                         n_codon_substitutions=
                             lambda x: x.codon_substitutions
                                        .str
@@ -848,114 +852,6 @@ class CodonVariantTable:
             return self._samples[library]
         except KeyError:
             raise ValueError(f"invalid `library` {library}")
-
-
-    def simulateSampleCounts(self, *,
-                             mut_type,
-                             phenotype_func,
-                             avg_depth_per_variant,
-                             library_uniformity,
-                             bottleneck,
-                             noise,
-                             pre_samplename,
-                             post_samplename,
-                             seed=None):
-        """Simulate pre- and post-selection counts for an experiment.
-
-        This method simulates counts and adds them to the
-        :class:`CodonVariants` object. It simulates data of
-        the type that you would get by performing deep sequencing
-        of the barcodes before and after a phenotypic selection.
-        The simulations are performed separately for each library.
-
-        Args:
-            `mut_type` ("aa" or "codon")
-                Does the phenotype depend on amino-acid or
-                codon mutations?
-            `phenotype_func` (function)
-                A function that takes a list of space-delimited
-                amino-acid or codon mutations (depending on 
-                the value of `mut_type`), and returns the
-                phenotype of the variant. The phenotype is the
-                proportional to the amount that variant increases
-                or decreases in frequency after selection.
-            `avg_depth_per_variant` (int)
-                Average number of counts for each variant both
-                pre- and post-selection.
-            `library_uniformity` (float)
-                How uniformly are counts distributed among variants
-                pre-selection? Provide a concentration parameter
-                for a Dirichlet distribution, larger values
-                indicate more even counts. A value of around 5
-                is ballpack characteristic of "real" experimental 
-                libraries
-            `bottleneck` (int)
-                Simulated random bottleneck between pre- and post-
-                selection counts. Draw barcode counts from multinomial
-                of this size with "true" pre-selection" frequencies, use
-                to calculate new frequencies of variants then acted on
-                by selection.
-            `noise` (float)
-                Add additional noise to the selection. The enrichment
-                of each variant after selection is proportional to
-                its phenotype times a random variable drawn from a
-                normal distribution with mean 1 and this standard
-                deviation, truncated at the lower end at 0. Set
-                `noise` to zero for no additional noise.
-            `pre_samplename` (str)
-                Name of pre-selection sample.
-            `post_samplename` (str)
-                Name of post-selection sample.
-            `seed` (None or int)
-                If not `None`, seed set before executing method (seeds
-                `scipy.random`).
-        """
-        if seed is not None:
-            scipy.random.seed(seed)
-
-        if mut_type not in {'aa', 'codon'}:
-            raise ValueError(f"invalid `mut_type` {mut_type}")
-        else:
-            mut_col = f'{mut_type}_substitutions'
-
-        df = (self.barcode_variant_df
-              [['library', 'barcode', mut_col]]
-              .assign(phenotype=lambda x: x[mut_col].apply(phenotype_func))
-              )
-
-        for lib in self.libraries:
-            lib_df = df.query('library == @lib')
-            nvariants = len(lib_df)
-            total_counts = nvariants * avg_depth_per_variant
-            lib_df = (
-                lib_df
-                .assign(
-                    # pre-selection frequencies of mutations
-                    pre_freq=scipy.random.dirichlet(
-                            library_uniformity * scipy.ones(nvariants)),
-                    # pre-selection counts simulated from frequencies
-                    pre_counts=lambda x: scipy.random.multinomial(
-                            total_counts, x.pre_freq),
-                    # simulated pre-selection freqs after bottleneck
-                    bottleneck_freq=lambda x: scipy.random.multinomial(
-                            bottleneck, x.pre_freq) / bottleneck,
-                    # post-selection freqs with noise
-                    noise=scipy.clip(scipy.random.normal(1, noise), 0, None),
-                    post_freq_nonorm=lambda x:
-                            x.bottleneck_freq * x.phenotype * x.noise,
-                    post_freq=lambda x: x.post_freq_nonorm /
-                            x.post_freq_nonorm.sum(),
-                    # post-selection counts simulated from frequencies
-                    post_counts=lambda x: scipy.random.multinomial(
-                            total_counts, x.post_freq)
-                    )
-                )
-            self.addSampleCounts(lib, pre_samplename,
-                    lib_df.rename(columns={'pre_counts':'count'}))
-            self.addSampleCounts(lib, post_samplename,
-                    lib_df.rename(columns={'post_counts':'count'}))
-        print('debugging')
-        return lib_df # debugging
 
 
     def addSampleCounts(self, library, sample, barcodecounts):
@@ -1889,7 +1785,8 @@ class CodonVariantTable:
         return (df, nlibraries, nsamples)
 
 
-    def _codonToAAMuts(self, codon_mut_str):
+    @classmethod
+    def codonToAAMuts(self, codon_mut_str):
         """Converts string of codon mutations to amino-acid mutations.
 
         Args:
@@ -1900,15 +1797,7 @@ class CodonVariantTable:
         Returns:
             String with amino acid mutations in 1, 2, ... numbering.
 
-        >>> geneseq = 'ATGGGATGA'
-        >>> with tempfile.NamedTemporaryFile(mode='w') as f:
-        ...     _ = f.write('library,barcode,substitutions,variant_call_support')
-        ...     f.flush()
-        ...     variants = CodonVariantTable(
-        ...                 barcode_variant_file=f.name,
-        ...                 geneseq=geneseq
-        ...                 )
-        >>> variants._codonToAAMuts('ATG1GTG GGA2GGC TGA3AGA')
+        >>> CodonVariantTable.codonToAAMuts('ATG1GTG GGA2GGC TGA3AGA')
         'M1V *3R'
         """
         aa_muts = {}
@@ -1921,13 +1810,10 @@ class CodonVariantTable:
             if r in aa_muts:
                 raise ValueError(f"duplicate codon mutation for {r}")
             wt_codon = m.group('wt')
-            if self.geneseq[3 * (r - 1) : 3 * r] != wt_codon:
-                raise ValueError(f"invalid wildtype codon in {mut}")
             mut_codon = m.group('mut')
             if wt_codon == mut_codon:
                 raise ValueError(f"invalid mutation {mut}")
             wt_aa = CODON_TO_AA[wt_codon]
-            assert wt_aa == self.aas[r]
             mut_aa = CODON_TO_AA[mut_codon]
             if wt_aa != mut_aa:
                 aa_muts[r] = f"{wt_aa}{r}{mut_aa}"
@@ -1993,6 +1879,249 @@ class CodonVariantTable:
             codon_mut_list.append(f"{wt_codon}{r}{''.join(mut_codon)}")
 
         return ' '.join(codon_mut_list)
+
+
+
+def simulateSampleCounts(*,
+                         variants,
+                         phenotype_func,
+                         variant_error_rate,
+                         pre_sample,
+                         post_samples,
+                         seed=None):
+    """Simulate pre- and post-selection variant counts.
+
+    Simulate variant counts for experiment where barcodes
+    are sequenced pre- and post-selection.
+
+    Args:
+        `variants` (:class:`CodonVariantTable`)
+           Holds variants used in simulation.
+        `phenotype_func` (function)
+            Takes a row from `variants.barcode_variant_df`
+            and returns the phenotype. Typically this is
+            calculated from the "aa_substitutions"
+            or "codon_substitutions" column. The phenotype
+            is a number >= 0, and represents the expected
+            enrichment of the variant relative to wildtype
+            post selection (values > 1 indicate beneficial).
+        `variant_error_rate` (float)
+            Rate at which variants in `variants` are
+            mis-called. Provide the probability that a
+            variant has a spuriously called (or missing)
+            codon mutation: with this probability, each
+            variant then has a random codon mutation added
+            or taken away before being passed to
+            `phenotype_func`. Designed to simulate the fact
+            that the method used to link barcodes to variants
+            is probably not perfect.
+        `pre_sample` (pandas DataFrame or dict)
+            The counts of each variant pre-selection. You can
+            specify counts or have them simulated:
+
+                - To specify counts, provide a data frame with
+                  columns "library", "barcode", and "count"
+                  where "count" is the pre-selection counts. 
+
+                - To simulate, provide dict with keys "total_count"
+                  and "uniformity". For each library, we simulate
+                  pre-selection counts as a draw of "total_count"
+                  counts from a multinomial parameterized by
+                  pre-selection frequences drawn from a Dirichlet
+                  distribution with a concentration parameter of
+                  of "uniformity" (larger uniformity values mean
+                  more even libraries; 5 is reasonable value).
+
+        `post_samples` (dict)
+            Nested dict indicating post-selection samples.
+            Keyed by name of each post-selection sample, with
+            value being another dict. The post-selection counts
+            are drawn from a multinomial parameterized
+            by the pre-selection frequencies (frequencies calculated from
+            counts if `pre_sample` gives counts, Dirichlet frequencies
+            if `pre_sample` is simulated). Add noise by the
+            following parameters provided in the dict for each sample:
+
+                - "total_count": total overall counts per library.
+
+                - "noise": add additional noise to selection by
+                  multiplying phenotype times a random variable
+                  drawn from a normal distribution with mean 1
+                  and this standard deviation (truncated at lower
+                  end to zero). Set noise to 0 for no noise.
+
+                - "bottleneck": put the pre-selection frequencies
+                  through a bottleneck of this size, then re-calcuate
+                  initial frequencies that selection acts upon.
+
+        `seed` (None or int)
+            If not `None`, random number seed set before executing
+            function (sets `scipy.random.seed`).
+
+    Returns:
+        A pandas DataFrame with the following columns:
+
+            - "library"
+
+            - "barcode"
+
+            - "sample"
+
+            - "count"
+
+        The first two columns indicate the library and barcode
+        for each variant as in the `barcode_variant_df` attribute
+        of `variants`, the "sample" and "count" columns give counts
+        for "pre-selection" and each post-selection sample in
+        `post_samples`.
+    """
+    if seed is not None:
+        scipy.random.seed(seed)
+
+    #-----------------------------------------
+    # internal function
+    def _add_variant_errors(codon_substitutions):
+        """Add errors to variant according to `variant_error_rate`."""
+        if scipy.random.random() < variant_error_rate:
+            muts = list(codon_mut_str.split())
+            if len(muts) == 0 or scipy.random.random() < 0.5:
+                # add mutation
+                mutatedsites = set(map(
+                        int,
+                        [re.match('^[ATGC]{3}(?P<site>\d+)[ATGC]{3}$',
+                                  mut).group('site')
+                         for mut in muts]
+                        ))
+                unmutatedsites = set(variants.sites) - mutatedsites
+                if not unmutatedsites:
+                    raise RuntimeError("variant already has all mutations")
+                errorsite = scipy.random.choice(unmutatedsites)
+                wtcodon = variants.codons[errorsite]
+                mutcodon = scipy.random.choice(set(CODONS) - {wtcodon})
+                muts.append(f'{wtcodon}{errorsite}{mutcodon}')
+                return ' '.join(muts)
+            else:
+                # remove mutation 
+                muts = muts.pop(scipy.random.randint(0, len(muts)))
+                return ' '.join(muts)
+        else:
+            return codon_substitutions
+    #-----------------------------------------
+
+    barcode_variant_df = (
+        variants.barcode_variant_df
+        [['library', 'barcode', 'codon_substitutions']]
+        .assign(
+            codon_substitutions=lambda x: x.codon_substitutions
+                                .apply(_add_variant_errors),
+            aa_substitutions=lambda x: x.codon_substitutions
+                             .apply(CodonVariantTable.codonToAAMuts),
+            phenotype=lambda x: x.apply(phenotype_func)
+            )
+        [['library', 'barcode', 'phenotype']]
+        )
+
+    libraries = variants['library'].unique()
+
+    if isinstance(pre_sample, pandas.DataFrame):
+        # pre-sample counts specified
+        req_cols = ['library', 'barcode', 'count']
+        if not set(req_cols).issubset(set(pre_sample.columns)):
+            raise ValueError(f"pre_sample lacks cols {req_cols}:"
+                             f"\n{pre_sample}")
+        cols = ['library', 'barcode']
+        if (pre_sample[cols].sort_values(cols).reset_index() !=
+            barcode_variant_df[cols].sort_values(cols).reset_index()
+            ).any():
+            raise ValueError("pre_sample DataFrame lacks required "
+                             "library and barcode columns")
+        barcode_variant_df = (
+                barcode_variant_df
+                .merge(pre_sample[req_cols], on=['library', 'barcode'])
+                .rename(columns={'count':'pre-selection'})
+                )
+        # "true" pre-selection freqs are just input counts
+        nperlib = (barcode_variant_df
+                   .groupby('library')
+                   .rename('total_count')
+                   .reset_index()
+                   )
+        barcode_variant_df = (
+                barcode_variant_df
+                .merge(nperlib, on='library')
+                .assign(pre_freqs=lambda x: x['pre-selection'] /
+                                            x.total_count)
+                .drop(columns='total_count')
+                )
+
+    elif isinstance(pre_sample, dict):
+        pre_req_keys = {'uniformity', 'total_count'}
+        if set(pre_sample.keys()) != pre_req_keys:
+            raise ValueError(f"pre_sample lacks required keys {pre_req_keys}")
+
+        pre_df_list = []
+        for lib in libraries:
+            df = (
+                barcode_variant_df
+                .query('library == @lib')
+                .assign(
+                    pre_freq=scipy.random.dirichlet(
+                             pre_sample['uniformity'] * scipy.ones(nvariants)),
+                    count=lambda x: scipy.random.multinomial(
+                            pre_sample['total_count'], x.pre_freq),
+                    sample='pre-selection'
+                    )
+                )
+            pre_df_list.append(df)
+        barcode_variant_df = pandas.concat(pre_df_list)
+
+    else:
+        raise ValueError("pre_sample not DataFrame / dict: "
+                         f"{pre_sample}")
+
+    cols = ['library', 'barcode', 'sample', 'count',
+            'pre-freq', 'phenotype']
+    assert set(barcode_variant_df.columns) == set(cols)
+    for col in cols:
+        if col in post_sample:
+            raise ValueError(f"post_sample can't have key {col}; "
+                             "choose another sample name")
+
+    df_list = [barcode_variant_df[cols[ : 4]]]
+
+    post_req_keys = {'bottleneck', 'noise', 'total_count'}
+    for lib, (sample, sample_dict) in itertools.product(
+            libraries, post_sample.items()):
+
+        if set(sample_dict.keys()) != post_req_keys:
+            raise ValueError(f"post_sample {sample} lacks keys {post_req_keys}")
+
+        lib_df = (
+            barcode_variant_df.query('library == @lib')
+            .assign(
+                sample=sample,
+                # simulated pre-selection freqs after bottleneck
+                bottleneck_freq=lambda x: scipy.random.multinomial(
+                        sample_dict['bottleneck'], x.pre_freq) /
+                        sample_dict['bottleneck'],
+                # post-selection freqs with noise
+                noise=scipy.clip(scipy.random.normal(1, sample_dict['noise']),
+                                 0, None),
+                post_freq_nonorm=lambda x:
+                            x.bottleneck_freq * x.phenotype * x.noise,
+                post_freq=lambda x: x.post_freq_nonorm /
+                            x.post_freq_nonorm.sum(),
+                # post-selection counts simulated from frequencies
+                count=lambda x: scipy.random.multinomial(
+                            sample_dict['total_count'], x.post_freq)
+                )
+            .rename(columns={'post_counts':sample})
+            [['library', 'barcode', 'sample', 'count']]
+            )
+
+        df_list.append(lib_df)
+
+    return pandas.concat(df_list)
 
 
 def tidy_split(df, column, sep=' ', keep=False):
