@@ -1805,7 +1805,7 @@ class CodonVariantTable:
             m = re.match('^(?P<wt>[ATGC]{3})(?P<r>\d+)(?P<mut>[ATGC]{3})$',
                          mut)
             if not m:
-                raise ValueError(f"invalid codon mutation {mut}")
+                raise ValueError(f"invalid mutation {mut} in {codon_mut_str}")
             r = int(m.group('r'))
             if r in aa_muts:
                 raise ValueError(f"duplicate codon mutation for {r}")
@@ -1983,7 +1983,7 @@ def simulateSampleCounts(*,
     def _add_variant_errors(codon_substitutions):
         """Add errors to variant according to `variant_error_rate`."""
         if scipy.random.random() < variant_error_rate:
-            muts = list(codon_mut_str.split())
+            muts = codon_substitutions.split()
             if len(muts) == 0 or scipy.random.random() < 0.5:
                 # add mutation
                 mutatedsites = set(map(
@@ -1992,18 +1992,18 @@ def simulateSampleCounts(*,
                                   mut).group('site')
                          for mut in muts]
                         ))
-                unmutatedsites = set(variants.sites) - mutatedsites
+                unmutatedsites = list(set(variants.sites) - mutatedsites)
                 if not unmutatedsites:
                     raise RuntimeError("variant already has all mutations")
                 errorsite = scipy.random.choice(unmutatedsites)
                 wtcodon = variants.codons[errorsite]
-                mutcodon = scipy.random.choice(set(CODONS) - {wtcodon})
+                mutcodon = scipy.random.choice(list(set(CODONS) - {wtcodon}))
                 muts.append(f'{wtcodon}{errorsite}{mutcodon}')
                 return ' '.join(muts)
             else:
                 # remove mutation 
                 muts = muts.pop(scipy.random.randint(0, len(muts)))
-                return ' '.join(muts)
+                return muts
         else:
             return codon_substitutions
     #-----------------------------------------
@@ -2016,12 +2016,12 @@ def simulateSampleCounts(*,
                                 .apply(_add_variant_errors),
             aa_substitutions=lambda x: x.codon_substitutions
                              .apply(CodonVariantTable.codonToAAMuts),
-            phenotype=lambda x: x.apply(phenotype_func)
+            phenotype=lambda x: x.apply(phenotype_func, axis=1)
             )
         [['library', 'barcode', 'phenotype']]
         )
 
-    libraries = variants['library'].unique()
+    libraries = variants.libraries
 
     if isinstance(pre_sample, pandas.DataFrame):
         # pre-sample counts specified
@@ -2065,8 +2065,9 @@ def simulateSampleCounts(*,
                 barcode_variant_df
                 .query('library == @lib')
                 .assign(
-                    pre_freq=scipy.random.dirichlet(
-                             pre_sample['uniformity'] * scipy.ones(nvariants)),
+                    pre_freq=lambda x: scipy.random.dirichlet(
+                             pre_sample['uniformity'] *
+                             scipy.ones(len(x))),
                     count=lambda x: scipy.random.multinomial(
                             pre_sample['total_count'], x.pre_freq),
                     sample='pre-selection'
@@ -2080,21 +2081,23 @@ def simulateSampleCounts(*,
                          f"{pre_sample}")
 
     cols = ['library', 'barcode', 'sample', 'count',
-            'pre-freq', 'phenotype']
-    assert set(barcode_variant_df.columns) == set(cols)
+            'pre_freq', 'phenotype']
+    assert set(barcode_variant_df.columns) == set(cols), (
+            f"cols = {set(cols)}\nbarcode_variant_df.columns = "
+            f"{set(barcode_variant_df.columns)}")
     for col in cols:
-        if col in post_sample:
-            raise ValueError(f"post_sample can't have key {col}; "
+        if col in post_samples:
+            raise ValueError(f"post_samples can't have key {col}; "
                              "choose another sample name")
 
     df_list = [barcode_variant_df[cols[ : 4]]]
 
     post_req_keys = {'bottleneck', 'noise', 'total_count'}
     for lib, (sample, sample_dict) in itertools.product(
-            libraries, post_sample.items()):
+            libraries, post_samples.items()):
 
         if set(sample_dict.keys()) != post_req_keys:
-            raise ValueError(f"post_sample {sample} lacks keys {post_req_keys}")
+            raise ValueError(f"post_samples {sample} lacks keys {post_req_keys}")
 
         lib_df = (
             barcode_variant_df.query('library == @lib')
