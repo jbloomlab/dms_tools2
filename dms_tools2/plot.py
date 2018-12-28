@@ -423,7 +423,7 @@ def plotCumulMutCounts(names, countsfiles, plotfile, chartype,
             var_name='aa')
     aamelt = aamelt[aamelt['aa'] != aamelt['wildtype']]
 
-    df = pandas.concat([codonmelt, aamelt], ignore_index=True)
+    df = pandas.concat([codonmelt, aamelt], ignore_index=True, sort=True)
 
     # make name a category to preserve order
     df['name'] = df['name'].astype(
