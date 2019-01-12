@@ -194,8 +194,14 @@ def iteratePairedFASTQ(r1files, r2files, r1trim=None, r2trim=None):
         r1files = [r1files]
         if r2files is not None:
             r2files = [r2files]
+    if not all(map(os.path.isfile, r1files)):
+        raise ValueError('cannot find all `r1files`')
     if r2files is None:
         r2files = [None] * len(r1files)
+    elif len(r1files) != len(r2files):
+        raise ValueError('`r1files` and `r2files` differ in length')
+    elif not all(map(os.path.isfile, r2files)):
+        raise ValueError('cannot find all `r2files`')
     for (r1file, r2file) in zip(r1files, r2files):
         r1reader = HTSeq.FastqReader(r1file, raw_iterator=True)
         if r2file is None:

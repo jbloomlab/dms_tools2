@@ -784,10 +784,10 @@ class IlluminaBarcodeParser:
         """Parses barcodes from files.
 
         Args:
-            `r1file` (str or list)
+            `r1files` (str or list)
                 Name of R1 FASTQ file, or list of such files
                 Can optionally be gzipped.
-            `r2file` (`None`, str, or list)
+            `r2files` (`None`, str, or list)
                 `None` or empty list if not using R2, otherwise like R1.
 
         Returns:
@@ -814,6 +814,7 @@ class IlluminaBarcodeParser:
         """
         if not r2files:
             reads = ['R1']
+            r2files = None
         else:
             reads = ['R1', 'R2']
 
