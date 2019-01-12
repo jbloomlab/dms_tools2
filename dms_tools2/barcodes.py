@@ -485,8 +485,9 @@ class IlluminaBarcodeParser:
     past `downstream`.
 
     Args:
-        `bclen` (int)
-            Length of the barcode.
+        `bclen` (int or `None`)
+            Length of the barcode, or `None` if length is to be
+            determined from `valid_barcodes` argument.
         `upstream` (str)
             Sequence upstream of the barcode.
         `downstream` (str)
@@ -707,7 +708,6 @@ class IlluminaBarcodeParser:
     barcode whitelist:
 
     >>> parser_wl = IlluminaBarcodeParser(
-    ...              bclen=4,
     ...              upstream='ACATGA',
     ...              downstream='GACT',
     ...              valid_barcodes={'CGTA', 'AGTA', 'TAAT'}
@@ -735,7 +735,7 @@ class IlluminaBarcodeParser:
     #: valid nucleotide characters
     VALID_NTS = 'ACGTN'
 
-    def __init__(self, *, bclen,
+    def __init__(self, *, bclen=None,
             upstream='', downstream='',
             upstream_mismatch=0, downstream_mismatch=0,
             valid_barcodes=None, rc_barcode=True, minq=20,
@@ -757,6 +757,14 @@ class IlluminaBarcodeParser:
         self.valid_barcodes = valid_barcodes
         if self.valid_barcodes is not None:
             self.valid_barcodes = set(self.valid_barcodes)
+            if len(self.valid_barcodes) < 1:
+                raise ValueError('empty list for `valid_barcodes`')
+            if self.bclen is None:
+                self.bclen = len(list(self.valid_barcodes)[0])
+            if any(len(bc) != self.bclen for bc in self.valid_barcodes):
+                raise ValueError('`valid_barcodes` not all valid length')
+        elif self.bclen is None:
+            raise ValueError('must specify `bclen` or `valid_barcodes`')
         self.minq = minq
         self.rc_barcode = rc_barcode
         self.chastity_filter = chastity_filter
