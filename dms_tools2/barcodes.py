@@ -755,7 +755,7 @@ class IlluminaBarcodeParser:
         self.upstream_mismatch = upstream_mismatch
         self.downstream_mismatch = downstream_mismatch
         self.valid_barcodes = valid_barcodes
-        if self.valid_barcodes:
+        if self.valid_barcodes is not None:
             self.valid_barcodes = set(self.valid_barcodes)
         self.minq = minq
         self.rc_barcode = rc_barcode
@@ -780,7 +780,7 @@ class IlluminaBarcodeParser:
                 Name of R1 FASTQ file, or list of such files
                 Can optionally be gzipped.
             `r2file` (`None`, str, or list)
-                `None` of not using R2, otherwise like R1.
+                `None` or empty list if not using R2, otherwise like R1.
 
         Returns:
             The 2-tuple `(barcodes, fates)`. In this 2-tuple:
@@ -804,7 +804,7 @@ class IlluminaBarcodeParser:
                   - "unparseable barcode": invalid flanking sequences
                     or N in barcode.
         """
-        if r2files is None:
+        if not r2files:
             reads = ['R1']
         else:
             reads = ['R1', 'R2']
