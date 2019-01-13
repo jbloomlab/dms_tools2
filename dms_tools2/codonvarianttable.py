@@ -29,10 +29,9 @@ we use `plotnine <https://plotnine.readthedocs.io>`_.
    >>> import math
    >>> import tempfile
    >>> import scipy
-   >>> import pandas
+   >>> import pandas as pd
    >>> from plotnine import *
    >>> from dms_tools2 import CODONS, CODON_TO_AA, NTS, AAS_WITHSTOP
-   >>> from dms_tools2.plot import COLOR_BLIND_PALETTE_GRAY as PALETTE
    >>> NONSTOP_CODONS = [c for c in CODONS if CODON_TO_AA[c] != '*']
    >>> from dms_tools2.codonvarianttable import CodonVariantTable
 
@@ -47,8 +46,8 @@ in this example:
 
 .. nbplot::
 
-    >>> pandas.set_option('display.max_columns', 10)
-    >>> pandas.set_option('display.width', 500)
+    >>> pd.set_option('display.max_columns', 10)
+    >>> pd.set_option('display.width', 500)
 
 Initialize a CodonVariantTable
 ++++++++++++++++++++++++++++++++++++++++++++
@@ -111,7 +110,7 @@ a plausible :class:`CodonVariantTable`:
    ...         barcode_variant_dict['barcode'].append(barcode)  
    ...         barcode_variant_dict['substitutions'].append(' '.join(substitutions))
    ...         barcode_variant_dict['variant_call_support'].append(scipy.random.randint(1, 4))
-   >>> barcode_variants = pandas.DataFrame(barcode_variant_dict)
+   >>> barcode_variants = pd.DataFrame(barcode_variant_dict)
 
 Here are the first and last few lines of the Data Frame. As you can
 see, it gives the nucleotide mutations (in 1, 2, ... numbering)
@@ -320,15 +319,18 @@ import tempfile
 
 import numpy
 import scipy
-import pandas
+import pandas as pd
 import Bio.SeqUtils.ProtParamData
 
 # use plotnine for plotting
 from plotnine import *
 
-from dms_tools2.plot import COLOR_BLIND_PALETTE_GRAY, latexSciNot
+from dms_tools2.plot import latexSciNot
 from dms_tools2 import CODON_TO_AA, CODONS, AAS_WITHSTOP, AA_TO_CODONS
 
+#: `color-blind safe palette <http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/>`_
+CBPALETTE = ["#999999", "#E69F00", "#56B4E9", "#009E73",
+             "#F0E442", "#0072B2", "#D55E00", "#CC79A7"]
 
 class CodonVariantTable:
     """Associates barcodes with codon mutants of gene.
@@ -412,8 +414,8 @@ class CodonVariantTable:
     True
     >>> variants.valid_barcodes('lib_2') == {'AAC', 'CAT'}
     True
-    >>> pandas.set_option('display.max_columns', 10)
-    >>> pandas.set_option('display.width', 500)
+    >>> pd.set_option('display.max_columns', 10)
+    >>> pd.set_option('display.width', 500)
     >>> variants.barcode_variant_df
       library barcode  variant_call_support codon_substitutions aa_substitutions  n_codon_substitutions  n_aa_substitutions
     0   lib_1     AAC                     2                                                           0                   0
@@ -503,7 +505,7 @@ class CodonVariantTable:
     Now we add barcode count information for sample "input"
     from library 1 using :class:`CodonVariantTable.addSampleCounts`:
 
-    >>> counts_lib1_input = pandas.DataFrame(
+    >>> counts_lib1_input = pd.DataFrame(
     ...         {'barcode':['AAC', 'GAT'],
     ...          'count'  :[  253,  1101]})
     >>> variants.addSampleCounts('lib_1', 'input', counts_lib1_input)
@@ -523,7 +525,7 @@ class CodonVariantTable:
     But, we can add barcode counts for another
     sample (named "selected" in this case) to library 1:
 
-    >>> counts_lib1_selected = pandas.DataFrame(
+    >>> counts_lib1_selected = pd.DataFrame(
     ...         {'barcode':['AAC', 'GAT'],
     ...          'count'  :[  513,  401]})
     >>> variants.addSampleCounts('lib_1', 'selected', counts_lib1_selected)
@@ -531,11 +533,11 @@ class CodonVariantTable:
     As well as barcode counts for the same two samples
     ("input" and "selected") to our other library (library 2):
 
-    >>> counts_lib2_input = pandas.DataFrame(
+    >>> counts_lib2_input = pd.DataFrame(
     ...         {'barcode':['AAC', 'CAT'],
     ...          'count'  :[ 1253,  923]})
     >>> variants.addSampleCounts('lib_2', 'input', counts_lib2_input)
-    >>> counts_lib2_selected = pandas.DataFrame(
+    >>> counts_lib2_selected = pd.DataFrame(
     ...         {'barcode':['AAC', 'CAT'],
     ...          'count'  :[  113,  1200]})
     >>> variants.addSampleCounts('lib_2', 'selected', counts_lib2_selected)
@@ -569,8 +571,8 @@ class CodonVariantTable:
 
     >>> with tempfile.TemporaryDirectory() as tmpdir:
     ...     countfiles = variants.writeCodonCounts("single", outdir=tmpdir, include_all_libs=True)
-    ...     lib1_input = pandas.read_csv(f'{tmpdir}/lib_1_input_codoncounts.csv')
-    ...     all_sel = pandas.read_csv(f'{tmpdir}/all-libraries_selected_codoncounts.csv')
+    ...     lib1_input = pd.read_csv(f'{tmpdir}/lib_1_input_codoncounts.csv')
+    ...     all_sel = pd.read_csv(f'{tmpdir}/all-libraries_selected_codoncounts.csv')
 
     Make sure we created expected countfiles:
 
@@ -601,8 +603,8 @@ class CodonVariantTable:
 
     >>> with tempfile.TemporaryDirectory() as tmpdir:
     ...     _ = variants.writeCodonCounts("all", outdir=tmpdir, include_all_libs=True)
-    ...     lib1_input_all = pandas.read_csv(f'{tmpdir}/lib_1_input_codoncounts.csv')
-    ...     all_sel_all = pandas.read_csv(f'{tmpdir}/all-libraries_selected_codoncounts.csv')
+    ...     lib1_input_all = pd.read_csv(f'{tmpdir}/lib_1_input_codoncounts.csv')
+    ...     all_sel_all = pd.read_csv(f'{tmpdir}/all-libraries_selected_codoncounts.csv')
     >>> lib1_input_all.iloc[:, (lib1_input_all != 0).any(axis='rows').values]
        site wildtype   ATG   CGC  GGA   TGA
     0     1      ATG  1354     0    0     0
@@ -655,7 +657,7 @@ class CodonVariantTable:
         else:
             for key, val in self.__dict__.items():
                 val2 = getattr(other, key)
-                if isinstance(val, pandas.DataFrame):
+                if isinstance(val, pd.DataFrame):
                     if not val.equals(val2):
                         return False
                 else:
@@ -692,7 +694,7 @@ class CodonVariantTable:
             The :class:`CodonVariantTable` used to write
             `variant_count_df_file`.
         """
-        df = pandas.read_csv(variant_count_df_file)
+        df = pd.read_csv(variant_count_df_file)
 
         req_cols = ['barcode', 'library', 'variant_call_support',
                     'codon_substitutions', 'sample', 'count']
@@ -746,7 +748,7 @@ class CodonVariantTable:
         self.aas = collections.OrderedDict([
                 (r, CODON_TO_AA[codon]) for r, codon in self.codons.items()])
 
-        df = pandas.read_csv(barcode_variant_file)
+        df = pd.read_csv(barcode_variant_file)
         required_cols = ['library', 'barcode',
                          'substitutions', 'variant_call_support']
         if not set(df.columns).issuperset(set(required_cols)):
@@ -798,7 +800,7 @@ class CodonVariantTable:
                 .drop('substitutions', axis='columns')
                 # sort to ensure consistent order
                 .assign(library=lambda x:
-                                pandas.Categorical(
+                                pd.Categorical(
                                     x.library,
                                     categories=self.libraries,
                                     ordered=True
@@ -831,9 +833,9 @@ class CodonVariantTable:
 
         # define some colors for plotting
         self._mutation_type_colors = {
-                'nonsynonymous':COLOR_BLIND_PALETTE_GRAY[1],
-                'synonymous':COLOR_BLIND_PALETTE_GRAY[2],
-                'stop':COLOR_BLIND_PALETTE_GRAY[3]
+                'nonsynonymous':CBPALETTE[1],
+                'synonymous':CBPALETTE[2],
+                'stop':CBPALETTE[3]
                 }
 
 
@@ -902,7 +904,7 @@ class CodonVariantTable:
         if self.variant_count_df is None:
             self.variant_count_df = df
         else:
-            self.variant_count_df = pandas.concat(
+            self.variant_count_df = pd.concat(
                               [self.variant_count_df, df],
                               axis='index',
                               ignore_index=True,
@@ -920,13 +922,13 @@ class CodonVariantTable:
         self.variant_count_df = (
                 self.variant_count_df
                 .assign(library=lambda x:
-                                pandas.Categorical(
+                                pd.Categorical(
                                     x.library,
                                     categories=self.libraries,
                                     ordered=True
                                     ),
                         sample=lambda x:
-                               pandas.Categorical(
+                               pd.Categorical(
                                     x['sample'],
                                     categories=unique_samples,
                                     ordered=True
@@ -1010,8 +1012,8 @@ class CodonVariantTable:
             for mut in chars:
                 if mut != wt:
                     mut_list.append(f'{wt}{r}{mut}')
-        all_muts = pandas.concat([
-                    pandas.DataFrame({'mutation':mut_list,
+        all_muts = pd.concat([
+                    pd.DataFrame({'mutation':mut_list,
                                      'library':library,
                                      'sample':sample,
                                      'count':0})
@@ -1064,17 +1066,17 @@ class CodonVariantTable:
               .reset_index()
               .assign(
                 library=lambda x:
-                         pandas.Categorical(
+                         pd.Categorical(
                           x['library'],
                           librarylist,
                           ordered=True),
                 sample=lambda x:
-                         pandas.Categorical(
+                         pd.Categorical(
                           x['sample'],
                           samplelist,
                           ordered=True),
                 mutation_type=lambda x:
-                         pandas.Categorical(
+                         pd.Categorical(
                           x['mutation'].apply(_classify_mutation),
                           mutation_types,
                           ordered=True),
@@ -1130,7 +1132,7 @@ class CodonVariantTable:
               .merge(n_variants, on=['library', 'sample'])
               .assign(frequency=lambda x: x['count'] / x['nseqs'],
                       mut_char=lambda x:
-                        pandas.Categorical(
+                        pd.Categorical(
                          x.mutation.str.extract(
                             '^[A-Z\*]+\d+(?P<mut_char>[A-Z\*]+)$')
                             .mut_char,
@@ -1417,7 +1419,7 @@ class CodonVariantTable:
                     value_name='num_muts')
               .assign(
                   mutation_type=lambda x:
-                                pandas.Categorical(
+                                pd.Categorical(
                                  x.mutation_type,
                                  categories=codon_mut_types,
                                  ordered=True),
@@ -1651,7 +1653,7 @@ class CodonVariantTable:
             else:
                 raise ValueError(f"invalid `single_or_all` {single_or_all}")
 
-            counts_df = pandas.DataFrame(collections.OrderedDict(
+            counts_df = pd.DataFrame(collections.OrderedDict(
                          [('site', self.sites),
                           ('wildtype', [self.codons[r] for r in self.sites])] +
                          [(codon, codoncounts[codon]) for codon in CODONS]
@@ -1660,9 +1662,9 @@ class CodonVariantTable:
 
         assert all(map(os.path.isfile, countfiles))
 
-        return pandas.DataFrame({'library':liblist,
-                                 'sample':samplelist,
-                                 'countfile':countfiles})
+        return pd.DataFrame({'library':liblist,
+                             'sample':samplelist,
+                             'countfile':countfiles})
 
 
     @staticmethod
@@ -1693,7 +1695,7 @@ class CodonVariantTable:
         if all_lib in libs:
             raise ValueError(f"library {all_lib} already exists")
 
-        df = (pandas.concat([df,
+        df = (pd.concat([df,
                              df.assign(
                                 barcode=lambda x:
                                     x.library.str
@@ -1704,7 +1706,7 @@ class CodonVariantTable:
                             ignore_index=True,
                             sort=False)
               .assign(library=lambda x:
-                              pandas.Categorical(
+                              pd.Categorical(
                                x['library'],
                                categories=libs + [all_lib],
                                ordered=True)
@@ -1749,7 +1751,7 @@ class CodonVariantTable:
             df = (df
                   .query('sample in @samples')
                   .assign(sample=lambda x:
-                                 pandas.Categorical(
+                                 pd.Categorical(
                                    x['sample'],
                                    categories=samples,
                                    ordered=True)
@@ -1779,7 +1781,7 @@ class CodonVariantTable:
             df = (df
                   .query('library in @libraries')
                   .assign(library=lambda x:
-                                  pandas.Categorical(
+                                  pd.Categorical(
                                    x['library'],
                                    categories=libraries,
                                    ordered=True)
@@ -2033,7 +2035,7 @@ def simulateSampleCounts(*,
 
     libraries = variants.libraries
 
-    if isinstance(pre_sample, pandas.DataFrame):
+    if isinstance(pre_sample, pd.DataFrame):
         # pre-sample counts specified
         req_cols = ['library', 'barcode', 'count']
         if not set(req_cols).issubset(set(pre_sample.columns)):
@@ -2084,7 +2086,7 @@ def simulateSampleCounts(*,
                     )
                 )
             pre_df_list.append(df)
-        barcode_variant_df = pandas.concat(pre_df_list)
+        barcode_variant_df = pd.concat(pre_df_list)
 
     else:
         raise ValueError("pre_sample not DataFrame / dict: "
@@ -2134,7 +2136,7 @@ def simulateSampleCounts(*,
 
         df_list.append(lib_df)
 
-    return pandas.concat(df_list)
+    return pd.concat(df_list)
 
 
 def tidy_split(df, column, sep=' ', keep=False):
@@ -2172,6 +2174,20 @@ def tidy_split(df, column, sep=' ', keep=False):
     new_df = df.iloc[indexes, :].copy()
     new_df[column] = new_values
     return new_df
+
+
+def rarefyBarcodes(barcodecounts, *,
+                   barcodecol='barcode', countcol='count',
+                   maxpoints=1e5, logspace=True):
+    """Rarefaction curve of barcode observations.
+
+    Uses analytical formula for rarefaction defined
+    `here <https://en.wikipedia.org/wiki/Rarefaction_(ecology)#Derivation>`_.
+
+    Args:
+        `barcodecounts`
+    """
+    pass
 
 
 if __name__ == '__main__':
