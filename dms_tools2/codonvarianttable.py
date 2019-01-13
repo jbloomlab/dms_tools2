@@ -1536,7 +1536,8 @@ class CodonVariantTable:
         return p
 
 
-    def writeCodonCounts(self, single_or_all, *, outdir=None):
+    def writeCodonCounts(self, single_or_all, *,
+                         outdir=None, include_all_libs=False):
         """Writes codon counts files for all libraries and samples.
 
         Files are written in
@@ -1559,12 +1560,15 @@ class CodonVariantTable:
                 Name of directory into which we write counts,
                 created if it does not exist. Use `None` to
                 write to current directory.
+            `include_all_libs` (bool)
+                Include data for a library (named "all-libraries")
+                that has the summmed data for all individual libraries
+                if there are multiple libraries?
 
         Returns:
-            A pandas data frame with the columns "library", "sample",
-            ("all-libraries" is one library) and "countfile".
-            The "countfile" column gives the name of the created
-            file, which is ``<library>_<sample>_codoncounts.csv``.
+            Pandas data frame with columns "library", "sample",
+            and "countfile". The "countfile" columns gives name of the
+            createad CSV file, ``<library>_<sample>_codoncounts.csv``.
         """
 
         codonmatch = re.compile(f'^(?P<wt>{"|".join(CODONS)})'
@@ -1586,8 +1590,11 @@ class CodonVariantTable:
         else:
             outdir = ''
 
-        df = self.addMergedLibraries(self.variant_count_df,
-                                     all_lib='all-libraries')
+        if include_all_libs:
+            df = self.addMergedLibraries(self.variant_count_df,
+                                         all_lib='all-libraries')
+        else:
+            df = self.variant_count_df
 
         countfiles = []
         liblist = []
@@ -1598,13 +1605,15 @@ class CodonVariantTable:
                             df['sample'].unique().tolist()
                             ):
 
+            i_df = df.query('library == @lib & sample == @sample')
+            if len(i_df) == 0:
+                continue # no data for this library and sample
+
             countfile = os.path.join(outdir,
                             f'{lib}_{sample}_codoncounts.csv')
             countfiles.append(countfile)
             liblist.append(lib)
             samplelist.append(sample)
-
-            i_df = df.query('library == @lib & sample == @sample')
 
             codoncounts = {codon:[0] * len(self.sites) for codon
                            in CODONS}
