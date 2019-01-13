@@ -568,7 +568,7 @@ class CodonVariantTable:
     write codon count files. First for only **single** mutants:
 
     >>> with tempfile.TemporaryDirectory() as tmpdir:
-    ...     countfiles = variants.writeCodonCounts("single", outdir=tmpdir)
+    ...     countfiles = variants.writeCodonCounts("single", outdir=tmpdir, include_all_libs=True)
     ...     lib1_input = pandas.read_csv(f'{tmpdir}/lib_1_input_codoncounts.csv')
     ...     all_sel = pandas.read_csv(f'{tmpdir}/all-libraries_selected_codoncounts.csv')
 
@@ -600,7 +600,7 @@ class CodonVariantTable:
     Now write codon counts files for **all** mutants:
 
     >>> with tempfile.TemporaryDirectory() as tmpdir:
-    ...     _ = variants.writeCodonCounts("all", outdir=tmpdir)
+    ...     _ = variants.writeCodonCounts("all", outdir=tmpdir, include_all_libs=True)
     ...     lib1_input_all = pandas.read_csv(f'{tmpdir}/lib_1_input_codoncounts.csv')
     ...     all_sel_all = pandas.read_csv(f'{tmpdir}/all-libraries_selected_codoncounts.csv')
     >>> lib1_input_all.iloc[:, (lib1_input_all != 0).any(axis='rows').values]
