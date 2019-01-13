@@ -1199,7 +1199,7 @@ class CodonVariantTable:
 
         Args:
             Args have same meaning as for
-            :CodonVariantTable.plotCumulMutCoverage`.
+            :meth:`CodonVariantTable.plotCumulMutCoverage`.
 
         Returns:
             A `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
@@ -1345,7 +1345,8 @@ class CodonVariantTable:
              facet_grid(facet_str) +
              theme(figure_size=(width, height),
                    legend_key=element_blank(),
-                   legend_text=element_text(size=11)
+                   legend_text=element_text(size=11),
+                   axis_text_x=element_text(angle=90),
                    )
              )
 
