@@ -1277,6 +1277,81 @@ class CodonVariantTable:
         return p
 
 
+    def plotCumulVariantCounts(self, *, variant_type='all',
+            libraries='all', samples='all', plotfile=None,
+            orientation='h', widthscale=1, heightscale=1,
+            min_support=1, mut_type='aa', tot_variants_vline=True):
+        """Plots counts vs number of variants with <= that many counts.
+
+        Args:
+            `variant_type` ("single" or "all")
+                Include just variants with <= one mutation of type,
+                `mut_type` or all mutants?
+            `tot_variants_vline` (bool)
+                Include a dotted vertical line indicating the total
+                number of variants (useful since ones not observed
+                at all will not apparent on plot).
+            Other args:
+                Same meaning as for
+                :meth:`CodonVariantTable.plotNumMutsHistogram`.
+
+        Returns:
+            `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
+            plot; can be displayed in a Jupyter notebook with `p.draw()`.
+        """
+        df, nlibraries, nsamples = self._getPlotData(libraries,
+                                                     samples,
+                                                     min_support)
+
+        if variant_type == 'single':
+            if mut_type == 'aa':
+                mutstr = 'amino acid'
+            elif mut_type == 'codon':
+                mutstr = mut_type
+            else:
+                raise ValueError(f"invalid `mut_type` {mut_type}")
+            xlabel = f"single {mutstr} variants with <= this many counts"
+            df = df.query(f"n_{mut_type}_substitutions <= 1")
+        elif variant_type == 'all':
+            xlabel = 'number of variants with <= this many counts'
+        else:
+            raise ValueError(f"invalid `variant_type` {variant_type}")
+
+        if orientation == 'h':
+            facet_str = 'sample ~ library'
+            width = widthscale * (1 + 1.5 * nlibraries)
+            height = heightscale * (0.6 + 1.5 * nsamples)
+        elif orientation == 'v':
+            facet_str = 'library ~ sample'
+            width = widthscale * (1 + 1.5 * nsamples)
+            height = heightscale * (0.6 + 1.5 * nlibraries)
+        else:
+            raise ValueError(f"invalid `orientation` {orientation}")
+
+        df = (getCumulVariantsByCount(df, group_cols=['library', 'sample'])
+              .query('count > 0')
+              )
+
+        p = (ggplot(df, aes('nvariants', 'count')) +
+             geom_step() +
+             facet_grid(facet_str) +
+             ylab('number of counts') +
+             xlab(xlabel) +
+             scale_x_log10(labels=latexSciNot) +
+             scale_y_log10(labels=latexSciNot) +
+             theme(figure_size=(width, height))
+             )
+
+        if tot_variants_vline:
+            p = p + geom_vline(aes(xintercept='total_variants'),
+                               linetype='dashed', color=CBPALETTE[1])
+
+        if plotfile:
+            p.save(plotfile, height=height, width=width, verbose=False)
+
+        return p
+
+
     def plotCumulMutCoverage(self, variant_type, mut_type, *,
             libraries='all', samples='all', plotfile=None,
             orientation='h', widthscale=1, heightscale=1,
@@ -2276,6 +2351,94 @@ def rarefyBarcodes(barcodecounts, *,
                 )
     return pd.DataFrame(dict(ncounts=ncounts, nbarcodes=nbarcodes))
 
+
+def getCumulVariantsByCount(df, *, group_cols=None):
+    """Get number of variants with observed <= each number of times.
+
+    Args:
+        `df` (pandas DataFrame)
+            A row for each variant, and a column named "count" giving
+            how many times variant observed. Can have other columns.
+        `group_cols` (None or list)
+            Group by these columns and analyze each group separately.
+
+    Returns:
+        A pandas Data Frame with columns named "count", "nvariants",
+        and "total_variants" (plus any columns in `group_cols`).
+        For each value of "count", "nvariants" gives the number of
+        variants with <= that many counts. The "total_variants"
+        column gives the total number of variants.
+
+    Here is an example. First, create input Data Frame:
+
+    >>> df = pd.DataFrame(dict(
+    ...          sample= ['a', 'a', 'b', 'b', 'a', 'a'],
+    ...          count=  [  9,   0,   1,   4,   3,   3]))
+
+    Now apply function, first **not** grouping by sample. Note
+    how the sample column is therefore simply ignored and dropped:
+
+    >>> getCumulVariantsByCount(df)
+       count  nvariants  total_variants
+    0      9          1               6
+    1      4          2               6
+    2      3          4               6
+    3      1          5               6
+    4      0          6               6
+
+    Now apply function, grouping by sample. Note how each sample
+    is now analyzed separately:
+
+    >>> getCumulVariantsByCount(df, group_cols=['sample'])
+      sample  count  nvariants  total_variants
+    0      a      9          1               4
+    1      a      3          3               4
+    2      a      0          4               4
+    3      b      4          1               2
+    4      b      1          2               2
+    """
+    if 'count' not in df.columns:
+        raise ValueError('df does not have a column named "count"')
+
+    if not group_cols:
+        drop_group_cols = True
+        group_cols=['dummy_col']
+        df[group_cols[0]] = '_'
+    else:
+        drop_group_cols = False
+        if isinstance(group_cols, str):
+            group_cols = [group_cols]
+
+    if not set(group_cols).issubset(set(df.columns)):
+        raise ValueError(f"invalid `group_cols` {group_cols}")
+
+    df = (
+        df
+
+        # get number of variants with each count
+        .assign(nvariants=1)
+        .groupby(group_cols + ['count'])
+        .aggregate({'nvariants':'count'})
+        .reset_index()
+        .sort_values(group_cols + ['count'],
+                     ascending=[True] * len(group_cols) + [False])
+        .reset_index(drop=True)
+
+        # make nvariants cumulative number with <= number of counts
+        .assign(nvariants=lambda x: x.groupby(group_cols)
+                                    ['nvariants']
+                                    .cumsum())
+
+        # add new column that is total number of variants
+        .assign(total_variants=lambda x: x.groupby(group_cols)
+                                         ['nvariants']
+                                         .transform('max'))
+        )
+
+    if drop_group_cols:
+        df = df.drop(group_cols, axis='columns')
+
+    return df
 
 
 if __name__ == '__main__':
