@@ -1279,15 +1279,15 @@ class CodonVariantTable:
     def plotCumulVariantCounts(self, *, variant_type='all',
             libraries='all', samples='all', plotfile=None,
             orientation='h', widthscale=1, heightscale=1,
-            min_support=1, mut_type='aa', tot_variants_vline=True):
-        """Plots counts vs number of variants with <= that many counts.
+            min_support=1, mut_type='aa', tot_variants_hline=True):
+        """Plot number variants with >= that each number of counts.
 
         Args:
             `variant_type` ("single" or "all")
                 Include just variants with <= one mutation of type,
                 `mut_type` or all mutants?
-            `tot_variants_vline` (bool)
-                Include a dotted vertical line indicating the total
+            `tot_variants_hline` (bool)
+                Include a dotted horizontal line indicating the total
                 number of variants (useful since ones not observed
                 at all will not apparent on plot).
             Other args:
@@ -1309,10 +1309,10 @@ class CodonVariantTable:
                 mutstr = mut_type
             else:
                 raise ValueError(f"invalid `mut_type` {mut_type}")
-            xlabel = f"single {mutstr} variants with <= this many counts"
+            ylabel = f"single {mutstr} variants with >= this many counts"
             df = df.query(f"n_{mut_type}_substitutions <= 1")
         elif variant_type == 'all':
-            xlabel = 'number of variants with <= this many counts'
+            ylabel = 'variants with >= this many counts'
         else:
             raise ValueError(f"invalid `variant_type` {variant_type}")
 
@@ -1331,18 +1331,18 @@ class CodonVariantTable:
               .query('count > 0')
               )
 
-        p = (ggplot(df, aes('nvariants', 'count')) +
+        p = (ggplot(df, aes('count', 'nvariants')) +
              geom_step() +
              facet_grid(facet_str) +
-             ylab('number of counts') +
-             xlab(xlabel) +
+             xlab('number of counts') +
+             ylab(ylabel) +
              scale_x_log10(labels=latexSciNot) +
-             scale_y_log10(labels=latexSciNot) +
+             scale_y_continuous(labels=latexSciNot) +
              theme(figure_size=(width, height))
              )
 
-        if tot_variants_vline:
-            p = p + geom_vline(aes(xintercept='total_variants'),
+        if tot_variants_hline:
+            p = p + geom_hline(aes(yintercept='total_variants'),
                                linetype='dashed', color=CBPALETTE[1])
 
         if plotfile:
