@@ -26,7 +26,6 @@ we use `plotnine <https://plotnine.readthedocs.io>`_.
 
    >>> import collections
    >>> import os
-   >>> import math
    >>> import tempfile
    >>> import scipy
    >>> import pandas as pd
@@ -313,12 +312,12 @@ API documentation
 
 import re
 import os
+import math
 import collections
 import itertools
 import tempfile
 import random
 
-import numpy
 import scipy
 import pandas as pd
 import Bio.SeqUtils.ProtParamData
@@ -1592,7 +1591,7 @@ class CodonVariantTable:
         else:
             raise ValueError(f"invalid `orientation` {orientation}")
 
-        df[mut_col] = numpy.clip(df[mut_col], None, max_muts)
+        df[mut_col] = scipy.clip(df[mut_col], None, max_muts)
 
         df = (df
               .groupby(['library', 'sample', mut_col])
@@ -1988,11 +1987,12 @@ def simulateSampleCounts(*,
         `phenotype_func` (function)
             Takes a row from `variants.barcode_variant_df`
             and returns the phenotype. Typically this is
-            calculated from the "aa_substitutions"
-            or "codon_substitutions" column. The phenotype
-            is a number >= 0, and represents the expected
-            enrichment of the variant relative to wildtype
-            post selection (values > 1 indicate beneficial).
+            calculated from the "aa_substitutions" or
+            "codon_substitutions" column. The phenotype is a
+            number >= 0, and represents the expected enrichment of
+            the variant relative to wildtype post-selection (values
+            > 1 indicate beneficial). For instance, you could pass
+            :meth:`PhenotypeSimulator.observedPhenotype`.
         `variant_error_rate` (float)
             Rate at which variants in `variants` are
             mis-called. Provide the probability that a
@@ -2215,6 +2215,159 @@ def simulateSampleCounts(*,
     return pd.concat(df_list)
 
 
+class PhenotypeSimulator:
+    """Simulates phenotypes of variants under plausible model.
+
+    Mutational effects on latent phenotype are simulated to follow
+    compound normal distribution; latent phenotype maps to observed
+    phenotype via sigmoid. This distinction between latent and
+    observed phenotype parallel the "global epistasis" models of
+    `Otwinoski et al <https://www.pnas.org/content/115/32/E7550.short`_
+    and `Sailer and Harms <http://www.genetics.org/content/205/3/1079>`_.
+
+    Initialize with a codon sequence and random number seed.
+    The effects of mutations on the latent phenotype are then drawn
+    from a compound normal distribution biased to negative values.
+
+    To calculate latent and observed phenotypes, pass rows of a
+    :meth:`CodonVariantTable.barcode_variant_df` to
+    :meth:`PhenotypeSimulator.latentPhenotype` or
+    :meth:`PhenotypeSimulator.observedPhenotype`.
+
+    Args:
+        `geneseq` (str)
+            Codon sequence of wild-type gene.
+        `seed` (int)
+            Random number seed.
+        `wt_latent` (float)
+            Latent phenotype of wildtype.
+        `norm_weights` (list of tuples)
+            Specifies compound normal distribution of mutational
+            effects on latent phenotype. Each tuple is
+            `(weight, mean, sd)`, giving weight, mean, and standard
+            deviation of each Gaussian in compound normal.
+
+    Attributes:
+        `wt_latent` (float)
+        `muteffects` (dict)
+            Effects on latent phenotype of each amino-acid mutation.
+    """
+
+    def __init__(self, geneseq, *, seed=1, wt_latent=1,
+                 norm_weights=[(0.4, -1, 1.5), (0.6, -7, 3)]):
+        """See main class docstring for how to initialize."""
+        self.wt_latent = wt_latent
+
+        # simulate muteffects from compound normal distribution
+        self.muteffects = {}
+        scipy.random.seed(seed)
+        weights, means, sds = zip(*norm_weights)
+        cumweights = scipy.cumsum(weights)
+        for icodon in range(len(geneseq) // 3):
+            wt_aa = CODON_TO_AA[geneseq[3 * icodon : 3 * icodon + 3]]
+            for mut_aa in AAS_WITHSTOP:
+                if mut_aa != wt_aa:
+                    # choose Gaussian from compound normal
+                    i = scipy.argmin(cumweights < scipy.random.rand())
+                    # draw mutational effect from chosen Gaussian
+                    muteffect = scipy.random.normal(means[i], sds[i])
+                    self.muteffects[f'{wt_aa}{icodon + 1}{mut_aa}'] = muteffect
+
+    def latentPhenotype(self, v):
+        """Returns latent phenotype of a variant.
+
+        Args:
+            `v` (dict or row of pandas DataFrame)
+                Must have key 'aa_substitutions' that gives
+                space de-limited list of amino-acid mutations.
+        """
+        return self.wt_latent + sum([self.muteffects[m] for m in
+                                     v['aa_substitutions'].split()])
+
+    def observedPhenotype(self, v):
+        """Like `latentPhenotype` but returns observed phenotype."""
+        return self.latentToObservedPhenotype(self.latentPhenotype(v))
+
+    @staticmethod
+    def latentToObservedPhenotype(latent):
+        """Returns observed phenotype from latent phenotype."""
+        return 1 / (1 + math.exp(-latent - 3))
+
+    def plotLatentVersusObservedPhenotype(self, *,
+            latent_min=-15, latent_max=5, npoints=200):
+        """Plots observed phenotype as function of latent phenotype.
+
+        Plot includes a vertical line at wildtype latent phenotype.
+
+        Args:
+            `latent_min` (float)
+                Smallest value of latent phenotype on plot.
+            `latent_max` (float)
+                Largest value of latent phenotype on plot.
+            `npoints` (int)
+                Plot a line fit to this many points.
+
+        Returns:
+            A `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
+            plot; can be displayed in a Jupyter notebook with `p.draw()`.
+        """
+        latent = scipy.linspace(latent_min, latent_max, npoints)
+        p = (ggplot(pd.DataFrame(dict(latent=latent))
+                       .assign(observed=lambda x: x.latent.apply(
+                                        self.latentToObservedPhenotype)),
+                    aes('latent', 'observed')
+                    ) +
+             geom_line() +
+             geom_vline(xintercept=self.wt_latent, color=CBPALETTE[1],
+                        linetype='dashed') +
+            theme(figure_size=(3.5, 2.5)) +
+            xlab('latent phenotype') +
+            ylab('observed phenotype')
+            )
+        return p
+
+    def plotMutsHistogram(self, latent_or_observed, *,
+            mutant_order=1, bins=30):
+        """Plots distribution of phenotype for all mutants.
+
+        Plot includes a vertical line at wildtype phenotype.
+
+        Args:
+            `latent_or_observed` ("latent" or "observed")
+                Which type of phenotype to plot.
+            `mutant_order` (int)
+                Plot mutations of this order. Currently only works
+                for 1 (single mutants).
+            `bins` (int)
+                Number of bins in histogram.
+
+        Returns:
+            A `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
+            plot; can be displayed in a Jupyter notebook with `p.draw()`.
+        """
+        if mutant_order != 1:
+            raise ValueError('only implemented for `mutant_order` of 1')
+        if latent_or_observed == 'latent':
+            phenoFunc = self.latentPhenotype
+        elif latent_or_observed == 'observed':
+            phenoFunc = self.observedPhenotype
+        else:
+            raise ValueError('invalid value of `latent_or_observed`')
+        phenotypes = [phenoFunc({'aa_substitutions':m}) for m in
+                      self.muteffects.keys()]
+        p = (ggplot(pd.DataFrame({'phenotype':phenotypes}),
+                    aes('phenotype')) +
+             geom_histogram(bins=bins) +
+             theme(figure_size=(3.5, 2.5)) +
+             ylab(f"number of {mutant_order}-mutants") +
+             xlab(f"{latent_or_observed} phenotype") +
+             geom_vline(xintercept=phenoFunc({'aa_substitutions':''}),
+                        color=CBPALETTE[1], linetype='dashed')
+             )
+        return p
+
+
+
 def tidy_split(df, column, sep=' ', keep=False):
     """
     Split values of a column and expand so new DataFrame has one split
@@ -2223,7 +2376,7 @@ def tidy_split(df, column, sep=' ', keep=False):
     Taken from https://stackoverflow.com/a/39946744
 
     Args:
-        df : pandas.DataFrame
+        df : pandas DataFrame
             dataframe with the column to split and expand
         column : str
             the column to split and expand
@@ -2233,7 +2386,7 @@ def tidy_split(df, column, sep=' ', keep=False):
             whether to retain the presplit value as it's own row
 
     Returns:
-        pandas.DataFrame
+        pandas DataFrame
             Returns a dataframe with the same columns as `df`.
     """
     indexes = list()
@@ -2323,7 +2476,7 @@ def rarefyBarcodes(barcodecounts, *,
     K = len(barcodecounts)
     Mj = collections.Counter(Ni.values())
 
-    Nk, num = map(numpy.array, zip(*Mj.items()))
+    Nk, num = map(scipy.array, zip(*Mj.items()))
 
     # use simplification that (N - Ni)Cr(n) / (N)Cr(n) =
     # [(N - Ni)! * (N - n)!] / [N! * (N - Ni - n)!]
@@ -2332,17 +2485,17 @@ def rarefyBarcodes(barcodecounts, *,
     nbarcodes = []
     lnFactorial_N = scipy.special.gammaln(N + 1)
     if logspace and N > maxpoints:
-        ncounts = list(numpy.unique(numpy.logspace(
+        ncounts = list(scipy.unique(scipy.logspace(
                        math.log10(1), math.log10(N),
                        num=min(N, maxpoints)).astype('int')))
     else:
-        ncounts = list(numpy.unique(numpy.linspace(
+        ncounts = list(scipy.unique(scipy.linspace(
                        1, N, num=min(N, maxpoints)).astype('int')))
     for n in ncounts:
         lnFactorial_N_minus_n = scipy.special.gammaln(N - n + 1)
-        i = numpy.nonzero(N - Nk - n >= 0) # indices where this is true
+        i = scipy.nonzero(N - Nk - n >= 0) # indices where this is true
         nbarcodes.append(
-                K - (num[i] * numpy.exp(
+                K - (num[i] * scipy.exp(
                             scipy.special.gammaln(N - Nk[i] + 1) +
                             lnFactorial_N_minus_n -
                             lnFactorial_N -
