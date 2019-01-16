@@ -2246,6 +2246,8 @@ class PhenotypeSimulator:
             effects on latent phenotype. Each tuple is
             `(weight, mean, sd)`, giving weight, mean, and standard
             deviation of each Gaussian in compound normal.
+        `stop_effect` (float)
+            Effect of stop codon at any position.
 
     Attributes:
         `wt_latent` (float)
@@ -2254,7 +2256,8 @@ class PhenotypeSimulator:
     """
 
     def __init__(self, geneseq, *, seed=1, wt_latent=1,
-                 norm_weights=[(0.4, -1, 1.5), (0.6, -7, 3)]):
+                 norm_weights=[(0.4, -1, 1.5), (0.6, -7, 3)],
+                 stop_effect=-15):
         """See main class docstring for how to initialize."""
         self.wt_latent = wt_latent
 
@@ -2267,10 +2270,13 @@ class PhenotypeSimulator:
             wt_aa = CODON_TO_AA[geneseq[3 * icodon : 3 * icodon + 3]]
             for mut_aa in AAS_WITHSTOP:
                 if mut_aa != wt_aa:
-                    # choose Gaussian from compound normal
-                    i = scipy.argmin(cumweights < scipy.random.rand())
-                    # draw mutational effect from chosen Gaussian
-                    muteffect = scipy.random.normal(means[i], sds[i])
+                    if mut_aa == '*':
+                        muteffect = stop_effect
+                    else:
+                        # choose Gaussian from compound normal
+                        i = scipy.argmin(cumweights < scipy.random.rand())
+                        # draw mutational effect from chosen Gaussian
+                        muteffect = scipy.random.normal(means[i], sds[i])
                     self.muteffects[f'{wt_aa}{icodon + 1}{mut_aa}'] = muteffect
 
     def latentPhenotype(self, v):
