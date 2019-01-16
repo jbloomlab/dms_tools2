@@ -2505,8 +2505,9 @@ def rarefyBarcodes(barcodecounts, *,
     return pd.DataFrame(dict(ncounts=ncounts, nbarcodes=nbarcodes))
 
 
-def getCumulVariantsByCount(df, *, group_cols=None):
-    """Get number of variants with observed <= each number of times.
+def getCumulVariantsByCount(df, *, group_cols=None,
+                            group_cols_as_str=False):
+    """Get number of variants with observed >= each number of times.
 
     Args:
         `df` (pandas DataFrame)
@@ -2514,12 +2515,16 @@ def getCumulVariantsByCount(df, *, group_cols=None):
             how many times variant observed. Can have other columns.
         `group_cols` (None or list)
             Group by these columns and analyze each group separately.
+        `group_cols_as_str` (bool)
+            Explicitly convert any `group_cols` columns to str type.
+            For some reason, this is needed if you are calling in ``R``
+            using `reticulate <https://rstudio.github.io/reticulate/>`_.
 
     Returns:
         A pandas Data Frame with columns named "count", "nvariants",
         and "total_variants" (plus any columns in `group_cols`).
         For each value of "count", "nvariants" gives the number of
-        variants with <= that many counts. The "total_variants"
+        variants with >= that many counts. The "total_variants"
         column gives the total number of variants.
 
     Here is an example. First, create input Data Frame:
@@ -2590,6 +2595,9 @@ def getCumulVariantsByCount(df, *, group_cols=None):
 
     if drop_group_cols:
         df = df.drop(group_cols, axis='columns')
+    elif group_cols_as_str:
+        for col in group_cols:
+            df[col] = df[col].astype('str')
 
     return df
 
