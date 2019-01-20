@@ -414,7 +414,7 @@ class CodonVariantTable:
     True
     >>> variants.valid_barcodes('lib_2') == {'AAC', 'CAT'}
     True
-    >>> pd.set_option('display.max_columns', 10)
+    >>> pd.set_option('display.max_columns', 15)
     >>> pd.set_option('display.width', 500)
     >>> variants.barcode_variant_df
       library barcode  variant_call_support codon_substitutions aa_substitutions  n_codon_substitutions  n_aa_substitutions
@@ -631,7 +631,7 @@ class CodonVariantTable:
     >>> variants == variants_eq
     True
 
-    Of course, they initializd variant table is **not** equal
+    Of course, the initialized variant table is **not** equal
     to original one if we don't write the full `variant_count_df`
     to the CSV file:
 
@@ -646,6 +646,30 @@ class CodonVariantTable:
     ...                     geneseq=geneseq)
     >>> variants == variants_ne
     False
+
+    We can use :meth:`CodonVariantTable.func_scores` to compute
+    the functional effects of mutations. We cannot use this method
+    with default options as we have no wildtype counts (needed for
+    normalization) for `lib_2` so we get an error:
+
+    >>> variants.func_scores('input')
+    Traceback (most recent call last):
+    ...
+    ValueError: no wildtype counts:
+      library    sample  count
+    0   lib_1     input    253
+    1   lib_1  selected    513
+    2   lib_2     input      0
+    3   lib_2  selected      0
+
+    However, we can use the method with the `permit_zero_wt` option:
+
+    >>> variants.func_scores('input', permit_zero_wt=True)
+      library pre_sample post_sample barcode  func_score  func_score_var  pre_count  post_count  pre_count_wt  post_count_wt  pseudocount aa_substitutions  n_aa_substitutions codon_substitutions  n_codon_substitutions
+    0   lib_1      input    selected     AAC    0.000000        0.024528        253         513           253            513          0.5                                    0                                          0
+    1   lib_1      input    selected     GAT   -2.474376        0.019337       1101         401           253            513          0.5              G2R                   1             GGA2CGC                      1
+    2   lib_2      input    selected     AAC   -3.465198        8.345474       1253         113             0              0          0.5          M1K G2*                   2     ATG1AAG GGA2TGA                      2
+    3   lib_2      input    selected     CAT    0.378452        8.329463        923        1200             0              0          0.5                                    0             GGA2GGC                      1
     """
 
     def __eq__(self, other):
@@ -771,7 +795,7 @@ class CodonVariantTable:
         self.variant_count_df = None
 
         if substitutions_are_codon:
-            codonSubsFunc = lambda x: x.upper()
+            codonSubsFunc = self._sortCodonMuts
         else:
             codonSubsFunc = self._ntToCodonMuts
 
@@ -949,6 +973,193 @@ class CodonVariantTable:
             return self._valid_barcodes[library]
 
 
+    def func_scores(self, preselection, *,
+                pseudocount=0.5, by="barcode", combine_libs=False,
+                logbase=2, permit_zero_wt=False, permit_self_comp=False):
+        """Get data frame with functional scores for variants.
+
+        The functional score is calculated from the change in counts
+        for a variant pre- and post-selection using the formula in
+        `Otwinoski et al (2018) <https://doi.org/10.1073/pnas.1804015115>`_.
+        Specifically, if :math:`n^v_{pre}` and :math:`n^v_{post}` are
+        the counts of variant :math:`v` pre- and post-selection, and
+        if :math:`n^{wt}_{pre}` and :math:`n^{wt}_{post}` are
+        the summed counts of **all** wildtype variants pre- and post-
+        selection, then the functional score of the variant is
+        :math:`f_v = \log_b\left(\\frac{n^v_{post} / n^{wt}_{post}}{n^v_{pre} / n^{wt}_{pre}}\\right)`
+        and the variance due to Poisson sampling statistics is
+        :math:`\\frac{1}{\left(\ln b\\right)^2}\left(\sigma^2_v = \\frac{1}{n^v_{post}} + \\frac{1}{n^{wt}_{post}} + \\frac{1}{n^v_{pre}} + \\frac{1}{n^{wt}_{pre}}\\right)`
+        where :math:`b` is logarithm base (see `logbase` argument).
+        For both calculations, a pseudocount (see `pseudocount` argument)
+        is added to each count first. The wildtype counts are computed
+        across all **fully wildtype** variants (no synonymous mutations).
+
+        Args:
+            `preselection` (str or dict)
+                The pre-selection sample. If the same for all post-
+                selection samples, then provide the name of the
+                pre-selection sample. If it differs among post-selection
+                samples, then provide a dict keyed by each post-selection
+                sample with the pre-selection sample being the value.
+            `pseudocount` (float)
+                The pseudocount added to each count.
+            `by` (str)
+                Compute effects for each "barcode", set of
+                "aa_substitutions", or set of "codon_substitutions".
+                In the latter two cases, all barcodes with each
+                set of substitutions are combined (see `combine_libs`).
+            `combine_libs` (bool)
+                If `by` is "aa_substitutions" or "codon_substitutions",
+                do we combine across libraries as well as barcodes?
+            `logbase` (float)
+                Base for logarithm when calculating functional score.
+            `permit_zero_wt` (bool)
+                If the wildtype counts are zero for any sample, do
+                we raise an error or permit the calculation to proceed
+                just using the pseudocount?
+            `permit_self_comp` (bool)
+                Permit comparisons where the same sample is used as
+                the pre- and post-selection?
+
+        Returns:
+            A pandas Data Frame with the following columns:
+              - "library": the library ("all libraries" if `combine_libs`)
+              - "pre_sample": the pre-selection sample
+              - "post_sample": the post-selection sample
+              - the value corresponding to the grouping we are using
+                to compute effects (the value of `by`)
+              - "func_score": the functional score
+              - "func_score_var": variance on the functional score
+              - "pre_count": pre-selection counts
+              - "post_count: post-selection counts
+              - "pre_count_wt": pre-selection counts for all wildtype
+              - "post_count_wt": post-selection counts for all wildtype
+              - "pseudocount": the pseudocount value
+              - as many of "aa_substitutions", "n_aa_substitutions",
+                "codon_substitutions", and "n_codon_substitutions"
+                as can be retained given the value of `by`.
+        """
+        ordered_samples = self.variant_count_df['sample'].unique()
+        if isinstance(preselection, str):
+            # make `preselection` into dict
+            preselection = {s:preselection for s in ordered_samples
+                            if s != preselection or permit_self_comp}
+        elif not isinstance(preselection, dict):
+            raise ValueError('`preselection` not str or dict')
+        if not permit_self_comp:
+            if any(pre == post for pre, post in preselection.items()):
+                raise ValueError('`permit_self_comp` is False but there'
+                                 ' are identical pre and post samples')
+
+        # all samples of interest
+        samples = set(preselection.keys()).union(set(preselection.values()))
+        if not samples.issubset(set(ordered_samples)):
+            raise ValueError(f"invalid sample in {samples}")
+
+        # get data frame with samples of interest
+        if self.variant_count_df is None:
+            raise ValueError('no sample variant counts have been added')
+        df = (self.variant_count_df
+              .query('sample in @samples')
+              )
+
+        if combine_libs and (len(variants.libraries) > 1):
+            if any(s not in self.samples(lib) for lib in self.libraries
+                                              for s in samples):
+                raise ValueError('cannot use `combine_libs`, not every '
+                                 f"library has every sample: {samples}")
+            df = (self.addMergedLibraries(df)
+                  .query('library == "all libraries"')
+                  )
+
+        # get wildtype counts for each sample and library
+        wt_counts = (
+                df
+                .assign(count=lambda x: x['count'] * (0 ==
+                              x['n_codon_substitutions']).astype('int'))
+                .groupby(['library', 'sample'])
+                .aggregate({'count':'sum'})
+                .reset_index()
+                )
+        if (wt_counts['count'] <= 0).any() and not permit_zero_wt:
+            raise ValueError(f"no wildtype counts:\n{wt_counts}")
+
+        # sum counts in groups specified by `by`
+        group_cols = ['aa_substitutions', 'n_aa_substitutions',
+                      'codon_substitutions', 'n_codon_substitutions']
+        if by in {'aa_substitutions', 'codon_substitutions'}:
+            group_cols = group_cols[group_cols.index(by) + 1 : ]
+        elif by != 'barcode':
+            raise ValueError(f"invalid `by` of {by}")
+        df = (df
+              .groupby(['library', 'sample', by] + group_cols)
+              .aggregate({'count':'sum'})
+              .reset_index()
+              )
+
+        # get data frame with pre- and post-selection samples / counts
+        df_func_scores = []
+        for post_sample in ordered_samples:
+            if post_sample not in preselection:
+                continue
+            pre_sample = preselection[post_sample]
+            sample_dfs = []
+            for stype, s in [('pre', pre_sample), ('post', post_sample)]:
+                sample_dfs.append(
+                        df
+                        .query('sample == @s')
+                        .rename(columns={'count':f"{stype}_count"})
+                        .merge(wt_counts
+                               .rename(columns={'count':f"{stype}_count_wt"}),
+                               how='inner', validate='many_to_one'
+                               )
+                        .rename(columns={'sample':f"{stype}_sample"})
+                        )
+            df_func_scores.append(
+                    pd.merge(sample_dfs[0], sample_dfs[1],
+                             how='inner', validate='1:1')
+                    )
+        df_func_scores = pd.concat(df_func_scores,
+                                   ignore_index=True, sort=False)
+
+        # check pseudocount
+        if pseudocount < 0:
+            raise ValueError(f"`pseudocount` is < 0: {pseudocount}")
+        elif (pseudocount == 0) and any((df_func_scores[c] <= 0).any()
+                                    for c in ['pre_count', 'post_count',
+                                    'pre_count_wt', 'post_count_wt']):
+            raise ValueError('some counts are zero, you must use '
+                             '`pseudocount` > 0')
+
+        # calculate functional score and variance
+        df_func_scores = (
+                df_func_scores
+                .assign(
+                    pseudocount=pseudocount,
+                    func_score=lambda x:
+                               scipy.log(
+                                    ((x.post_count + x.pseudocount) /
+                                     (x.post_count_wt + x.pseudocount)) /
+                                    ((x.pre_count + x.pseudocount) /
+                                     (x.pre_count_wt + x.pseudocount))
+                               ) / scipy.log(logbase),
+                    func_score_var=lambda x:
+                               (1 / (x.post_count + x.pseudocount) +
+                                1 / (x.post_count_wt + x.pseudocount) +
+                                1 / (x.pre_count + x.pseudocount) +
+                                1 / (x.pre_count_wt + x.pseudocount)
+                               ) / (scipy.log(logbase)**2)
+                    )
+                # set column order in data frame
+                [['library', 'pre_sample', 'post_sample', by,
+                  'func_score', 'func_score_var', 'pre_count',
+                  'post_count', 'pre_count_wt', 'post_count_wt',
+                  'pseudocount'] + group_cols]
+                )
+
+        return df_func_scores
+
+
     def n_variants_df(self, *, libraries='all', samples='all',
                       min_support=1):
         """Number of variants per library / sample.
@@ -1106,7 +1317,7 @@ class CodonVariantTable:
                 :meth:`CodonVariantTable.plotCumulMutCoverage`.
 
         Returns:
-            A `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
+            A `plotnine <https://plotnine.readthedocs.io>`_
             plot; can be displayed in a Jupyter notebook with `p.draw()`.
         """
 
@@ -1204,7 +1415,7 @@ class CodonVariantTable:
             :meth:`CodonVariantTable.plotCumulMutCoverage`.
 
         Returns:
-            A `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
+            A `plotnine <https://plotnine.readthedocs.io>`_
             plot; can be displayed in a Jupyter notebook with `p.draw()`.
         """
 
@@ -1295,7 +1506,7 @@ class CodonVariantTable:
                 :meth:`CodonVariantTable.plotNumMutsHistogram`.
 
         Returns:
-            `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
+            `plotnine <https://plotnine.readthedocs.io>`_
             plot; can be displayed in a Jupyter notebook with `p.draw()`.
         """
         df, nlibraries, nsamples = self._getPlotData(libraries,
@@ -1370,7 +1581,7 @@ class CodonVariantTable:
                 :class:`CodonVariantTable.plotNumMutsHistogram`
 
         Returns:
-            A `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
+            A `plotnine <https://plotnine.readthedocs.io>`_
             plot; can be displayed in a Jupyter notebook with `p.draw()`.
         """
 
@@ -1448,7 +1659,7 @@ class CodonVariantTable:
                 :class:`CodonVariantTable.plotNumMutsHistogram`
 
         Returns:
-            A `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
+            A `plotnine <https://plotnine.readthedocs.io>`_
             plot; can be displayed in a Jupyter notebook with `p.draw()`.
         """
         df, nlibraries, nsamples = self._getPlotData(libraries,
@@ -1564,7 +1775,7 @@ class CodonVariantTable:
                 cutoff.
 
         Returns:
-            `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
+            `plotnine <https://plotnine.readthedocs.io>`_
             plot; can be displayed in a Jupyter notebook with `p.draw()`.
         """
         df, nlibraries, nsamples = self._getPlotData(libraries,
@@ -1908,6 +2119,41 @@ class CodonVariantTable:
         return ' '.join([mut_str for r, mut_str in sorted(aa_muts.items())])
 
 
+    def _sortCodonMuts(self, mut_str):
+        """Sort space-delimited codon mutations and make uppercase.
+
+        >>> geneseq = 'ATGGGATGA'
+        >>> with tempfile.NamedTemporaryFile(mode='w') as f:
+        ...     _ = f.write('library,barcode,substitutions,variant_call_support')
+        ...     f.flush()
+        ...     variants = CodonVariantTable(
+        ...                 barcode_variant_file=f.name,
+        ...                 geneseq=geneseq
+        ...                 )
+        >>> variants._sortCodonMuts('GGA2CGT ATG1GTG')
+        'ATG1GTG GGA2CGT'
+        """
+        muts = {}
+        for mut in mut_str.upper().split():
+            m = re.match('^(?P<wt>[ATCG]{3})(?P<r>\d+)(?P<mut>[ACTG]{3})$',
+                         mut)
+            if not m:
+                raise ValueError(f"invalid codon mutation {mut}")
+            wt_codon = m.group('wt')
+            r = int(m.group('r'))
+            mut_codon = m.group('mut')
+            if wt_codon == mut_codon:
+                raise ValueError(f"invalid codon mutation {mut}")
+            if r not in self.sites:
+                raise ValueError(f"invalid site in codon mutation {mut}")
+            if wt_codon != self.codons[r]:
+                raise ValueError(f"invalid wt in codon mutation {mut}")
+            if r in muts:
+                raise ValueError(f"duplicate mutation at codon {mut}")
+            muts[r] = mut
+        return ' '.join(mut for r, mut in sorted(muts.items()))
+
+
     def _ntToCodonMuts(self, nt_mut_str):
         """Converts string of nucleotide mutations to codon mutations.
 
@@ -1930,6 +2176,8 @@ class CodonVariantTable:
         ...                 )
         >>> variants._ntToCodonMuts('A1G G4C A6T')
         'ATG1GTG GGA2CGT'
+        >>> variants._ntToCodonMuts('G4C A6T A1G')
+        'ATG1GTG GGA2CGT'
         >>> variants._ntToCodonMuts('A1G G4C G6T')
         Traceback (most recent call last):
         ...
@@ -1945,7 +2193,7 @@ class CodonVariantTable:
             mut_nt = m.group('mut')
             if wt_nt == mut_nt:
                 raise ValueError(f"invalid mutation {mut}")
-            if i > len(self.geneseq):
+            if i > len(self.geneseq) or i < 1:
                 raise ValueError(f"invalid nucleotide site {i}")
             if self.geneseq[i - 1] != wt_nt:
                 raise ValueError(f"nucleotide {i} should be "
@@ -2222,8 +2470,8 @@ class PhenotypeSimulator:
     compound normal distribution; latent phenotype maps to observed
     phenotype via sigmoid. This distinction between latent and
     observed phenotype parallel the "global epistasis" models of
-    `Otwinoski et al <https://www.pnas.org/content/115/32/E7550.short`_
-    and `Sailer and Harms <http://www.genetics.org/content/205/3/1079>`_.
+    `Otwinoski et al <https://doi.org/10.1073/pnas.1804015115>`_ and
+    `Sailer and Harms <http://www.genetics.org/content/205/3/1079>`_.
 
     Initialize with a codon sequence and random number seed.
     The effects of mutations on the latent phenotype are then drawn
@@ -2251,6 +2499,7 @@ class PhenotypeSimulator:
 
     Attributes:
         `wt_latent` (float)
+            Value for wildtype latent phenotype.
         `muteffects` (dict)
             Effects on latent phenotype of each amino-acid mutation.
     """
@@ -2314,7 +2563,7 @@ class PhenotypeSimulator:
                 Plot a line fit to this many points.
 
         Returns:
-            A `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
+            A `plotnine <https://plotnine.readthedocs.io>`_
             plot; can be displayed in a Jupyter notebook with `p.draw()`.
         """
         latent = scipy.linspace(latent_min, latent_max, npoints)
@@ -2348,7 +2597,7 @@ class PhenotypeSimulator:
                 Number of bins in histogram.
 
         Returns:
-            A `plotnine <https://plotnine.readthedocs.io/en/stable/>`_
+            A `plotnine <https://plotnine.readthedocs.io>`_
             plot; can be displayed in a Jupyter notebook with `p.draw()`.
         """
         if mutant_order != 1:
