@@ -53,7 +53,7 @@ setup(
         'biopython>=1.68',
         'HTSeq>=0.9',
         'pysam==0.13', # got an error with later versions
-        'pandas>=0.21',
+        'pandas>=0.23',
         'numpy>=1.13',
         'IPython>=5.1',
         'jupyter>=1.0.0',
