@@ -1,13 +1,13 @@
 Change Log
 ===========
 
-2.4.dev2
+2.4.2
 ----------
-* Enhancements to `CodonVariantTable`, including simulating data and more plotting.
+* Enhancements to `codonvarianttable`, including simulating data with simulated latent / global phenotypes, and more plotting.
 
 2.4.1
 ----------
-* Moved `CodonVariantTable` to its own module.
+* Moved `CodonVariantTable` class to its own module, `codonvarianttable`.
 
 2.4.0
 -----------
