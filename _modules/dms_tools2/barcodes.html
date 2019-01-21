@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.barcodes &#8212; dms_tools2 2.4.1 documentation</title>
+    <title>dms_tools2.barcodes &#8212; dms_tools2 2.4.2 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -520,8 +520,9 @@
 <span class="sd">    past `downstream`.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        `bclen` (int)</span>
-<span class="sd">            Length of the barcode.</span>
+<span class="sd">        `bclen` (int or `None`)</span>
+<span class="sd">            Length of the barcode, or `None` if length is to be</span>
+<span class="sd">            determined from `valid_barcodes` argument.</span>
 <span class="sd">        `upstream` (str)</span>
 <span class="sd">            Sequence upstream of the barcode.</span>
 <span class="sd">        `downstream` (str)</span>
@@ -742,7 +743,6 @@
 <span class="sd">    barcode whitelist:</span>
 
 <span class="sd">    &gt;&gt;&gt; parser_wl = IlluminaBarcodeParser(</span>
-<span class="sd">    ...              bclen=4,</span>
 <span class="sd">    ...              upstream=&#39;ACATGA&#39;,</span>
 <span class="sd">    ...              downstream=&#39;GACT&#39;,</span>
 <span class="sd">    ...              valid_barcodes={&#39;CGTA&#39;, &#39;AGTA&#39;, &#39;TAAT&#39;}</span>
@@ -770,7 +770,7 @@
     <span class="c1">#: valid nucleotide characters</span>
     <span class="n">VALID_NTS</span> <span class="o">=</span> <span class="s1">&#39;ACGTN&#39;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">bclen</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">bclen</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">upstream</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">downstream</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
             <span class="n">upstream_mismatch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">downstream_mismatch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
             <span class="n">valid_barcodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rc_barcode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">minq</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
@@ -790,8 +790,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">upstream_mismatch</span> <span class="o">=</span> <span class="n">upstream_mismatch</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">downstream_mismatch</span> <span class="o">=</span> <span class="n">downstream_mismatch</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span> <span class="o">=</span> <span class="n">valid_barcodes</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;empty list for `valid_barcodes`&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bclen</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bclen</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bclen</span> <span class="k">for</span> <span class="n">bc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`valid_barcodes` not all valid length&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">bclen</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;must specify `bclen` or `valid_barcodes`&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">minq</span> <span class="o">=</span> <span class="n">minq</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rc_barcode</span> <span class="o">=</span> <span class="n">rc_barcode</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">chastity_filter</span> <span class="o">=</span> <span class="n">chastity_filter</span>
@@ -811,11 +819,11 @@
         <span class="sd">&quot;&quot;&quot;Parses barcodes from files.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            `r1file` (str or list)</span>
+<span class="sd">            `r1files` (str or list)</span>
 <span class="sd">                Name of R1 FASTQ file, or list of such files</span>
 <span class="sd">                Can optionally be gzipped.</span>
-<span class="sd">            `r2file` (`None`, str, or list)</span>
-<span class="sd">                `None` of not using R2, otherwise like R1.</span>
+<span class="sd">            `r2files` (`None`, str, or list)</span>
+<span class="sd">                `None` or empty list if not using R2, otherwise like R1.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The 2-tuple `(barcodes, fates)`. In this 2-tuple:</span>
@@ -839,8 +847,9 @@
 <span class="sd">                  - &quot;unparseable barcode&quot;: invalid flanking sequences</span>
 <span class="sd">                    or N in barcode.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">r2files</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">r2files</span><span class="p">:</span>
             <span class="n">reads</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;R1&#39;</span><span class="p">]</span>
+            <span class="n">r2files</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">reads</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;R1&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">]</span>
 
@@ -1054,7 +1063,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017--2018, the Bloom lab.
+      &copy;2017--2019, the Bloom lab.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
