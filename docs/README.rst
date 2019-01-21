@@ -21,8 +21,8 @@ Then simply type::
 
 and the HTML documentation will be built in ``./_build/html/``.
 
-Notes
---------
+Notes on configuration
+------------------------
 
 Note that the configuration automatically created by ``sphinx-quickstart`` has been modified in the following ways:
 
@@ -36,6 +36,9 @@ Note that the configuration automatically created by ``sphinx-quickstart`` has b
 
     * ``Makefile`` has been modified to automatically run `sphinx-apidoc`_.
 
+Notes on nb2plots
+-------------------
+`nb2plots`_ was used to generate `codonvariant_analysis_demo.rst <codonvariant_analysis_demo.rst>`_ from a Jupyter notebook.
 
 .. _`reStructuredText`: http://docutils.sourceforge.net/docs/user/rst/quickref.html
 .. _`sphinx`: http://sphinx-doc.org/
