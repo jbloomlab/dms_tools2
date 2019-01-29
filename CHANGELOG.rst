@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.4.dev4
+----------
+* Fix to work with pandas 0.24
+
 2.4.3
 ----------
 * Bug fix to plotting mutation frequencies in `CodonVariantTable`

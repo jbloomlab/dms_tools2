@@ -126,7 +126,8 @@ def computeMutFracSurvive(libfracsurvive, sel, mock, countcharacters,
     if err is not None:
         m['epsilon'] = m['nerr'] / m['Nerr']
         wtmask = m['mutation'] == m['wildtype']
-        assert all(m[wtmask] > 0), "err counts of 0 for wildtype"
+        assert all(m[wtmask]['epsilon'] > 0), \
+                "err counts of 0 for wildtype"
         for name in ['sel', 'mock']:
             ncol = 'n{0}'.format(name)
             Ncol = 'N{0}'.format(name)

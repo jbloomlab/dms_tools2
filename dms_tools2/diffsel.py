@@ -145,8 +145,9 @@ def computeMutDiffSel(sel, mock, countcharacters, pseudocount,
     # error correction 
     if err is not None:
         m['epsilon'] = m['nerr'] / m['Nerr']
-        wtmask = m['mutation'] == m['wildtype']
-        assert all(m[wtmask] > 0), "err counts of 0 for wildtype"
+        wtmask = (m['mutation'] == m['wildtype'])
+        assert all(m[wtmask]['epsilon'] > 0), \
+                "err counts of 0 for wildtype"
         for name in ['sel', 'mock']:
             ncol = 'n{0}'.format(name)
             Ncol = 'N{0}'.format(name)
