@@ -392,14 +392,20 @@ and non-uniformity in library composition.
 
 We simulate under a range of conditions spanning reasonable values of
 the parameters that are likely to affect the outcome of a real
-experiment: - The case where the mutations in each variant are called
-perfectly with no errors, and where 5% of them contain an erroneously
-mis-called codon mutation. - The library is sequenced to low and high
-depth, where low depth is an average of 50 counts per variant, and high
-depth is an average of 500 counts per variant. - Where there is a low
-(small) or big (loose) bottleneck between the pre- and post-selection
-steps. These bottlenecks are equal to 5 or 50 times the total number of
-variants in each library.
+experiment:
+
+  - The case where the mutations in each variant are called
+    perfectly with no errors, and where 5% of them contain an erroneously
+    mis-called codon mutation.
+
+  - The library is sequenced to low and high
+    depth, where low depth is an average of 50 counts per variant, and high
+    depth is an average of 500 counts per variant.
+
+  - Where there is a low
+    (small) or big (loose) bottleneck between the pre- and post-selection
+    steps. These bottlenecks are equal to 5 or 50 times the total number of
+    variants in each library.
 
 For all simulations, we assume variant composition of the library is
 reasonably but not completely uniform.

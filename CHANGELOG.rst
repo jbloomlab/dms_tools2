@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.4.3
+----------
+* Bug fix to plotting mutation frequencies in `CodonVariantTable`
+
 2.4.2
 ----------
 * Enhancements to `codonvarianttable`, including simulating data with simulated latent / global phenotypes, and more plotting.

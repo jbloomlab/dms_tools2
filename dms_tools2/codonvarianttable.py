@@ -134,6 +134,15 @@ class CodonVariantTable:
     1          lib_2  barcoded variants      2
     2  all libraries  barcoded variants      4
 
+    Here is the number of variants if we look at just single amino-acid
+    mutants (and wildtype):
+
+    >>> variants.n_variants_df(samples=None, variant_type='single', mut_type='aa')
+             library             sample  count
+    0          lib_1  barcoded variants      2
+    1          lib_2  barcoded variants      1
+    2  all libraries  barcoded variants      3
+
     We can also see how these numbers change if we require a
     variant call support of at least 2:
 
@@ -875,12 +884,19 @@ class CodonVariantTable:
 
 
     def n_variants_df(self, *, libraries='all', samples='all',
-                      min_support=1):
+                      min_support=1, variant_type='all',
+                      mut_type=None):
         """Number of variants per library / sample.
 
         Args:
-            Same meaning as for
-            :class:`CodonVariantTable.plotNumMutsHistogram`.
+            `variant_type` ("single" or "all")
+                Include just variants with <= 1 `mut_type` mutation.
+            `mut_type` ("aa", "codon", or `None`)
+                If `variant_type` is single, set to "codon" or "aa"
+                to indicate how to filter for single mutants.
+            All other args:
+                Same meaning as for
+                :class:`CodonVariantTable.plotNumMutsHistogram`.
 
         Returns:
             DataFrame giving number of variants per library /
@@ -889,6 +905,14 @@ class CodonVariantTable:
         df, nlibraries, nsamples = self._getPlotData(libraries,
                                                      samples,
                                                      min_support)
+
+        if variant_type == 'single':
+            if mut_type in {'aa', 'codon'}:
+                df = df.query(f"n_{mut_type}_substitutions <= 1")
+            else:
+                raise ValueError('`mut_type` must be "aa" or "single"')
+        elif variant_type != 'all':
+            raise ValueError(f"invalid `variant_type` {variant_type}")
 
         return (df
                 .groupby(['library', 'sample'])
@@ -1040,7 +1064,9 @@ class CodonVariantTable:
 
         n_variants = (self.n_variants_df(libraries=libraries,
                                          samples=samples,
-                                         min_support=min_support)
+                                         min_support=min_support,
+                                         variant_type=variant_type,
+                                         mut_type=mut_type)
                       .rename(columns={'count':'nseqs'})
                       )
 
@@ -1138,7 +1164,9 @@ class CodonVariantTable:
 
         n_variants = (self.n_variants_df(libraries=libraries,
                                          samples=samples,
-                                         min_support=min_support)
+                                         min_support=min_support,
+                                         variant_type=variant_type,
+                                         mut_type=mut_type)
                       .rename(columns={'count':'nseqs'})
                       )
 
@@ -1972,7 +2000,7 @@ def simulateSampleCounts(*,
 
                 - To specify counts, provide a data frame with
                   columns "library", "barcode", and "count"
-                  where "count" is the pre-selection counts. 
+                  where "count" is the pre-selection counts.
 
                 - To simulate, provide dict with keys "total_count"
                   and "uniformity". For each library, we simulate
@@ -2058,7 +2086,7 @@ def simulateSampleCounts(*,
                 muts.append(f'{wtcodon}{errorsite}{mutcodon}')
                 return ' '.join(muts)
             else:
-                # remove mutation 
+                # remove mutation
                 muts = muts.pop(scipy.random.randint(0, len(muts)))
                 return muts
         else:
