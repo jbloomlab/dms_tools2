@@ -94,6 +94,7 @@ class test_pacbio(unittest.TestCase):
                 .aggregate({'n':'sum'})
                 .reset_index()
                 )
+        raise RuntimeError(f"debugging:\n{align_stats.to_csv()}")
         expected_align_stats = pandas.read_csv(f'{indir}/align_stats.csv',
                 keep_default_na=False)
         assert_frame_equal(align_stats, expected_align_stats)
