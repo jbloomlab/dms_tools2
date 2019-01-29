@@ -1776,15 +1776,7 @@ class CodonVariantTable:
                 raise ValueError(f"invalid sample(s) in {samples}")
             if len(samples) != len(set(samples)):
                 raise ValueError(f"duplicate samples in {samples}")
-            df = (self.variant_count_df
-                  .query('sample in @samples')
-                  .assign(sample=lambda x:
-                                 pd.Categorical(
-                                   x['sample'],
-                                   categories=samples,
-                                   ordered=True)
-                          )
-                  )
+            df = self.variant_count_df.query('sample in @samples')
         else:
             raise ValueError(f"invalid `samples` {samples}")
 
