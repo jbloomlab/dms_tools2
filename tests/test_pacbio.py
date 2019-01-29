@@ -84,20 +84,30 @@ class test_pacbio(unittest.TestCase):
                 ).rename(columns={'has_spacer':'has_polyA'})
 
         # test alignment stats
-        align_stats = (
+        align_stats_aligned = (
                 df_ccs
                 .assign(n=1)
                 .groupby(
                     ['barcoded', 'barcoded_polarity', 'has_termini3',
                      'has_termini5', 'has_polyA', 'gene_aligned',
-                     'CCS_aligned', 'gene_aligned_target'])
+                     'CCS_aligned'])
                 .aggregate({'n':'sum'})
                 .reset_index()
                 )
-        raise RuntimeError(f"debugging:\n{align_stats.to_csv()}")
-        expected_align_stats = pandas.read_csv(f'{indir}/align_stats.csv',
+        expected = pandas.read_csv(f'{indir}/align_stats_aligned.csv',
                 keep_default_na=False)
-        assert_frame_equal(align_stats, expected_align_stats)
+        assert_frame_equal(align_stats_aligned, expected)
+        align_stats_gene = (
+                df_ccs
+                .query('gene_aligned')
+                .assign(n=1)
+                .groupby('gene_aligned_target')
+                .aggregate({'n':'sum'})
+                .reset_index()
+                )
+        expected = pandas.read_csv(f'{indir}/align_stats_gene.csv',
+                keep_default_na=False)
+        assert_frame_equal(align_stats_gene, expected)
 
         # check mutations and alignments on aligned reads
         alignment_info = (
