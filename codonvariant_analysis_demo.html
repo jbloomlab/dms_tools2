@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Example analysis of barcoded codon variants &#8212; dms_tools2 2.4.2 documentation</title>
+    <title>Example analysis of barcoded codon variants &#8212; dms_tools2 2.4.3 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -424,14 +424,21 @@ calling, the sequencing depth, the bottlenecks during the experiment,
 and non-uniformity in library composition.</p>
 <p>We simulate under a range of conditions spanning reasonable values of
 the parameters that are likely to affect the outcome of a real
-experiment: - The case where the mutations in each variant are called
+experiment:</p>
+<blockquote>
+<div><ul class="simple">
+<li>The case where the mutations in each variant are called
 perfectly with no errors, and where 5% of them contain an erroneously
-mis-called codon mutation. - The library is sequenced to low and high
+mis-called codon mutation.</li>
+<li>The library is sequenced to low and high
 depth, where low depth is an average of 50 counts per variant, and high
-depth is an average of 500 counts per variant. - Where there is a low
+depth is an average of 500 counts per variant.</li>
+<li>Where there is a low
 (small) or big (loose) bottleneck between the pre- and post-selection
 steps. These bottlenecks are equal to 5 or 50 times the total number of
-variants in each library.</p>
+variants in each library.</li>
+</ul>
+</div></blockquote>
 <p>For all simulations, we assume variant composition of the library is
 reasonably but not completely uniform.</p>
 <p>Simulate sample counts under all of these conditions, and put them in a

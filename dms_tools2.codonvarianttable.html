@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>codonvarianttable &#8212; dms_tools2 2.4.2 documentation</title>
+    <title>codonvarianttable &#8212; dms_tools2 2.4.3 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -153,6 +153,15 @@ stats across barcoded variants:</p>
 <span class="go">0          lib_1  barcoded variants      2</span>
 <span class="go">1          lib_2  barcoded variants      2</span>
 <span class="go">2  all libraries  barcoded variants      4</span>
+</pre></div>
+</div>
+<p>Here is the number of variants if we look at just single amino-acid
+mutants (and wildtype):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">n_variants_df</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">variant_type</span><span class="o">=</span><span class="s1">&#39;single&#39;</span><span class="p">,</span> <span class="n">mut_type</span><span class="o">=</span><span class="s1">&#39;aa&#39;</span><span class="p">)</span>
+<span class="go">         library             sample  count</span>
+<span class="go">0          lib_1  barcoded variants      2</span>
+<span class="go">1          lib_2  barcoded variants      1</span>
+<span class="go">2  all libraries  barcoded variants      3</span>
 </pre></div>
 </div>
 <p>We can also see how these numbers change if we require a
@@ -600,12 +609,21 @@ and “site”.</dd>
 
 <dl class="method">
 <dt id="dms_tools2.codonvarianttable.CodonVariantTable.n_variants_df">
-<code class="descname">n_variants_df</code><span class="sig-paren">(</span><em>*</em>, <em>libraries='all'</em>, <em>samples='all'</em>, <em>min_support=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#CodonVariantTable.n_variants_df"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.CodonVariantTable.n_variants_df" title="Permalink to this definition">¶</a></dt>
+<code class="descname">n_variants_df</code><span class="sig-paren">(</span><em>*</em>, <em>libraries='all'</em>, <em>samples='all'</em>, <em>min_support=1</em>, <em>variant_type='all'</em>, <em>mut_type=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#CodonVariantTable.n_variants_df"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.CodonVariantTable.n_variants_df" title="Permalink to this definition">¶</a></dt>
 <dd><p>Number of variants per library / sample.</p>
 <dl class="docutils">
 <dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>variant_type</cite> (“single” or “all”)</dt>
+<dd>Include just variants with &lt;= 1 <cite>mut_type</cite> mutation.</dd>
+<dt><cite>mut_type</cite> (“aa”, “codon”, or <cite>None</cite>)</dt>
+<dd>If <cite>variant_type</cite> is single, set to “codon” or “aa”
+to indicate how to filter for single mutants.</dd>
+<dt>All other args:</dt>
 <dd>Same meaning as for
 <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a>.</dd>
+</dl>
+</dd>
 <dt>Returns:</dt>
 <dd>DataFrame giving number of variants per library /
 sample.</dd>
