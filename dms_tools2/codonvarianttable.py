@@ -1806,15 +1806,7 @@ class CodonVariantTable:
                 raise ValueError(f"invalid library in {libraries}")
             if len(libraries) != len(set(libraries)):
                 raise ValueError(f"duplicate library in {libraries}")
-            df = (df
-                  .query('library in @libraries')
-                  .assign(library=lambda x:
-                                  pd.Categorical(
-                                   x['library'],
-                                   categories=libraries,
-                                   ordered=True)
-                          )
-                  )
+            df = df.query('library in @libraries')
         else:
             raise ValueError(f"invalid `libraries` {libraries}")
         if not len(df):
