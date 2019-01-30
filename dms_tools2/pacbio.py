@@ -751,36 +751,19 @@ def matchAndAlignCCS(ccslist, mapper, *,
 
     # build match_str
     match_str = collections.OrderedDict()
-    if termini5 is not None:
-        match_str['termini5'] = \
-                f'(?P<termini5>{termini5}){{e<={termini5_fuzziness}}}'
-    else:
-        match_str['termini5'] = None
 
-    match_str['gene'] = f'(?P<gene>{gene}){{e<={gene_fuzziness}}}'
-
-    if spacer is not None:
-        match_str['spacer'] = \
-                f'(?P<spacer>{spacer}){{e<={spacer_fuzziness}}}'
-    else:
-        match_str['spacer'] = None
-
-    if umi is not None:
-        match_str['umi'] = f'(?P<UMI>{umi}){{e<={umi_fuzziness}}}'
-    else:
-        match_str['umi'] = None
-
-    if barcode is not None:
-        match_str['barcode'] = \
-                f'(?P<barcode>{barcode}){{e<={barcode_fuzziness}}}'
-    else:
-        match_str['barcode'] = None
-
-    if termini3 is not None:
-        match_str['termini3'] = \
-                f'(?P<termini3>{termini3}){{e<={termini3_fuzziness}}}'
-    else:
-        match_str['termini3'] = None
+    for seqname, seq, fuzz in [
+            ('termini5', termini5, termini5_fuzziness),
+            ('gene', gene, gene_fuzziness),
+            ('spacer', spacer, spacer_fuzziness),
+            ('UMI', umi, umi_fuzziness),
+            ('barcode', barcode, barcode_fuzziness),
+            ('termini3', termini3, termini3_fuzziness)
+            ]:
+        if seq is not None:
+            match_str[seqname] = f"(?P<{seqname}>{seq}){{e<={fuzz}}}"
+        else:
+            match_str[seqname] = None
 
     if tagged_termini_remove_indels and (
             terminiVariantTagCaller is not None):
