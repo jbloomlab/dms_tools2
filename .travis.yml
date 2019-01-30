@@ -45,7 +45,6 @@ script:
 branches:
   only:
     - master
-    - debug
 
 notifications:
   slack: jbloomlab:JRB6s9Rw88c7YPaL2VGmVJaq
