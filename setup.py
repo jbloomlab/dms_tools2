@@ -65,7 +65,7 @@ setup(
         'seaborn>=0.8',
         'phydms>=2.1.4',
         'statsmodels>=0.8',
-        'regex>=2.4.151',
+        'regex>=2.4.153',
         'packaging',
         'umi_tools>=0.5.4',
         ],

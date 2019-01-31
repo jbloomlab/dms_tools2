@@ -761,7 +761,13 @@ def matchAndAlignCCS(ccslist, mapper, *,
             ('termini3', termini3, termini3_fuzziness)
             ]:
         if seq is not None:
-            match_str[seqname] = f"(?P<{seqname}>{seq}){{e<={fuzz}}}"
+            match_str[seqname] = f"(?P<{seqname}>{seq})"
+            if fuzz:
+                if '{' in seq or '}' in seq:
+                    raise ValueError('Cannot use fuzziness and fuzzy '
+                          f"matching in {seqname}:\nfuzziness = {fuzz}"
+                          f"\nmatch_str = {seq}")
+                match_str[seqname] += f"{{e<={fuzz}}}"
         else:
             match_str[seqname] = None
 
