@@ -1,9 +1,9 @@
 Change Log
 ===========
 
-2.4.dev4
+2.4.4
 ----------
-* Fix to work with pandas 0.24
+* Fix to work with pandas 0.24 and newest regex
 
 2.4.3
 ----------

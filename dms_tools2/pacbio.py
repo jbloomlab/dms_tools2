@@ -624,6 +624,10 @@ def matchAndAlignCCS(ccslist, mapper, *,
             `termini5`. Likewise for `gene_fuzziness`, etc.
             Note that the fuzzy matching uses the *BESTMATCH*
             flag to try to find the best fuzzy match.
+            Note also that you can **not** both use fuzzy
+            matching charcters in the strings to match (e.g.,
+            `termini5` and set fuzziness to a value > 0:
+            choose one or the other way to specify fuzzy matches.
         `targetvariants` (:class:`dms_tools2.minimap2.TargetVariants`)
             Call target variants. See docs for same argument to
             :meth:`alignSeqs`.
@@ -752,24 +756,32 @@ def matchAndAlignCCS(ccslist, mapper, *,
     # build match_str
     match_str = collections.OrderedDict()
 
-    for seqname, seq, fuzz in [
-            ('termini5', termini5, termini5_fuzziness),
-            ('gene', gene, gene_fuzziness),
-            ('spacer', spacer, spacer_fuzziness),
-            ('UMI', umi, umi_fuzziness),
-            ('barcode', barcode, barcode_fuzziness),
-            ('termini3', termini3, termini3_fuzziness)
-            ]:
-        if seq is not None:
-            match_str[seqname] = f"(?P<{seqname}>{seq})"
-            if fuzz:
-                if '{' in seq or '}' in seq:
-                    raise ValueError('Cannot use fuzziness and fuzzy '
-                          f"matching in {seqname}:\nfuzziness = {fuzz}"
-                          f"\nmatch_str = {seq}")
-                match_str[seqname] += f"{{e<={fuzz}}}"
+    fuzz = {'termini5':termini5_fuzziness,
+            'gene':gene_fuzziness,
+            'spacer':spacer_fuzziness,
+            'UMI':umi_fuzziness,
+            'barcode':barcode_fuzziness,
+            'termini3':termini3_fuzziness}
+    has_fuzz = any(f > 0 for f in fuzz.values())
+
+    seqs = {'termini5':termini5,
+            'gene':gene,
+            'spacer':spacer,
+            'UMI':umi,
+            'barcode':barcode,
+            'termini3':termini3}
+
+    for s in ['termini5', 'gene', 'spacer', 'UMI', 'barcode', 'termini3']:
+        if seqs[s] is not None:
+            if has_fuzz:
+                match_str[s] = f"(?P<{s}>{seqs[s]}){{e<={fuzz[s]}}}"
+                if '{' in seqs[s] or '}' in seqs[s]:
+                    raise ValueError('Using fuzziness and fuzzy match in'
+                        f" {s}:\nfuzziness = {fuzz[s]}\nseq = {seqs[s]}")
+            else:
+                match_str[s] = f"(?P<{s}>{seqs[s]})"
         else:
-            match_str[seqname] = None
+            match_str[s] = None
 
     if tagged_termini_remove_indels and (
             terminiVariantTagCaller is not None):
