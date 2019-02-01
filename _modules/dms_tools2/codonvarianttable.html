@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.codonvarianttable &#8212; dms_tools2 2.4.3 documentation</title>
+    <title>dms_tools2.codonvarianttable &#8212; dms_tools2 2.4.4 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -1099,7 +1099,7 @@
 
         <span class="n">n_variants</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_variants_df</span><span class="p">(</span><span class="n">libraries</span><span class="o">=</span><span class="n">libraries</span><span class="p">,</span>
                                          <span class="n">samples</span><span class="o">=</span><span class="n">samples</span><span class="p">,</span>
-                                         <span class="n">min_support</span><span class="o">=</span><span class="n">min_support</span><span class="p">,</span> 
+                                         <span class="n">min_support</span><span class="o">=</span><span class="n">min_support</span><span class="p">,</span>
                                          <span class="n">variant_type</span><span class="o">=</span><span class="n">variant_type</span><span class="p">,</span>
                                          <span class="n">mut_type</span><span class="o">=</span><span class="n">mut_type</span><span class="p">)</span>
                       <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;count&#39;</span><span class="p">:</span><span class="s1">&#39;nseqs&#39;</span><span class="p">})</span>
@@ -1811,15 +1811,7 @@
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid sample(s) in </span><span class="si">{samples}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">samples</span><span class="p">)):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;duplicate samples in </span><span class="si">{samples}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variant_count_df</span>
-                  <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;sample in @samples&#39;</span><span class="p">)</span>
-                  <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">sample</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span>
-                                 <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span>
-                                   <span class="n">x</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">],</span>
-                                   <span class="n">categories</span><span class="o">=</span><span class="n">samples</span><span class="p">,</span>
-                                   <span class="n">ordered</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                          <span class="p">)</span>
-                  <span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variant_count_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;sample in @samples&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `samples` </span><span class="si">{samples}</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -1841,15 +1833,7 @@
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid library in </span><span class="si">{libraries}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">libraries</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">libraries</span><span class="p">)):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;duplicate library in </span><span class="si">{libraries}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span>
-                  <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;library in @libraries&#39;</span><span class="p">)</span>
-                  <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">library</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span>
-                                  <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span>
-                                   <span class="n">x</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">],</span>
-                                   <span class="n">categories</span><span class="o">=</span><span class="n">libraries</span><span class="p">,</span>
-                                   <span class="n">ordered</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                          <span class="p">)</span>
-                  <span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;library in @libraries&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `libraries` </span><span class="si">{libraries}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
@@ -2035,7 +2019,7 @@
 
 <span class="sd">                - To specify counts, provide a data frame with</span>
 <span class="sd">                  columns &quot;library&quot;, &quot;barcode&quot;, and &quot;count&quot;</span>
-<span class="sd">                  where &quot;count&quot; is the pre-selection counts. </span>
+<span class="sd">                  where &quot;count&quot; is the pre-selection counts.</span>
 
 <span class="sd">                - To simulate, provide dict with keys &quot;total_count&quot;</span>
 <span class="sd">                  and &quot;uniformity&quot;. For each library, we simulate</span>
@@ -2121,7 +2105,7 @@
                 <span class="n">muts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{wtcodon}{errorsite}{mutcodon}</span><span class="s1">&#39;</span><span class="p">)</span>
                 <span class="k">return</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">muts</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># remove mutation </span>
+                <span class="c1"># remove mutation</span>
                 <span class="n">muts</span> <span class="o">=</span> <span class="n">muts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">muts</span><span class="p">)))</span>
                 <span class="k">return</span> <span class="n">muts</span>
         <span class="k">else</span><span class="p">:</span>

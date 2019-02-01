@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>pacbio &#8212; dms_tools2 2.4.3 documentation</title>
+    <title>pacbio &#8212; dms_tools2 2.4.4 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -605,7 +605,11 @@ to enable a specific number of differences (can be
 insertion, deletion, or mismatch) when matching
 <cite>termini5</cite>. Likewise for <cite>gene_fuzziness</cite>, etc.
 Note that the fuzzy matching uses the <em>BESTMATCH</em>
-flag to try to find the best fuzzy match.</dd>
+flag to try to find the best fuzzy match.
+Note also that you can <strong>not</strong> both use fuzzy
+matching charcters in the strings to match (e.g.,
+<cite>termini5</cite> and set fuzziness to a value &gt; 0:
+choose one or the other way to specify fuzzy matches.</dd>
 <dt><cite>targetvariants</cite> (<a class="reference internal" href="dms_tools2.minimap2.html#dms_tools2.minimap2.TargetVariants" title="dms_tools2.minimap2.TargetVariants"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_tools2.minimap2.TargetVariants</span></code></a>)</dt>
 <dd>Call target variants. See docs for same argument to
 <a class="reference internal" href="#dms_tools2.pacbio.alignSeqs" title="dms_tools2.pacbio.alignSeqs"><code class="xref py py-meth docutils literal notranslate"><span class="pre">alignSeqs()</span></code></a>.</dd>
