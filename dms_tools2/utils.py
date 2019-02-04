@@ -738,7 +738,7 @@ def annotateCodonCounts(counts):
                 `n1nt` : number of 1-nucleotide codon mutations
 
                 `n2nt` : number of 2-nucleotide codon mutations
-                
+
                 `n3nt` : number of 3-nucleotide codon mutations
 
                 `AtoC`, `AtoG`, etc : number of each nucleotide mutation
@@ -986,7 +986,7 @@ def renumberSites(renumbfile, infiles, missing='error',
     nin = len(infiles)
     infiles = [os.path.abspath(f) for f in infiles]
     assert len(set(infiles)) == nin, "duplicate files in `infiles`"
-    
+
     if outfiles is not None:
         assert isinstance(outfiles, list), "`outfiles` not list"
         assert (outdir is None) and (outprefix is None), \
@@ -1136,6 +1136,32 @@ def codonEvolAccessibility(seqs):
             .rename_axis('site')
             [AAS_WITHSTOP]
             / len(seqs)).reset_index()
+
+
+def sigFigStr(x, nsig):
+    """Get str of `x` with `nsig` significant figures.
+
+    >>> sigFigStr(11190, 2)
+    '11000'
+    >>> sigFigStr(117, 2)
+    '120'
+    >>> sigFigStr(6, 2)
+    '6.0'
+    >>> sigFigStr(0.213, 2)
+    '0.21'
+    >>> sigFigStr(0.007517, 3)
+    '0.00752'
+    """
+    if x <= 0:
+        raise ValueError('currently only handles numbers > 0')
+    x = float(f"{{:.{nsig}g}}".format(x))
+    if x >= 10**(nsig - 1):
+        return '{:d}'.format(round(x))
+    else:
+        predecimal = math.floor(math.log10(x)) + 1
+        postdecimal = nsig - predecimal
+        assert postdecimal > 0, str(x)
+        return f"{{:.{postdecimal}f}}".format(x)
 
 
 if __name__ == '__main__':

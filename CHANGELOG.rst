@@ -5,6 +5,8 @@ Change Log
 ----------
 * Handle single sample groups in `dms2_batch_diffsel` and `dms2_batch_fracsurvive`
 
+* added `utils.sigFigStr`
+
 2.4.4
 ----------
 * Fix to work with pandas 0.24 and newest regex
