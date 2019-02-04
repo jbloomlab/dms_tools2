@@ -175,8 +175,6 @@ def main():
 
             for seltype in ['mutdiffsel', 'absolutesitediffsel', 
                     'positivesitediffsel', 'maxmutdiffsel']:
-                if len(samples) <= 1:
-                    continue
                 plotfile = files[g + seltype + 'corr']
                 logger.info("Plotting {0} correlations to {1}".format(
                         seltype, plotfile))

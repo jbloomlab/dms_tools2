@@ -560,7 +560,7 @@ def plotCorrMatrix(names, infiles, plotfile, datatype,
         `ncontours` (int)
             Number of contour lines if using `contour`.
     """
-    assert len(names) == len(infiles) == len(set(names)) > 1
+    assert len(names) == len(infiles) == len(set(names))
     assert os.path.splitext(plotfile)[1].lower() == '.pdf'
 
     if datatype == 'prefs':

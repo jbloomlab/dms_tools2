@@ -176,8 +176,6 @@ def main():
 
             for datatype in ['mutfracsurvive', 'avgfracsurvive',
                     'maxfracsurvive']:
-                if len(samples) <= 1:
-                    continue
                 plotfile = files[g + datatype + 'corr']
                 logger.info("Plotting {0} correlations to {1}".format(
                         seltype, plotfile))
