@@ -64,7 +64,7 @@ def tidyToWide(tidy_df, valuecol):
 
     # sort on site as here: https://stackoverflow.com/a/29582718
     tidy_df = tidy_df.reindex(index=natsort.order_by_index(tidy_df.index,
-            natsort.index_natsorted(tidy_df.site, signed=True)))
+            natsort.index_realsorted(tidy_df.site)))
 
     # convert to wide form, keeping wildtype identities
     tidy_df = tidy_df.set_index('site', drop=True)

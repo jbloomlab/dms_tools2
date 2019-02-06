@@ -219,7 +219,7 @@ def comparePrefs(prefs1, prefs2, sites=None, distmetric='half_sum_abs_diff',
         # use sites shared among all preference sets
         sites = list(set.intersection(*[set(p['site']) for p in prefs]))
     assert isinstance(sites, list) and len(sites), "no `sites` to analyze"
-    sites = natsort.natsorted(list(map(str, sites)), signed=True)
+    sites = natsort.realsorted(list(map(str, sites)))
 
     # merge preferences for desired sites
     assert all([set(p['site']) >= set(sites) for p in prefs]),\

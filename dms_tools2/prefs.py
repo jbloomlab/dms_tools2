@@ -963,7 +963,7 @@ def avgPrefs(prefsfiles):
 
     # natural sort by site: https://stackoverflow.com/a/29582718
     avgprefs = avgprefs.reindex(index=natsort.order_by_index(avgprefs.index,
-            natsort.index_natsorted(avgprefs.site, signed=True)))
+            natsort.index_realsorted(avgprefs.site)))
 
     return avgprefs
 

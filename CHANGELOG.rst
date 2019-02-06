@@ -7,6 +7,8 @@ Change Log
 
 * added `utils.sigFigStr`
 
+* make compatible with latest `natsorted`
+
 2.4.4
 ----------
 * Fix to work with pandas 0.24 and newest regex
