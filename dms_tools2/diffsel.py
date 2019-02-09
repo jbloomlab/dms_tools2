@@ -333,6 +333,136 @@ def avgMutDiffSel(mutdiffselfiles, avgtype):
                )
 
 
+def df_read_filecols(df, filecols, *, order_sites=True):
+    """Merges data frame with entries read from files.
+
+    Designed to expand data frame listing CSV files with site or
+    mutation-level selection information into a data frame listing
+    the information in these CSV files.
+
+    Args:
+        `df` (pandas DataFrame)
+            Each row gives files and associated information.
+        `filecols` (list)
+            List of columns in `df` that give filenames of CSV files
+            to add to data frame. These CSV files cannot have column
+            names already in `df`.
+        `order_sites` (bool)
+            Expect a `site` column, make it naturally sorted
+            categorical variable, and add `isite` column
+            that numbers sites 0, 1, ...
+
+    Returns:
+        A data frame where the entries in the files are now
+        read as columns.
+
+    >>> tf = tempfile.NamedTemporaryFile
+    >>> with tf(mode='w') as sitediffsel1, tf(mode='w') as sitediffsel2, \\
+    ...      tf(mode='w') as mutdiffsel1,  tf(mode='w') as mutdiffsel2:
+    ...
+    ...     # first sitediffsel file
+    ...     _ = sitediffsel1.write('site,sitediffsel\\n'
+    ...                            '1,3.2\\n'
+    ...                            '-1,2.3\\n'
+    ...                            '(HA2)1,0.1')
+    ...     sitediffsel1.flush()
+    ...
+    ...     # first mutdiffsel file
+    ...     _ = mutdiffsel1.write('site,wildtype,mutation,mutdiffsel\\n'
+    ...                            '-1,A,C,-0.7\\n'
+    ...                            '-1,A,G,3.0\\n'
+    ...                            '1,C,A,1.2\\n'
+    ...                            '1,C,G,2.0\\n'
+    ...                            '(HA2)1,C,A,0.0\\n'
+    ...                            '(HA2)1,C,G,0.1')
+    ...     mutdiffsel1.flush()
+    ...
+    ...     # second sitediffsel file
+    ...     _ = sitediffsel2.write('site,sitediffsel\\n'
+    ...                            '(HA2)1,9.1\\n'
+    ...                            '1,1.2\\n'
+    ...                            '-1,0.3\\n')
+    ...     sitediffsel2.flush()
+    ...
+    ...     # second mutdiffsel file
+    ...     _ = mutdiffsel2.write('site,wildtype,mutation,mutdiffsel\\n'
+    ...                            '-1,A,C,-0.2\\n'
+    ...                            '-1,A,G,0.5\\n'
+    ...                            '1,C,A,1.1\\n'
+    ...                            '1,C,G,0.1\\n'
+    ...                            '(HA2)1,C,A,9.0\\n'
+    ...                            '(HA2)1,C,G,0.1')
+    ...     mutdiffsel2.flush()
+    ...
+    ...     # data frame with files as columns
+    ...     df = pandas.DataFrame({
+    ...          'name':['sample_1', 'sample_2'],
+    ...          'serum':['serum_1', 'serum_1'],
+    ...          'sitediffsel_file':[sitediffsel1.name, sitediffsel2.name],
+    ...          'mutdiffsel_file':[mutdiffsel1.name, mutdiffsel2.name]
+    ...          })
+    ...
+    ...     # call df_read_filecols
+    ...     (df_read_filecols(df, ['sitediffsel_file', 'mutdiffsel_file'])
+    ...      .drop(columns=['sitediffsel_file', 'mutdiffsel_file']))
+            name    serum    site  sitediffsel wildtype mutation  mutdiffsel  isite
+    0   sample_1  serum_1       1          3.2        C        A         1.2      1
+    1   sample_1  serum_1       1          3.2        C        G         2.0      1
+    2   sample_1  serum_1      -1          2.3        A        C        -0.7      0
+    3   sample_1  serum_1      -1          2.3        A        G         3.0      0
+    4   sample_1  serum_1  (HA2)1          0.1        C        A         0.0      2
+    5   sample_1  serum_1  (HA2)1          0.1        C        G         0.1      2
+    6   sample_2  serum_1  (HA2)1          9.1        C        A         9.0      2
+    7   sample_2  serum_1  (HA2)1          9.1        C        G         0.1      2
+    8   sample_2  serum_1       1          1.2        C        A         1.1      1
+    9   sample_2  serum_1       1          1.2        C        G         0.1      1
+    10  sample_2  serum_1      -1          0.3        A        C        -0.2      0
+    11  sample_2  serum_1      -1          0.3        A        G         0.5      0
+    """
+    if not len(df):
+        raise ValueError('`df` has no rows')
+
+    df_cols = set(df.columns)
+    if 'dummy' in df_cols:
+        raise ValueError('`df` has column named "dummy"')
+
+    if not (set(filecols) <= df_cols):
+        raise ValueError('`df` does not have all the `filecol` columns')
+
+    df_filecols = []
+    for row in df.iterrows():
+        # get data frame of just row, with a dummy column for merging
+        row_df = row[1].to_frame().transpose().assign(dummy=1)
+        for col in filecols:
+            filename = row_df.at[row[0], col]
+            file_df = pandas.read_csv(filename).assign(dummy=1)
+            if order_sites and 'site' not in file_df.columns:
+                raise ValueError(f"no `site` column in {filename}")
+            sharedcols = set(file_df.columns).intersection(df_cols)
+            if sharedcols:
+                raise ValueError(f"`df` and {filename} share columns "
+                                 f"{sharedcols}")
+            row_df = row_df.merge(file_df)
+        df_filecols.append(row_df)
+
+    df_filecols = (pandas.concat(df_filecols, ignore_index=True)
+                   .drop('dummy', axis='columns')
+                   )
+
+    if order_sites:
+        sites = natsort.realsorted(df_filecols['site'].unique())
+        df_filecols = (
+            df_filecols
+            .assign(site=lambda x: pandas.Categorical(x['site'],
+                                                      sites,
+                                                      ordered=True),
+                    isite=lambda x: x['site'].cat.codes)
+            )
+
+    return df_filecols
+
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()

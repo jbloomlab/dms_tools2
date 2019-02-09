@@ -9,6 +9,8 @@ Change Log
 
 * make compatible with latest `natsorted`
 
+* added `diffsel.df_read_filecols`
+
 2.4.4
 ----------
 * Fix to work with pandas 0.24 and newest regex
