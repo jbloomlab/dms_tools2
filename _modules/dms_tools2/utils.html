@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.utils &#8212; dms_tools2 2.4.4 documentation</title>
+    <title>dms_tools2.utils &#8212; dms_tools2 2.4.5 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -773,7 +773,7 @@
 <span class="sd">                `n1nt` : number of 1-nucleotide codon mutations</span>
 
 <span class="sd">                `n2nt` : number of 2-nucleotide codon mutations</span>
-<span class="sd">                </span>
+
 <span class="sd">                `n3nt` : number of 3-nucleotide codon mutations</span>
 
 <span class="sd">                `AtoC`, `AtoG`, etc : number of each nucleotide mutation</span>
@@ -1021,7 +1021,7 @@
     <span class="n">nin</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">infiles</span><span class="p">)</span>
     <span class="n">infiles</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">infiles</span><span class="p">]</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">infiles</span><span class="p">))</span> <span class="o">==</span> <span class="n">nin</span><span class="p">,</span> <span class="s2">&quot;duplicate files in `infiles`&quot;</span>
-    
+
     <span class="k">if</span> <span class="n">outfiles</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outfiles</span><span class="p">,</span> <span class="nb">list</span><span class="p">),</span> <span class="s2">&quot;`outfiles` not list&quot;</span>
         <span class="k">assert</span> <span class="p">(</span><span class="n">outdir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">outprefix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span> \
@@ -1171,6 +1171,32 @@
             <span class="o">.</span><span class="n">rename_axis</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
             <span class="p">[</span><span class="n">AAS_WITHSTOP</span><span class="p">]</span>
             <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">seqs</span><span class="p">))</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="sigFigStr"><a class="viewcode-back" href="../../dms_tools2.utils.html#dms_tools2.utils.sigFigStr">[docs]</a><span class="k">def</span> <span class="nf">sigFigStr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nsig</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get str of `x` with `nsig` significant figures.</span>
+
+<span class="sd">    &gt;&gt;&gt; sigFigStr(11190, 2)</span>
+<span class="sd">    &#39;11000&#39;</span>
+<span class="sd">    &gt;&gt;&gt; sigFigStr(117, 2)</span>
+<span class="sd">    &#39;120&#39;</span>
+<span class="sd">    &gt;&gt;&gt; sigFigStr(6, 2)</span>
+<span class="sd">    &#39;6.0&#39;</span>
+<span class="sd">    &gt;&gt;&gt; sigFigStr(0.213, 2)</span>
+<span class="sd">    &#39;0.21&#39;</span>
+<span class="sd">    &gt;&gt;&gt; sigFigStr(0.007517, 3)</span>
+<span class="sd">    &#39;0.00752&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;currently only handles numbers &gt; 0&#39;</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;{{:.</span><span class="si">{nsig}</span><span class="s2">g}}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">nsig</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{:d}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">predecimal</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">postdecimal</span> <span class="o">=</span> <span class="n">nsig</span> <span class="o">-</span> <span class="n">predecimal</span>
+        <span class="k">assert</span> <span class="n">postdecimal</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;{{:.</span><span class="si">{postdecimal}</span><span class="s2">f}}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>utils &#8212; dms_tools2 2.4.4 documentation</title>
+    <title>utils &#8212; dms_tools2 2.4.5 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -744,6 +744,24 @@ as <cite>infiles</cite>, but have the pre-pended filename extension
 <dt id="dms_tools2.utils.sessionInfo">
 <code class="descclassname">dms_tools2.utils.</code><code class="descname">sessionInfo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#sessionInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.sessionInfo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns string with information about session / packages.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.utils.sigFigStr">
+<code class="descclassname">dms_tools2.utils.</code><code class="descname">sigFigStr</code><span class="sig-paren">(</span><em>x</em>, <em>nsig</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/utils.html#sigFigStr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.utils.sigFigStr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get str of <cite>x</cite> with <cite>nsig</cite> significant figures.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sigFigStr</span><span class="p">(</span><span class="mi">11190</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">&#39;11000&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sigFigStr</span><span class="p">(</span><span class="mi">117</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">&#39;120&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sigFigStr</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">&#39;6.0&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sigFigStr</span><span class="p">(</span><span class="mf">0.213</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">&#39;0.21&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sigFigStr</span><span class="p">(</span><span class="mf">0.007517</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="go">&#39;0.00752&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>

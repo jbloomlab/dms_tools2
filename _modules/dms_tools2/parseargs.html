@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.parseargs &#8212; dms_tools2 2.4.4 documentation</title>
+    <title>dms_tools2.parseargs &#8212; dms_tools2 2.4.5 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -87,7 +87,7 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">name</span><span class="o">.</span><span class="n">isspace</span><span class="p">():</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> is all whitespace&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nametype</span><span class="p">))</span>
     <span class="n">illegal_chars</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">name</span> <span class="k">if</span> 
-            <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;^[a-zA-Z0-9\- ]$&#39;</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">]</span>
+            <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;^[a-zA-Z0-9\- \.]$&#39;</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">illegal_chars</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> </span><span class="si">{1}</span><span class="s2"> contains following illegal characters: &quot;</span>
                 <span class="s2">&quot;</span><span class="si">{2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nametype</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">illegal_chars</span><span class="p">)))</span>

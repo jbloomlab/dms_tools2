@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>diffsel &#8212; dms_tools2 2.4.4 documentation</title>
+    <title>diffsel &#8212; dms_tools2 2.4.5 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -130,6 +130,98 @@ neither <cite>sel</cite> nor <cite>mock</cite> has at least this many counts.</d
 <dd>A <cite>pandas.DataFrame</cite> with the mutation differential selection.
 Columns are <cite>site</cite>, <cite>wildtype</cite>, <cite>mutation</cite>, <cite>mutdiffsel</cite>.</dd>
 </dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.diffsel.df_read_filecols">
+<code class="descclassname">dms_tools2.diffsel.</code><code class="descname">df_read_filecols</code><span class="sig-paren">(</span><em>df</em>, <em>filecols</em>, <em>*</em>, <em>order_sites=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/diffsel.html#df_read_filecols"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.diffsel.df_read_filecols" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merges data frame with entries read from files.</p>
+<p>Designed to expand data frame listing CSV files with site or
+mutation-level selection information into a data frame listing
+the information in these CSV files.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>df</cite> (pandas DataFrame)</dt>
+<dd>Each row gives files and associated information.</dd>
+<dt><cite>filecols</cite> (list)</dt>
+<dd>List of columns in <cite>df</cite> that give filenames of CSV files
+to add to data frame. These CSV files cannot have column
+names already in <cite>df</cite>.</dd>
+<dt><cite>order_sites</cite> (bool)</dt>
+<dd>Expect a <cite>site</cite> column, make it naturally sorted
+categorical variable, and add <cite>isite</cite> column
+that numbers sites 0, 1, …</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A data frame where the entries in the files are now
+read as columns.</dd>
+</dl>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tf</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tf</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">sitediffsel1</span><span class="p">,</span> <span class="n">tf</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">sitediffsel2</span><span class="p">,</span> \
+<span class="gp">... </span>     <span class="n">tf</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">mutdiffsel1</span><span class="p">,</span>  <span class="n">tf</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">mutdiffsel2</span><span class="p">:</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="c1"># first sitediffsel file</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">sitediffsel1</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;site,sitediffsel</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                           <span class="s1">&#39;1,3.2</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                           <span class="s1">&#39;-1,2.3</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                           <span class="s1">&#39;(HA2)1,0.1&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">sitediffsel1</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="c1"># first mutdiffsel file</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">mutdiffsel1</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;site,wildtype,mutation,mutdiffsel</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                           <span class="s1">&#39;-1,A,C,-0.7</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                           <span class="s1">&#39;-1,A,G,3.0</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                           <span class="s1">&#39;1,C,A,1.2</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                           <span class="s1">&#39;1,C,G,2.0</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                           <span class="s1">&#39;(HA2)1,C,A,0.0</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                           <span class="s1">&#39;(HA2)1,C,G,0.1&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">mutdiffsel1</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="c1"># second sitediffsel file</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">sitediffsel2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;site,sitediffsel</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                           <span class="s1">&#39;(HA2)1,9.1</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                           <span class="s1">&#39;1,1.2</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                           <span class="s1">&#39;-1,0.3</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">sitediffsel2</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="c1"># second mutdiffsel file</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">mutdiffsel2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;site,wildtype,mutation,mutdiffsel</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                           <span class="s1">&#39;-1,A,C,-0.2</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                           <span class="s1">&#39;-1,A,G,0.5</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                           <span class="s1">&#39;1,C,A,1.1</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                           <span class="s1">&#39;1,C,G,0.1</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                           <span class="s1">&#39;(HA2)1,C,A,9.0</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="gp">... </span>                           <span class="s1">&#39;(HA2)1,C,G,0.1&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">mutdiffsel2</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="c1"># data frame with files as columns</span>
+<span class="gp">... </span>    <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+<span class="gp">... </span>         <span class="s1">&#39;name&#39;</span><span class="p">:[</span><span class="s1">&#39;sample_1&#39;</span><span class="p">,</span> <span class="s1">&#39;sample_2&#39;</span><span class="p">],</span>
+<span class="gp">... </span>         <span class="s1">&#39;serum&#39;</span><span class="p">:[</span><span class="s1">&#39;serum_1&#39;</span><span class="p">,</span> <span class="s1">&#39;serum_1&#39;</span><span class="p">],</span>
+<span class="gp">... </span>         <span class="s1">&#39;sitediffsel_file&#39;</span><span class="p">:[</span><span class="n">sitediffsel1</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">sitediffsel2</span><span class="o">.</span><span class="n">name</span><span class="p">],</span>
+<span class="gp">... </span>         <span class="s1">&#39;mutdiffsel_file&#39;</span><span class="p">:[</span><span class="n">mutdiffsel1</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">mutdiffsel2</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+<span class="gp">... </span>         <span class="p">})</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="c1"># call df_read_filecols</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="n">df_read_filecols</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;sitediffsel_file&#39;</span><span class="p">,</span> <span class="s1">&#39;mutdiffsel_file&#39;</span><span class="p">])</span>
+<span class="gp">... </span>     <span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;sitediffsel_file&#39;</span><span class="p">,</span> <span class="s1">&#39;mutdiffsel_file&#39;</span><span class="p">]))</span>
+<span class="go">        name    serum    site  sitediffsel wildtype mutation  mutdiffsel  isite</span>
+<span class="go">0   sample_1  serum_1       1          3.2        C        A         1.2      1</span>
+<span class="go">1   sample_1  serum_1       1          3.2        C        G         2.0      1</span>
+<span class="go">2   sample_1  serum_1      -1          2.3        A        C        -0.7      0</span>
+<span class="go">3   sample_1  serum_1      -1          2.3        A        G         3.0      0</span>
+<span class="go">4   sample_1  serum_1  (HA2)1          0.1        C        A         0.0      2</span>
+<span class="go">5   sample_1  serum_1  (HA2)1          0.1        C        G         0.1      2</span>
+<span class="go">6   sample_2  serum_1  (HA2)1          9.1        C        A         9.0      2</span>
+<span class="go">7   sample_2  serum_1  (HA2)1          9.1        C        G         0.1      2</span>
+<span class="go">8   sample_2  serum_1       1          1.2        C        A         1.1      1</span>
+<span class="go">9   sample_2  serum_1       1          1.2        C        G         0.1      1</span>
+<span class="go">10  sample_2  serum_1      -1          0.3        A        C        -0.2      0</span>
+<span class="go">11  sample_2  serum_1      -1          0.3        A        G         0.5      0</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="function">
