@@ -68,6 +68,7 @@ setup(
         'regex>=2.4.153',
         'packaging',
         'umi_tools>=0.5.4',
+        'gpmap>=0.4.5',
         ],
     extras_require = {
         'rplot':[

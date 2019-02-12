@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.4.dev6
+----------
+* Added function to create `gpmap.GenotypePhenotypeMap` from `CodonVariantTable`
+
 2.4.5
 ----------
 * Handle single sample groups in `dms2_batch_diffsel` and `dms2_batch_fracsurvive`

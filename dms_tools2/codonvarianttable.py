@@ -20,6 +20,7 @@ import random
 import scipy
 import pandas as pd
 import Bio.SeqUtils.ProtParamData
+import gpmap
 
 # use plotnine for plotting
 from plotnine import *
@@ -2588,6 +2589,14 @@ def getCumulVariantsByCount(df, *, group_cols=None,
             df[col] = df[col].astype('str')
 
     return df
+
+
+def func_score_to_gpm():
+    raise RuntimeError('not yet implemented')
+
+
+def codonSubsToSeq():
+    raise RuntimeError('not yet implemented')
 
 
 if __name__ == '__main__':
