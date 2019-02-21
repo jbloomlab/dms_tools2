@@ -2591,8 +2591,8 @@ def getCumulVariantsByCount(df, *, group_cols=None,
 
     return df
 
-                                  
-def codonSubsToSeq(wildtype, codon_subs, return_aa=False):
+
+def codonSubsToSeq(wildtype, codon_subs, return_aa=False, aa_subs=False):
     """Convert codon substitutions to sequence.
 
     Args:
@@ -2604,6 +2604,9 @@ def codonSubsToSeq(wildtype, codon_subs, return_aa=False):
         'return_aa' (bool)
             Specify whether to return sequence as nucleotide or amino acid.
             Default is nucleotide.
+        'aa_subs' (bool)
+            Specify whether the substitutions are in amino acid form
+            rather than codon. Default is codon.
 
     Returns:
         A str of the sequence with all the codon substitutions
@@ -2625,10 +2628,14 @@ def codonSubsToSeq(wildtype, codon_subs, return_aa=False):
                   r in range(len(wildtype) // 3)]
 
     # Create parser for the codon substitutions
-    submatcher = re.compile('^(?P<wt>[ATGC]{3})'
-                            '(?P<site>\d+)'
-                            '(?P<mut>[ATGC]{3})$')
-
+    if aa_subs:
+        submatcher = re.compile('^(?P<wt>.)'
+                                '(?P<site>\d+)'
+                                '(?P<mut>.)$')
+    if not aa_subs:
+        submatcher = re.compile('^(?P<wt>[ATGC]{3})'
+                                '(?P<site>\d+)'
+                                '(?P<mut>[ATGC]{3})$')
     for codon in codon_subs.split():
         m = submatcher.match(codon)
         if not m:
@@ -2636,14 +2643,27 @@ def codonSubsToSeq(wildtype, codon_subs, return_aa=False):
         site = int(m.group('site')) - 1
         if not (0 <= site < len(codon_list)):
             raise ValueError('Codon site out of bounds')
-        if m.group('wt') != codon_list[site]:
-            raise ValueError(f"Invalid wildtype codon in {codon}")
+        if not aa_subs:
+            if m.group('wt') != codon_list[site]:
+                raise ValueError(f"Invalid wildtype codon in {codon}")
+        else:
+            if m.group('wt') != CODON_TO_AA[codon_list[site]]:
+                raise ValueError(f"Invalid wildtype aa in {codon}")
         if m.group('wt') == m.group('mut'):
             raise ValueError(f"wildtype and mutant the same in {codon}")
-        if m.group('mut') not in CODON_TO_AA:
-            raise ValueError(f'Invalid mutant codon in {codon}')
+        if not aa_subs:
+            if m.group('mut') not in CODON_TO_AA:
+                raise ValueError(f'Invalid mutant codon in {codon}')
+        else:
+            if m.group('mut') not in AAS_WITHSTOP:
+                raise ValueError(f'Invalid mutant aa in {codon}')
         # Change to the mutant codon
-        codon_list[site] = m.group('mut')
+        sub = m.group('mut')
+        if aa_subs:
+            sub = AA_TO_CODONS[sub][0]
+            codon_list[site] = sub
+        else:
+            codon_list[site] = m.group('mut')
 
     # Return the sequence
     if not return_aa:
@@ -2655,14 +2675,14 @@ def codonSubsToSeq(wildtype, codon_subs, return_aa=False):
         import doctest
         doctest.testmod()
 
-                                  
+
 def func_score_to_gpm(func_scores_df, wildtype, metric='func_score'):
     """Generate a gpm from a functinoal score dataframe.
-    
+
     Args:
         'func_scores_df' (functional score dataframe)
-            A functional score dataframe, narrowed down to one 
-            post sample condition, typically with something like: 
+            A functional score dataframe, narrowed down to one
+            post sample condition, typically with something like:
             `func_scores_df.query('library == @library & sample == @sample')`
         'wildtype' (str)
             A string containing the wildtype sequence
@@ -2675,27 +2695,27 @@ def func_score_to_gpm(func_scores_df, wildtype, metric='func_score'):
     """
     # Put the phenotypes into a list
     phenotypes = func_scores_df[metric].tolist()
-                                  
+
     # Get standard deviations for each phenotype
     var = func_scores_df['func_score_var'].tolist()
     stdev = np.sqrt(var)
-                                  
+
     # Get codon substitutions in a list
     codon_subs = func_scores_df['codon_substitutions'].tolist()
-                                  
+
     # Get a list of genotypes
     genotypes = []
     for subs in codon_subs:
         genotype = codonSubsToSeq(wildtype, subs, return_aa=True)
         genotypes.append(genotype)
-                                  
+
     # Get the wildtype amino acid sequence
     wildtype = codonSubsToSeq(wildtype, '', return_aa=True)
-                                  
+
     # Generate the genotype phenotype map
     gpm = gpmap.GenotypePhenotypeMap(wildtype=wildtype, genotypes=genotypes,
                                phenotypes=phenotypes, stdeviations=stdev)
-                                  
+
     return gpm
 
 
