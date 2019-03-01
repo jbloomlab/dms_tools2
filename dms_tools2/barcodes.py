@@ -101,7 +101,7 @@ def almost_duplicated(barcodes, threshold=1):
     counts = collections.Counter(barcodes)
 
     groups = []
-    for group in _umi_clusterer(barcodes, counts, threshold):
+    for group in _umi_clusterer(counts, threshold):
         # keep only barcode(s) most abundant in group
         max_count = max(counts[barcode] for barcode in group)
         groups.append(frozenset(barcode for barcode in group
