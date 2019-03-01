@@ -76,6 +76,8 @@ The other good option rather than ``--user`` is to use ``pip`` to install into a
 
 Installing the ``rplot`` module
 ++++++++++++++++++++++++++++++++++
+**Note**: we now recommend that you use the `dmslogo`_ package rather than the `rplot module`_.
+
 As described in the :ref:`api`, there are some useful features
 in the `rplot module`_. In order for your installation to
 support this module, you need to install a recent version of 

@@ -31,7 +31,7 @@ addons:
       - r-base
 
 install:
-  - pip install -e .[rplot]
+  - pip install -e .
 
 # following here: https://stackoverflow.com/a/35403128
 before_script: # configure a headless display to test plot generation

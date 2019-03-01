@@ -63,3 +63,4 @@
 .. _`minimap2 module`: https://jbloomlab.github.io/dms_tools2/dms_tools2.minimap2.html
 .. _`minimap2`: https://github.com/lh3/minimap2
 .. _`reference for minimap2`: https://doi.org/10.1093/bioinformatics/bty191
+.. _`dmslogo`: https://jbloomlab.github.io/dmslogo/
