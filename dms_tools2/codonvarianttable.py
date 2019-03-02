@@ -2606,7 +2606,9 @@ def codonSubsToSeq(wildtype, codon_subs, return_aa=False, aa_subs=False):
             Default is nucleotide.
         'aa_subs' (bool)
             Specify whether the substitutions are in amino acid form
-            rather than codon. Default is codon.
+            rather than codon. Default is codon. return_aa must be True
+            in order for aa_subs to be True, since there are numerous
+            possible nucleotide sequences for an amino acid sequence. 
 
     Returns:
         A str of the sequence with all the codon substitutions
@@ -2620,6 +2622,10 @@ def codonSubsToSeq(wildtype, codon_subs, return_aa=False, aa_subs=False):
     >>> codonSubsToSeq('ATGGAACAA', 'ATG1GGG GAA2CAG')
     'GGGCAGCAA'
     """
+    # Make sure you are not trying to convert amino acids to codons
+    if aa_subs: 
+        if not return_aa==True:
+            raise ValueError('Cannot return nucleotide sequence using aa subs')
     # Make sure the wildtype sequence is divisible into codons
     if len(wildtype) % 3  != 0:
         raise ValueError('`wildtype` not divisible by 3')
@@ -2670,10 +2676,6 @@ def codonSubsToSeq(wildtype, codon_subs, return_aa=False, aa_subs=False):
         return ''.join(codon_list)
     else:
         return ''.join(CODON_TO_AA[codon] for codon in codon_list)
-
-    if __name__ == '__main__':
-        import doctest
-        doctest.testmod()
 
 
 def func_score_to_gpm(func_scores_df, wildtype, metric='func_score'):
