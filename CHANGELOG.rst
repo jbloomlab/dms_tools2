@@ -8,7 +8,6 @@ Change Log
 * Don't test `rplot` module, we now recommend `dmslogo <https://jbloomlab.github.io/dmslogo/>`_ instead.
 
 * Work with version >=1.0 of `umi_tools`
->>>>>>> upstream/master
 
 2.4.5
 ----------
