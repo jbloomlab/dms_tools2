@@ -2,7 +2,9 @@ Change Log
 ===========
 
 2.4.dev6
------------
+----------
+* Added function to create `gpmap.GenotypePhenotypeMap` from `CodonVariantTable`
+
 * Don't test `rplot` module, we now recommend `dmslogo <https://jbloomlab.github.io/dmslogo/>`_ instead.
 
 * Work with version >=1.0 of `umi_tools`
