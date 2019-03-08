@@ -1,7 +1,7 @@
 Change Log
 ===========
 
-2.4.dev6
+2.4.6
 -----------
 * Don't test `rplot` module, we now recommend `dmslogo <https://jbloomlab.github.io/dmslogo/>`_ instead.
 
