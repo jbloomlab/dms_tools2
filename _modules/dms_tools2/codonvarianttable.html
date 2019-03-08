@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.codonvarianttable &#8212; dms_tools2 2.4.5 documentation</title>
+    <title>dms_tools2.codonvarianttable &#8212; dms_tools2 2.4.6 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -55,6 +55,8 @@
 <span class="kn">import</span> <span class="nn">scipy</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">Bio.SeqUtils.ProtParamData</span>
+<span class="kn">import</span> <span class="nn">gpmap</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="c1"># use plotnine for plotting</span>
 <span class="kn">from</span> <span class="nn">plotnine</span> <span class="k">import</span> <span class="o">*</span>
@@ -2623,6 +2625,137 @@
             <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;str&#39;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">df</span></div>
+
+
+<span class="k">def</span> <span class="nf">codonSubsToSeq</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">codon_subs</span><span class="p">,</span> <span class="n">return_aa</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">aa_subs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert codon substitutions to sequence.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        &#39;wildtype&#39; (str)</span>
+<span class="sd">            The wildtype sequence</span>
+<span class="sd">        &#39;codon_subs&#39; (str)</span>
+<span class="sd">            String of space delimited codon substitutions, in the format:</span>
+<span class="sd">            OldCodonSiteNewCodon</span>
+<span class="sd">        &#39;return_aa&#39; (bool)</span>
+<span class="sd">            Specify whether to return sequence as nucleotide or amino acid.</span>
+<span class="sd">            Default is nucleotide.</span>
+<span class="sd">        &#39;aa_subs&#39; (bool)</span>
+<span class="sd">            Specify whether the substitutions are in amino acid form</span>
+<span class="sd">            rather than codon. Default is codon. return_aa must be True</span>
+<span class="sd">            in order for aa_subs to be True, since there are numerous</span>
+<span class="sd">            possible nucleotide sequences for an amino acid sequence. </span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A str of the sequence with all the codon substitutions</span>
+
+<span class="sd">    Here is an example:</span>
+
+<span class="sd">    &gt;&gt;&gt; codonSubsToSeq(&#39;ATGGAACAA&#39;, &#39;&#39;)</span>
+<span class="sd">    &#39;ATGGAACAA&#39;</span>
+<span class="sd">    &gt;&gt;&gt; codonSubsToSeq(&#39;ATGGAACAA&#39;, &#39;GAA2CAG&#39;)</span>
+<span class="sd">    &#39;ATGCAGCAA&#39;</span>
+<span class="sd">    &gt;&gt;&gt; codonSubsToSeq(&#39;ATGGAACAA&#39;, &#39;ATG1GGG GAA2CAG&#39;)</span>
+<span class="sd">    &#39;GGGCAGCAA&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Make sure you are not trying to convert amino acids to codons</span>
+    <span class="k">if</span> <span class="n">aa_subs</span><span class="p">:</span> 
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">return_aa</span><span class="o">==</span><span class="kc">True</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot return nucleotide sequence using aa subs&#39;</span><span class="p">)</span>
+    <span class="c1"># Make sure the wildtype sequence is divisible into codons</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">wildtype</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span>  <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`wildtype` not divisible by 3&#39;</span><span class="p">)</span>
+
+    <span class="n">codon_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">wildtype</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">r</span> <span class="p">:</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">r</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="k">for</span>
+                  <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wildtype</span><span class="p">)</span> <span class="o">//</span> <span class="mi">3</span><span class="p">)]</span>
+
+    <span class="c1"># Create parser for the codon substitutions</span>
+    <span class="k">if</span> <span class="n">aa_subs</span><span class="p">:</span>
+        <span class="n">submatcher</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;^(?P&lt;wt&gt;.)&#39;</span>
+                                <span class="s1">&#39;(?P&lt;site&gt;\d+)&#39;</span>
+                                <span class="s1">&#39;(?P&lt;mut&gt;.)$&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">aa_subs</span><span class="p">:</span>
+        <span class="n">submatcher</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;^(?P&lt;wt&gt;[ATGC]</span><span class="si">{3}</span><span class="s1">)&#39;</span>
+                                <span class="s1">&#39;(?P&lt;site&gt;\d+)&#39;</span>
+                                <span class="s1">&#39;(?P&lt;mut&gt;[ATGC]</span><span class="si">{3}</span><span class="s1">)$&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">codon</span> <span class="ow">in</span> <span class="n">codon_subs</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">submatcher</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">codon</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Invalid codon substitution </span><span class="si">{codon}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">site</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">site</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">codon_list</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Codon site out of bounds&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">aa_subs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="n">codon_list</span><span class="p">[</span><span class="n">site</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Invalid wildtype codon in </span><span class="si">{codon}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="n">CODON_TO_AA</span><span class="p">[</span><span class="n">codon_list</span><span class="p">[</span><span class="n">site</span><span class="p">]]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Invalid wildtype aa in </span><span class="si">{codon}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;mut&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;wildtype and mutant the same in </span><span class="si">{codon}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">aa_subs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;mut&#39;</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">CODON_TO_AA</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Invalid mutant codon in </span><span class="si">{codon}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;mut&#39;</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">AAS_WITHSTOP</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Invalid mutant aa in </span><span class="si">{codon}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="c1"># Change to the mutant codon</span>
+        <span class="n">sub</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;mut&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">aa_subs</span><span class="p">:</span>
+            <span class="n">sub</span> <span class="o">=</span> <span class="n">AA_TO_CODONS</span><span class="p">[</span><span class="n">sub</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">codon_list</span><span class="p">[</span><span class="n">site</span><span class="p">]</span> <span class="o">=</span> <span class="n">sub</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">codon_list</span><span class="p">[</span><span class="n">site</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;mut&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Return the sequence</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">return_aa</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">codon_list</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">CODON_TO_AA</span><span class="p">[</span><span class="n">codon</span><span class="p">]</span> <span class="k">for</span> <span class="n">codon</span> <span class="ow">in</span> <span class="n">codon_list</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">func_score_to_gpm</span><span class="p">(</span><span class="n">func_scores_df</span><span class="p">,</span> <span class="n">wildtype</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s1">&#39;func_score&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generate a gpm from a functinoal score dataframe.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        &#39;func_scores_df&#39; (functional score dataframe)</span>
+<span class="sd">            A functional score dataframe, narrowed down to one</span>
+<span class="sd">            post sample condition, typically with something like:</span>
+<span class="sd">            `func_scores_df.query(&#39;library == @library &amp; sample == @sample&#39;)`</span>
+<span class="sd">        &#39;wildtype&#39; (str)</span>
+<span class="sd">            A string containing the wildtype sequence</span>
+<span class="sd">        &#39;metric&#39; (str)</span>
+<span class="sd">            A string specifying which metric to use as a phenotype</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">         A genotype phenotype map object from the Harms lab gpm package,</span>
+<span class="sd">         to be used as in input into epistasis models in the epistasis package.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Put the phenotypes into a list</span>
+    <span class="n">phenotypes</span> <span class="o">=</span> <span class="n">func_scores_df</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="c1"># Get standard deviations for each phenotype</span>
+    <span class="n">var</span> <span class="o">=</span> <span class="n">func_scores_df</span><span class="p">[</span><span class="s1">&#39;func_score_var&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">stdev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+
+    <span class="c1"># Get codon substitutions in a list</span>
+    <span class="n">codon_subs</span> <span class="o">=</span> <span class="n">func_scores_df</span><span class="p">[</span><span class="s1">&#39;codon_substitutions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="c1"># Get a list of genotypes</span>
+    <span class="n">genotypes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">subs</span> <span class="ow">in</span> <span class="n">codon_subs</span><span class="p">:</span>
+        <span class="n">genotype</span> <span class="o">=</span> <span class="n">codonSubsToSeq</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">subs</span><span class="p">,</span> <span class="n">return_aa</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">genotypes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">genotype</span><span class="p">)</span>
+
+    <span class="c1"># Get the wildtype amino acid sequence</span>
+    <span class="n">wildtype</span> <span class="o">=</span> <span class="n">codonSubsToSeq</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">return_aa</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Generate the genotype phenotype map</span>
+    <span class="n">gpm</span> <span class="o">=</span> <span class="n">gpmap</span><span class="o">.</span><span class="n">GenotypePhenotypeMap</span><span class="p">(</span><span class="n">wildtype</span><span class="o">=</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">genotypes</span><span class="o">=</span><span class="n">genotypes</span><span class="p">,</span>
+                               <span class="n">phenotypes</span><span class="o">=</span><span class="n">phenotypes</span><span class="p">,</span> <span class="n">stdeviations</span><span class="o">=</span><span class="n">stdev</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">gpm</span>
+
+
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
