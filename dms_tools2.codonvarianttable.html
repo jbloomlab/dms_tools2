@@ -6,14 +6,13 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>codonvarianttable &#8212; dms_tools2 2.4.6 documentation</title>
+    <title>codonvarianttable &#8212; dms_tools2 2.4.7 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="compareprefs" href="dms_tools2.compareprefs.html" />
@@ -470,6 +469,41 @@ by <a class="reference internal" href="dms_tools2.barcodes.html#dms_tools2.barco
 <span class="go">&#39;M1V *3R&#39;</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="dms_tools2.codonvarianttable.CodonVariantTable.from_simulation">
+<em class="property">classmethod </em><code class="descname">from_simulation</code><span class="sig-paren">(</span><em>*</em>, <em>geneseq</em>, <em>bclen</em>, <em>library_specs</em>, <em>seed=1</em>, <em>variant_call_support=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#CodonVariantTable.from_simulation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.CodonVariantTable.from_simulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulate <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable" title="dms_tools2.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a> variants.</p>
+<p>Use this method to simulate the variants in a
+<a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable" title="dms_tools2.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>. Note that this only
+simulates the variants, not counts for samples.
+To add those, then use <a class="reference internal" href="#dms_tools2.codonvarianttable.simulateSampleCounts" title="dms_tools2.codonvarianttable.simulateSampleCounts"><code class="xref py py-func docutils literal notranslate"><span class="pre">simulateSampleCounts()</span></code></a>
+and <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.addSampleCounts" title="dms_tools2.codonvarianttable.CodonVariantTable.addSampleCounts"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.addSampleCounts()</span></code></a>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>geneseq</cite> (str)</dt>
+<dd>Sequence of wildtype protein-coding gene.</dd>
+<dt><cite>bclen</cite> (int)</dt>
+<dd>Length of the barcodes; must enable complexity
+at least 10-fold greater than max number of variants.</dd>
+<dt><cite>library_specs</cite> (dict)</dt>
+<dd>Specifications for each simulated library. Keys
+are ‘avgmuts’ and ‘nvariants’, and values are
+average-codon mutations per variant and number of
+variants. Mutations per variant are Poisson distributed.</dd>
+<dt><cite>seed</cite> (int or <cite>None</cite>)</dt>
+<dd>Random number seed or <cite>None</cite> to set no seed.</dd>
+<dt><cite>variant_call_support</cite> (int or 2-tuple)</dt>
+<dd>If an integer, all variant call supports are set to this.
+If a 2-tuple, variant call support is drawn as a random
+integer uniformly from this range (inclusive).</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>The simulated <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable" title="dms_tools2.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>.</dd>
+</dl>
 </dd></dl>
 
 <dl class="classmethod">
@@ -956,6 +990,65 @@ plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</dd>
 </dl>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.codonvarianttable.codonSubsToSeq">
+<code class="descclassname">dms_tools2.codonvarianttable.</code><code class="descname">codonSubsToSeq</code><span class="sig-paren">(</span><em>wildtype</em>, <em>codon_subs</em>, <em>return_aa=False</em>, <em>aa_subs=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#codonSubsToSeq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.codonSubsToSeq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert codon substitutions to sequence.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>‘wildtype’ (str)</dt>
+<dd>The wildtype sequence</dd>
+<dt>‘codon_subs’ (str)</dt>
+<dd>String of space delimited codon substitutions, in the format:
+OldCodonSiteNewCodon</dd>
+<dt>‘return_aa’ (bool)</dt>
+<dd>Specify whether to return sequence as nucleotide or amino acid.
+Default is nucleotide.</dd>
+<dt>‘aa_subs’ (bool)</dt>
+<dd>Specify whether the substitutions are in amino acid form
+rather than codon. Default is codon. return_aa must be True
+in order for aa_subs to be True, since there are numerous
+possible nucleotide sequences for an amino acid sequence.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A str of the sequence with all the codon substitutions</dd>
+</dl>
+<p>Here is an example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">codonSubsToSeq</span><span class="p">(</span><span class="s1">&#39;ATGGAACAA&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+<span class="go">&#39;ATGGAACAA&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">codonSubsToSeq</span><span class="p">(</span><span class="s1">&#39;ATGGAACAA&#39;</span><span class="p">,</span> <span class="s1">&#39;GAA2CAG&#39;</span><span class="p">)</span>
+<span class="go">&#39;ATGCAGCAA&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">codonSubsToSeq</span><span class="p">(</span><span class="s1">&#39;ATGGAACAA&#39;</span><span class="p">,</span> <span class="s1">&#39;ATG1GGG GAA2CAG&#39;</span><span class="p">)</span>
+<span class="go">&#39;GGGCAGCAA&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_tools2.codonvarianttable.func_score_to_gpm">
+<code class="descclassname">dms_tools2.codonvarianttable.</code><code class="descname">func_score_to_gpm</code><span class="sig-paren">(</span><em>func_scores_df</em>, <em>wildtype</em>, <em>metric='func_score'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#func_score_to_gpm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.func_score_to_gpm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a gpm from a functinoal score dataframe.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>‘func_scores_df’ (functional score dataframe)</dt>
+<dd>A functional score dataframe, narrowed down to one
+post sample condition, typically with something like:
+<cite>func_scores_df.query(‘library == &#64;library &amp; sample == &#64;sample’)</cite></dd>
+<dt>‘wildtype’ (str)</dt>
+<dd>A string containing the wildtype sequence</dd>
+<dt>‘metric’ (str)</dt>
+<dd>A string specifying which metric to use as a phenotype</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A genotype phenotype map object from the Harms lab gpm package,
+to be used as in input into epistasis models in the epistasis package.</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">

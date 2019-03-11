@@ -6,14 +6,13 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.codonvarianttable &#8212; dms_tools2 2.4.6 documentation</title>
+    <title>dms_tools2.codonvarianttable &#8212; dms_tools2 2.4.7 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
    
@@ -62,7 +61,12 @@
 <span class="kn">from</span> <span class="nn">plotnine</span> <span class="k">import</span> <span class="o">*</span>
 
 <span class="kn">from</span> <span class="nn">dms_tools2.plot</span> <span class="k">import</span> <span class="n">latexSciNot</span>
-<span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="k">import</span> <span class="n">CODON_TO_AA</span><span class="p">,</span> <span class="n">CODONS</span><span class="p">,</span> <span class="n">AAS_WITHSTOP</span><span class="p">,</span> <span class="n">AA_TO_CODONS</span>
+<span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="k">import</span> <span class="p">(</span><span class="n">CODON_TO_AA</span><span class="p">,</span>
+                        <span class="n">CODONS</span><span class="p">,</span>
+                        <span class="n">AAS_WITHSTOP</span><span class="p">,</span>
+                        <span class="n">AA_TO_CODONS</span><span class="p">,</span>
+                        <span class="n">NTS</span>
+                        <span class="p">)</span>
 
 <span class="c1">#: `color-blind safe palette &lt;http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/&gt;`_</span>
 <span class="n">CBPALETTE</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;#999999&quot;</span><span class="p">,</span> <span class="s2">&quot;#E69F00&quot;</span><span class="p">,</span> <span class="s2">&quot;#56B4E9&quot;</span><span class="p">,</span> <span class="s2">&quot;#009E73&quot;</span><span class="p">,</span>
@@ -435,6 +439,97 @@
                         <span class="k">return</span> <span class="kc">False</span>
             <span class="k">return</span> <span class="kc">True</span>
 
+<div class="viewcode-block" id="CodonVariantTable.from_simulation"><a class="viewcode-back" href="../../dms_tools2.codonvarianttable.html#dms_tools2.codonvarianttable.CodonVariantTable.from_simulation">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_simulation</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">geneseq</span><span class="p">,</span> <span class="n">bclen</span><span class="p">,</span> <span class="n">library_specs</span><span class="p">,</span>
+                        <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">variant_call_support</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Simulate :class:`CodonVariantTable` variants.</span>
+
+<span class="sd">        Use this method to simulate the variants in a</span>
+<span class="sd">        :class:`CodonVariantTable`. Note that this only</span>
+<span class="sd">        simulates the variants, not counts for samples.</span>
+<span class="sd">        To add those, then use :func:`simulateSampleCounts`</span>
+<span class="sd">        and :meth:`CodonVariantTable.addSampleCounts`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            `geneseq` (str)</span>
+<span class="sd">                Sequence of wildtype protein-coding gene.</span>
+<span class="sd">            `bclen` (int)</span>
+<span class="sd">                Length of the barcodes; must enable complexity</span>
+<span class="sd">                at least 10-fold greater than max number of variants.</span>
+<span class="sd">            `library_specs` (dict)</span>
+<span class="sd">                Specifications for each simulated library. Keys</span>
+<span class="sd">                are &#39;avgmuts&#39; and &#39;nvariants&#39;, and values are</span>
+<span class="sd">                average-codon mutations per variant and number of</span>
+<span class="sd">                variants. Mutations per variant are Poisson distributed.</span>
+<span class="sd">            `seed` (int or `None`)</span>
+<span class="sd">                Random number seed or `None` to set no seed.</span>
+<span class="sd">            `variant_call_support` (int or 2-tuple)</span>
+<span class="sd">                If an integer, all variant call supports are set to this.</span>
+<span class="sd">                If a 2-tuple, variant call support is drawn as a random</span>
+<span class="sd">                integer uniformly from this range (inclusive).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The simulated :class:`CodonVariantTable`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+            <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">library_specs</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;empty `library_specs`&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variant_call_support</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">variant_call_support</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">variant_call_support</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">geneseq</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;length of `geneseq` not multiple of 3&#39;</span><span class="p">)</span>
+        <span class="n">genelength</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">geneseq</span><span class="p">)</span> <span class="o">//</span> <span class="mi">3</span>
+
+        <span class="n">barcode_variant_dict</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">lib</span><span class="p">,</span> <span class="n">specs_dict</span> <span class="ow">in</span> <span class="n">library_specs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+            <span class="n">nvariants</span> <span class="o">=</span> <span class="n">specs_dict</span><span class="p">[</span><span class="s1">&#39;nvariants&#39;</span><span class="p">]</span>
+            <span class="n">avgmuts</span> <span class="o">=</span> <span class="n">specs_dict</span><span class="p">[</span><span class="s1">&#39;avgmuts&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">nvariants</span> <span class="o">&gt;</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">NTS</span><span class="p">))</span><span class="o">**</span><span class="n">bclen</span><span class="p">:</span>  <span class="c1"># safety factor 10</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;barcode too short for nvariants&#39;</span><span class="p">)</span>
+            <span class="n">existing_barcodes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span>
+
+            <span class="k">for</span> <span class="n">ivariant</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nvariants</span><span class="p">):</span>
+
+                <span class="n">barcode</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">NTS</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">bclen</span><span class="p">))</span>
+                <span class="k">while</span> <span class="n">barcode</span> <span class="ow">in</span> <span class="n">existing_barcodes</span><span class="p">:</span>
+                    <span class="n">barcode</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">NTS</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">bclen</span><span class="p">))</span>
+                <span class="n">existing_barcodes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">barcode</span><span class="p">)</span>
+
+                <span class="n">support</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="o">*</span><span class="n">variant_call_support</span><span class="p">)</span>
+
+                <span class="c1"># get mutations</span>
+                <span class="n">substitutions</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">nmuts</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">avgmuts</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">icodon</span> <span class="ow">in</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">genelength</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">nmuts</span><span class="p">):</span>
+                    <span class="n">wtcodon</span> <span class="o">=</span> <span class="n">geneseq</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="n">icodon</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">icodon</span><span class="p">]</span>
+                    <span class="n">mutcodon</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">CODONS</span>
+                                              <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="n">wtcodon</span><span class="p">])</span>
+                    <span class="k">for</span> <span class="n">i_nt</span><span class="p">,</span> <span class="p">(</span><span class="n">wt_nt</span><span class="p">,</span> <span class="n">mut_nt</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">wtcodon</span><span class="p">,</span>
+                                                               <span class="n">mutcodon</span><span class="p">)):</span>
+                        <span class="k">if</span> <span class="n">wt_nt</span> <span class="o">!=</span> <span class="n">mut_nt</span><span class="p">:</span>
+                            <span class="n">igene</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="n">icodon</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">i_nt</span> <span class="o">+</span> <span class="mi">1</span>
+                            <span class="n">substitutions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{wt_nt}{igene}{mut_nt}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">substitutions</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">substitutions</span><span class="p">)</span>
+
+                <span class="n">barcode_variant_dict</span><span class="p">[</span><span class="s1">&#39;barcode&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">barcode</span><span class="p">)</span>
+                <span class="n">barcode_variant_dict</span><span class="p">[</span><span class="s1">&#39;substitutions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">substitutions</span><span class="p">)</span>
+                <span class="n">barcode_variant_dict</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lib</span><span class="p">)</span>
+                <span class="n">barcode_variant_dict</span><span class="p">[</span><span class="s1">&#39;variant_call_support&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">support</span><span class="p">)</span>
+
+        <span class="n">barcode_variants</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">barcode_variant_dict</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">barcode_variants</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+            <span class="n">cvt</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">barcode_variant_file</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">geneseq</span><span class="o">=</span><span class="n">geneseq</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cvt</span></div>
 
 <div class="viewcode-block" id="CodonVariantTable.from_variant_count_df"><a class="viewcode-back" href="../../dms_tools2.codonvarianttable.html#dms_tools2.codonvarianttable.CodonVariantTable.from_variant_count_df">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_variant_count_df</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">variant_count_df_file</span><span class="p">,</span> <span class="n">geneseq</span><span class="p">,</span>
@@ -2627,7 +2722,7 @@
     <span class="k">return</span> <span class="n">df</span></div>
 
 
-<span class="k">def</span> <span class="nf">codonSubsToSeq</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">codon_subs</span><span class="p">,</span> <span class="n">return_aa</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">aa_subs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="codonSubsToSeq"><a class="viewcode-back" href="../../dms_tools2.codonvarianttable.html#dms_tools2.codonvarianttable.codonSubsToSeq">[docs]</a><span class="k">def</span> <span class="nf">codonSubsToSeq</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">codon_subs</span><span class="p">,</span> <span class="n">return_aa</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">aa_subs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Convert codon substitutions to sequence.</span>
 
 <span class="sd">    Args:</span>
@@ -2710,10 +2805,10 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">return_aa</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">codon_list</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">CODON_TO_AA</span><span class="p">[</span><span class="n">codon</span><span class="p">]</span> <span class="k">for</span> <span class="n">codon</span> <span class="ow">in</span> <span class="n">codon_list</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">CODON_TO_AA</span><span class="p">[</span><span class="n">codon</span><span class="p">]</span> <span class="k">for</span> <span class="n">codon</span> <span class="ow">in</span> <span class="n">codon_list</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">func_score_to_gpm</span><span class="p">(</span><span class="n">func_scores_df</span><span class="p">,</span> <span class="n">wildtype</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s1">&#39;func_score&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="func_score_to_gpm"><a class="viewcode-back" href="../../dms_tools2.codonvarianttable.html#dms_tools2.codonvarianttable.func_score_to_gpm">[docs]</a><span class="k">def</span> <span class="nf">func_score_to_gpm</span><span class="p">(</span><span class="n">func_scores_df</span><span class="p">,</span> <span class="n">wildtype</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s1">&#39;func_score&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Generate a gpm from a functinoal score dataframe.</span>
 
 <span class="sd">    Args:</span>
@@ -2753,7 +2848,7 @@
     <span class="n">gpm</span> <span class="o">=</span> <span class="n">gpmap</span><span class="o">.</span><span class="n">GenotypePhenotypeMap</span><span class="p">(</span><span class="n">wildtype</span><span class="o">=</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">genotypes</span><span class="o">=</span><span class="n">genotypes</span><span class="p">,</span>
                                <span class="n">phenotypes</span><span class="o">=</span><span class="n">phenotypes</span><span class="p">,</span> <span class="n">stdeviations</span><span class="o">=</span><span class="n">stdev</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">gpm</span>
+    <span class="k">return</span> <span class="n">gpm</span></div>
 
 
 
