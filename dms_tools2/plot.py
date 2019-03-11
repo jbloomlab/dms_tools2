@@ -190,7 +190,7 @@ def plotReadStats(names, readstatfiles, plotfile):
             + scale_fill_manual(COLOR_BLIND_PALETTE)
             )
     p.save(plotfile, height=2.7, width=(1.2 + 0.25 * len(names)),
-            verbose=False)
+            verbose=False, limitsize=False)
     plt.close()
 
 
@@ -221,7 +221,7 @@ def plotBCStats(names, bcstatsfiles, plotfile):
             + scale_fill_manual(COLOR_BLIND_PALETTE)
             )
     p.save(plotfile, height=2.7, width=(1.2 + 0.25 * len(names)),
-            verbose=False)
+            verbose=False, limitsize=False)
     plt.close()
 
 
@@ -278,7 +278,7 @@ def plotReadsPerBC(names, readsperbcfiles, plotfile,
             + facet_wrap('~name', ncol=ncol)
             + theme(figure_size=(1.9 * (0.8 + ncol), 1.3 * (0.4 + nrow)))
             )
-    p.save(plotfile, verbose=False)
+    p.save(plotfile, verbose=False, limitsize=False)
     plt.close()
 
 
@@ -326,7 +326,7 @@ def plotDepth(names, countsfiles, plotfile, maxcol=4, charlist=CODONS):
             + facet_wrap('~name', ncol=ncol) 
             + theme(figure_size=(2.25 * (0.6 + ncol), 1.3 * (0.3 + nrow)))
             )
-    p.save(plotfile, verbose=False)
+    p.save(plotfile, verbose=False, limitsize=False)
     plt.close()
 
 
@@ -366,7 +366,7 @@ def plotMutFreq(names, countsfiles, plotfile, maxcol=4):
             + facet_wrap('~name', ncol=ncol) 
             + theme(figure_size=(2.25 * (0.6 + ncol), 1.3 * (0.3 + nrow)))
             )
-    p.save(plotfile, verbose=False)
+    p.save(plotfile, verbose=False, limitsize=False)
     plt.close()
 
 
@@ -442,7 +442,7 @@ def plotCumulMutCounts(names, countsfiles, plotfile, chartype,
             + ylab('fraction $\leq$ this many counts')
             + scale_color_manual(COLOR_BLIND_PALETTE)
             )
-    p.save(plotfile, verbose=False)
+    p.save(plotfile, verbose=False, limitsize=False)
     plt.close()
 
 
@@ -519,7 +519,7 @@ def plotCodonMutTypes(names, countsfiles, plotfile,
         p = p + guides(fill=guide_legend(ncol=2))
 
     p.save(plotfile, height=2.7, width=(1.2 + 0.25 * len(names)),
-            verbose=False)
+            verbose=False, limitsize=False)
     plt.close()
 
 
@@ -824,7 +824,7 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
     if not ((len(names) == 1) and ((not names[0]) or names[0].isspace())):
         p = p + facet_wrap('~name', ncol=ncol)
     p = p + theme(figure_size=(4.6 * (0.3 + ncol), 1.9 * (0.2 + nrow)))
-    p.save(plotfile, verbose=False)
+    p.save(plotfile, verbose=False, limitsize=False)
     plt.close()
 
 
