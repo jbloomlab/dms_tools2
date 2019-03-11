@@ -344,10 +344,6 @@ experiment:
     perfectly with no errors, and where 5% of them contain an erroneously
     mis-called codon mutation.
 
-  - The library is sequenced to low and high
-    depth, where low depth is an average of 50 counts per variant, and high
-    depth is an average of 500 counts per variant.
-
   - Where there is a low
     (small) or big (loose) bottleneck between the pre- and post-selection
     steps. These bottlenecks are equal to 5 or 50 times the total number of
@@ -355,6 +351,9 @@ experiment:
 
 For all simulations, we assume variant composition of the library is
 reasonably but not completely uniform.
+Although the code in the next cell is set up to simulate sequencing
+to several different depths, here we only simulate "deep" depth
+of 500 times the number of variants in the library.
 
 Simulate sample counts under all of these conditions, and put them in a
 data frame:
@@ -366,8 +365,7 @@ data frame:
     >>>
     >>> for err_str, err in [('', 0), ('err_', 0.05)]:
     ...
-    ...     for depth_str, depth in [('shallow', 50 * variants_per_lib),
-    ...                              ('deep', 500 * variants_per_lib)]:
+    ...     for depth_str, depth in [('deep', 500 * variants_per_lib)]:
     ...
     ...         sample_prefix = f"{err_str}{depth_str}_"
     ...         pre_sample_name = sample_prefix + 'pre'
@@ -401,15 +399,11 @@ data frame:
     >>>
     >>> pd.DataFrame.from_records(list(post_to_pre.items()),
     ...                           columns=['post-selection', 'pre-selection'])
-              post-selection    pre-selection
-    0      shallow_lowbottle      shallow_pre
-    1      shallow_bigbottle      shallow_pre
-    2         deep_lowbottle         deep_pre
-    3         deep_bigbottle         deep_pre
-    4  err_shallow_lowbottle  err_shallow_pre
-    5  err_shallow_bigbottle  err_shallow_pre
-    6     err_deep_lowbottle     err_deep_pre
-    7     err_deep_bigbottle     err_deep_pre
+           post-selection pre-selection
+    0      deep_lowbottle      deep_pre
+    1      deep_bigbottle      deep_pre
+    2  err_deep_lowbottle  err_deep_pre
+    3  err_deep_bigbottle  err_deep_pre
 
 Here are the first few lines of the data frame with the simulated
 counts:
@@ -417,12 +411,12 @@ counts:
 .. nbplot::
 
     >>> counts_df.head(n=5)
-      library           barcode       sample  count
-    0   lib_1  AAAAAACGTTTTGTCC  shallow_pre     52
-    1   lib_1  AAAAAAGACGACCCAT  shallow_pre     78
-    2   lib_1  AAAAAAGCTTCATTTG  shallow_pre     40
-    3   lib_1  AAAAAAGGTGACAATA  shallow_pre     72
-    4   lib_1  AAAAAATACGGTCAGC  shallow_pre     51
+      library           barcode    sample  count
+    0   lib_1  AAAAAACGTTTTGTCC  deep_pre    490
+    1   lib_1  AAAAAAGACGACCCAT  deep_pre    831
+    2   lib_1  AAAAAAGCTTCATTTG  deep_pre    424
+    3   lib_1  AAAAAAGGTGACAATA  deep_pre    701
+    4   lib_1  AAAAAATACGGTCAGC  deep_pre    394
 
 Add counts to variant table
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -448,43 +442,25 @@ each sample:
 .. nbplot::
 
     >>> variants.n_variants_df()
-              library                 sample     count
-    0           lib_1            shallow_pre   1000000
-    1           lib_1      shallow_bigbottle   1000000
-    2           lib_1      shallow_lowbottle   1000000
-    3           lib_1               deep_pre  10000000
-    4           lib_1         deep_bigbottle  10000000
-    5           lib_1         deep_lowbottle  10000000
-    6           lib_1        err_shallow_pre   1000000
-    7           lib_1  err_shallow_bigbottle   1000000
-    8           lib_1  err_shallow_lowbottle   1000000
-    9           lib_1           err_deep_pre  10000000
-    10          lib_1     err_deep_bigbottle  10000000
-    11          lib_1     err_deep_lowbottle  10000000
-    12          lib_2            shallow_pre   1000000
-    13          lib_2      shallow_bigbottle   1000000
-    14          lib_2      shallow_lowbottle   1000000
-    15          lib_2               deep_pre  10000000
-    16          lib_2         deep_bigbottle  10000000
-    17          lib_2         deep_lowbottle  10000000
-    18          lib_2        err_shallow_pre   1000000
-    19          lib_2  err_shallow_bigbottle   1000000
-    20          lib_2  err_shallow_lowbottle   1000000
-    21          lib_2           err_deep_pre  10000000
-    22          lib_2     err_deep_bigbottle  10000000
-    23          lib_2     err_deep_lowbottle  10000000
-    24  all libraries            shallow_pre   2000000
-    25  all libraries      shallow_bigbottle   2000000
-    26  all libraries      shallow_lowbottle   2000000
-    27  all libraries               deep_pre  20000000
-    28  all libraries         deep_bigbottle  20000000
-    29  all libraries         deep_lowbottle  20000000
-    30  all libraries        err_shallow_pre   2000000
-    31  all libraries  err_shallow_bigbottle   2000000
-    32  all libraries  err_shallow_lowbottle   2000000
-    33  all libraries           err_deep_pre  20000000
-    34  all libraries     err_deep_bigbottle  20000000
-    35  all libraries     err_deep_lowbottle  20000000
+              library              sample     count
+    0           lib_1            deep_pre  10000000
+    1           lib_1      deep_bigbottle  10000000
+    2           lib_1      deep_lowbottle  10000000
+    3           lib_1        err_deep_pre  10000000
+    4           lib_1  err_deep_bigbottle  10000000
+    5           lib_1  err_deep_lowbottle  10000000
+    6           lib_2            deep_pre  10000000
+    7           lib_2      deep_bigbottle  10000000
+    8           lib_2      deep_lowbottle  10000000
+    9           lib_2        err_deep_pre  10000000
+    10          lib_2  err_deep_bigbottle  10000000
+    11          lib_2  err_deep_lowbottle  10000000
+    12  all libraries            deep_pre  20000000
+    13  all libraries      deep_bigbottle  20000000
+    14  all libraries      deep_lowbottle  20000000
+    15  all libraries        err_deep_pre  20000000
+    16  all libraries  err_deep_bigbottle  20000000
+    17  all libraries  err_deep_lowbottle  20000000
 
 Analyze variant counts for samples
 ----------------------------------
@@ -503,11 +479,11 @@ Here is what the first few lines of that Data Frame look like:
 .. nbplot::
 
     >>> variants.variant_count_df.head(n=4)
-                barcode  count library       sample  variant_call_support codon_substitutions aa_substitutions  n_codon_substitutions  n_aa_substitutions
-    0  TTATCAATTGCGGATG    135   lib_1  shallow_pre                     3    GTG3TAC AAA14CTC         V3Y K14L                      2                   2
-    1  AAGCTAAGCAGATGGC    132   lib_1  shallow_pre                     3   TTA18GAG TCC37GAA        L18E S37E                      2                   2
-    2  GTGACCCGAACCTCAT    132   lib_1  shallow_pre                     2                                                           0                   0
-    3  CTGACAGCGCTCTTCT    131   lib_1  shallow_pre                     1                                                           0                   0
+                barcode  count library    sample  variant_call_support                          codon_substitutions    aa_substitutions  n_codon_substitutions  n_aa_substitutions
+    0  AAATCACTAATATGGG   1308   lib_1  deep_pre                     1                                                                                       0                   0
+    1  TTAATGAAAATAAGTC   1301   lib_1  deep_pre                     1  GTG3ACA GTG13CGA CCT24GAG GAC38GAT CCA44ATC  V3T V13R P24E P44I                      5                   4
+    2  TGATAGAAATTATTTG   1294   lib_1  deep_pre                     3                                     ATC17CGA                I17R                      1                   1
+    3  TTATCAATTGCGGATG   1294   lib_1  deep_pre                     3                             GTG3TAC AAA14CTC            V3Y K14L                      2                   2
 
 Distribution of variant counts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -528,18 +504,14 @@ Mutation frequencies in each sample
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We look at the counts of each variant as a function of the number of
-amino-acid mutations. We do this separately for the samples with
-"shallow" and "deep" sequencing, since these have vastly different
-number of counts and so look better with separate y-axes. The plots
+amino-acid mutations. The plots
 below show that selection enriches for variants with fewer mutations,
 which is as expected since many mutations are deleterious:
 
 .. nbplot::
 
-    >>> for depth in ['shallow', 'deep']:
-    ...     samples = [s for s in variants.samples(libs[0]) if depth in s]
-    ...     p = variants.plotNumMutsHistogram(mut_type='aa', samples=samples, heightscale=1.3)
-    ...     _ = p.draw()
+    >>> p = variants.plotNumMutsHistogram(mut_type='aa', heightscale=1.3)
+    >>> _ = p.draw()
 
 Next we plot the average number of codon mutations of each type
 (nonsynonymous, synonymous, and stop). We do this for *all* variants (as
@@ -567,19 +539,16 @@ We look at how thoroughly the different possible mutations are sampled
 in our libraries by plotting the fraction of mutations found <= an
 indicated number of times. We can do this separately for single-mutants
 only or for all variants, and for codon or amino-acid mutations. Here we
-do it all variants, showing codon mutations. We make the plot separately
-for the shallow and deep sequencing samples. As the plot below shows,
+do it all variants, showing codon mutations. As the plot below shows,
 sampling of stop and to a lesser degree nonsynonymous mutations drops
 strongly after selection, as expected since many of these are
 deleterious:
 
 .. nbplot::
 
-    >>> for depth in ['shallow', 'deep']:
-    ...     samples = [s for s in variants.samples(libs[0]) if depth in s]
-    ...     p = variants.plotCumulMutCoverage(variant_type='all', mut_type='codon',
-    ...                                       samples=samples, heightscale=1.8)
-    ...     _ = p.draw()
+    >>> p = variants.plotCumulMutCoverage(variant_type='all', mut_type='codon',
+    ...                                   heightscale=1.8)
+    >>> _ = p.draw()
 
 Functional scores for variants
 ------------------------------
@@ -606,15 +575,11 @@ described above when we simulated the samples, which we re-print here:
 
     >>> pd.DataFrame.from_records(list(post_to_pre.items()),
     ...                           columns=['post-selection', 'pre-selection'])
-              post-selection    pre-selection
-    0      shallow_lowbottle      shallow_pre
-    1      shallow_bigbottle      shallow_pre
-    2         deep_lowbottle         deep_pre
-    3         deep_bigbottle         deep_pre
-    4  err_shallow_lowbottle  err_shallow_pre
-    5  err_shallow_bigbottle  err_shallow_pre
-    6     err_deep_lowbottle     err_deep_pre
-    7     err_deep_bigbottle     err_deep_pre
+           post-selection pre-selection
+    0      deep_lowbottle      deep_pre
+    1      deep_bigbottle      deep_pre
+    2  err_deep_lowbottle  err_deep_pre
+    3  err_deep_bigbottle  err_deep_pre
 
 Now we calculate the functional scores for each barcoded variant:
 
@@ -628,11 +593,11 @@ variance) for each barcoded variant:
 .. nbplot::
 
     >>> func_scores.head(n=4)
-      library   pre_sample        post_sample           barcode  func_score  func_score_var  pre_count  post_count  pre_count_wt  post_count_wt  pseudocount                 codon_substitutions  n_codon_substitutions    aa_substitutions  n_aa_substitutions
-    0   lib_1  shallow_pre  shallow_bigbottle  AAAAAACGTTTTGTCC   -0.038984        0.063444         52          87        273069         467581          0.5                             AGA1TGT                      1                 R1C                   1
-    1   lib_1  shallow_pre  shallow_bigbottle  AAAAAAGACGACCCAT   -8.070570        4.189264         78           0        273069         467581          0.5                   AAC20TAA CGC26CAG                      2           N20* R26Q                   2
-    2   lib_1  shallow_pre  shallow_bigbottle  AAAAAAGCTTCATTTG   -7.115800        4.214142         40           0        273069         467581          0.5  AGA1CCG CGC26TGG AAC36TTA GGA50ATC                      4  R1P R26W N36L G50I                   4
-    3   lib_1  shallow_pre  shallow_bigbottle  AAAAAAGGTGACAATA   -0.795987        0.057831         72          71        273069         467581          0.5                            GTA16TCA                      1                V16S                   1
+      library pre_sample     post_sample           barcode  func_score  func_score_var  pre_count  post_count  pre_count_wt  post_count_wt  pseudocount                 codon_substitutions  n_codon_substitutions    aa_substitutions  n_aa_substitutions
+    0   lib_1   deep_pre  deep_bigbottle  AAAAAACGTTTTGTCC   -0.233554        0.007166        490         712       2735936        4672599          0.5                             AGA1TGT                      1                 R1C                   1
+    1   lib_1   deep_pre  deep_bigbottle  AAAAAAGACGACCCAT   -9.149835        0.835052        831           2       2735936        4672599          0.5                   AAC20TAA CGC26CAG                      2           N20* R26Q                   2
+    2   lib_1   deep_pre  deep_bigbottle  AAAAAAGCTTCATTTG  -10.501811        4.167642        424           0       2735936        4672599          0.5  AGA1CCG CGC26TGG AAC36TTA GGA50ATC                      4  R1P R26W N36L G50I                   4
+    3   lib_1   deep_pre  deep_bigbottle  AAAAAAGGTGACAATA   -0.323361        0.005142        701         957       2735936        4672599          0.5                            GTA16TCA                      1                V16S                   1
 
 We can also calculate functional scores at the level of amino-acid or
 codon substitutions rather than at the level of variants. The difference
@@ -650,11 +615,11 @@ calculation is relative to variants with wildtype codon sequences)
     >>> func_scores_aa = variants.func_scores(post_to_pre, by='aa_substitutions',
     ...                                       syn_as_wt=True)
     >>> func_scores_aa.head(n=4)
-      library   pre_sample        post_sample aa_substitutions  func_score  func_score_var  pre_count  post_count  pre_count_wt  post_count_wt  pseudocount  n_aa_substitutions
-    0   lib_1  shallow_pre  shallow_bigbottle                     0.000000        0.000023     289622      495885        289622         495885          0.5                   0
-    1   lib_1  shallow_pre  shallow_bigbottle             A39*   -7.677562        0.599662        418           3        289622         495885          0.5                   1
-    2   lib_1  shallow_pre  shallow_bigbottle        A39* F41H   -7.596012        4.199588         56           0        289622         495885          0.5                   2
-    3   lib_1  shallow_pre  shallow_bigbottle        A39* G50S   -7.718348        4.196593         61           0        289622         495885          0.5                   2
+      library pre_sample     post_sample aa_substitutions  func_score  func_score_var  pre_count  post_count  pre_count_wt  post_count_wt  pseudocount  n_aa_substitutions
+    0   lib_1   deep_pre  deep_bigbottle                     0.000000        0.000002    2901007     4955429       2901007        4955429          0.5                   0
+    1   lib_1   deep_pre  deep_bigbottle             A39*   -8.420165        0.097292       4311          21       2901007        4955429          0.5                   1
+    2   lib_1   deep_pre  deep_bigbottle        A39* F41H   -8.528679        0.836400        540           2       2901007        4955429          0.5                   2
+    3   lib_1   deep_pre  deep_bigbottle        A39* G50S  -10.815483        4.166685        527           0       2901007        4955429          0.5                   2
 
 Since all libraries have the same samples, we can also calculate functional
 scores aggregating across libraries using the `combine_libs` option,
@@ -705,7 +670,7 @@ classification:
     ...     ylab('functional score') +
     ...     xlab('sample') +
     ...     facet_grid('post_sample ~ library') +
-    ...     theme(figure_size=(7, 16),
+    ...     theme(figure_size=(7, 9),
     ...           axis_text_x=element_text(angle=90)) +
     ...     scale_fill_manual(values=CBPALETTE[1 :], guide=False)
     ...     )
@@ -773,15 +738,15 @@ Now plot the correlation after this clipping at the low end:
     ...            aes('log_observed_phenotype_clipped', 'func_score_clipped')) +
     ...     geom_point(alpha=0.05) +
     ...     facet_grid('post_sample ~ library') +
-    ...     theme(figure_size=(4, 16)) +
+    ...     theme(figure_size=(4, 9)) +
     ...     xlab('true phenotype') +
     ...     ylab('functional score from experiment')
     ...     )
     >>> _ = p.draw()
 
 Finally, calculate the Pearson correlation coefficients for the clipped
-data. We see below that a small (low) bottleneck, sequencing errors, and
-shallower sequencing all decrease the accuracy with which the measured
+data. We see below that a small (low) bottleneck and sequencing errors
+decrease the accuracy with which the measured
 functional scores correlate with the true phenotype:
 
 .. nbplot::
@@ -800,13 +765,9 @@ functional scores correlate with the true phenotype:
     ...      )
     ...
     >>> corr.round(3)
-    library                lib_1  lib_2
-    post_sample                        
-    shallow_bigbottle      0.982  0.982
-    shallow_lowbottle      0.931  0.932
-    deep_bigbottle         0.996  0.996
-    deep_lowbottle         0.943  0.945
-    err_shallow_bigbottle  0.962  0.960
-    err_shallow_lowbottle  0.914  0.910
-    err_deep_bigbottle     0.976  0.973
-    err_deep_lowbottle     0.925  0.921
+    library             lib_1  lib_2
+    post_sample                     
+    deep_bigbottle      0.996  0.996
+    deep_lowbottle      0.943  0.945
+    err_deep_bigbottle  0.976  0.973
+    err_deep_lowbottle  0.925  0.921
