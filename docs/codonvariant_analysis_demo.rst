@@ -95,7 +95,7 @@ that support that variant.
 
 However, here we are just simulating data, so we create the
 `CodonVariantTable <https://jbloomlab.github.io/dms_tools2/dms_tools2.codonvarianttable.html>`__
-using its `from_simulation` method.
+using its `from_simulation <https://jbloomlab.github.io/dms_tools2/dms_tools2.codonvarianttable.html#dms_tools2.codonvarianttable.CodonVariantTable.from_simulation>`__ method.
 We simulate the variants for two libraries. Each library has a
 number of variants that is 400-times the codon-length of the gene, and
 barcodes are of length 16. We will have a Poisson distributed number of

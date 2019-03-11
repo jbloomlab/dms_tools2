@@ -1,7 +1,7 @@
 Change Log
 ===========
 
-2.4.dev7
+2.4.7
 --------
 * Added `CodonVariantTable.from_simulation` method.
 
