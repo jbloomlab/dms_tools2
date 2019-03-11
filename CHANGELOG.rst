@@ -7,6 +7,8 @@ Change Log
 
 * Handle large facet plots in ``dms2_batch_bcsubamp`` & ``plotSiteDiffSel``
 
+* Correctly handle missing output for individual samples in ``dms2_batch_*`` programs.
+
 2.4.6
 ----------
 * Added function to create `gpmap.GenotypePhenotypeMap` from `CodonVariantTable`

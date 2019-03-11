@@ -49,22 +49,11 @@ def main():
     files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
             args['summaryprefix'], s))) for (f, s) in filesuffixes.items()])
 
-    # do we need to proceed
-    if args['use_existing'] == 'yes' and all(map(
-                os.path.isfile, files.values())):
-            print("Output summary files already exist and '--use_existing' "
-                    "is 'yes', so exiting with no further action.")
-            sys.exit(0)
-
     logger = dms_tools2.utils.initLogger(files['log'], prog, args)
 
     # log in try / except / finally loop
+    intentional_exit = False  # are we intentionally exiting program?
     try:
-
-        for (ftype, f) in files.items():
-            if os.path.isfile(f) and ftype != 'log':
-                logger.info("Removing existing file {0}".format(f))
-                os.remove(f)
 
         # read batchfile, strip any whitespace from strings
         logger.info("Parsing sample info from {0}".format(args['batchfile']))
@@ -82,6 +71,32 @@ def main():
                 in batchruns['name']])
         assert len(batchruns['name']) == len(set(batchruns['name'].values)),\
                 "Duplicated name"
+
+        # files created for each run
+        runfiles = {'counts': '_{0}counts.csv'.format(args['chartype']),
+                    'readstats': '_readstats.csv',
+                    'readsperbc': '_readsperbc.csv',
+                    'bcstats': '_bcstats.csv',
+                    }
+        for filename, filesuffix in runfiles.items():
+            batchruns[filename] = (args['outdir'] + '/' + batchruns['name'] +
+                                   filesuffix)
+        found_all_runfiles = all(all(map(os.path.isfile, batchruns[f].values))
+                                 for f in runfiles.keys())
+
+        # do we need to proceed
+        if (args['use_existing'] == 'yes' and
+                all(map(os.path.isfile, files.values())) and
+                found_all_runfiles):
+            logger.info("Output files already exist and '--use_existing' "
+                        "is 'yes', so exiting with no further action.")
+            intentional_exit = True
+            sys.exit(0)
+
+        for fname, fpath in files.items():
+            if os.path.isfile(fpath) and fname != 'log':
+                logger.info("Removing existing file {0}".format(fpath))
+                os.remove(fpath)
 
         # determine how many cpus to use
         if args['ncpus'] == -1:
@@ -129,15 +144,9 @@ def main():
 
         # define dms2_bcsubamp output files and make sure they exist 
         logfiles = args['outdir'] + '/' + batchruns['name'] + '.log'
-        for (filename, filesuffix) in [
-                ('counts', '_{0}counts.csv'.format(args['chartype'])),
-                ('readstats', '_readstats.csv'),
-                ('readsperbc', '_readsperbc.csv'),
-                ('bcstats', '_bcstats.csv')]:
-            batchruns[filename] = (args['outdir'] + '/' + batchruns['name'] +
-                    filesuffix)
+        for filename in runfiles.keys():
             assert all(map(os.path.isfile, batchruns[filename].values)), (
-                    "Did not create these files:\n{0}\n\nLook in the following "
+                    "Did not create all these files:\n{0}\n\nLook in following "
                     "log files for details of what went wrong:\n{1}".format(
                     '\n'.join(batchruns[filename].values), 
                     '\n'.join(logfiles.values)))
@@ -190,11 +199,12 @@ def main():
                 batchruns['counts'], files['cumulmutcounts'], 'codon')
 
     except:
-        logger.exception('Terminating {0} with ERROR'.format(prog))
-        for (fname, fpath) in files.items():
-            if fname != 'log' and os.path.isfile(fpath):
-                logger.exception("Deleting file {0}".format(fpath))
-                os.remove(fpath)
+        if not intentional_exit:
+            logger.exception('Terminating {0} with ERROR'.format(prog))
+            for fname, fpath in files.items():
+                if os.path.isfile(fpath) and fname != 'log':
+                    logger.exception("Deleting file {0}".format(fpath))
+                    os.remove(fpath)
 
     else:
         logger.info('Successful completion of {0}'.format(prog))
