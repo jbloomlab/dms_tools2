@@ -5,6 +5,8 @@ Change Log
 --------
 * Added `CodonVariantTable.from_simulation` method.
 
+* Handle large facet plots in ``dms2_batch_bcsubamp`` & ``plotSiteDiffSel``
+
 2.4.6
 ----------
 * Added function to create `gpmap.GenotypePhenotypeMap` from `CodonVariantTable`
