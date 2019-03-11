@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.4.dev7
+--------
+* Added `CodonVariantTable.from_simulation` method.
+
 2.4.6
 ----------
 * Added function to create `gpmap.GenotypePhenotypeMap` from `CodonVariantTable`

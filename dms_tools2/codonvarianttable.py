@@ -27,7 +27,12 @@ import numpy as np
 from plotnine import *
 
 from dms_tools2.plot import latexSciNot
-from dms_tools2 import CODON_TO_AA, CODONS, AAS_WITHSTOP, AA_TO_CODONS
+from dms_tools2 import (CODON_TO_AA,
+                        CODONS,
+                        AAS_WITHSTOP,
+                        AA_TO_CODONS,
+                        NTS
+                        )
 
 #: `color-blind safe palette <http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/>`_
 CBPALETTE = ["#999999", "#E69F00", "#56B4E9", "#009E73",
@@ -400,6 +405,97 @@ class CodonVariantTable:
                         return False
             return True
 
+    @classmethod
+    def from_simulation(cls, *, geneseq, bclen, library_specs,
+                        seed=1, variant_call_support=1):
+        """Simulate :class:`CodonVariantTable` variants.
+
+        Use this method to simulate the variants in a
+        :class:`CodonVariantTable`. Note that this only
+        simulates the variants, not counts for samples.
+        To add those, then use :func:`simulateSampleCounts`
+        and :meth:`CodonVariantTable.addSampleCounts`.
+
+        Args:
+            `geneseq` (str)
+                Sequence of wildtype protein-coding gene.
+            `bclen` (int)
+                Length of the barcodes; must enable complexity
+                at least 10-fold greater than max number of variants.
+            `library_specs` (dict)
+                Specifications for each simulated library. Keys
+                are 'avgmuts' and 'nvariants', and values are
+                average-codon mutations per variant and number of
+                variants. Mutations per variant are Poisson distributed.
+            `seed` (int or `None`)
+                Random number seed or `None` to set no seed.
+            `variant_call_support` (int or 2-tuple)
+                If an integer, all variant call supports are set to this.
+                If a 2-tuple, variant call support is drawn as a random
+                integer uniformly from this range (inclusive).
+
+        Returns:
+            The simulated :class:`CodonVariantTable`.
+        """
+        if seed is not None:
+            scipy.random.seed(seed)
+            random.seed(seed)
+
+        if len(library_specs) < 1:
+            raise ValueError('empty `library_specs`')
+
+        if isinstance(variant_call_support, int):
+            variant_call_support = tuple([variant_call_support] * 2)
+
+        if len(geneseq) % 3 != 0:
+            raise ValueError('length of `geneseq` not multiple of 3')
+        genelength = len(geneseq) // 3
+
+        barcode_variant_dict = collections.defaultdict(list)
+        for lib, specs_dict in library_specs.items():
+
+            nvariants = specs_dict['nvariants']
+            avgmuts = specs_dict['avgmuts']
+            if 10 * nvariants > (len(NTS))**bclen:  # safety factor 10
+                raise ValueError('barcode too short for nvariants')
+            existing_barcodes = set([])
+
+            for ivariant in range(nvariants):
+
+                barcode = ''.join(random.choices(NTS, k=bclen))
+                while barcode in existing_barcodes:
+                    barcode = ''.join(random.choices(NTS, k=bclen))
+                existing_barcodes.add(barcode)
+
+                support = random.randint(*variant_call_support)
+
+                # get mutations
+                substitutions = []
+                nmuts = scipy.random.poisson(avgmuts)
+                for icodon in random.sample(range(1, genelength + 1), nmuts):
+                    wtcodon = geneseq[3 * (icodon - 1): 3 * icodon]
+                    mutcodon = random.choice([c for c in CODONS
+                                              if c != wtcodon])
+                    for i_nt, (wt_nt, mut_nt) in enumerate(zip(wtcodon,
+                                                               mutcodon)):
+                        if wt_nt != mut_nt:
+                            igene = 3 * (icodon - 1) + i_nt + 1
+                            substitutions.append(f'{wt_nt}{igene}{mut_nt}')
+                substitutions = ' '.join(substitutions)
+
+                barcode_variant_dict['barcode'].append(barcode)
+                barcode_variant_dict['substitutions'].append(substitutions)
+                barcode_variant_dict['library'].append(lib)
+                barcode_variant_dict['variant_call_support'].append(support)
+
+        barcode_variants = pd.DataFrame(barcode_variant_dict)
+
+        with tempfile.NamedTemporaryFile(mode='w') as f:
+            barcode_variants.to_csv(f, index=False)
+            f.flush()
+            cvt = cls(barcode_variant_file=f.name, geneseq=geneseq)
+
+        return cvt
 
     @classmethod
     def from_variant_count_df(cls, *, variant_count_df_file, geneseq,

@@ -71,7 +71,7 @@ with simulated data.
 Simulate variants
 ~~~~~~~~~~~~~~~~~
 
-Define a wildtype gene sequence of 60 codons. We will then build a table
+Define a wildtype gene sequence of 50 codons. We will then build a table
 of variants of this wildtype sequence.
 
 .. nbplot::
@@ -81,95 +81,41 @@ of variants of this wildtype sequence.
     >>> geneseq
     'AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAACATCCGGCTGATGATGATCCTACACAACTCCGACGCTAGTTTTTCGACTCCAGTAGGTTTACGCTCAGGA'
 
-To initialize a
-`CodonVariantTable <https://jbloomlab.github.io/dms_tools2/dms_tools2.codonvarianttable.html>`__,
-we need a CSV file giving the barcodes and nucleotide substitutions in
-the gene (in 1, 2, ... numbering) for each variant. We also need to
-specify which library each variant belongs to (we always have at least
-one library, but hopefully you have replicate libraries), as well as the
+We now initialize a
+`CodonVariantTable <https://jbloomlab.github.io/dms_tools2/dms_tools2.codonvarianttable.html>`__.
+Normally you would do this using the constructor for that class
+described in the link above, which takes as input a
+CSV file giving the barcodes and nucleotide substitutions in
+the gene (in 1, 2, ... numbering) for each variant, as well as the library
+to which each variant belongs to (we always have at least
+one library, but hopefully you have replicate libraries), and the
 variant call support. The variant call support is confident you are that
 the variant is called correctly, and might be the number of PacBio CCSs
 that support that variant.
 
-Here we simulate the variants for two libraries. Each library has a
+However, here we are just simulating data, so we create the
+`CodonVariantTable <https://jbloomlab.github.io/dms_tools2/dms_tools2.codonvarianttable.html>`__
+using its `from_simulation` method.
+We simulate the variants for two libraries. Each library has a
 number of variants that is 400-times the codon-length of the gene, and
 barcodes are of length 16. We will have a Poisson distributed number of
-codon mutations per variant with a mean of 1.3. So the only purpose the
-large code block below is to simulate the type of data that we might get
-for a real library in order to initialize a plausible
-`CodonVariantTable <https://jbloomlab.github.io/dms_tools2/dms_tools2.codonvarianttable.html>`__:
+codon mutations per variant with a mean of 1.3:
 
 .. nbplot::
 
     >>> libs = ['lib_1', 'lib_2']
     >>> variants_per_lib = 400 * genelength
-    >>> bclen = 16
-    >>> avgcodonmuts = 1.3
     >>>
-    >>> barcode_variant_dict = collections.OrderedDict([
-    ...     ('library', []), ('barcode', []), ('substitutions', []),
-    ...     ('variant_call_support', [])])
-    >>> for lib in libs:
-    ...     existing_barcodes = set([])
-    ...     for ivariant in range(variants_per_lib):
-    ...         barcode = ''.join(random.choices(NTS, k=bclen))
-    ...         while barcode in existing_barcodes:
-    ...             barcode = ''.join(random.choices(NTS, k=bclen))
-    ...         existing_barcodes.add(barcode)
-    ...         variant_call_support = random.randint(1, 3)
-    ...         substitutions = []
-    ...         ncodonmuts = scipy.random.poisson(avgcodonmuts)
-    ...         for icodon in random.sample(range(1, genelength + 1), ncodonmuts):
-    ...             wtcodon = geneseq[3 * (icodon - 1) : 3 * icodon]
-    ...             mutcodon = random.choice([c for c in CODONS if c != wtcodon])
-    ...             for i_nt, (wt_nt, mut_nt) in enumerate(zip(wtcodon, mutcodon)):
-    ...                 if wt_nt != mut_nt:
-    ...                     igene = 3 * (icodon - 1) + i_nt + 1 # nucleotide in gene
-    ...                     substitutions.append(f'{wt_nt}{igene}{mut_nt}')
-    ...         barcode_variant_dict['library'].append(lib)
-    ...         barcode_variant_dict['barcode'].append(barcode)
-    ...         barcode_variant_dict['substitutions'].append(' '.join(substitutions))
-    ...         barcode_variant_dict['variant_call_support'].append(variant_call_support)
-    >>> barcode_variants = pd.DataFrame(barcode_variant_dict)
+    >>> variants = CodonVariantTable.from_simulation(
+    ...             geneseq=geneseq,
+    ...             bclen=16,
+    ...             library_specs={lib: {'avgmuts': 1.3, 'nvariants': variants_per_lib}
+    ...                            for lib in libs},
+    ...             variant_call_support=(1, 3),
+    ...             seed=None
+    ...             )
 
-Here are the first and last few lines of the Data Frame with the
-simulated variants. As you can see, it gives the nucleotide mutations
-(in 1, 2, ... numbering) for each barcode:
-
-.. nbplot::
-
-    >>> barcode_variants.head(n=4)
-      library           barcode               substitutions  variant_call_support
-    0   lib_1  CGTTGGAATCAGGGCC  G19A C20G T21G G149A A150C                     3
-    1   lib_1  TCGCCTGGGAAAATGC                 T109C C111G                     2
-    2   lib_1  CCGTATTTGTGGCATG                                                 1
-    3   lib_1  TCTCAGTCGTGGAAGT                                                 2
-
-.. nbplot::
-
-    >>> barcode_variants.tail(n=4)
-          library           barcode             substitutions  variant_call_support
-    39996   lib_2  GGAGGGTAGCCGAGAC  A25G C26T C27G T52A A54C                     2
-    39997   lib_2  GGAAAGTATGACTACG                 G37C T38G                     1
-    39998   lib_2  AGTTATCTGGTAAGTA                                               2
-    39999   lib_2  GACAATGATGAGGTGG            A79T A80G C81A                     2
-
-We now write this Data Frame to a CSV file and use it to initialize a
-`CodonVariantTable <https://jbloomlab.github.io/dms_tools2/dms_tools2.codonvarianttable.html>`__.
-Obviously in a real experiment you would have determined the CSV file
-giving your barcode-variant identities experimentally, and would be
-passing that experimentally determined data in CSV format:
-
-.. nbplot::
-
-    >>> with tempfile.NamedTemporaryFile(mode='w') as f:
-    ...     barcode_variants.to_csv(f, index=False)
-    ...     f.flush()
-    ...     variants = CodonVariantTable(
-    ...                 barcode_variant_file=f.name,
-    ...                 geneseq=geneseq)
-
-Now we have a
+Now `variants` is a
 `CodonVariantTable <https://jbloomlab.github.io/dms_tools2/dms_tools2.codonvarianttable.html>`__
 with the data on our barcodes and variants. We can get basic information
 about the wildtype codon and amino-acid identities at each site using
@@ -198,7 +144,7 @@ We can get a list of the libraries for which we have barcodes:
     >>> variants.libraries
     ['lib_1', 'lib_2']
 
-We can also get a Data Frame that includes the information we passed
+We can also get a Data Frame that includes the information
 about the variants along with additional columns containing amino-acid
 mutations and mutation counts via the `barcode_variant_df` attribute
 of our
