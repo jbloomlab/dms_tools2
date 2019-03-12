@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.4.dev8
+---------
+* Allow bottleneck of `None` in `simulateSampleCounts`.
+
 2.4.7
 --------
 * Added `CodonVariantTable.from_simulation` method.

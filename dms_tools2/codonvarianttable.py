@@ -2113,7 +2113,8 @@ def simulateSampleCounts(*,
 
                 - "bottleneck": put the pre-selection frequencies
                   through a bottleneck of this size, then re-calcuate
-                  initial frequencies that selection acts upon.
+                  initial frequencies that selection acts upon. Set
+                  to `None` for no bottleneck.
 
         `pre_sample_name` (str)
             Name used for the pre-selection sample.
@@ -2259,6 +2260,12 @@ def simulateSampleCounts(*,
 
     df_list = [barcode_variant_df[cols[ : 4]]]
 
+    def _bottleneck_freqs(pre_freq, bottleneck):
+        if bottleneck is None:
+            return pre_freq
+        else:
+            return scipy.random.multinomial(bottleneck, pre_freq) / bottleneck
+
     post_req_keys = {'bottleneck', 'noise', 'total_count'}
     for lib, (sample, sample_dict) in itertools.product(
             libraries, sorted(post_samples.items())):
@@ -2271,9 +2278,9 @@ def simulateSampleCounts(*,
             .assign(
                 sample=sample,
                 # simulated pre-selection freqs after bottleneck
-                bottleneck_freq=lambda x: scipy.random.multinomial(
-                        sample_dict['bottleneck'], x.pre_freq) /
-                        sample_dict['bottleneck'],
+                bottleneck_freq=lambda x:
+                                _bottleneck_freqs(x.pre_freq,
+                                                  sample_dict['bottleneck']),
                 # post-selection freqs with noise
                 noise=scipy.clip(scipy.random.normal(1, sample_dict['noise']),
                                  0, None),
