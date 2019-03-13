@@ -1792,6 +1792,84 @@ class CodonVariantTable:
                              'sample':samplelist,
                              'countfile':countfiles})
 
+    @staticmethod
+    def classifyVariants(df,
+                         *,
+                         variant_class_col='variant_class',
+                         max_aa=2):
+        """Classifies codon variants in `df`.
+
+        Args:
+            `df` (pandas DataFrame)
+                Must have columns named 'aa_substitutions',
+                'n_aa_substitutions', and 'n_codon_substitutions'.
+                For instance, a data frame of this type can
+                be obtained via the `variant_count_df` or
+                `barcode_variant_df` of a :class:`CodonVariantTable`,
+                or via :meth:`CodonVariantTable.func_scores`.
+            `variant_class_col` (str)
+                Name of column added to `df` that contains
+                variant classification. Overwritten if already exists.
+            `max_aa` (int)
+                When classifying variants, group all with >=
+                this many amino-acid mutations.
+
+        Returns:
+            A copy of `df` with the column specified by
+            `variant_class_col` classifying variants as:
+
+              - 'wildtype': no codon mutations
+
+              - 'synonymous': only synonymous codon mutations
+
+              - 'stop': at least one stop-codon mutation
+
+              - '{n_aa} nonsynonymous' where `n_aa` is the
+                number of amino-acid mutations, or is '>{max_aa}'
+                if there are more than `max_aa` such mutations.
+
+        >>> df = pd.DataFrame.from_records(
+        ...         [('AAA', '', 0, 0),
+        ...          ('AAG', '', 0, 1),
+        ...          ('ATA', 'M1* G5K', 2, 3),
+        ...          ('GAA', 'G5H', 1, 2),
+        ...          ('CTT', 'M1C G5C', 2, 3),
+        ...          ('CTT', 'M1A L3T G5C', 3, 3),
+        ...          ],
+        ...         columns=['barcode', 'aa_substitutions',
+        ...                  'n_aa_substitutions', 'n_codon_substitutions']
+        ...         )
+        >>> CodonVariantTable.classifyVariants(df)
+          barcode aa_substitutions  n_aa_substitutions  n_codon_substitutions      variant_class
+        0     AAA                                    0                      0           wildtype
+        1     AAG                                    0                      1         synonymous
+        2     ATA          M1* G5K                   2                      3               stop
+        3     GAA              G5H                   1                      2    1 nonsynonymous
+        4     CTT          M1C G5C                   2                      3  >=2 nonsynonymous
+        5     CTT      M1A L3T G5C                   3                      3  >=2 nonsynonymous
+        """
+        req_cols = ['aa_substitutions', 'n_aa_substitutions',
+                    'n_codon_substitutions']
+        if not (set(req_cols) <= set(df.columns)):
+            raise ValueError(f"`df` does not have columns {req_cols}")
+
+        def _classify_func(row):
+            if row['n_codon_substitutions'] == 0:
+                return 'wildtype'
+            elif row['n_aa_substitutions'] == 0:
+                return 'synonymous'
+            elif '*' in row['aa_substitutions']:
+                return 'stop'
+            elif row['n_aa_substitutions'] < max_aa:
+                return f"{row['n_aa_substitutions']} nonsynonymous"
+            else:
+                return f">={max_aa} nonsynonymous"
+
+        return df.assign(**{variant_class_col: lambda x:
+                                               x.apply(_classify_func,
+                                                       axis=1)
+                            })
+
 
     @staticmethod
     def addMergedLibraries(df, *, all_lib='all libraries'):

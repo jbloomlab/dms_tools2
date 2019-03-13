@@ -5,6 +5,8 @@ Change Log
 ---------
 * Allow bottleneck of `None` in `simulateSampleCounts`.
 
+* added `CodonVariantTable.classifyVariants` method
+
 2.4.7
 --------
 * Added `CodonVariantTable.from_simulation` method.
