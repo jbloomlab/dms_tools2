@@ -1,7 +1,7 @@
 Change Log
 ===========
 
-2.4.dev8
+2.4.8
 ---------
 * Allow bottleneck of `None` in `simulateSampleCounts`.
 
