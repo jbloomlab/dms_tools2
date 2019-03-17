@@ -6,13 +6,14 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>codonvarianttable &#8212; dms_tools2 2.4.7 documentation</title>
+    <title>codonvarianttable &#8212; dms_tools2 2.4.8 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="compareprefs" href="dms_tools2.compareprefs.html" />
@@ -448,6 +449,66 @@ by <a class="reference internal" href="dms_tools2.barcodes.html#dms_tools2.barco
 </dl>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="dms_tools2.codonvarianttable.CodonVariantTable.classifyVariants">
+<em class="property">static </em><code class="descname">classifyVariants</code><span class="sig-paren">(</span><em>df</em>, <em>*</em>, <em>variant_class_col='variant_class'</em>, <em>max_aa=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#CodonVariantTable.classifyVariants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.CodonVariantTable.classifyVariants" title="Permalink to this definition">¶</a></dt>
+<dd><p>Classifies codon variants in <cite>df</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>df</cite> (pandas DataFrame)</dt>
+<dd>Must have columns named ‘aa_substitutions’,
+‘n_aa_substitutions’, and ‘n_codon_substitutions’.
+For instance, a data frame of this type can
+be obtained via the <cite>variant_count_df</cite> or
+<cite>barcode_variant_df</cite> of a <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable" title="dms_tools2.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>,
+or via <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.func_scores" title="dms_tools2.codonvarianttable.CodonVariantTable.func_scores"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.func_scores()</span></code></a>.</dd>
+<dt><cite>variant_class_col</cite> (str)</dt>
+<dd>Name of column added to <cite>df</cite> that contains
+variant classification. Overwritten if already exists.</dd>
+<dt><cite>max_aa</cite> (int)</dt>
+<dd>When classifying variants, group all with &gt;=
+this many amino-acid mutations.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><p class="first">A copy of <cite>df</cite> with the column specified by
+<cite>variant_class_col</cite> classifying variants as:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>‘wildtype’: no codon mutations</li>
+<li>‘synonymous’: only synonymous codon mutations</li>
+<li>‘stop’: at least one stop-codon mutation</li>
+<li>‘{n_aa} nonsynonymous’ where <cite>n_aa</cite> is the
+number of amino-acid mutations, or is ‘&gt;{max_aa}’
+if there are more than <cite>max_aa</cite> such mutations.</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_records</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="p">[(</span><span class="s1">&#39;AAA&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+<span class="gp">... </span>         <span class="p">(</span><span class="s1">&#39;AAG&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+<span class="gp">... </span>         <span class="p">(</span><span class="s1">&#39;ATA&#39;</span><span class="p">,</span> <span class="s1">&#39;M1* G5K&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+<span class="gp">... </span>         <span class="p">(</span><span class="s1">&#39;GAA&#39;</span><span class="p">,</span> <span class="s1">&#39;G5H&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+<span class="gp">... </span>         <span class="p">(</span><span class="s1">&#39;CTT&#39;</span><span class="p">,</span> <span class="s1">&#39;M1C G5C&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+<span class="gp">... </span>         <span class="p">(</span><span class="s1">&#39;CTT&#39;</span><span class="p">,</span> <span class="s1">&#39;M1A L3T G5C&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+<span class="gp">... </span>         <span class="p">],</span>
+<span class="gp">... </span>        <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;aa_substitutions&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                 <span class="s1">&#39;n_aa_substitutions&#39;</span><span class="p">,</span> <span class="s1">&#39;n_codon_substitutions&#39;</span><span class="p">]</span>
+<span class="gp">... </span>        <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CodonVariantTable</span><span class="o">.</span><span class="n">classifyVariants</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="go">  barcode aa_substitutions  n_aa_substitutions  n_codon_substitutions      variant_class</span>
+<span class="go">0     AAA                                    0                      0           wildtype</span>
+<span class="go">1     AAG                                    0                      1         synonymous</span>
+<span class="go">2     ATA          M1* G5K                   2                      3               stop</span>
+<span class="go">3     GAA              G5H                   1                      2    1 nonsynonymous</span>
+<span class="go">4     CTT          M1C G5C                   2                      3  &gt;=2 nonsynonymous</span>
+<span class="go">5     CTT      M1A L3T G5C                   3                      3  &gt;=2 nonsynonymous</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="classmethod">
@@ -1238,7 +1299,8 @@ and this standard deviation (truncated at lower
 end to zero). Set noise to 0 for no noise.</li>
 <li>“bottleneck”: put the pre-selection frequencies
 through a bottleneck of this size, then re-calcuate
-initial frequencies that selection acts upon.</li>
+initial frequencies that selection acts upon. Set
+to <cite>None</cite> for no bottleneck.</li>
 </ul>
 </div></blockquote>
 </dd>

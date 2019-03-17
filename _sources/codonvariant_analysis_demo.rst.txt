@@ -632,35 +632,14 @@ We can plot the distribution of the functional scores (here taking the
 scores at the level of barcoded variants).
 
 Such plots are most informative if we additionally classify variants
-by the "types" of mutations they have. Below we define a function to put
-the variants in some reasonable classifications:
+by the "types" of mutations they have, which we do here using the
+`CodonVariantTable.classifyVariants <https://jbloomlab.github.io/dms_tools2/dms_tools2.codonvarianttable.html#dms_tools2.codonvarianttable.CodonVariantTable.classifyVariants>`__ method, which adds a `variant_class` column to the data frame:
 
 .. nbplot::
 
-    >>> def classifyVariant(row, max_aa=2):
-    ...     if row['n_codon_substitutions'] == 0:
-    ...         return 'wildtype'
-    ...     elif row['n_aa_substitutions'] == 0:
-    ...         return 'synonymous'
-    ...     elif '*' in row['aa_substitutions']:
-    ...         return 'stop'
-    ...     elif row['n_aa_substitutions'] < max_aa:
-    ...         return f"{row['n_aa_substitutions']} nonsynonymous"
-    ...     else:
-    ...         return f">={max_aa} nonsynonymous"
+    >>> func_scores = CodonVariantTable.classifyVariants(func_scores)
 
-We then apply this function to our data frame to add a column with our
-variant classification:
-
-.. nbplot::
-
-    >>> func_scores = (
-    ...         func_scores
-    ...         .assign(variant_class=lambda x: x.apply(classifyVariant, axis=1))
-    ...         )
-
-Now we plot the distributions of scores, coloring by our variant
-classification:
+Now we plot the distributions of scores, coloring by the variant class:
 
 .. nbplot::
 

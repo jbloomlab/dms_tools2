@@ -6,13 +6,14 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Example analysis of barcoded codon variants &#8212; dms_tools2 2.4.7 documentation</title>
+    <title>Example analysis of barcoded codon variants &#8212; dms_tools2 2.4.8 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
    
@@ -654,31 +655,12 @@ although we don’t do that here.</p>
 <p>We can plot the distribution of the functional scores (here taking the
 scores at the level of barcoded variants).</p>
 <p>Such plots are most informative if we additionally classify variants
-by the “types” of mutations they have. Below we define a function to put
-the variants in some reasonable classifications:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">classifyVariant</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">max_aa</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;n_codon_substitutions&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-<span class="gp">... </span>        <span class="k">return</span> <span class="s1">&#39;wildtype&#39;</span>
-<span class="gp">... </span>    <span class="k">elif</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;n_aa_substitutions&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-<span class="gp">... </span>        <span class="k">return</span> <span class="s1">&#39;synonymous&#39;</span>
-<span class="gp">... </span>    <span class="k">elif</span> <span class="s1">&#39;*&#39;</span> <span class="ow">in</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;aa_substitutions&#39;</span><span class="p">]:</span>
-<span class="gp">... </span>        <span class="k">return</span> <span class="s1">&#39;stop&#39;</span>
-<span class="gp">... </span>    <span class="k">elif</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;n_aa_substitutions&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">max_aa</span><span class="p">:</span>
-<span class="gp">... </span>        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{row[&#39;n_aa_substitutions&#39;]}</span><span class="s2"> nonsynonymous&quot;</span>
-<span class="gp">... </span>    <span class="k">else</span><span class="p">:</span>
-<span class="gp">... </span>        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;&gt;=</span><span class="si">{max_aa}</span><span class="s2"> nonsynonymous&quot;</span>
+by the “types” of mutations they have, which we do here using the
+<a class="reference external" href="https://jbloomlab.github.io/dms_tools2/dms_tools2.codonvarianttable.html#dms_tools2.codonvarianttable.CodonVariantTable.classifyVariants">CodonVariantTable.classifyVariants</a> method, which adds a <cite>variant_class</cite> column to the data frame:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">func_scores</span> <span class="o">=</span> <span class="n">CodonVariantTable</span><span class="o">.</span><span class="n">classifyVariants</span><span class="p">(</span><span class="n">func_scores</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We then apply this function to our data frame to add a column with our
-variant classification:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">func_scores</span> <span class="o">=</span> <span class="p">(</span>
-<span class="gp">... </span>        <span class="n">func_scores</span>
-<span class="gp">... </span>        <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">variant_class</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">classifyVariant</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
-<span class="gp">... </span>        <span class="p">)</span>
-</pre></div>
-</div>
-<p>Now we plot the distributions of scores, coloring by our variant
-classification:</p>
+<p>Now we plot the distributions of scores, coloring by the variant class:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
 <span class="gp">... </span>    <span class="n">ggplot</span><span class="p">(</span><span class="n">func_scores</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="s1">&#39;variant_class&#39;</span><span class="p">,</span> <span class="s1">&#39;func_score&#39;</span><span class="p">))</span> <span class="o">+</span>
 <span class="gp">... </span>    <span class="n">geom_violin</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="s1">&#39;variant_class&#39;</span><span class="p">))</span> <span class="o">+</span>
@@ -692,9 +674,9 @@ classification:</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>(<a class="reference external" href=".//codonvariant_analysis_demo-40.png">png</a>, <a class="reference external" href=".//codonvariant_analysis_demo-40.hires.png">hires.png</a>, <a class="reference external" href=".//codonvariant_analysis_demo-40.pdf">pdf</a>)</p>
+<p>(<a class="reference external" href=".//codonvariant_analysis_demo-39.png">png</a>, <a class="reference external" href=".//codonvariant_analysis_demo-39.hires.png">hires.png</a>, <a class="reference external" href=".//codonvariant_analysis_demo-39.pdf">pdf</a>)</p>
 <div class="figure">
-<img alt="_images/codonvariant_analysis_demo-40.png" src="_images/codonvariant_analysis_demo-40.png" />
+<img alt="_images/codonvariant_analysis_demo-39.png" src="_images/codonvariant_analysis_demo-39.png" />
 </div>
 <p>We see the expected behavior: stop codon variants have low scores,
 nonsynonymous variants have a spread of scores, and wildtype /
@@ -755,9 +737,9 @@ estimate values much lower than -8:</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>(<a class="reference external" href=".//codonvariant_analysis_demo-43.png">png</a>, <a class="reference external" href=".//codonvariant_analysis_demo-43.hires.png">hires.png</a>, <a class="reference external" href=".//codonvariant_analysis_demo-43.pdf">pdf</a>)</p>
+<p>(<a class="reference external" href=".//codonvariant_analysis_demo-42.png">png</a>, <a class="reference external" href=".//codonvariant_analysis_demo-42.hires.png">hires.png</a>, <a class="reference external" href=".//codonvariant_analysis_demo-42.pdf">pdf</a>)</p>
 <div class="figure">
-<img alt="_images/codonvariant_analysis_demo-43.png" src="_images/codonvariant_analysis_demo-43.png" />
+<img alt="_images/codonvariant_analysis_demo-42.png" src="_images/codonvariant_analysis_demo-42.png" />
 </div>
 <p>Finally, calculate the Pearson correlation coefficients for the clipped
 data. We see below that a small (low) bottleneck and sequencing errors
