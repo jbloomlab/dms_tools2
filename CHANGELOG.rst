@@ -7,6 +7,8 @@ Change Log
 
 * added `CodonVariantTable.classifyVariants` method
 
+* `dms2_batch_bcsubamp` handles `--bcinfo` argument
+
 2.4.7
 --------
 * Added `CodonVariantTable.from_simulation` method.

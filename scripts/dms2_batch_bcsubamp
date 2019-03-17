@@ -113,7 +113,7 @@ def main():
         for (i, row) in batchruns.iterrows():
             # define newargs to pass to dms2_bcsubamp
             newargs = ['dms2_bcsubamp', '--name', row['name'], 
-                    '--R1', row['R1']]
+                       '--R1', row['R1']]
             for (arg, val) in args.items():
                 if arg in ['batchfile', 'ncpus', 'summaryprefix']:
                     continue
@@ -132,7 +132,7 @@ def main():
                     newargs.append('--{0}'.format(arg))
                     if isinstance(val, list):
                         newargs += list(map(str, val))
-                    else:
+                    elif arg != 'bcinfo':
                         newargs.append(str(val))
             argslist.append(newargs)
         pool = multiprocessing.dummy.Pool(ncpus)
