@@ -22,12 +22,13 @@ import pandas as pd
 import Bio.SeqUtils.ProtParamData
 import gpmap
 import numpy as np
+import gzip
 
 # use plotnine for plotting
 from plotnine import *
 
 from dms_tools2.plot import latexSciNot
-from dms_tools2 import CODON_TO_AA, CODONS, AAS_WITHSTOP, AA_TO_CODONS
+from dms_tools2 import CODON_TO_AA, CODONS, AAS_WITHSTOP, AA_TO_CODONS, NTS
 
 #: `color-blind safe palette <http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/>`_
 CBPALETTE = ["#999999", "#E69F00", "#56B4E9", "#009E73",
@@ -2678,7 +2679,7 @@ def codonSubsToSeq(wildtype, codon_subs, return_aa=False, aa_subs=False):
         return ''.join(CODON_TO_AA[codon] for codon in codon_list)
 
 
-def func_score_to_gpm(func_scores_df, wildtype, metric='func_score'):
+def func_score_to_gpm(func_scores_df, wildtype, metric='func_score', aaSubs=False):
     """Generate a gpm from a functinoal score dataframe.
 
     Args:
@@ -2690,6 +2691,9 @@ def func_score_to_gpm(func_scores_df, wildtype, metric='func_score'):
             A string containing the wildtype sequence
         'metric' (str)
             A string specifying which metric to use as a phenotype
+        'aaSubs' (bool)
+            Boolian value specifying whether or not to use amino acid
+            substitutions in codonSubsToSeq()
 
     Returns:
          A genotype phenotype map object from the Harms lab gpm package,
@@ -2703,16 +2707,19 @@ def func_score_to_gpm(func_scores_df, wildtype, metric='func_score'):
     stdev = np.sqrt(var)
 
     # Get codon substitutions in a list
-    codon_subs = func_scores_df['codon_substitutions'].tolist()
+    if aaSubs:
+        substitutions = func_scores_df['aa_substitutions'].tolist()
+    else:
+        substitutions = func_scores_df['codon_substitutions'].tolist()
 
     # Get a list of genotypes
     genotypes = []
-    for subs in codon_subs:
-        genotype = codonSubsToSeq(wildtype, subs, return_aa=True)
+    for subs in substitutions:
+        genotype = codonSubsToSeq(wildtype, subs, return_aa=True, aa_subs=aaSubs)
         genotypes.append(genotype)
 
     # Get the wildtype amino acid sequence
-    wildtype = codonSubsToSeq(wildtype, '', return_aa=True)
+    wildtype = codonSubsToSeq(wildtype, '', return_aa=True, aa_subs=aaSubs)
 
     # Generate the genotype phenotype map
     gpm = gpmap.GenotypePhenotypeMap(wildtype=wildtype, genotypes=genotypes,
@@ -2721,6 +2728,206 @@ def func_score_to_gpm(func_scores_df, wildtype, metric='func_score'):
     return gpm
 
 
+def substitutions(wildtype, mutant, amino_acid=False):
+    """Get space delimited string of substitutions
+    
+    Args: 
+        wildtype (str):
+             The wildtype sequence
+        mutant (str):
+             The mutant sequence
+        amino_acid (bool)
+             Specify whether the sequence is amino acid.
+             Default is False
+    Returns: 
+        A space delimited string of substitutions present in the
+        mutant sequence
+        
+    Here is an example: 
+    
+    >>> substitutions('AGT', 'TGT')
+    'A1T'
+    >>> substitutions('AAGTAACGA', 'ATCTAACGA')
+    'A2T G3C'
+    >>> substitutions('TYARV', 'GYAGV', amino_acid=True)
+    'T1G R4G'
+    """
+    if len(wildtype) != len(mutant):
+        raise ValueError('wildtype and mutant must be same length')
+    subs = []
+    for site in range(len(wildtype)):
+        wt = wildtype[site]
+        mut = mutant[site]
+        if amino_acid: 
+            if wt not in AAS_WITHSTOP: 
+                raise ValueError (f"Invalid wt residue {wt} at site {site+1}")
+            if mut not in AAS_WITHSTOP: 
+                raise ValueError (f"Invalid mutant residue {mut} at site {site+1}")
+        else:
+            if wt not in NTS: 
+                raise ValueError (f"Invalid wt nucleotide {wt} at site {site+1}")
+            if mut not in NTS: 
+                raise ValueError (f"Invalid mutant nucleotide {mut} at site {site+1}")
+        if wt!=mut:
+            pos = str(site + 1)
+            subs.append(f"{wt}{pos}{mut}")
+    subs = ' '.join(subs)
+
+    return subs
+
+
+def bc_info_to_codonvarianttable(samples, geneseq, path=None):
+    """Convert bc_info files into a codonvarianttable
+    
+    Currently only runs for one library at a time. Can be 
+    changed later to run for multiple libraries based 
+    on the barcode info file name default outputs.
+
+    Args: 
+        samples (list of str):
+            List of names of the samples for which there are 
+            barcode info files. This will be the prefix of the file
+            name, followed by '_bcinfo.txt.gz'
+        geneseq (str):
+            The wildtype gene sequence
+        path (str)
+            Directory in which barcode info files are located
+    
+    Returns: 
+        A codonvarianttable with 'counts' generated from the
+        barcode info files
+    """
+
+    # Set up a re matcher for looking at lines
+    matcher = re.compile('(?P<linetype>^.*\: )'
+                         '(?P<contents>.*$)')
+    # Initialize dataframe to store data an barcode counter
+    barcode_dictionary = {}
+    cur_barcode = 1
+    # For each barcode info file
+    for sample in samples:
+        # Set initial conditions
+        take_next = False
+        description_skipped = False
+        
+        f = f"{sample}_bcinfo.txt.gz"
+        if path: 
+            path = os.path.join(path, f)
+        else: 
+            path = f
+
+        with gzip.open(path, 'r') as f: 
+            for line in f: 
+                line = line.decode()
+                line = matcher.match(line)
+                if line: 
+                    # If we are taking the next consensus
+                    if take_next: 
+                        # First check if description is skipped
+                        if description_skipped: 
+                            # If it is, consensus should be this line
+                            if not line.group('linetype') == 'CONSENSUS: ':
+                                raise ValueError(f"Unexpected line {line}")
+                            else:
+                                read = line.group('contents')
+                                # Add the read to the dictionary if not in it
+                                # Also give it a barcode
+                                if 'N' not in read: 
+                                    if read not in barcode_dictionary: 
+                                        barcode_dictionary[read] = {}
+                                        barcode_dictionary[read][sample] = 1
+                                        barcode_dictionary[read]['barcode'] = cur_barcode
+                                        cur_barcode += 1
+                                    else: 
+                                        # Add a counter for the sample if read 
+                                        # not seen for this sample yet
+                                        if sample not in barcode_dictionary[read]:
+                                            barcode_dictionary[read][sample] = 1
+                                        else:
+                                            # Add another count to this read for 
+                                            # this sample
+                                            barcode_dictionary[read][sample] += 1
+                                # Set the conditions back to default
+                                take_next = False
+                                description_skipped = False
+                        # If the description was not skipped yet, 
+                        # make sure it is this line and skip 
+                        else:  
+                            if not line.group('linetype') == 'DESCRIPTION: ':
+                                raise ValueError(f"Unexpected line {line}")
+                            else: 
+                                description_skipped = True
+                    # If we are not looking for a consensus, check 
+                    # if we should retain the next one 
+                    else:
+                        if line.group('linetype') == 'RETAINED: ':
+                            if line.group('contents') == 'True':
+                                take_next = True
+
+    # Initialize lists for making the codonvarianttable
+    barcodes = []
+    subs = []
+    variant_call_support = []
+    library = []
+    
+    # Get data for each barcode/sequence
+    for sequence in barcode_dictionary: 
+        barcodes.append(barcode_dictionary[sequence]['barcode'])
+        subs.append(substitutions(geneseq, sequence))
+        variant_call_support.append(1)
+        library.append('library-1')
+    
+    # Make dataframe
+    df =  {'barcode':barcodes, 
+            'substitutions':subs,
+            'library':library, 
+            'variant_call_support':variant_call_support,
+           }
+    df = pd.DataFrame(df)
+    
+    # Make codonvarianttable
+    with tempfile.NamedTemporaryFile(mode='w') as f:
+        df.to_csv(f, index=False)
+        f.flush()
+        variants = CodonVariantTable(
+                    barcode_variant_file=f.name,
+                    geneseq=geneseq)
+    # Make counts dataframe
+    
+    # Initialize list of dataframes
+    dfs = []
+    
+    # Start loop 
+    for sample in samples:     
+        barcodes = []
+        counts = []
+        sample_list = []
+        # Get counts for this sample
+        for sequence in barcode_dictionary.keys():
+            if sample not in barcode_dictionary[sequence].keys():
+                counts.append(0)
+            else:
+                counts.append(barcode_dictionary[sequence][sample])
+            barcodes.append(barcode_dictionary[sequence]['barcode'])
+            sample_list.append(sample)
+        # Make a dataframe for this sample
+        data = {'barcode':barcodes, 
+                'count':counts, 
+                'sample':sample_list
+               }
+        data = pd.DataFrame(data)
+        # Append it to the list of dataframes
+        dfs.append(data)
+    # Concatenate the list of dataframes into a counts dataframe
+    barcode_counts = pd.concat(dfs)
+    
+    # Add the counts for each sample to the codonvarianttable
+    for sample in barcode_counts['sample'].unique():
+        icounts = barcode_counts.query('sample == @sample')
+        icounts = icounts[['barcode', 'count']]
+        variants.addSampleCounts('library-1', sample, icounts)
+    
+    return(variants)
 
 
 if __name__ == '__main__':
