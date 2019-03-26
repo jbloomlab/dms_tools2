@@ -35,7 +35,7 @@ numfig = True
 # ones.
 extensions = [
         'sphinx.ext.autodoc',
-        'sphinx.ext.doctest',
+        #'sphinx.ext.doctest',
         'sphinx.ext.mathjax',
         'sphinx.ext.githubpages',
         'sphinx.ext.viewcode',

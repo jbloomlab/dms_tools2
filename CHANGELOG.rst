@@ -1,7 +1,31 @@
 Change Log
 ===========
 
-2.4.dev6
+2.4.9
+---------
+* Added function `bc_info_to_codonvarianttable`
+
+* Added function `substitutions`
+
+* Changed `func_score_to_gpm` to allow amino acid input
+
+2.4.8
+---------
+* Allow bottleneck of `None` in `simulateSampleCounts`.
+
+* added `CodonVariantTable.classifyVariants` method
+
+* `dms2_batch_bcsubamp` handles `--bcinfo` argument
+
+2.4.7
+--------
+* Added `CodonVariantTable.from_simulation` method.
+
+* Handle large facet plots in ``dms2_batch_bcsubamp`` & ``plotSiteDiffSel``
+
+* Correctly handle missing output for individual samples in ``dms2_batch_*`` programs.
+
+2.4.6
 ----------
 * Added function to create `gpmap.GenotypePhenotypeMap` from `CodonVariantTable`
 

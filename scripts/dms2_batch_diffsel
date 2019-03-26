@@ -94,9 +94,22 @@ def main():
                 args['summaryprefix'], s))) for (f, s) in 
                 filesuffixes.items()])
 
+        # files from individual runs
+        runfiles = {'mutdiffsel': '_mutdiffsel.csv',
+                    'sitediffsel': '_sitediffsel.csv',
+                    }
+        for filename, filesuffix in runfiles.items():
+            batchruns[filename] = (args['outdir'] + '/' + batchruns['outname'] +
+                                   filesuffix)
+        found_all_runfiles = all(all(map(os.path.isfile, batchruns[f].values))
+                                         for f in runfiles.keys())
+
         # do we need to proceed
-        if args['use_existing'] == 'yes' and all(map(
-                os.path.isfile, files.values())):
+        if (
+                args['use_existing'] == 'yes' and
+                found_all_runfiles and
+                all(map(os.path.isfile, files.values()))
+                ):
             logger.info("Output summary files already exist and "
                     "'--use_existing' is 'yes', so exiting with no "
                     "further action.")
@@ -144,12 +157,7 @@ def main():
         logger.info("Completed runs of dms2_diffsel.\n")
 
         # define dms2_diffsel output files and make sure they exist 
-        for (filename, filesuffix) in [
-                ('mutdiffsel', '_mutdiffsel.csv'),
-                ('sitediffsel', '_sitediffsel.csv'),
-                ]:
-            batchruns[filename] = (args['outdir'] + '/' + batchruns['outname'] +
-                    filesuffix)
+        for filename in runfiles.keys():
             for f in batchruns[filename]:
                 if not os.path.isfile(f):
                     flog = f.replace(filesuffix, '.log')

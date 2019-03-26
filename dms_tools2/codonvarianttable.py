@@ -28,7 +28,12 @@ import gzip
 from plotnine import *
 
 from dms_tools2.plot import latexSciNot
-from dms_tools2 import CODON_TO_AA, CODONS, AAS_WITHSTOP, AA_TO_CODONS, NTS
+from dms_tools2 import (CODON_TO_AA,
+                        CODONS,
+                        AAS_WITHSTOP,
+                        AA_TO_CODONS,
+                        NTS
+                        )
 
 #: `color-blind safe palette <http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/>`_
 CBPALETTE = ["#999999", "#E69F00", "#56B4E9", "#009E73",
@@ -401,6 +406,97 @@ class CodonVariantTable:
                         return False
             return True
 
+    @classmethod
+    def from_simulation(cls, *, geneseq, bclen, library_specs,
+                        seed=1, variant_call_support=1):
+        """Simulate :class:`CodonVariantTable` variants.
+
+        Use this method to simulate the variants in a
+        :class:`CodonVariantTable`. Note that this only
+        simulates the variants, not counts for samples.
+        To add those, then use :func:`simulateSampleCounts`
+        and :meth:`CodonVariantTable.addSampleCounts`.
+
+        Args:
+            `geneseq` (str)
+                Sequence of wildtype protein-coding gene.
+            `bclen` (int)
+                Length of the barcodes; must enable complexity
+                at least 10-fold greater than max number of variants.
+            `library_specs` (dict)
+                Specifications for each simulated library. Keys
+                are 'avgmuts' and 'nvariants', and values are
+                average-codon mutations per variant and number of
+                variants. Mutations per variant are Poisson distributed.
+            `seed` (int or `None`)
+                Random number seed or `None` to set no seed.
+            `variant_call_support` (int or 2-tuple)
+                If an integer, all variant call supports are set to this.
+                If a 2-tuple, variant call support is drawn as a random
+                integer uniformly from this range (inclusive).
+
+        Returns:
+            The simulated :class:`CodonVariantTable`.
+        """
+        if seed is not None:
+            scipy.random.seed(seed)
+            random.seed(seed)
+
+        if len(library_specs) < 1:
+            raise ValueError('empty `library_specs`')
+
+        if isinstance(variant_call_support, int):
+            variant_call_support = tuple([variant_call_support] * 2)
+
+        if len(geneseq) % 3 != 0:
+            raise ValueError('length of `geneseq` not multiple of 3')
+        genelength = len(geneseq) // 3
+
+        barcode_variant_dict = collections.defaultdict(list)
+        for lib, specs_dict in library_specs.items():
+
+            nvariants = specs_dict['nvariants']
+            avgmuts = specs_dict['avgmuts']
+            if 10 * nvariants > (len(NTS))**bclen:  # safety factor 10
+                raise ValueError('barcode too short for nvariants')
+            existing_barcodes = set([])
+
+            for ivariant in range(nvariants):
+
+                barcode = ''.join(random.choices(NTS, k=bclen))
+                while barcode in existing_barcodes:
+                    barcode = ''.join(random.choices(NTS, k=bclen))
+                existing_barcodes.add(barcode)
+
+                support = random.randint(*variant_call_support)
+
+                # get mutations
+                substitutions = []
+                nmuts = scipy.random.poisson(avgmuts)
+                for icodon in random.sample(range(1, genelength + 1), nmuts):
+                    wtcodon = geneseq[3 * (icodon - 1): 3 * icodon]
+                    mutcodon = random.choice([c for c in CODONS
+                                              if c != wtcodon])
+                    for i_nt, (wt_nt, mut_nt) in enumerate(zip(wtcodon,
+                                                               mutcodon)):
+                        if wt_nt != mut_nt:
+                            igene = 3 * (icodon - 1) + i_nt + 1
+                            substitutions.append(f'{wt_nt}{igene}{mut_nt}')
+                substitutions = ' '.join(substitutions)
+
+                barcode_variant_dict['barcode'].append(barcode)
+                barcode_variant_dict['substitutions'].append(substitutions)
+                barcode_variant_dict['library'].append(lib)
+                barcode_variant_dict['variant_call_support'].append(support)
+
+        barcode_variants = pd.DataFrame(barcode_variant_dict)
+
+        with tempfile.NamedTemporaryFile(mode='w') as f:
+            barcode_variants.to_csv(f, index=False)
+            f.flush()
+            cvt = cls(barcode_variant_file=f.name, geneseq=geneseq)
+
+        return cvt
 
     @classmethod
     def from_variant_count_df(cls, *, variant_count_df_file, geneseq,
@@ -1697,6 +1793,84 @@ class CodonVariantTable:
                              'sample':samplelist,
                              'countfile':countfiles})
 
+    @staticmethod
+    def classifyVariants(df,
+                         *,
+                         variant_class_col='variant_class',
+                         max_aa=2):
+        """Classifies codon variants in `df`.
+
+        Args:
+            `df` (pandas DataFrame)
+                Must have columns named 'aa_substitutions',
+                'n_aa_substitutions', and 'n_codon_substitutions'.
+                For instance, a data frame of this type can
+                be obtained via the `variant_count_df` or
+                `barcode_variant_df` of a :class:`CodonVariantTable`,
+                or via :meth:`CodonVariantTable.func_scores`.
+            `variant_class_col` (str)
+                Name of column added to `df` that contains
+                variant classification. Overwritten if already exists.
+            `max_aa` (int)
+                When classifying variants, group all with >=
+                this many amino-acid mutations.
+
+        Returns:
+            A copy of `df` with the column specified by
+            `variant_class_col` classifying variants as:
+
+              - 'wildtype': no codon mutations
+
+              - 'synonymous': only synonymous codon mutations
+
+              - 'stop': at least one stop-codon mutation
+
+              - '{n_aa} nonsynonymous' where `n_aa` is the
+                number of amino-acid mutations, or is '>{max_aa}'
+                if there are more than `max_aa` such mutations.
+
+        >>> df = pd.DataFrame.from_records(
+        ...         [('AAA', '', 0, 0),
+        ...          ('AAG', '', 0, 1),
+        ...          ('ATA', 'M1* G5K', 2, 3),
+        ...          ('GAA', 'G5H', 1, 2),
+        ...          ('CTT', 'M1C G5C', 2, 3),
+        ...          ('CTT', 'M1A L3T G5C', 3, 3),
+        ...          ],
+        ...         columns=['barcode', 'aa_substitutions',
+        ...                  'n_aa_substitutions', 'n_codon_substitutions']
+        ...         )
+        >>> CodonVariantTable.classifyVariants(df)
+          barcode aa_substitutions  n_aa_substitutions  n_codon_substitutions      variant_class
+        0     AAA                                    0                      0           wildtype
+        1     AAG                                    0                      1         synonymous
+        2     ATA          M1* G5K                   2                      3               stop
+        3     GAA              G5H                   1                      2    1 nonsynonymous
+        4     CTT          M1C G5C                   2                      3  >=2 nonsynonymous
+        5     CTT      M1A L3T G5C                   3                      3  >=2 nonsynonymous
+        """
+        req_cols = ['aa_substitutions', 'n_aa_substitutions',
+                    'n_codon_substitutions']
+        if not (set(req_cols) <= set(df.columns)):
+            raise ValueError(f"`df` does not have columns {req_cols}")
+
+        def _classify_func(row):
+            if row['n_codon_substitutions'] == 0:
+                return 'wildtype'
+            elif row['n_aa_substitutions'] == 0:
+                return 'synonymous'
+            elif '*' in row['aa_substitutions']:
+                return 'stop'
+            elif row['n_aa_substitutions'] < max_aa:
+                return f"{row['n_aa_substitutions']} nonsynonymous"
+            else:
+                return f">={max_aa} nonsynonymous"
+
+        return df.assign(**{variant_class_col: lambda x:
+                                               x.apply(_classify_func,
+                                                       axis=1)
+                            })
+
 
     @staticmethod
     def addMergedLibraries(df, *, all_lib='all libraries'):
@@ -2018,7 +2192,8 @@ def simulateSampleCounts(*,
 
                 - "bottleneck": put the pre-selection frequencies
                   through a bottleneck of this size, then re-calcuate
-                  initial frequencies that selection acts upon.
+                  initial frequencies that selection acts upon. Set
+                  to `None` for no bottleneck.
 
         `pre_sample_name` (str)
             Name used for the pre-selection sample.
@@ -2164,6 +2339,12 @@ def simulateSampleCounts(*,
 
     df_list = [barcode_variant_df[cols[ : 4]]]
 
+    def _bottleneck_freqs(pre_freq, bottleneck):
+        if bottleneck is None:
+            return pre_freq
+        else:
+            return scipy.random.multinomial(bottleneck, pre_freq) / bottleneck
+
     post_req_keys = {'bottleneck', 'noise', 'total_count'}
     for lib, (sample, sample_dict) in itertools.product(
             libraries, sorted(post_samples.items())):
@@ -2176,9 +2357,9 @@ def simulateSampleCounts(*,
             .assign(
                 sample=sample,
                 # simulated pre-selection freqs after bottleneck
-                bottleneck_freq=lambda x: scipy.random.multinomial(
-                        sample_dict['bottleneck'], x.pre_freq) /
-                        sample_dict['bottleneck'],
+                bottleneck_freq=lambda x:
+                                _bottleneck_freqs(x.pre_freq,
+                                                  sample_dict['bottleneck']),
                 # post-selection freqs with noise
                 noise=scipy.clip(scipy.random.normal(1, sample_dict['noise']),
                                  0, None),
@@ -2719,8 +2900,7 @@ def func_score_to_gpm(func_scores_df, wildtype, metric='func_score', aaSubs=Fals
         genotypes.append(genotype)
 
     # Get the wildtype amino acid sequence
-    wildtype = codonSubsToSeq(wildtype, '', return_aa=True, aa_subs=aaSubs)
-
+    
     # Generate the genotype phenotype map
     gpm = gpmap.GenotypePhenotypeMap(wildtype=wildtype, genotypes=genotypes,
                                phenotypes=phenotypes, stdeviations=stdev)
