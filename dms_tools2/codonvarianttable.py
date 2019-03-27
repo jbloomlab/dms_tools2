@@ -2900,7 +2900,8 @@ def func_score_to_gpm(func_scores_df, wildtype, metric='func_score', aaSubs=Fals
         genotypes.append(genotype)
 
     # Get the wildtype amino acid sequence
-    
+    wildtype = codonSubsToSeq(wildtype, '', return_aa=True, aa_subs=aaSubs)
+
     # Generate the genotype phenotype map
     gpm = gpmap.GenotypePhenotypeMap(wildtype=wildtype, genotypes=genotypes,
                                phenotypes=phenotypes, stdeviations=stdev)
@@ -2992,7 +2993,10 @@ def bc_info_to_codonvarianttable(samples, geneseq, path=None):
         
         f = f"{sample}_bcinfo.txt.gz"
         if path: 
-            path = os.path.join(path, f)
+            directory = os.path.join(
+                        os.path.abspath(os.path.dirname(__file__)),
+                        path)
+            path = os.path.join(directory, f)
         else: 
             path = f
 
