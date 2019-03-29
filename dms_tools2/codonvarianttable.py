@@ -2859,7 +2859,7 @@ def codonSubsToSeq(wildtype, codon_subs, return_aa=False, aa_subs=False):
         return ''.join(CODON_TO_AA[codon] for codon in codon_list)
 
 
-def func_score_to_gpm(func_scores_df, wildtype, metric='func_score'):
+def func_score_to_gpm(func_scores_df, wildtype, metric='func_score', aaSubs=False):
     """Generate a gpm from a functinoal score dataframe.
 
     Args:
@@ -2871,6 +2871,14 @@ def func_score_to_gpm(func_scores_df, wildtype, metric='func_score'):
             A string containing the wildtype sequence
         'metric' (str)
             A string specifying which metric to use as a phenotype
+        'aaSubs' (bool)
+            Boolian value specifying whether to use amino acid substitutions
+            rather than codon substitutions to determine mutant genotypes
+            to put into the genotype phenotyep map. Use this option if you are
+            converting a func_scores_aa dataframe and want the average phenotype
+            of each same amino acid mutant to be put into the gpm rather than
+            the same amino acid mutants being put in several times with each
+            measured phenotype.
 
     Returns:
          A genotype phenotype map object from the Harms lab gpm package,
@@ -2884,16 +2892,19 @@ def func_score_to_gpm(func_scores_df, wildtype, metric='func_score'):
     stdev = np.sqrt(var)
 
     # Get codon substitutions in a list
-    codon_subs = func_scores_df['codon_substitutions'].tolist()
+    if aaSubs:
+        substitutions = func_scores_df['aa_substitutions'].tolist()
+    else:
+        substitutions = func_scores_df['codon_substitutions'].tolist()
 
     # Get a list of genotypes
     genotypes = []
-    for subs in codon_subs:
-        genotype = codonSubsToSeq(wildtype, subs, return_aa=True)
+    for subs in substitutions:
+        genotype = codonSubsToSeq(wildtype, subs, return_aa=True, aa_subs=aaSubs)
         genotypes.append(genotype)
 
     # Get the wildtype amino acid sequence
-    wildtype = codonSubsToSeq(wildtype, '', return_aa=True)
+    wildtype = codonSubsToSeq(wildtype, '', return_aa=True, aa_subs=aaSubs)
 
     # Generate the genotype phenotype map
     gpm = gpmap.GenotypePhenotypeMap(wildtype=wildtype, genotypes=genotypes,
