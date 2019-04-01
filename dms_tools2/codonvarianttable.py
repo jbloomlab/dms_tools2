@@ -2777,19 +2777,19 @@ def codonSubsToSeq(wildtype, codon_subs, return_aa=False, aa_subs=False):
     """Convert codon substitutions to sequence.
 
     Args:
-        'wildtype' (str)
+        `wildtype` (str)
             The wildtype sequence
-        'codon_subs' (str)
+        `codon_subs` (str)
             String of space delimited codon substitutions, in the format:
             OldCodonSiteNewCodon
-        'return_aa' (bool)
+        `return_aa` (bool)
             Specify whether to return sequence as nucleotide or amino acid.
             Default is nucleotide.
-        'aa_subs' (bool)
+        `aa_subs` (bool)
             Specify whether the substitutions are in amino acid form
-            rather than codon. Default is codon. return_aa must be True
-            in order for aa_subs to be True, since there are numerous
-            possible nucleotide sequences for an amino acid sequence. 
+            rather than codon. Default is codon. `return_aa` must be True
+            in order for `aa_subs` to be True, since there are numerous
+            possible nucleotide sequences for an amino acid sequence.
 
     Returns:
         A str of the sequence with all the codon substitutions
@@ -2804,7 +2804,7 @@ def codonSubsToSeq(wildtype, codon_subs, return_aa=False, aa_subs=False):
     'GGGCAGCAA'
     """
     # Make sure you are not trying to convert amino acids to codons
-    if aa_subs: 
+    if aa_subs:
         if not return_aa==True:
             raise ValueError('Cannot return nucleotide sequence using aa subs')
     # Make sure the wildtype sequence is divisible into codons
@@ -2860,20 +2860,22 @@ def codonSubsToSeq(wildtype, codon_subs, return_aa=False, aa_subs=False):
 
 
 def func_score_to_gpm(func_scores_df, wildtype, metric='func_score'):
-    """Generate a gpm from a functinoal score dataframe.
+    """Generate a genotype phenotype map from a functional score dataframe.
 
     Args:
-        'func_scores_df' (functional score dataframe)
-            A functional score dataframe, narrowed down to one
+        `func_scores_df` (functional score dataframe)
+            A functional score dataframe (from the
+            :meth:`CodonVariantTable.func_scores` method), narrowed down to one
             post sample condition, typically with something like:
             `func_scores_df.query('library == @library & sample == @sample')`
-        'wildtype' (str)
+        `wildtype` (str)
             A string containing the wildtype sequence
-        'metric' (str)
+        `metric` (str)
             A string specifying which metric to use as a phenotype
 
     Returns:
-         A genotype phenotype map object from the Harms lab gpm package,
+         A genotype phenotype map object from the Harms lab
+         `gpmap package <https://github.com/harmslab/gpmap>`_
          to be used as in input into epistasis models in the epistasis package.
     """
     # Put the phenotypes into a list
@@ -2884,12 +2886,12 @@ def func_score_to_gpm(func_scores_df, wildtype, metric='func_score'):
     stdev = np.sqrt(var)
 
     # Get codon substitutions in a list
-    codon_subs = func_scores_df['codon_substitutions'].tolist()
+    substitutions = func_scores_df['aa_substitutions'].tolist()
 
     # Get a list of genotypes
     genotypes = []
-    for subs in codon_subs:
-        genotype = codonSubsToSeq(wildtype, subs, return_aa=True)
+    for subs in substitutions:
+        genotype = codonSubsToSeq(wildtype, subs, return_aa=True, aa_subs=True)
         genotypes.append(genotype)
 
     # Get the wildtype amino acid sequence
