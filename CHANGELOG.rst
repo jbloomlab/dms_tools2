@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.4.dev9
+---------
+* Updates to genotype-phenotype maps generated from `CodonVariantTable` func scores.
+
 2.4.8
 ---------
 * Allow bottleneck of `None` in `simulateSampleCounts`.
