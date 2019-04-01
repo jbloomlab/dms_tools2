@@ -2865,8 +2865,8 @@ def func_score_to_gpm(func_scores_df, wildtype, metric='func_score'):
     Args:
         `func_scores_df` (functional score dataframe)
             A functional score dataframe (from the
-            `CodonVariantTable.func_scores` method), narrowed down to one post
-            sample condition, typically with something like:
+            :meth:`CodonVariantTable.func_scores` method), narrowed down to one
+            post sample condition, typically with something like:
             `func_scores_df.query('library == @library & sample == @sample')`
         `wildtype` (str)
             A string containing the wildtype sequence
