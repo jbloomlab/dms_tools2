@@ -6,6 +6,7 @@
 .*
 !.gitignore
 !.travis.yml
+!.nojekyll
 docs/_build/
 docs/_template/
 build/
