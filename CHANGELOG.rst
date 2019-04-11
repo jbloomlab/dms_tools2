@@ -3,6 +3,8 @@ Change Log
 
 2.4.dev9
 ---------
+* Allow multiprocessing `fastqFromSRA`
+
 * Updates to genotype-phenotype maps generated from `CodonVariantTable` func scores.
 
 2.4.8

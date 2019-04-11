@@ -18,6 +18,7 @@ class test_fastqFromSRA(unittest.TestCase):
     recent version (>= 2.8.2) of the ``fastq-dump`` program."""
     ASPERA = None
     FASTQ_DUMP = 'fastq-dump' # test fails if this executable not installed
+    NCPUS = 1
 
     def test_fastqFromSRA(self):
         """Tests `fastqFromSRA`."""
@@ -38,7 +39,9 @@ class test_fastqFromSRA(unittest.TestCase):
         dms_tools2.sra.fastqFromSRA(samples, 
                 self.FASTQ_DUMP,
                 fastqdir,
-                aspera=self.ASPERA)
+                aspera=self.ASPERA,
+                ncpus=self.NCPUS,
+                )
         tottime = time.time() - starttime
         print("Time with{0} aspera: {1}".format(
                 {True:'', False:'out'}[bool(self.ASPERA)], tottime))
@@ -64,8 +67,18 @@ class test_fastqFromSRA_aspera(test_fastqFromSRA):
     Before running, ensure that `ASPERA` gives a valid path
     to ``ascp`` and aspera key.
     """
-    ASPERA = ('/app/aspera-connect/3.5.1/bin/ascp',
-              '/app/aspera-connect/3.5.1/etc/asperaweb_id_dsa.openssh')
+    ASPERA = ('/app/aspera-connect/3.7.5/bin/ascp',
+              '/app/aspera-connect/3.7.5/etc/asperaweb_id_dsa.openssh')
+
+
+class test_fastqFromSRA_multi(test_fastqFromSRA):
+    """Like `test_fastqFromSRA` but multiple CPUs."""
+    NCPUS = 2
+
+
+class test_fastqFromSRA_aspera_multi(test_fastqFromSRA_aspera):
+    """Like `test_fastqFromSRA_aspera` but multiple CPUs."""
+    NCPUS = 2
 
 
 if __name__ == '__main__':
