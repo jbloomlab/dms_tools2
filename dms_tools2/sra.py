@@ -53,7 +53,8 @@ def fastqFromSRA(samples, fastq_dump, fastqdir, aspera=None,
             If `True`, do **not** actually download the files,
             but instead just add the columns to `samples`.
         `ncpus` (int)
-            Use this many CPUs to parallelize downloads.
+            Use this many CPUs to parallelize downloads, downgrades
+            number if it exceeds max available.
 
     Result:
         Upon completion, the directory `fastqdir` contains
@@ -118,6 +119,7 @@ def fastqFromSRA(samples, fastq_dump, fastqdir, aspera=None,
                                 r2,
                                 ))
 
+    ncpus = min(ncpus, multiprocessing.cpu_count())
     if ncpus == 1:
         for args in args_list:
             _getSingleFastqFromSRA(*args)
