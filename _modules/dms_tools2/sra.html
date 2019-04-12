@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.sra &#8212; dms_tools2 2.4.8 documentation</title>
+    <title>dms_tools2.sra &#8212; dms_tools2 2.4.9 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -43,14 +43,16 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
+<span class="kn">import</span> <span class="nn">distutils.version</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">import</span> <span class="nn">subprocess</span>
-<span class="kn">import</span> <span class="nn">distutils.version</span>
 
 
 <div class="viewcode-block" id="fastqFromSRA"><a class="viewcode-back" href="../../dms_tools2.sra.html#dms_tools2.sra.fastqFromSRA">[docs]</a><span class="k">def</span> <span class="nf">fastqFromSRA</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">fastq_dump</span><span class="p">,</span> <span class="n">fastqdir</span><span class="p">,</span> <span class="n">aspera</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">passonly</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">no_downloads</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">passonly</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">no_downloads</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">ncpus</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Download data from SRA and extract FASTQ files.</span>
 
 <span class="sd">    Currently only works for runs containing paired-end reads.</span>
@@ -85,6 +87,9 @@
 <span class="sd">        `no_downloads` (bool)</span>
 <span class="sd">            If `True`, do **not** actually download the files,</span>
 <span class="sd">            but instead just add the columns to `samples`.</span>
+<span class="sd">        `ncpus` (int)</span>
+<span class="sd">            Use this many CPUs to parallelize downloads, downgrades</span>
+<span class="sd">            number if it exceeds max available.</span>
 
 <span class="sd">    Result:</span>
 <span class="sd">        Upon completion, the directory `fastqdir` contains</span>
@@ -126,72 +131,109 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">fastqdir</span><span class="p">):</span>
         <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">fastqdir</span><span class="p">)</span>
 
+    <span class="n">args_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">expect_files</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">samples</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
         <span class="n">row</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">r1base</span><span class="p">,</span> <span class="n">r2base</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">row</span><span class="p">[</span><span class="s1">&#39;run&#39;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;R1&#39;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;R2&#39;</span><span class="p">])</span>
         <span class="n">r1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fastqdir</span><span class="p">,</span> <span class="n">r1base</span><span class="p">)</span>
         <span class="n">r2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fastqdir</span><span class="p">,</span> <span class="n">r2base</span><span class="p">)</span>
+        <span class="n">expect_files</span> <span class="o">+=</span> <span class="p">[</span><span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">overwrite</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">r1</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">r2</span><span class="p">):</span>
             <span class="k">continue</span> <span class="c1"># files already exist</span>
-
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># names of files produced by fastq-dump</span>
-            <span class="n">r1init</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fastqdir</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{0}{1}</span><span class="s1">_1.fastq.gz&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">args_list</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">fastqdir</span><span class="p">,</span>
+                                <span class="n">run</span><span class="p">,</span>
+                                <span class="n">passonly</span><span class="p">,</span>
+                                <span class="n">aspera</span><span class="p">,</span>
+                                <span class="n">overwrite</span><span class="p">,</span>
+                                <span class="n">fastq_dump</span><span class="p">,</span>
+                                <span class="n">r1</span><span class="p">,</span>
+                                <span class="n">r2</span><span class="p">,</span>
+                                <span class="p">))</span>
+
+    <span class="n">ncpus</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">ncpus</span><span class="p">,</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">ncpus</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">args</span> <span class="ow">in</span> <span class="n">args_list</span><span class="p">:</span>
+            <span class="n">_getSingleFastqFromSRA</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">ncpus</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+            <span class="n">pool</span><span class="o">.</span><span class="n">starmap</span><span class="p">(</span><span class="n">_getSingleFastqFromSRA</span><span class="p">,</span> <span class="n">args_list</span><span class="p">)</span>
+
+    <span class="n">missing_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">expect_files</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">f</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">missing_files</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Failed to create these files:</span><span class="se">\n</span><span class="s1">  &#39;</span> <span class="o">+</span>
+                           <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">  &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing_files</span><span class="p">))</span></div>
+
+
+<span class="k">def</span> <span class="nf">_getSingleFastqFromSRA</span><span class="p">(</span><span class="n">fastqdir</span><span class="p">,</span>
+                           <span class="n">run</span><span class="p">,</span>
+                           <span class="n">passonly</span><span class="p">,</span>
+                           <span class="n">aspera</span><span class="p">,</span>
+                           <span class="n">overwrite</span><span class="p">,</span>
+                           <span class="n">fastq_dump</span><span class="p">,</span>
+                           <span class="n">r1</span><span class="p">,</span>
+                           <span class="n">r2</span><span class="p">,</span>
+                           <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Helper function for :func:`fastqFromSRA`.&quot;&quot;&quot;</span>
+    <span class="c1"># names of files produced by fastq-dump</span>
+    <span class="n">r1init</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fastqdir</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{0}{1}</span><span class="s1">_1.fastq.gz&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                     <span class="n">run</span><span class="p">,</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span><span class="s1">&#39;_pass&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">:</span><span class="s1">&#39;&#39;</span><span class="p">}[</span><span class="nb">bool</span><span class="p">(</span><span class="n">passonly</span><span class="p">)]))</span>
-            <span class="n">r2init</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fastqdir</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{0}{1}</span><span class="s1">_2.fastq.gz&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">r2init</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fastqdir</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{0}{1}</span><span class="s1">_2.fastq.gz&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                     <span class="n">run</span><span class="p">,</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span><span class="s1">&#39;_pass&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">:</span><span class="s1">&#39;&#39;</span><span class="p">}[</span><span class="nb">bool</span><span class="p">(</span><span class="n">passonly</span><span class="p">)]))</span>
 
-            <span class="k">if</span> <span class="n">aspera</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="c1"># use aspera to download</span>
+    <span class="k">if</span> <span class="n">aspera</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># use aspera to download</span>
+        <span class="p">(</span><span class="n">ascp</span><span class="p">,</span> <span class="n">asperakey</span><span class="p">)</span> <span class="o">=</span> <span class="n">aspera</span>
 
-                <span class="c1"># directory name explanation here: </span>
-                <span class="c1"># https://www.ncbi.nlm.nih.gov/books/NBK158899/</span>
-                <span class="n">target</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;anonftp@ftp.ncbi.nlm.nih.gov:&#39;</span>
-                          <span class="s1">&#39;/sra/sra-instant/reads/ByRun/sra/SRR/</span><span class="si">{0}</span><span class="s1">/</span><span class="si">{1}</span><span class="s1">&#39;</span>
-                          <span class="s1">&#39;/</span><span class="si">{1}</span><span class="s1">.sra&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">run</span><span class="p">[</span> <span class="p">:</span> <span class="mi">6</span><span class="p">],</span> <span class="n">run</span><span class="p">))</span>
+        <span class="c1"># directory name explanation here: </span>
+        <span class="c1"># https://www.ncbi.nlm.nih.gov/books/NBK158899/</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;anonftp@ftp.ncbi.nlm.nih.gov:&#39;</span>
+                  <span class="s1">&#39;/sra/sra-instant/reads/ByRun/sra/SRR/</span><span class="si">{0}</span><span class="s1">/</span><span class="si">{1}</span><span class="s1">&#39;</span>
+                  <span class="s1">&#39;/</span><span class="si">{1}</span><span class="s1">.sra&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">run</span><span class="p">[</span> <span class="p">:</span> <span class="mi">6</span><span class="p">],</span> <span class="n">run</span><span class="p">))</span>
 
-                <span class="n">asperacmds</span> <span class="o">=</span> <span class="p">[</span><span class="n">ascp</span><span class="p">,</span> 
-                        <span class="s1">&#39;--overwrite&#39;</span><span class="p">,</span> 
-                            <span class="p">{</span><span class="kc">True</span><span class="p">:</span><span class="s1">&#39;always&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">:</span><span class="s1">&#39;never&#39;</span><span class="p">}[</span><span class="nb">bool</span><span class="p">(</span><span class="n">overwrite</span><span class="p">)],</span>
-                        <span class="s1">&#39;-T&#39;</span><span class="p">,</span>
-                        <span class="s1">&#39;-q&#39;</span><span class="p">,</span> <span class="c1"># quiet mode</span>
-                        <span class="s1">&#39;--policy&#39;</span><span class="p">,</span> <span class="s1">&#39;fair&#39;</span><span class="p">,</span>
-                        <span class="s1">&#39;-l500m&#39;</span><span class="p">,</span>
-                        <span class="s1">&#39;-i&#39;</span><span class="p">,</span> <span class="n">asperakey</span><span class="p">,</span>
-                        <span class="n">target</span><span class="p">,</span>
-                        <span class="n">fastqdir</span><span class="p">]</span>
-                <span class="n">asperaout</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">(</span><span class="n">asperacmds</span><span class="p">)</span>
-                <span class="n">downloadedrun</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fastqdir</span><span class="p">,</span> <span class="n">run</span> <span class="o">+</span> <span class="s1">&#39;.sra&#39;</span><span class="p">)</span>
-                <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">downloadedrun</span><span class="p">)</span>
+        <span class="n">asperacmds</span> <span class="o">=</span> <span class="p">[</span><span class="n">ascp</span><span class="p">,</span> 
+                      <span class="s1">&#39;--overwrite&#39;</span><span class="p">,</span> 
+                      <span class="p">{</span><span class="kc">True</span><span class="p">:</span><span class="s1">&#39;always&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">:</span><span class="s1">&#39;never&#39;</span><span class="p">}[</span><span class="nb">bool</span><span class="p">(</span><span class="n">overwrite</span><span class="p">)],</span>
+                      <span class="s1">&#39;-T&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;-q&#39;</span><span class="p">,</span> <span class="c1"># quiet mode</span>
+                      <span class="s1">&#39;--policy&#39;</span><span class="p">,</span> <span class="s1">&#39;fair&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;-l500m&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;-i&#39;</span><span class="p">,</span> <span class="n">asperakey</span><span class="p">,</span>
+                      <span class="n">target</span><span class="p">,</span>
+                      <span class="n">fastqdir</span><span class="p">]</span>
+        <span class="n">asperaout</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">(</span><span class="n">asperacmds</span><span class="p">)</span>
+        <span class="n">downloadedrun</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fastqdir</span><span class="p">,</span> <span class="n">run</span> <span class="o">+</span> <span class="s1">&#39;.sra&#39;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">downloadedrun</span><span class="p">)</span>
 
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">downloadedrun</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">downloadedrun</span> <span class="o">=</span> <span class="kc">None</span>
 
-            <span class="c1"># run fastq-dump</span>
-            <span class="n">cmds</span> <span class="o">=</span> <span class="p">[</span><span class="n">fastq_dump</span><span class="p">,</span>
-                    <span class="s1">&#39;--outdir&#39;</span><span class="p">,</span> <span class="n">fastqdir</span><span class="p">,</span>
-                    <span class="s1">&#39;--gzip&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;--readids&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;--skip-technical&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;--dumpbase&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;--clip&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;--split-files&#39;</span><span class="p">,</span>
-                    <span class="p">]</span>
-            <span class="k">if</span> <span class="n">passonly</span><span class="p">:</span>
-                <span class="n">cmds</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;--read-filter&#39;</span><span class="p">,</span> <span class="s1">&#39;pass&#39;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">downloadedrun</span><span class="p">:</span>
-                <span class="n">cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">downloadedrun</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">run</span><span class="p">)</span>
-            <span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">cmds</span><span class="p">)</span>
+    <span class="c1"># run fastq-dump</span>
+    <span class="n">cmds</span> <span class="o">=</span> <span class="p">[</span><span class="n">fastq_dump</span><span class="p">,</span>
+            <span class="s1">&#39;--outdir&#39;</span><span class="p">,</span> <span class="n">fastqdir</span><span class="p">,</span>
+            <span class="s1">&#39;--gzip&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;--readids&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;--skip-technical&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;--dumpbase&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;--clip&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;--split-files&#39;</span><span class="p">,</span>
+            <span class="p">]</span>
+    <span class="k">if</span> <span class="n">passonly</span><span class="p">:</span>
+        <span class="n">cmds</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;--read-filter&#39;</span><span class="p">,</span> <span class="s1">&#39;pass&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">downloadedrun</span><span class="p">:</span>
+        <span class="n">cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">downloadedrun</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">run</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">cmds</span><span class="p">)</span>
 
-            <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">r1init</span><span class="p">,</span> <span class="n">r1</span><span class="p">)</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">r2init</span><span class="p">,</span> <span class="n">r2</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">r1init</span><span class="p">,</span> <span class="n">r1</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">r2init</span><span class="p">,</span> <span class="n">r2</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">downloadedrun</span><span class="p">:</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">downloadedrun</span><span class="p">)</span></div>
+    <span class="k">if</span> <span class="n">downloadedrun</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">downloadedrun</span><span class="p">)</span>
                 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>

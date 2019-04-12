@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>sra &#8212; dms_tools2 2.4.8 documentation</title>
+    <title>sra &#8212; dms_tools2 2.4.9 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -40,7 +40,7 @@
 <a class="reference external" href="https://www.ncbi.nlm.nih.gov/sra">Sequence Read Archive</a> (SRA).</p>
 <dl class="function">
 <dt id="dms_tools2.sra.fastqFromSRA">
-<code class="descclassname">dms_tools2.sra.</code><code class="descname">fastqFromSRA</code><span class="sig-paren">(</span><em>samples</em>, <em>fastq_dump</em>, <em>fastqdir</em>, <em>aspera=None</em>, <em>overwrite=False</em>, <em>passonly=True</em>, <em>no_downloads=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/sra.html#fastqFromSRA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.sra.fastqFromSRA" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">dms_tools2.sra.</code><code class="descname">fastqFromSRA</code><span class="sig-paren">(</span><em>samples</em>, <em>fastq_dump</em>, <em>fastqdir</em>, <em>aspera=None</em>, <em>overwrite=False</em>, <em>passonly=True</em>, <em>no_downloads=False</em>, <em>ncpus=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/sra.html#fastqFromSRA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.sra.fastqFromSRA" title="Permalink to this definition">¶</a></dt>
 <dd><p>Download data from SRA and extract FASTQ files.</p>
 <p>Currently only works for runs containing paired-end reads.</p>
 <dl class="docutils">
@@ -75,6 +75,9 @@ no longer even needs to be a valid path.</dd>
 <dt><cite>no_downloads</cite> (bool)</dt>
 <dd>If <cite>True</cite>, do <strong>not</strong> actually download the files,
 but instead just add the columns to <cite>samples</cite>.</dd>
+<dt><cite>ncpus</cite> (int)</dt>
+<dd>Use this many CPUs to parallelize downloads, downgrades
+number if it exceeds max available.</dd>
 </dl>
 </dd>
 <dt>Result:</dt>

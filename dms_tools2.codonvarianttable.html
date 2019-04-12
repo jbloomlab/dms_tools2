@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>codonvarianttable &#8212; dms_tools2 2.4.8 documentation</title>
+    <title>codonvarianttable &#8212; dms_tools2 2.4.9 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -1060,18 +1060,18 @@ plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</dd>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
-<dt>‘wildtype’ (str)</dt>
+<dt><cite>wildtype</cite> (str)</dt>
 <dd>The wildtype sequence</dd>
-<dt>‘codon_subs’ (str)</dt>
+<dt><cite>codon_subs</cite> (str)</dt>
 <dd>String of space delimited codon substitutions, in the format:
 OldCodonSiteNewCodon</dd>
-<dt>‘return_aa’ (bool)</dt>
+<dt><cite>return_aa</cite> (bool)</dt>
 <dd>Specify whether to return sequence as nucleotide or amino acid.
 Default is nucleotide.</dd>
-<dt>‘aa_subs’ (bool)</dt>
+<dt><cite>aa_subs</cite> (bool)</dt>
 <dd>Specify whether the substitutions are in amino acid form
-rather than codon. Default is codon. return_aa must be True
-in order for aa_subs to be True, since there are numerous
+rather than codon. Default is codon. <cite>return_aa</cite> must be True
+in order for <cite>aa_subs</cite> to be True, since there are numerous
 possible nucleotide sequences for an amino acid sequence.</dd>
 </dl>
 </dd>
@@ -1092,22 +1092,24 @@ possible nucleotide sequences for an amino acid sequence.</dd>
 <dl class="function">
 <dt id="dms_tools2.codonvarianttable.func_score_to_gpm">
 <code class="descclassname">dms_tools2.codonvarianttable.</code><code class="descname">func_score_to_gpm</code><span class="sig-paren">(</span><em>func_scores_df</em>, <em>wildtype</em>, <em>metric='func_score'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#func_score_to_gpm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.func_score_to_gpm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate a gpm from a functinoal score dataframe.</p>
+<dd><p>Generate a genotype phenotype map from a functional score dataframe.</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
-<dt>‘func_scores_df’ (functional score dataframe)</dt>
-<dd>A functional score dataframe, narrowed down to one
+<dt><cite>func_scores_df</cite> (functional score dataframe)</dt>
+<dd>A functional score dataframe (from the
+<a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.func_scores" title="dms_tools2.codonvarianttable.CodonVariantTable.func_scores"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.func_scores()</span></code></a> method), narrowed down to one
 post sample condition, typically with something like:
 <cite>func_scores_df.query(‘library == &#64;library &amp; sample == &#64;sample’)</cite></dd>
-<dt>‘wildtype’ (str)</dt>
+<dt><cite>wildtype</cite> (str)</dt>
 <dd>A string containing the wildtype sequence</dd>
-<dt>‘metric’ (str)</dt>
+<dt><cite>metric</cite> (str)</dt>
 <dd>A string specifying which metric to use as a phenotype</dd>
 </dl>
 </dd>
 <dt>Returns:</dt>
-<dd>A genotype phenotype map object from the Harms lab gpm package,
+<dd>A genotype phenotype map object from the Harms lab
+<a class="reference external" href="https://github.com/harmslab/gpmap">gpmap package</a>
 to be used as in input into epistasis models in the epistasis package.</dd>
 </dl>
 </dd></dl>
