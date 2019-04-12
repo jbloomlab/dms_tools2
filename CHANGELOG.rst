@@ -1,7 +1,7 @@
 Change Log
 ===========
 
-2.4.dev9
+2.4.9
 ---------
 * Allow multiprocessing `fastqFromSRA`
 
