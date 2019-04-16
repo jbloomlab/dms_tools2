@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.4.dev10
+-----------
+* Added `mle` method to `findSigSel`.
+
 2.4.9
 ---------
 * Allow multiprocessing `fastqFromSRA`

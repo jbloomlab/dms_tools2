@@ -163,7 +163,7 @@ def latexSciNot(xlist):
 
 def plotReadStats(names, readstatfiles, plotfile):
     """Plots ``dms2_bcsubamp`` read statistics for a set of samples.
-    
+
     Args:
         `names` (list or series)
             Names of the samples for which we are plotting statistics.
@@ -309,7 +309,7 @@ def plotDepth(names, countsfiles, plotfile, maxcol=4, charlist=CODONS):
                    .assign(ncounts=lambda x: x[charlist].sum(axis=1))
                    .rename(columns={'ncounts':'number of counts'})
             for (name, f) in zip(names, countsfiles)], ignore_index=True)
-    
+
     ncol = min(maxcol, len(names))
     nrow = math.ceil(len(names) / float(ncol))
 
@@ -349,7 +349,7 @@ def plotMutFreq(names, countsfiles, plotfile, maxcol=4):
     counts = pandas.concat([dms_tools2.utils.annotateCodonCounts(f).assign(
             name=name) for (name, f) in zip(names, countsfiles)], 
             ignore_index=True).rename(columns={'mutfreq':'mutation frequency'})
-    
+
     ncol = min(maxcol, len(names))
     nrow = math.ceil(len(names) / float(ncol))
 
@@ -773,7 +773,7 @@ def plotSiteDiffSel(names, diffselfiles, plotfile,
     diffsel['site'] = diffsel['site'].apply(str)
     diffsel['siteindex'] = pandas.Categorical(diffsel['site'],
             diffsel['site'].unique()).codes
-    
+
     ncol = min(maxcol, len(names))
     nrow = math.ceil(len(names) / float(ncol))
 
@@ -884,16 +884,17 @@ def plotFacetedNeutCurves(
     plt.close()
 
 
-def findSigSel(df, valcol, plotfile, fdr=0.05, title=None):
+def findSigSel(df, valcol, plotfile, fdr=0.05, title=None,
+               method='robust_hist', mle_frac_censor=0.005,
+               returnplot=False):
     """Finds "significant" selection at sites / mutations.
 
     Designed for the case where most sites / mutations are not
     under selection, but a few may be. It tries to find those
     few that are under selection. 
 
-    It does not use a mechanistic statistical model, but rather uses
-    `robust regression <http://scipy-cookbook.readthedocs.io/items/robust_regression.html>`_
-    (soft L1 loss) to fit a gamma distribution. The rationale for
+    It does not use a mechanistic statistical model, but rather fits
+    a gamma distribution. The rationale for
     a gamma distribution is that it is negative binomial's continuous
     `analog <http://www.nehalemlabs.net/prototype/blog/2013/12/01/gamma-distribution-approximation-to-the-negative-binomial-distribution/>`_.
     It then identifies sites that clearly have **larger** values than
@@ -913,11 +914,28 @@ def findSigSel(df, valcol, plotfile, fdr=0.05, title=None):
             given fitted distribution.
         `title` (string or `None`)
             Title for plot.
+        `method` (str)
+            Specifies how to fit gamma distribution, can have following values:
+
+              - 'robust_hist': bin the data, then use 
+                `robust regression <http://scipy-cookbook.readthedocs.io/items/robust_regression.html>`_
+                (soft L1 loss) to fit a gamma distribution to the histogram.
+
+              - 'mle': fit the gamma distribution to the points by maximum
+                likelihood; see also `mle_frac_censor`.
+
+        `mle_frac_censor` (float)
+            Only meaningful if `method` is 'mle'. In this case, before fitting,
+            censor the data by setting the top `mle_frac_censor` largest values
+            to the `mle_frac_censor` largest value. This shrinks very large
+            outliers that affect fit.
+        `returnplot` (bool)
+            Return the matplotlib figure.
 
     Returns:
         Creates the plot in `plotfile`. Also returns
         the 3-tuple `(df_sigsel, cutoff, gamma_fit)` where:
-        
+
             - `df_sigsel` is copy of `df` with new columns
               `P`, `Q`, and `sig`. These give P value, Q
               value, and whether site meets `fdr` cutoff
@@ -935,70 +953,93 @@ def findSigSel(df, valcol, plotfile, fdr=0.05, title=None):
               length 3 that gives the shape, scale, and location
               parameter of the fit gamma distribution.
 
+        If `returnplot` is `True`, then return
+        `((df_sigsel, cutoff, gamma_fit), fig)` where `fig`
+        is the matplotlib figure.
+
     An example: First, simulate points from a gamma distribution:
 
-    >>> shape_sim = 1.5
-    >>> scale_sim = 0.005
-    >>> loc_sim = 0.0
-    >>> gamma_sim = scipy.stats.gamma(shape_sim, scale=scale_sim,
-    ...         loc=loc_sim)
-    >>> nsites = 1000
-    >>> scipy.random.seed(0)
-    >>> df = pandas.DataFrame.from_dict({
-    ...         'site':[r for r in range(nsites)],
-    ...         'fracsurvive':gamma_sim.rvs(nsites)})
+    .. nbplot::
+
+        >>> import pandas
+        >>> import scipy
+        >>> from dms_tools2.plot import findSigSel
+        >>>
+        >>> shape_sim = 1.5
+        >>> scale_sim = 0.005
+        >>> loc_sim = 0.0
+        >>> gamma_sim = scipy.stats.gamma(shape_sim, scale=scale_sim,
+        ...         loc=loc_sim)
+        >>> nsites = 1000
+        >>> scipy.random.seed(0)
+        >>> df = pandas.DataFrame.from_dict({
+        ...         'site':[r for r in range(nsites)],
+        ...         'fracsurvive':gamma_sim.rvs(nsites)})
 
     Now make two sites have "significantly" higher values:
 
-    >>> sigsites = [100, 200]
-    >>> df.loc[sigsites, 'fracsurvive'] = 0.08
+    .. nbplot::
 
-    Now plot and find the significant sites:
+        >>> sigsites = [100, 200]
+        >>> df.loc[sigsites, 'fracsurvive'] = 0.08
 
-    >>> plotfile = '_findSigSel.png'
-    >>> (df_sigsel, cutoff, gamma_params) = findSigSel(
-    ...         df, 'fracsurvive', plotfile, title='example')
+    Now find the significant sites:
 
-    Here is the resulting plot:
+    .. nbplot::
 
-    .. image:: _static/_findSigSel.png
-       :width: 4in
-       :align: center
+        >>> plotfile = '_findSigSel.png'
+        >>> (df_sigsel, cutoff, gamma_params) = findSigSel(
+        ...         df, 'fracsurvive', plotfile, title='example')
 
     Make sure the fitted params are close to the ones used to
     simulate the data:
 
-    >>> numpy.allclose(shape_sim, gamma_params[0], rtol=0.1, atol=1e-3)
-    True
-    >>> numpy.allclose(scale_sim, gamma_params[1], rtol=0.1, atol=1e-3)
-    True
-    >>> numpy.allclose(loc_sim, gamma_params[2], rtol=0.1, atol=1e-3)
-    True
+    .. nbplot::
+
+        >>> scipy.allclose(shape_sim, gamma_params[0], rtol=0.1, atol=1e-3)
+        True
+        >>> scipy.allclose(scale_sim, gamma_params[1], rtol=0.1, atol=1e-3)
+        True
+        >>> scipy.allclose(loc_sim, gamma_params[2], rtol=0.1, atol=1e-3)
+        True
 
     Check that we find the correct significant sites:
 
-    >>> set(sigsites) == set(df_sigsel.query('sig').site)
-    True
+    .. nbplot::
+
+        >>> set(sigsites) == set(df_sigsel.query('sig').site)
+        True
 
     Make sure that sites above cutoff are significant:
 
-    >>> df_sigsel.query('sig').equals(df_sigsel.query('fracsurvive > @cutoff'))
-    True
+    .. nbplot::
+
+        >>> df_sigsel.query('sig').equals(df_sigsel.query('fracsurvive > @cutoff'))
+        True
+
+    Now repeat, getting and showing the plot:
+
+    .. nbplot::
+
+        >>> _, fig = findSigSel(
+        ...         df, 'fracsurvive', plotfile, title='example', returnplot=True)
+
+    Now use the 'mle' `method`:
+
+    .. nbplot::
+
+        >>> (df_sigsel_mle, _, _), fig_mle = findSigSel(
+        ...         df, 'fracsurvive', plotfile, title='example',
+        ...         method='mle', returnplot=True)
+        >>> set(df_sigsel_mle.query('sig').site) == set(sigsites)
+        True
+
     """
     assert valcol in df.columns, "no `valcol` {0}".format(valcol)
 
     newcols = {'P', 'Q', 'sig'}
     assert not (newcols & set(df.columns)), \
             "`df` already has {0}".format(newcols)
-
-    def _f(x, bins, heights):
-        """Gamma distribution least squares fitting function.
-
-        Zero when distribution perfectly fits histogram.
-        `x` is `(shape, scale, loc)`.
-        """
-        return (scipy.stats.gamma.pdf(bins, x[0], scale=x[1],
-                loc=x[2]) - heights)
 
     # We fit curves to histogram. First we need to get bins.
     try:
@@ -1023,13 +1064,38 @@ def findSigSel(df, valcol, plotfile, fdr=0.05, title=None):
     shape = df[valcol].mean() / scale
     x0 = numpy.array([shape, scale, 0.0])
 
-    # fit using soft L1 loss for robust regression
-    # http://scipy-cookbook.readthedocs.io/items/robust_regression.html
-    fit = scipy.optimize.least_squares(_f, x0, args=(bins, heights),
-            loss='soft_l1')
-    gamma_params = fit.x
-    gamma_fit = scipy.stats.gamma(fit.x[0], scale=fit.x[1],
-            loc=fit.x[2])
+    if method == 'robust_hist':
+        def _f(x, bins, heights):
+            """Gamma distribution least squares fitting function.
+
+            Zero when distribution perfectly fits histogram.
+            `x` is `(shape, scale, loc)`.
+            """
+            return (scipy.stats.gamma.pdf(bins, x[0], scale=x[1],
+                    loc=x[2]) - heights)
+
+        # fit using soft L1 loss for robust regression
+        # http://scipy-cookbook.readthedocs.io/items/robust_regression.html
+        fit = scipy.optimize.least_squares(_f, x0, args=(bins, heights),
+                                           loss='soft_l1')
+        gamma_params = fit.x
+        gamma_fit = scipy.stats.gamma(fit.x[0], scale=fit.x[1],
+                                      loc=fit.x[2])
+
+    elif method == 'mle':
+        vals = numpy.sort(df[valcol].values)
+        mle_n_censor = round(len(vals) * mle_frac_censor)
+        maxval = vals[-1 - mle_n_censor]
+        vals[vals > maxval] = maxval
+        fit_shape, fit_loc, fit_scale = scipy.stats.gamma.fit(vals,
+                                                              shape,
+                                                              scale=scale,
+                                                              loc=0)
+        gamma_params = numpy.array([fit_shape, fit_scale, fit_loc])
+        gamma_fit = scipy.stats.gamma(fit_shape, scale=fit_scale, loc=fit_loc)
+
+    else:
+        raise ValueError(f"invalid `method` {method}")
 
     # add fit gamma distribution to plot
     nfitbins = 500
@@ -1083,9 +1149,12 @@ def findSigSel(df, valcol, plotfile, fdr=0.05, title=None):
     # save plot
     plt.tight_layout()
     plt.savefig(plotfile)
-    plt.close()
 
-    return (df_sigsel, cutoff, gamma_params)
+    if returnplot:
+        return ((df_sigsel, cutoff, gamma_params), plt.gcf())
+    else:
+        plt.close()
+        return (df_sigsel, cutoff, gamma_params)
 
 
 def plotColCorrs(df, plotfile, cols, *, lower_filter=None,
