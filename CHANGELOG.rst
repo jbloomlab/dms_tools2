@@ -1,7 +1,7 @@
 Change Log
 ===========
 
-2.4.dev10
+2.4.10
 -----------
 * Added `mle` method to `findSigSel`.
 
