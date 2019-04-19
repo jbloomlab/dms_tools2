@@ -1248,7 +1248,13 @@ def bc_info_to_codonvarianttable(samples, geneseq, path=None):
     # Create a dictionary to contain dictionaries of each library's barcodes
     libraries = {}
 
-    # For each library
+    # Initialize lists for making the codonvarianttable
+    barcodes = []
+    subs = []
+    variant_call_support = []
+    library_list = []
+
+    # For each library, go through each sample file and collect data
     for library in samples.keys():
         # Initialize dictionary to contain this library's reads and barcodes
         barcode_dictionary = {}
@@ -1336,6 +1342,12 @@ def bc_info_to_codonvarianttable(samples, geneseq, path=None):
                                     barcode_dictionary[read][sample] = 1
                                     # Give it the next barcode
                                     barcode_dictionary[read]['barcode'] = cur_barcode
+                                    # Save values for making CodonVariantTable
+                                    barcodes.append(cur_barcode)
+                                    subs.append(getSubstitutions(geneseq, read))
+                                    variant_call_support.append(1)
+                                    library_list.append(library)
+                                    # Advance current barcode
                                     cur_barcode += 1
                                 else:
                                     # Add a counter for the sample if sequence
@@ -1366,21 +1378,6 @@ def bc_info_to_codonvarianttable(samples, geneseq, path=None):
         # reads and barcodes
         libraries[library] = barcode_dictionary
 
-    # Initialize lists for making the codonvarianttable
-    barcodes = []
-    subs = []
-    variant_call_support = []
-    library_list = []
-
-    # Get data for each barcode/sequence
-    for library in libraries:
-        barcode_dictionary = libraries[library]
-        for sequence in barcode_dictionary:
-            barcodes.append(barcode_dictionary[sequence]['barcode'])
-            subs.append(getSubstitutions(geneseq, sequence))
-            variant_call_support.append(1)
-            library_list.append(library)
-
     # Make the dataframe for creating the codonvarianttable
     df =  {'barcode':barcodes,
             'substitutions':subs,
@@ -1396,6 +1393,7 @@ def bc_info_to_codonvarianttable(samples, geneseq, path=None):
         variants = dms_tools2.codonvarianttable.CodonVariantTable(
                     barcode_variant_file=f.name,
                     geneseq=geneseq)
+
     # Make the counts dataframe:
     # Initialize list of dataframes
     dfs = []
@@ -1407,6 +1405,7 @@ def bc_info_to_codonvarianttable(samples, geneseq, path=None):
             barcodes_list = []
             counts_list = []
             sample_list = []
+            library_list = []
             # Get counts for this sample
             for sequence in barcode_dictionary.keys():
                 if sample not in barcode_dictionary[sequence].keys():
@@ -1415,19 +1414,22 @@ def bc_info_to_codonvarianttable(samples, geneseq, path=None):
                     counts_list.append(barcode_dictionary[sequence][sample])
                 barcodes_list.append(barcode_dictionary[sequence]['barcode'])
                 sample_list.append(sample)
+                library_list.append(library)
             # Make a dataframe for this sample
             data = {'barcode':barcodes_list,
                     'count':counts_list,
-                    'sample':sample_list
+                    'sample':sample_list,
+                    'library':library_list,
                    }
             data = pandas.DataFrame(data)
             # Append it to the list of dataframes
             dfs.append(data)
         # Concatenate the list of dataframes into a counts dataframe
         barcode_counts = pandas.concat(dfs)
-        # Add the counts for each sample to the codonvarianttable
-        for sample in barcode_counts['sample'].unique():
-            icounts = barcode_counts.query('sample == @sample')
+    # Add the counts for each sample to the codonvarianttable
+    for library in libraries:
+        for sample in samples[library]:
+            icounts = barcode_counts.query('library == @library & sample == @sample')
             icounts = icounts[['barcode', 'count']]
             variants.addSampleCounts(library, sample, icounts)
 
