@@ -1237,9 +1237,14 @@ def bc_info_to_codonvarianttable(samples, geneseq, path=None):
         barcode info files
     """
 
-    # Set up a re matcher for looking at lines
+    # Set up re matchers for looking at lines
     matcher = re.compile('(?P<linetype>^.*\:) '
                          '(?P<contents>.*$)')
+
+    alt_matcher = re.compile('(?P<linetype>^R\d READS:$)')
+
+    read_matcher = re.compile('(?P<read>^[ATGCN\s]*$)')
+
     # Create a dictionary to contain dictionaries of each library's barcodes
     libraries = {}
 
@@ -1283,6 +1288,20 @@ def bc_info_to_codonvarianttable(samples, geneseq, path=None):
                 for line in f:
                     line = line.decode()
                     line_match = matcher.match(line)
+                    if not line_match:
+                        line_match = alt_matcher.match(line)
+                    if not line_match:
+                        read_match = read_matcher.match(line)
+                        if not read_match:
+                            raise ValueError(f"Unable to recognize line {line}")
+                        else:
+                            line_is_read = True
+                            previous_linetype = previous_line.group('linetype')
+                            if previous_linetype != 'R1 READS:' and \
+                               previous_linetype != 'R2 READS:':
+                               raise ValueError(f"Unexpected line {line}")
+                    else:
+                        line_is_read = False
                     if previous_line.group('linetype') == 'BARCODE:':
                         if line_match.group('linetype') != 'RETAINED:':
                             raise ValueError(f"Unexpected line {line}")
@@ -1329,9 +1348,19 @@ def bc_info_to_codonvarianttable(samples, geneseq, path=None):
                                         barcode_dictionary[read][sample] += 1
                         # Set retain to None
                         retain = None
-                    # This conditional is here because the re parser as written
-                    # is not able to match the reads listed after the consensus
-                    if line_match:
+                    elif previous_line.group('linetype') == 'CONSENSUS:':
+                        if line_match.group('linetype') != 'R1 READS:':
+                            raise ValueError(f"Unexpected line {line}")
+                    elif previous_line.group('linetype') == 'R1 READS:':
+                        if not line_is_read:
+                            if line_match.group('linetype') != 'R2 READS:':
+                                raise ValueError(f"Unexpected line {line}")
+                    elif previous_line.group('linetype') == 'R2 READS:':
+                        if not line_is_read:
+                            if line_match.group('linetype') != 'BARCODE:':
+                                raise ValueError(f"Unexpected line {line}")
+                    # Save this line as the previous line if it is not a read
+                    if not line_is_read:
                         previous_line = line_match
         # After going through each file for a library, save its dictionary with
         # reads and barcodes
