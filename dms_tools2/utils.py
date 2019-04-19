@@ -1270,10 +1270,7 @@ def bc_info_to_codonvarianttable(samples, geneseq, path=None):
             # Find the file
             f = f"{sample}_bcinfo.txt.gz"
             if path:
-                directory = os.path.join(
-                            os.path.abspath(os.path.dirname(f)),
-                            path)
-                file_path = os.path.join(directory, f)
+                file_path = os.path.join(os.path.abspath(path), f)
             else:
                 file_path = f
 
