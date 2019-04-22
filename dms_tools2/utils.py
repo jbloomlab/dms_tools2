@@ -1180,8 +1180,6 @@ def getSubstitutions(wildtype, mutant, amino_acid=False):
         A space delimited string of substitutions present in the
         mutant sequence
 
-    Here is an example:
-
     >>> getSubstitutions('AGT', 'TGT')
     'A1T'
     >>> getSubstitutions('AAGTAACGA', 'ATCTAACGA')
@@ -1213,27 +1211,38 @@ def getSubstitutions(wildtype, mutant, amino_acid=False):
     return subs
 
 
-def bc_info_to_codonvarianttable(samples, geneseq, path=None):
-    """Convert bc_info files into a codonvarianttable
+def barcodeInfoToCodonVariantTable(samples, geneseq, path=None):
+    """Convert barcode info files into a CodonVariantTable
 
-    Convert barcode info files output from dms2_bcsubamp.py into
-    codonvarianttables with ascending numerical barcodes and counts of
-    each identical consensus read's occurences
+    Convert barcode info files output from `dms2_bcsubamp` into a
+    `CodonVariantTable`. Barcode info files contain reads and barcodes from
+    barcoded subamplicon sequencing, described 
+    `here <https://jbloomlab.github.io/dms_tools2/bcsubamp.html>`_.
+    This function takes consensus reads retained by `dms2_bcsubamp`, 
+    gives each unique sequence a numerical barcode (since the barcodes from 
+    `dms2_bcsubamp` could come from the same variant), and counts the number
+    of retained consensus reads corresponding to each sequence. Then, a
+    `CodonVariantTable` is made using the sequences and their numerical 
+    barcodes, and counts are added based on the number of retained consensus
+    reads of those sequences. Therefore, the `CodonVariantTable` will only 
+    contain one 'variant' for each unique sequence with the total count for all
+    the unbarcoded variants in the experiment which had the same sequence.
 
     Args:
         `samples` (dict):
             Dictionary with libraries as keys and lists of info file prefixes
             (file names without the '_bcinfo.txt.gz') for files corresponding
             to those libraries as values.
-            Ex: {'library-1':['condition-1-library-1'],
-                 'library-2':['condition-1-library-2']}
+            
+            Example: {'library-1':['condition-1-library-1'],
+                      'library-2':['condition-1-library-2']}
         `geneseq` (str):
             The wildtype gene sequence
         `path` (str)
             Directory in which barcode info files are located
 
     Returns:
-        A codonvarianttable with 'counts' generated from the
+        A CodonVariantTable with 'counts' generated from the
         barcode info files
     """
 
