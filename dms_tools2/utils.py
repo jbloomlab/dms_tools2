@@ -18,15 +18,17 @@ import tempfile
 import itertools
 import collections
 import random
+import re
 
 import numpy
 import scipy.misc
 import scipy.special
 import pandas
 import HTSeq
+import gzip
 
 import dms_tools2
-from dms_tools2 import CODONS, CODON_TO_AA, AAS_WITHSTOP, AA_TO_CODONS
+from dms_tools2 import CODONS, CODON_TO_AA, AAS_WITHSTOP, AA_TO_CODONS, NTS
 import dms_tools2._cutils
 
 
@@ -1163,6 +1165,281 @@ def sigFigStr(x, nsig):
         assert postdecimal > 0, str(x)
         return f"{{:.{postdecimal}f}}".format(x)
 
+def getSubstitutions(wildtype, mutant, amino_acid=False):
+    """Get space delimited string of substitutions
+
+    Args:
+        `wildtype` (str):
+             The wildtype sequence
+        `mutant` (str):
+             The mutant sequence
+        `amino_acid` (bool)
+             Specify whether the sequence is amino acid.
+             Default is False
+    Returns:
+        A space delimited string of substitutions present in the
+        mutant sequence
+
+    >>> getSubstitutions('AGT', 'TGT')
+    'A1T'
+    >>> getSubstitutions('AAGTAACGA', 'ATCTAACGA')
+    'A2T G3C'
+    >>> getSubstitutions('TYARV', 'GYAGV', amino_acid=True)
+    'T1G R4G'
+    """
+    if len(wildtype) != len(mutant):
+        raise ValueError('wildtype and mutant must be same length')
+    subs = []
+    for site in range(len(wildtype)):
+        wt = wildtype[site]
+        mut = mutant[site]
+        if amino_acid:
+            if wt not in AAS_WITHSTOP:
+                raise ValueError (f"Invalid wt residue {wt} at site {site+1}")
+            if mut not in AAS_WITHSTOP:
+                raise ValueError (f"Invalid mutant residue {mut} at site {site+1}")
+        else:
+            if wt not in NTS:
+                raise ValueError (f"Invalid wt nucleotide {wt} at site {site+1}")
+            if mut not in NTS:
+                raise ValueError (f"Invalid mutant nucleotide {mut} at site {site+1}")
+        if wt!=mut:
+            pos = str(site + 1)
+            subs.append(f"{wt}{pos}{mut}")
+    subs = ' '.join(subs)
+
+    return subs
+
+
+def barcodeInfoToCodonVariantTable(samples, geneseq, path=None):
+    """Convert barcode info files into a CodonVariantTable
+
+    Convert barcode info files output from `dms2_bcsubamp` into a
+    `CodonVariantTable`. Barcode info files contain reads and barcodes from
+    barcoded subamplicon sequencing, described 
+    `here <https://jbloomlab.github.io/dms_tools2/bcsubamp.html>`_.
+    This function takes consensus reads retained by `dms2_bcsubamp`, 
+    gives each unique sequence a numerical barcode (since the barcodes from 
+    `dms2_bcsubamp` could come from the same variant), and counts the number
+    of retained consensus reads corresponding to each sequence. Then, a
+    `CodonVariantTable` is made using the sequences and their numerical 
+    barcodes, and counts are added based on the number of retained consensus
+    reads of those sequences. Therefore, the `CodonVariantTable` will only 
+    contain one 'variant' for each unique sequence with the total count for all
+    the unbarcoded variants in the experiment which had the same sequence.
+
+    Args:
+        `samples` (dict):
+            Dictionary with libraries as keys and lists of info file prefixes
+            (file names without the '_bcinfo.txt.gz') for files corresponding
+            to those libraries as values.
+            
+            Example: {'library-1':['condition-1-library-1'],
+                      'library-2':['condition-1-library-2']}
+        `geneseq` (str):
+            The wildtype gene sequence
+        `path` (str)
+            Directory in which barcode info files are located
+
+    Returns:
+        A CodonVariantTable with 'counts' generated from the
+        barcode info files
+    """
+
+    # Set up re matchers for looking at lines
+    matcher = re.compile('(?P<linetype>^.*\:) '
+                         '(?P<contents>.*$)')
+
+    alt_matcher = re.compile('(?P<linetype>^R\d READS:$)')
+
+    read_matcher = re.compile('(?P<read>^[ATGCN\s]*$)')
+
+    # Create a dictionary to contain dictionaries of each library's barcodes
+    libraries = {}
+
+    # Initialize lists for making the codonvarianttable
+    barcodes = []
+    subs = []
+    variant_call_support = []
+    library_list = []
+
+    # For each library, go through each sample file and collect data
+    for library in samples.keys():
+        # Initialize dictionary to contain this library's reads and barcodes
+        barcode_dictionary = {}
+        # Start a barcode count for this library
+        cur_barcode = 1
+        # For each barcode info file corresponding to a sample in this library
+        for sample in samples[library]:
+
+            # Set initial conditions
+            take_next = False
+            description_skipped = False
+
+            # Find the file
+            f = f"{sample}_bcinfo.txt.gz"
+            if path:
+                file_path = os.path.join(os.path.abspath(path), f)
+            else:
+                file_path = f
+
+            # Open the file and loop through it to find retained consensus
+            # reads and give them each a new barcode
+            with gzip.open(file_path, 'r') as f:
+                # Make sure the first line looks like it is supposed to
+                firstline = f.readline()
+                firstline = firstline.decode()
+                first_match = matcher.match(firstline)
+                if first_match.group('linetype') != 'BARCODE:':
+                    raise ValueError(f"Unexpected first line {firstline}: may be "
+                    "unexpected file type")
+                else:
+                    previous_line = first_match
+
+                # Go through the lines, making they are in the expected order
+                for line in f:
+                    line = line.decode()
+                    line_match = matcher.match(line)
+                    if not line_match:
+                        line_match = alt_matcher.match(line)
+                    if not line_match:
+                        read_match = read_matcher.match(line)
+                        if not read_match:
+                            raise ValueError(f"Unable to recognize line {line}")
+                        else:
+                            line_is_read = True
+                            previous_linetype = previous_line.group('linetype')
+                            if previous_linetype != 'R1 READS:' and \
+                               previous_linetype != 'R2 READS:':
+                               raise ValueError(f"Unexpected line {line}")
+                    else:
+                        line_is_read = False
+                    if previous_line.group('linetype') == 'BARCODE:':
+                        if line_match.group('linetype') != 'RETAINED:':
+                            raise ValueError(f"Unexpected line {line}")
+                        # Decide whether to retain the next consensus or not
+                        else:
+                            if line_match.group('contents') == 'False':
+                                retain = False
+                            elif line_match.group('contents') == 'True':
+                                retain = True
+                            else:
+                                raise ValueError(f"Unexpected line {line}")
+                    elif previous_line.group('linetype') == 'RETAINED:':
+                        if line_match.group('linetype') != 'DESCRIPTION:':
+                            raise ValueError(f"Unexpected line {line}")
+                    elif previous_line.group('linetype') == 'DESCRIPTION:':
+                        if line_match.group('linetype') != 'CONSENSUS:':
+                            raise ValueError(f"Unexpected line {line}")
+                        # Make sure we know whether to retain or not
+                        elif not isinstance(retain, bool):
+                            raise ValueError(
+                            f"Unclear whether to retain {line_match.group('contents')}"
+                            )
+                        elif retain:
+                            read = line_match.group('contents')
+                            # Add the read to the dictionary if not in it
+                            # Also give it a barcode
+                            if 'N' not in read:
+                                if read not in barcode_dictionary:
+                                    # Create the sequence in the dictionary
+                                    barcode_dictionary[read] = {}
+                                    # Give it an initial count of 1 for this sample
+                                    barcode_dictionary[read][sample] = 1
+                                    # Give it the next barcode
+                                    barcode_dictionary[read]['barcode'] = cur_barcode
+                                    # Save values for making CodonVariantTable
+                                    barcodes.append(cur_barcode)
+                                    subs.append(getSubstitutions(geneseq, read))
+                                    variant_call_support.append(1)
+                                    library_list.append(library)
+                                    # Advance current barcode
+                                    cur_barcode += 1
+                                else:
+                                    # Add a counter for the sample if sequence
+                                    # not seen for this sample yet
+                                    if sample not in barcode_dictionary[read]:
+                                        barcode_dictionary[read][sample] = 1
+                                    else:
+                                        # Add another count to this read for
+                                        # this sample
+                                        barcode_dictionary[read][sample] += 1
+                        # Set retain to None
+                        retain = None
+                    elif previous_line.group('linetype') == 'CONSENSUS:':
+                        if line_match.group('linetype') != 'R1 READS:':
+                            raise ValueError(f"Unexpected line {line}")
+                    elif previous_line.group('linetype') == 'R1 READS:':
+                        if not line_is_read:
+                            if line_match.group('linetype') != 'R2 READS:':
+                                raise ValueError(f"Unexpected line {line}")
+                    elif previous_line.group('linetype') == 'R2 READS:':
+                        if not line_is_read:
+                            if line_match.group('linetype') != 'BARCODE:':
+                                raise ValueError(f"Unexpected line {line}")
+                    # Save this line as the previous line if it is not a read
+                    if not line_is_read:
+                        previous_line = line_match
+        # After going through each file for a library, save its dictionary with
+        # reads and barcodes
+        libraries[library] = barcode_dictionary
+
+    # Make the dataframe for creating the codonvarianttable
+    df =  {'barcode':barcodes,
+            'substitutions':subs,
+            'library':library_list,
+            'variant_call_support':variant_call_support,
+           }
+    df = pandas.DataFrame(df)
+
+    # Make the codonvarianttable
+    with tempfile.NamedTemporaryFile(mode='w') as f:
+        df.to_csv(f, index=False)
+        f.flush()
+        variants = dms_tools2.codonvarianttable.CodonVariantTable(
+                    barcode_variant_file=f.name,
+                    geneseq=geneseq)
+
+    # Make the counts dataframe:
+    # Initialize list of dataframes
+    dfs = []
+
+    # Loop through each library and produce count dataframes for each sample
+    for library in libraries:
+        barcode_dictionary = libraries[library]
+        for sample in samples[library]:
+            barcodes_list = []
+            counts_list = []
+            sample_list = []
+            library_list = []
+            # Get counts for this sample
+            for sequence in barcode_dictionary.keys():
+                if sample not in barcode_dictionary[sequence].keys():
+                    counts_list.append(0)
+                else:
+                    counts_list.append(barcode_dictionary[sequence][sample])
+                barcodes_list.append(barcode_dictionary[sequence]['barcode'])
+                sample_list.append(sample)
+                library_list.append(library)
+            # Make a dataframe for this sample
+            data = {'barcode':barcodes_list,
+                    'count':counts_list,
+                    'sample':sample_list,
+                    'library':library_list,
+                   }
+            data = pandas.DataFrame(data)
+            # Append it to the list of dataframes
+            dfs.append(data)
+        # Concatenate the list of dataframes into a counts dataframe
+        barcode_counts = pandas.concat(dfs)
+    # Add the counts for each sample to the codonvarianttable
+    for library in libraries:
+        for sample in samples[library]:
+            icounts = barcode_counts.query('library == @library & sample == @sample')
+            icounts = icounts[['barcode', 'count']]
+            variants.addSampleCounts(library, sample, icounts)
+
+    return(variants)
 
 if __name__ == '__main__':
     import doctest
