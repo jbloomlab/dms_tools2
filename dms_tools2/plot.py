@@ -478,6 +478,10 @@ def plotCodonMutTypes(names, countsfiles, plotfile,
             name=name) for (name, f) in zip(names, countsfiles)], 
             ignore_index=True)
 
+    # make name a category to preserve order
+    counts['name'] = counts['name'].astype(
+            pandas.api.types.CategoricalDtype(categories=names))
+
     if classification == 'aachange':
         muttypes = {'stop':'nstop', 'synonymous':'nsyn', 
                 'nonsynonymous':'nnonsyn'}
