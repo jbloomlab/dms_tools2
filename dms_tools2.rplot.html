@@ -1,19 +1,18 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>rplot &#8212; dms_tools2 2.4.10 documentation</title>
+    <meta charset="utf-8" />
+    <title>rplot &#8212; dms_tools2 2.4.12 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="seqnumbering" href="dms_tools2.seqnumbering.html" />
@@ -30,8 +29,6 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          
-
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.rplot"></span><div class="section" id="rplot">
@@ -73,28 +70,27 @@ must have the same set of measurements.</p>
 <p>Makes panel of logo plots faceted on <cite>logodata[‘facetlabel’]</cite>,
 where character stacks are labeled by <cite>logodata[‘stacklabel’]</cite>
 and show the characters at the indicated heights.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>logodata</cite> (pandas DataFrame)</dt>
-<dd>Contains data to plot. Should have the columns
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>logodata</cite> (pandas DataFrame)</dt><dd><p>Contains data to plot. Should have the columns
 <cite>facetlabel</cite>, <cite>stacklabel</cite>, and a column giving the
-height of each character in <cite>chars</cite>.</dd>
-<dt><cite>chars</cite> (list)</dt>
-<dd>Letters for which we plot heights.</dd>
-<dt><cite>plotfile</cite> (str)</dt>
-<dd>Name of created plot.</dd>
-<dt><cite>width</cite> (float)</dt>
-<dd>Width of plot in inches.</dd>
-<dt><cite>height</cite> (float)</dt>
-<dd>Height of plot in inches.</dd>
-<dt><cite>ncol</cite> (int or <cite>None</cite>)</dt>
-<dd>Number of columns in faceted plot. If <cite>None</cite>, use
-as many as needed to plot everything in one row.</dd>
-<dt><cite>char_colors</cite> (dict)</dt>
-<dd>Values give color for every character in <cite>chars</cite>.</dd>
-<dt><cite>xlabelsrotate</cite> (bool)</dt>
-<dd>Do we rotate the x-labels?</dd>
+height of each character in <cite>chars</cite>.</p>
+</dd>
+<dt><cite>chars</cite> (list)</dt><dd><p>Letters for which we plot heights.</p>
+</dd>
+<dt><cite>plotfile</cite> (str)</dt><dd><p>Name of created plot.</p>
+</dd>
+<dt><cite>width</cite> (float)</dt><dd><p>Width of plot in inches.</p>
+</dd>
+<dt><cite>height</cite> (float)</dt><dd><p>Height of plot in inches.</p>
+</dd>
+<dt><cite>ncol</cite> (int or <cite>None</cite>)</dt><dd><p>Number of columns in faceted plot. If <cite>None</cite>, use
+as many as needed to plot everything in one row.</p>
+</dd>
+<dt><cite>char_colors</cite> (dict)</dt><dd><p>Values give color for every character in <cite>chars</cite>.</p>
+</dd>
+<dt><cite>xlabelsrotate</cite> (bool)</dt><dd><p>Do we rotate the x-labels?</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -128,35 +124,34 @@ two stacks for the characters <cite>A</cite> and <cite>C</cite>:</p>
 <p>Designed to show logo plot for a subset of sites. This
 is useful when you have data for many sites, but only
 want to look at a few of them.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>logodata</cite> (pandas DataFrame)</dt>
-<dd>Contains data to plot. Should have the columns
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>logodata</cite> (pandas DataFrame)</dt><dd><p>Contains data to plot. Should have the columns
 <cite>site</cite>, <cite>show</cite>, and a column giving the height
 height of each char in <cite>chars</cite>. Only sites
 where <cite>show</cite> is <cite>True</cite> are shown. Sites are 
 shown in the order they occur in this dataframe,
 with spaces every time there is an interspersed
-site with <cite>show</cite> being <cite>False</cite>.</dd>
-<dt><cite>chars</cite> (list)</dt>
-<dd>Letters for which we plot heights.</dd>
-<dt><cite>plotfile</cite> (str)</dt>
-<dd>Name of created plot.</dd>
-<dt><cite>width</cite> (float)</dt>
-<dd>Width of plot in inches.</dd>
-<dt><cite>height</cite> (float)</dt>
-<dd>Height of plot in inches.</dd>
-<dt><cite>yname</cite> (str)</dt>
-<dd>If set to a non-empty string, is the y-axis label
-and yticks are drawn.</dd>
-<dt><cite>char_colors</cite> (dict)</dt>
-<dd>Values give color for every character in <cite>chars</cite>.</dd>
-<dt><cite>ylimits</cite> (<cite>None</cite> or 2-tuple)</dt>
-<dd>If not <cite>None</cite>, should give the ylimits for the plot
-as <cite>(ymin, ymax)</cite></dd>
-<dt><cite>title</cite> (str)</dt>
-<dd>Title to place above plot.</dd>
+site with <cite>show</cite> being <cite>False</cite>.</p>
+</dd>
+<dt><cite>chars</cite> (list)</dt><dd><p>Letters for which we plot heights.</p>
+</dd>
+<dt><cite>plotfile</cite> (str)</dt><dd><p>Name of created plot.</p>
+</dd>
+<dt><cite>width</cite> (float)</dt><dd><p>Width of plot in inches.</p>
+</dd>
+<dt><cite>height</cite> (float)</dt><dd><p>Height of plot in inches.</p>
+</dd>
+<dt><cite>yname</cite> (str)</dt><dd><p>If set to a non-empty string, is the y-axis label
+and yticks are drawn.</p>
+</dd>
+<dt><cite>char_colors</cite> (dict)</dt><dd><p>Values give color for every character in <cite>chars</cite>.</p>
+</dd>
+<dt><cite>ylimits</cite> (<cite>None</cite> or 2-tuple)</dt><dd><p>If not <cite>None</cite>, should give the ylimits for the plot
+as <cite>(ymin, ymax)</cite></p>
+</dd>
+<dt><cite>title</cite> (str)</dt><dd><p>Title to place above plot.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -197,7 +192,6 @@ sites for two characters:</p>
 
 
           </div>
-          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -230,7 +224,7 @@ sites for two characters:</p>
     
 
 <p>
-<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -274,20 +268,10 @@ sites for two characters:</p>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
         </div>
       </div>
       <div class="clearer"></div>
@@ -296,8 +280,8 @@ sites for two characters:</p>
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
       <a href="_sources/dms_tools2.rplot.rst.txt"

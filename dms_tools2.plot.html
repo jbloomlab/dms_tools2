@@ -1,19 +1,18 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>plot &#8212; dms_tools2 2.4.10 documentation</title>
+    <meta charset="utf-8" />
+    <title>plot &#8212; dms_tools2 2.4.12 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="prefs" href="dms_tools2.prefs.html" />
@@ -30,8 +29,6 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          
-
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.plot"></span><div class="section" id="plot">
@@ -50,16 +47,15 @@ and <a class="reference external" href="https://seaborn.pydata.org/index.html">s
 <dd><p>Sets axis limits to clip outliers in data.</p>
 <p>Useful if there are a few data points far outside the range
 of most of the data.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>frac_clip</cite> (float)</dt>
-<dd>Set upper and lower limits so that this fraction of
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>frac_clip</cite> (float)</dt><dd><p>Set upper and lower limits so that this fraction of
 data is outside limits at both ends. Done <strong>before</strong>
-adding <cite>extend</cite>.</dd>
-<dt><cite>extend</cite> (float)</dt>
-<dd>Extend the limits determined by <cite>frac_clip</cite> by this
-fraction of the data range.</dd>
+adding <cite>extend</cite>.</p>
+</dd>
+<dt><cite>extend</cite> (float)</dt><dd><p>Extend the limits determined by <cite>frac_clip</cite> by this
+fraction of the data range.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -91,21 +87,20 @@ color is gray rather than black.</p>
 <p>Useful when you would like to re-label a numeric x-axis
 with string labels.</p>
 <p>Uses <cite>matplotlib.ticker.MaxNLocator</cite> to choose pretty breaks.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>xi</cite> (list or array)</dt>
-<dd>Integer values actually assigned to axis points.</dd>
-<dt><cite>x</cite> (list)</dt>
-<dd>Strings corresponding to each numeric value in <cite>xi</cite>.</dd>
-<dt><cite>n</cite> (int)</dt>
-<dd>Approximate number of ticks to use.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>xi</cite> (list or array)</dt><dd><p>Integer values actually assigned to axis points.</p>
+</dd>
+<dt><cite>x</cite> (list)</dt><dd><p>Strings corresponding to each numeric value in <cite>xi</cite>.</p>
+</dd>
+<dt><cite>n</cite> (int)</dt><dd><p>Approximate number of ticks to use.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>The tuple <cite>(breaks, labels)</cite> where <cite>breaks</cite> gives the
+<dt>Returns:</dt><dd><p>The tuple <cite>(breaks, labels)</cite> where <cite>breaks</cite> gives the
 locations of breaks taken from <cite>xi</cite>, and <cite>labels</cite> is
-the label for each break.</dd>
+the label for each break.</p>
+</dd>
 </dl>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">xi</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">213</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xi</span><span class="p">]</span>
@@ -133,63 +128,60 @@ It then identifies sites that clearly have <strong>larger</strong> values than
 expected under this distribution. It currently does not
 identify sites with <strong>smaller</strong> (or more negative) than expected
 values.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>df</cite> (pandas DataFrame)</dt>
-<dd>Contains data to analyze</dd>
-<dt><cite>valcol</cite> (string)</dt>
-<dd>Column in <cite>df</cite> with values (e.g., <cite>fracsurvive</cite>)</dd>
-<dt><cite>plotfile</cite> (string)</dt>
-<dd>Name of file to which we plot fit.</dd>
-<dt><cite>fdr</cite> (float)</dt>
-<dd>Find sites that are significant at this <cite>fdr</cite>
-given fitted distribution.</dd>
-<dt><cite>title</cite> (string or <cite>None</cite>)</dt>
-<dd>Title for plot.</dd>
-<dt><cite>method</cite> (str)</dt>
-<dd><p class="first">Specifies how to fit gamma distribution, can have following values:</p>
-<blockquote class="last">
+<dl>
+<dt>Args:</dt><dd><dl>
+<dt><cite>df</cite> (pandas DataFrame)</dt><dd><p>Contains data to analyze</p>
+</dd>
+<dt><cite>valcol</cite> (string)</dt><dd><p>Column in <cite>df</cite> with values (e.g., <cite>fracsurvive</cite>)</p>
+</dd>
+<dt><cite>plotfile</cite> (string)</dt><dd><p>Name of file to which we plot fit.</p>
+</dd>
+<dt><cite>fdr</cite> (float)</dt><dd><p>Find sites that are significant at this <cite>fdr</cite>
+given fitted distribution.</p>
+</dd>
+<dt><cite>title</cite> (string or <cite>None</cite>)</dt><dd><p>Title for plot.</p>
+</dd>
+<dt><cite>method</cite> (str)</dt><dd><p>Specifies how to fit gamma distribution, can have following values:</p>
+<blockquote>
 <div><ul class="simple">
-<li>‘robust_hist’: bin the data, then use 
+<li><p>‘robust_hist’: bin the data, then use 
 <a class="reference external" href="http://scipy-cookbook.readthedocs.io/items/robust_regression.html">robust regression</a>
-(soft L1 loss) to fit a gamma distribution to the histogram.</li>
-<li>‘mle’: fit the gamma distribution to the points by maximum
-likelihood; see also <cite>mle_frac_censor</cite>.</li>
+(soft L1 loss) to fit a gamma distribution to the histogram.</p></li>
+<li><p>‘mle’: fit the gamma distribution to the points by maximum
+likelihood; see also <cite>mle_frac_censor</cite>.</p></li>
 </ul>
 </div></blockquote>
 </dd>
-<dt><cite>mle_frac_censor</cite> (float)</dt>
-<dd>Only meaningful if <cite>method</cite> is ‘mle’. In this case, before fitting,
+<dt><cite>mle_frac_censor</cite> (float)</dt><dd><p>Only meaningful if <cite>method</cite> is ‘mle’. In this case, before fitting,
 censor the data by setting the top <cite>mle_frac_censor</cite> largest values
 to the <cite>mle_frac_censor</cite> largest value. This shrinks very large
-outliers that affect fit.</dd>
-<dt><cite>returnplot</cite> (bool)</dt>
-<dd>Return the matplotlib figure.</dd>
+outliers that affect fit.</p>
+</dd>
+<dt><cite>returnplot</cite> (bool)</dt><dd><p>Return the matplotlib figure.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd><p class="first">Creates the plot in <cite>plotfile</cite>. Also returns
+<dt>Returns:</dt><dd><p>Creates the plot in <cite>plotfile</cite>. Also returns
 the 3-tuple <cite>(df_sigsel, cutoff, gamma_fit)</cite> where:</p>
 <blockquote>
 <div><ul class="simple">
-<li><cite>df_sigsel</cite> is copy of <cite>df</cite> with new columns
+<li><p><cite>df_sigsel</cite> is copy of <cite>df</cite> with new columns
 <cite>P</cite>, <cite>Q</cite>, and <cite>sig</cite>. These give P value, Q
 value, and whether site meets <cite>fdr</cite> cutoff
-for significance.</li>
-<li><cite>cutoff</cite> is the maximum value that is <strong>not</strong>
+for significance.</p></li>
+<li><p><cite>cutoff</cite> is the maximum value that is <strong>not</strong>
 called significant. Because FDR is a property
 of a distribution, this value cannot be 
 interpreted as meaning a new data point would
 be called based on this cutoff, as the cutoff
 would change. But <cite>cutoff</cite> is useful for 
-plotting to see significant / non-significant.</li>
-<li><cite>gamma_params</cite> is a <cite>numpy.ndarray</cite> that of 
+plotting to see significant / non-significant.</p></li>
+<li><p><cite>gamma_params</cite> is a <cite>numpy.ndarray</cite> that of 
 length 3 that gives the shape, scale, and location
-parameter of the fit gamma distribution.</li>
+parameter of the fit gamma distribution.</p></li>
 </ul>
 </div></blockquote>
-<p class="last">If <cite>returnplot</cite> is <cite>True</cite>, then return
+<p>If <cite>returnplot</cite> is <cite>True</cite>, then return
 <cite>((df_sigsel, cutoff, gamma_fit), fig)</cite> where <cite>fig</cite>
 is the matplotlib figure.</p>
 </dd>
@@ -248,7 +240,7 @@ simulate the data:</p>
 </pre></div>
 </div>
 <p>(<a class="reference external" href=".//dms_tools2-plot-7.png">png</a>, <a class="reference external" href=".//dms_tools2-plot-7.hires.png">hires.png</a>, <a class="reference external" href=".//dms_tools2-plot-7.pdf">pdf</a>)</p>
-<div class="figure">
+<div class="figure align-center">
 <img alt="_images/dms_tools2-plot-7.png" src="_images/dms_tools2-plot-7.png" />
 </div>
 <p>Now use the ‘mle’ <cite>method</cite>:</p>
@@ -260,7 +252,7 @@ simulate the data:</p>
 </pre></div>
 </div>
 <p>(<a class="reference external" href=".//dms_tools2-plot-8.png">png</a>, <a class="reference external" href=".//dms_tools2-plot-8.hires.png">hires.png</a>, <a class="reference external" href=".//dms_tools2-plot-8.pdf">pdf</a>)</p>
-<div class="figure">
+<div class="figure align-center">
 <img alt="_images/dms_tools2-plot-8.png" src="_images/dms_tools2-plot-8.png" />
 </div>
 </dd></dl>
@@ -279,29 +271,28 @@ simulate the data:</p>
 However, if the data are integer, these bins
 may be non-integer and so some bins will capture
 more integers. This function fixes that.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>x</cite> (numpy array)</dt>
-<dd>The data to bin.</dd>
-<dt><cite>method</cite> (str)</dt>
-<dd>The binning method. Can be anything
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>x</cite> (numpy array)</dt><dd><p>The data to bin.</p>
+</dd>
+<dt><cite>method</cite> (str)</dt><dd><p>The binning method. Can be anything
 acceptable to <cite>numpy.histogram</cite> as
-a <cite>bins</cite> argument.</dd>
-<dt><cite>shrink_threshold</cite> (<cite>None</cite> or int)</dt>
-<dd>If set to a value other than <cite>None</cite>,
+a <cite>bins</cite> argument.</p>
+</dd>
+<dt><cite>shrink_threshold</cite> (<cite>None</cite> or int)</dt><dd><p>If set to a value other than <cite>None</cite>,
 apply a heuristic threshold to slow
 the growth in number of bins if they
-exceed this number.</dd>
-<dt><cite>maxbins</cite> (int)</dt>
-<dd>Maximum number of bins.</dd>
+exceed this number.</p>
+</dd>
+<dt><cite>maxbins</cite> (int)</dt><dd><p>Maximum number of bins.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>The bin edges as returned in the second
+<dt>Returns:</dt><dd><p>The bin edges as returned in the second
 element of <cite>numpy.histogram</cite>, but adjusted
 to be of integer width if the data are all
-integers.</dd>
+integers.</p>
+</dd>
 </dl>
 <p>Just like <cite>numpy.histogram</cite> for non-int data:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -331,16 +322,15 @@ True</p>
 <code class="descclassname">dms_tools2.plot.</code><code class="descname">latexSciNot</code><span class="sig-paren">(</span><em>xlist</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#latexSciNot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.latexSciNot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts list of numbers to LaTex scientific notation.</p>
 <p>Useful for nice axis-tick formatting.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>xlist</cite> (list or number)</dt>
-<dd>Numbers to format.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>xlist</cite> (list or number)</dt><dd><p>Numbers to format.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>List of latex scientific notation formatted strings,
-or single string if <cite>xlist</cite> is a number.</dd>
+<dt>Returns:</dt><dd><p>List of latex scientific notation formatted strings,
+or single string if <cite>xlist</cite> is a number.</p>
+</dd>
 </dl>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">latexSciNot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3120</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0000927</span><span class="p">])</span>
 <span class="go">[&#39;$0$&#39;, &#39;$3$&#39;, &#39;$3.1 \\times 10^{3}$&#39;, &#39;$-9.3 \\times 10^{-5}$&#39;]</span>
@@ -368,15 +358,14 @@ or single string if <cite>xlist</cite> is a number.</dd>
 <dt id="dms_tools2.plot.plotBCStats">
 <code class="descclassname">dms_tools2.plot.</code><code class="descname">plotBCStats</code><span class="sig-paren">(</span><em>names</em>, <em>bcstatsfiles</em>, <em>plotfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotBCStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotBCStats" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code> barcode statistics for set of samples.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>names</cite> (list or series)</dt>
-<dd>Names of the samples for which we are plotting statistics.</dd>
-<dt><cite>bcstatsfiles</cite> (list or series)</dt>
-<dd>Names of <code class="docutils literal notranslate"><span class="pre">*_bcstats.csv</span></code> files created by <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code>.</dd>
-<dt><cite>plotfile</cite> (str)</dt>
-<dd>Name of PDF plot file to create.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>names</cite> (list or series)</dt><dd><p>Names of the samples for which we are plotting statistics.</p>
+</dd>
+<dt><cite>bcstatsfiles</cite> (list or series)</dt><dd><p>Names of <code class="docutils literal notranslate"><span class="pre">*_bcstats.csv</span></code> files created by <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code>.</p>
+</dd>
+<dt><cite>plotfile</cite> (str)</dt><dd><p>Name of PDF plot file to create.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -387,25 +376,23 @@ or single string if <cite>xlist</cite> is a number.</dd>
 <code class="descclassname">dms_tools2.plot.</code><code class="descname">plotCodonMutTypes</code><span class="sig-paren">(</span><em>names</em>, <em>countsfiles</em>, <em>plotfile</em>, <em>classification='aachange'</em>, <em>csvfile=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotCodonMutTypes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotCodonMutTypes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot average frequency codon mutation types.</p>
 <p>The averages are determined by summing counts for all sites.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>names</cite> (list or series)</dt>
-<dd>Names of samples for which we plot statistics.</dd>
-<dt><cite>countsfiles</cite> (list or series)</dt>
-<dd><code class="docutils literal notranslate"><span class="pre">*_codoncounts.csv</span></code> files of type created by <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code>.</dd>
-<dt><cite>plotfile</cite> (str)</dt>
-<dd>Name of created PDF plot file.</dd>
-<dt><cite>classification</cite> (str)</dt>
-<dd><p class="first">The method used to classify the mutation types. Can be:</p>
-<blockquote class="last">
+<dl>
+<dt>Args:</dt><dd><dl>
+<dt><cite>names</cite> (list or series)</dt><dd><p>Names of samples for which we plot statistics.</p>
+</dd>
+<dt><cite>countsfiles</cite> (list or series)</dt><dd><p><code class="docutils literal notranslate"><span class="pre">*_codoncounts.csv</span></code> files of type created by <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code>.</p>
+</dd>
+<dt><cite>plotfile</cite> (str)</dt><dd><p>Name of created PDF plot file.</p>
+</dd>
+<dt><cite>classification</cite> (str)</dt><dd><p>The method used to classify the mutation types. Can be:</p>
+<blockquote>
 <div><p><cite>aachange</cite> : stop, synonymous, nonsynonymous</p>
 <p><cite>n_ntchanges</cite> : number of nucleotide changes per codon</p>
 <p><cite>singlentchanges</cite> : nucleotide change in 1-nt mutations</p>
 </div></blockquote>
 </dd>
-<dt><cite>csvfile</cite> (str or <cite>None</cite>)</dt>
-<dd><cite>None</cite> or name of CSV file to which numerical data are written.</dd>
+<dt><cite>csvfile</cite> (str or <cite>None</cite>)</dt><dd><p><cite>None</cite> or name of CSV file to which numerical data are written.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -416,30 +403,29 @@ or single string if <cite>xlist</cite> is a number.</dd>
 <code class="descclassname">dms_tools2.plot.</code><code class="descname">plotColCorrs</code><span class="sig-paren">(</span><em>df</em>, <em>plotfile</em>, <em>cols</em>, <em>*</em>, <em>lower_filter=None</em>, <em>title=None</em>, <em>shrink_threshold=25</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotColCorrs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotColCorrs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots correlation among columns in pandas Data Frame.</p>
 <p>Plots distribution of each variable and pairwise correlations.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>df</cite> (pandas DataFrame)</dt>
-<dd>Data frame with data to plot.</dd>
-<dt><cite>plotfile</cite> (str or <cite>None</cite>)</dt>
-<dd>Name of created plot, or <cite>None</cite> if you want
-plot returned.</dd>
-<dt><cite>cols</cite> (list)</dt>
-<dd>List of columns in <cite>df</cite> to plot.</dd>
-<dt><cite>lower_filter</cite> (<cite>None</cite> or str)</dt>
-<dd>Can be any string that can passed to the <cite>query</cite> function
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>df</cite> (pandas DataFrame)</dt><dd><p>Data frame with data to plot.</p>
+</dd>
+<dt><cite>plotfile</cite> (str or <cite>None</cite>)</dt><dd><p>Name of created plot, or <cite>None</cite> if you want
+plot returned.</p>
+</dd>
+<dt><cite>cols</cite> (list)</dt><dd><p>List of columns in <cite>df</cite> to plot.</p>
+</dd>
+<dt><cite>lower_filter</cite> (<cite>None</cite> or str)</dt><dd><p>Can be any string that can passed to the <cite>query</cite> function
 of <cite>df</cite>. In this case, on the lower diagonal only plot
-data for which this query is <cite>True</cite>.</dd>
-<dt><cite>title</cite> (<cite>None</cite> or str)</dt>
-<dd>Title of plot.</dd>
-<dt><cite>shrink_threshold</cite> (float)</dt>
-<dd>See argument of same name to <a class="reference internal" href="#dms_tools2.plot.hist_bins_intsafe" title="dms_tools2.plot.hist_bins_intsafe"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hist_bins_intsafe()</span></code></a>.</dd>
+data for which this query is <cite>True</cite>.</p>
+</dd>
+<dt><cite>title</cite> (<cite>None</cite> or str)</dt><dd><p>Title of plot.</p>
+</dd>
+<dt><cite>shrink_threshold</cite> (float)</dt><dd><p>See argument of same name to <a class="reference internal" href="#dms_tools2.plot.hist_bins_intsafe" title="dms_tools2.plot.hist_bins_intsafe"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hist_bins_intsafe()</span></code></a>.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>If <cite>plotfile</cite> is a string, makes the plot and does
+<dt>Returns:</dt><dd><p>If <cite>plotfile</cite> is a string, makes the plot and does
 not return anything. If <cite>plotfile</cite> is <cite>None</cite>, returns
-the plot.</dd>
+the plot.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -447,45 +433,42 @@ the plot.</dd>
 <dt id="dms_tools2.plot.plotCorrMatrix">
 <code class="descclassname">dms_tools2.plot.</code><code class="descname">plotCorrMatrix</code><span class="sig-paren">(</span><em>names</em>, <em>infiles</em>, <em>plotfile</em>, <em>datatype</em>, <em>trim_unshared=True</em>, <em>title=''</em>, <em>colors='black'</em>, <em>contour=False</em>, <em>ncontours=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotCorrMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotCorrMatrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots correlations among replicates.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>names</cite> (list or series)</dt>
-<dd>Names of samples for which we plot statistics.</dd>
-<dt><cite>infiles</cite> (list or series)</dt>
-<dd>CSV files containing data. Format depends on <cite>datatype</cite>.</dd>
-<dt><cite>plotfile</cite> (str)</dt>
-<dd>Name of created PDF plot file.</dd>
-<dt><cite>datatype</cite> (str)</dt>
-<dd><dl class="first last docutils">
-<dt>Type of data for which we are plotting correlations:</dt>
-<dd><ul class="first last simple">
-<li><cite>prefs</cite>: in format returned by <code class="docutils literal notranslate"><span class="pre">dms2_prefs</span></code></li>
-<li><cite>mutdiffsel</cite>: mutdiffsel from <code class="docutils literal notranslate"><span class="pre">dms2_diffsel</span></code></li>
-<li><cite>abs_diffsel</cite>: sitediffsel from <code class="docutils literal notranslate"><span class="pre">dms2_diffsel</span></code></li>
-<li><cite>positive_diffsel</cite>: sitediffsel from <code class="docutils literal notranslate"><span class="pre">dms2_diffsel</span></code></li>
-<li><cite>max_diffsel</cite>: sitediffsel from <code class="docutils literal notranslate"><span class="pre">dms2_diffsel</span></code></li>
-<li><cite>mutfracsurvive</cite>: from <code class="docutils literal notranslate"><span class="pre">dms2_fracsurvive</span></code></li>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>names</cite> (list or series)</dt><dd><p>Names of samples for which we plot statistics.</p>
+</dd>
+<dt><cite>infiles</cite> (list or series)</dt><dd><p>CSV files containing data. Format depends on <cite>datatype</cite>.</p>
+</dd>
+<dt><cite>plotfile</cite> (str)</dt><dd><p>Name of created PDF plot file.</p>
+</dd>
+<dt><cite>datatype</cite> (str)</dt><dd><dl class="simple">
+<dt>Type of data for which we are plotting correlations:</dt><dd><ul class="simple">
+<li><p><cite>prefs</cite>: in format returned by <code class="docutils literal notranslate"><span class="pre">dms2_prefs</span></code></p></li>
+<li><p><cite>mutdiffsel</cite>: mutdiffsel from <code class="docutils literal notranslate"><span class="pre">dms2_diffsel</span></code></p></li>
+<li><p><cite>abs_diffsel</cite>: sitediffsel from <code class="docutils literal notranslate"><span class="pre">dms2_diffsel</span></code></p></li>
+<li><p><cite>positive_diffsel</cite>: sitediffsel from <code class="docutils literal notranslate"><span class="pre">dms2_diffsel</span></code></p></li>
+<li><p><cite>max_diffsel</cite>: sitediffsel from <code class="docutils literal notranslate"><span class="pre">dms2_diffsel</span></code></p></li>
+<li><p><cite>mutfracsurvive</cite>: from <code class="docutils literal notranslate"><span class="pre">dms2_fracsurvive</span></code></p></li>
 </ul>
 </dd>
 </dl>
 </dd>
-<dt><cite>trim_unshared</cite> (bool)</dt>
-<dd>What if files in <cite>infiles</cite> don’t have same sites / mutations?
+<dt><cite>trim_unshared</cite> (bool)</dt><dd><p>What if files in <cite>infiles</cite> don’t have same sites / mutations?
 If <cite>True</cite>, trim unshared one and just analyze ones
-shared among all files. If <cite>False</cite>, raise an error.</dd>
-<dt><cite>title</cite> (str)</dt>
-<dd>Title to place above plot.</dd>
-<dt><cite>colors</cite> (str or list)</dt>
-<dd>Color(s) to color scatter points. If a string, should
+shared among all files. If <cite>False</cite>, raise an error.</p>
+</dd>
+<dt><cite>title</cite> (str)</dt><dd><p>Title to place above plot.</p>
+</dd>
+<dt><cite>colors</cite> (str or list)</dt><dd><p>Color(s) to color scatter points. If a string, should
 specify one color for all plots. Otherwise should be
 list of length <cite>len(names) * (len(names) - 1) // 2</cite>
 giving lists of colors for plots from top to bottom, 
-left to right.</dd>
-<dt><cite>contour</cite> (bool)</dt>
-<dd>Show contour lines from KDE rather than points.</dd>
-<dt><cite>ncontours</cite> (int)</dt>
-<dd>Number of contour lines if using <cite>contour</cite>.</dd>
+left to right.</p>
+</dd>
+<dt><cite>contour</cite> (bool)</dt><dd><p>Show contour lines from KDE rather than points.</p>
+</dd>
+<dt><cite>ncontours</cite> (int)</dt><dd><p>Number of contour lines if using <cite>contour</cite>.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -498,27 +481,25 @@ left to right.</dd>
 <p>For each set of counts in <cite>countsfiles</cite>, plot the fraction
 of mutations seen greater than or equal to some number of
 times. This is essentially a cumulative fraction plot.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>names</cite> (list or series)</dt>
-<dd>Names of samples for which we plot statistics.</dd>
-<dt><cite>countsfiles</cite> (list or series)</dt>
-<dd><code class="docutils literal notranslate"><span class="pre">*_codoncounts.csv</span></code> files of type created by <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code>.</dd>
-<dt><cite>plotfile</cite> (str)</dt>
-<dd>Name of created PDF plot file.</dd>
-<dt><cite>chartype</cite> (str)</dt>
-<dd><p class="first">The type of character in <cite>countsfiles</cite>.</p>
-<blockquote class="last">
+<dl>
+<dt>Args:</dt><dd><dl>
+<dt><cite>names</cite> (list or series)</dt><dd><p>Names of samples for which we plot statistics.</p>
+</dd>
+<dt><cite>countsfiles</cite> (list or series)</dt><dd><p><code class="docutils literal notranslate"><span class="pre">*_codoncounts.csv</span></code> files of type created by <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code>.</p>
+</dd>
+<dt><cite>plotfile</cite> (str)</dt><dd><p>Name of created PDF plot file.</p>
+</dd>
+<dt><cite>chartype</cite> (str)</dt><dd><p>The type of character in <cite>countsfiles</cite>.</p>
+<blockquote>
 <div><ul class="simple">
-<li><cite>codon</cite></li>
+<li><p><cite>codon</cite></p></li>
 </ul>
 </div></blockquote>
 </dd>
-<dt><cite>nmax</cite> (int)</dt>
-<dd>Plot out to this number of mutation occurrences.</dd>
-<dt><cite>maxcol</cite> (int)</dt>
-<dd>Number of columns in faceted plot.</dd>
+<dt><cite>nmax</cite> (int)</dt><dd><p>Plot out to this number of mutation occurrences.</p>
+</dd>
+<dt><cite>maxcol</cite> (int)</dt><dd><p>Number of columns in faceted plot.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -528,22 +509,21 @@ times. This is essentially a cumulative fraction plot.</p>
 <dt id="dms_tools2.plot.plotDepth">
 <code class="descclassname">dms_tools2.plot.</code><code class="descname">plotDepth</code><span class="sig-paren">(</span><em>names, countsfiles, plotfile, maxcol=4, charlist=['AAA', 'AAC', 'AAG', 'AAT', 'ACA', 'ACC', 'ACG', 'ACT', 'AGA', 'AGC', 'AGG', 'AGT', 'ATA', 'ATC', 'ATG', 'ATT', 'CAA', 'CAC', 'CAG', 'CAT', 'CCA', 'CCC', 'CCG', 'CCT', 'CGA', 'CGC', 'CGG', 'CGT', 'CTA', 'CTC', 'CTG', 'CTT', 'GAA', 'GAC', 'GAG', 'GAT', 'GCA', 'GCC', 'GCG', 'GCT', 'GGA', 'GGC', 'GGG', 'GGT', 'GTA', 'GTC', 'GTG', 'GTT', 'TAA', 'TAC', 'TAG', 'TAT', 'TCA', 'TCC', 'TCG', 'TCT', 'TGA', 'TGC', 'TGG', 'TGT', 'TTA', 'TTC', 'TTG', 'TTT']</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotDepth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotDepth" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot sequencing depth along primary sequence.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>names</cite> (list or series)</dt>
-<dd>Names of samples for which we plot statistics.</dd>
-<dt><cite>countsfiles</cite> (list or series)</dt>
-<dd>Files containing character counts at each site.
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>names</cite> (list or series)</dt><dd><p>Names of samples for which we plot statistics.</p>
+</dd>
+<dt><cite>countsfiles</cite> (list or series)</dt><dd><p>Files containing character counts at each site.
 Should have column named <cite>site</cite> and a column
-for each character in <cite>charlist</cite>.</dd>
-<dt><cite>plotfile</cite> (str)</dt>
-<dd>Name of created PDF plot file containing count depth.</dd>
-<dt><cite>maxcol</cite> (int)</dt>
-<dd>Number of columns in faceted plot.</dd>
-<dt><cite>charlist</cite> (list)</dt>
-<dd>Characters contained in <cite>countsfiles</cite>. For instance,
-list of codons or amino acids.</dd>
+for each character in <cite>charlist</cite>.</p>
+</dd>
+<dt><cite>plotfile</cite> (str)</dt><dd><p>Name of created PDF plot file containing count depth.</p>
+</dd>
+<dt><cite>maxcol</cite> (int)</dt><dd><p>Number of columns in faceted plot.</p>
+</dd>
+<dt><cite>charlist</cite> (list)</dt><dd><p>Characters contained in <cite>countsfiles</cite>. For instance,
+list of codons or amino acids.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -553,24 +533,23 @@ list of codons or amino acids.</dd>
 <dt id="dms_tools2.plot.plotFacetedNeutCurves">
 <code class="descclassname">dms_tools2.plot.</code><code class="descname">plotFacetedNeutCurves</code><span class="sig-paren">(</span><em>neutdata</em>, <em>plotfile</em>, <em>xlabel</em>, <em>ylabel</em>, <em>maxcol=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotFacetedNeutCurves"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotFacetedNeutCurves" title="Permalink to this definition">¶</a></dt>
 <dd><p>Faceted neutralization curves with points and fit line.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>neutdata</cite> (pandas DataFrame)</dt>
-<dd>Should have the following columns:
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>neutdata</cite> (pandas DataFrame)</dt><dd><p>Should have the following columns:
 <cite>concentration</cite>, <cite>sample</cite>, <cite>fit</cite>, <cite>points</cite>.
 The plot is faceted on <cite>sample</cite>. The line
 smoothly connects all points in column
 <cite>fit</cite>, and points are drawn anywhere
-that <cite>points</cite> is not <cite>NaN</cite>.</dd>
-<dt><cite>plotfile</cite> (str)</dt>
-<dd>Name of created plot.</dd>
-<dt><cite>xlabel</cite> (str)</dt>
-<dd>x-axis label</dd>
-<dt><cite>ylabel</cite> (str)</dt>
-<dd>y-axis label</dd>
-<dt><cite>maxcol</cite> (int)</dt>
-<dd>Number of columns in facets.</dd>
+that <cite>points</cite> is not <cite>NaN</cite>.</p>
+</dd>
+<dt><cite>plotfile</cite> (str)</dt><dd><p>Name of created plot.</p>
+</dd>
+<dt><cite>xlabel</cite> (str)</dt><dd><p>x-axis label</p>
+</dd>
+<dt><cite>ylabel</cite> (str)</dt><dd><p>y-axis label</p>
+</dd>
+<dt><cite>maxcol</cite> (int)</dt><dd><p>Number of columns in facets.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -580,17 +559,16 @@ that <cite>points</cite> is not <cite>NaN</cite>.</dd>
 <dt id="dms_tools2.plot.plotMutFreq">
 <code class="descclassname">dms_tools2.plot.</code><code class="descname">plotMutFreq</code><span class="sig-paren">(</span><em>names</em>, <em>countsfiles</em>, <em>plotfile</em>, <em>maxcol=4</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotMutFreq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotMutFreq" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot mutation frequency along primary sequence.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>names</cite> (list or series)</dt>
-<dd>Names of samples for which we plot statistics.</dd>
-<dt><cite>countsfiles</cite> (list or series)</dt>
-<dd><code class="docutils literal notranslate"><span class="pre">*_codoncounts.csv</span></code> files of type created by <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code>.</dd>
-<dt><cite>plotfile</cite> (str)</dt>
-<dd>Name of created PDF plot file.</dd>
-<dt><cite>maxcol</cite> (int)</dt>
-<dd>Number of columns in faceted plot.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>names</cite> (list or series)</dt><dd><p>Names of samples for which we plot statistics.</p>
+</dd>
+<dt><cite>countsfiles</cite> (list or series)</dt><dd><p><code class="docutils literal notranslate"><span class="pre">*_codoncounts.csv</span></code> files of type created by <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code>.</p>
+</dd>
+<dt><cite>plotfile</cite> (str)</dt><dd><p>Name of created PDF plot file.</p>
+</dd>
+<dt><cite>maxcol</cite> (int)</dt><dd><p>Number of columns in faceted plot.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -602,30 +580,29 @@ that <cite>points</cite> is not <cite>NaN</cite>.</dd>
 <dd><p>Plots rarefaction curves.</p>
 <p>The rarefaction curves are calculated analytically using
 <a class="reference internal" href="dms_tools2.utils.html#dms_tools2.utils.rarefactionCurve" title="dms_tools2.utils.rarefactionCurve"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dms_tools2.utils.rarefactionCurve</span></code></a>.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>df</cite> (pandas DataFrame)</dt>
-<dd>Data frame containing data. In tidy form if
-faceting.</dd>
-<dt><cite>rarefy_col</cite> (str)</dt>
-<dd>Name of column in <cite>df</cite> that contains the variable
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>df</cite> (pandas DataFrame)</dt><dd><p>Data frame containing data. In tidy form if
+faceting.</p>
+</dd>
+<dt><cite>rarefy_col</cite> (str)</dt><dd><p>Name of column in <cite>df</cite> that contains the variable
 that we rarify. For instance, these might be strings
-giving barcodes.</dd>
-<dt><cite>plotfile</cite> (str)</dt>
-<dd>Name of created plot.</dd>
-<dt><cite>facet_col</cite> (str or <cite>None</cite>)</dt>
-<dd>If not <cite>None</cite>, should be name of a column in <cite>df</cite>
-that contains a variable we facet in the plot.</dd>
-<dt><cite>nrow</cite> (int)</dt>
-<dd>If faceting, the number of rows.</dd>
-<dt><cite>xlabel</cite> (str)</dt>
-<dd>X-axis label.</dd>
-<dt><cite>ylabel</cite> (str or <cite>None</cite>)</dt>
-<dd>Y-axis label. If <cite>None</cite>, defaults to value of <cite>rarefy_col</cite>.</dd>
-<dt><cite>facet_scales</cite> (str`)</dt>
-<dd>Scales for faceting. Can be “free”, “free_x”, “free_y”, or
-“fixed”</dd>
+giving barcodes.</p>
+</dd>
+<dt><cite>plotfile</cite> (str)</dt><dd><p>Name of created plot.</p>
+</dd>
+<dt><cite>facet_col</cite> (str or <cite>None</cite>)</dt><dd><p>If not <cite>None</cite>, should be name of a column in <cite>df</cite>
+that contains a variable we facet in the plot.</p>
+</dd>
+<dt><cite>nrow</cite> (int)</dt><dd><p>If faceting, the number of rows.</p>
+</dd>
+<dt><cite>xlabel</cite> (str)</dt><dd><p>X-axis label.</p>
+</dd>
+<dt><cite>ylabel</cite> (str or <cite>None</cite>)</dt><dd><p>Y-axis label. If <cite>None</cite>, defaults to value of <cite>rarefy_col</cite>.</p>
+</dd>
+<dt><cite>facet_scales</cite> (str`)</dt><dd><p>Scales for faceting. Can be “free”, “free_x”, “free_y”, or
+“fixed”</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -663,15 +640,14 @@ half as many reads:</p>
 <dt id="dms_tools2.plot.plotReadStats">
 <code class="descclassname">dms_tools2.plot.</code><code class="descname">plotReadStats</code><span class="sig-paren">(</span><em>names</em>, <em>readstatfiles</em>, <em>plotfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotReadStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotReadStats" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code> read statistics for a set of samples.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>names</cite> (list or series)</dt>
-<dd>Names of the samples for which we are plotting statistics.</dd>
-<dt><cite>readstatfiles</cite> (list or series)</dt>
-<dd>Names of <code class="docutils literal notranslate"><span class="pre">*_readstats.csv</span></code> files created by <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code>.</dd>
-<dt><cite>plotfile</cite> (str)</dt>
-<dd>Name of PDF plot file to create.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>names</cite> (list or series)</dt><dd><p>Names of the samples for which we are plotting statistics.</p>
+</dd>
+<dt><cite>readstatfiles</cite> (list or series)</dt><dd><p>Names of <code class="docutils literal notranslate"><span class="pre">*_readstats.csv</span></code> files created by <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code>.</p>
+</dd>
+<dt><cite>plotfile</cite> (str)</dt><dd><p>Name of PDF plot file to create.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -681,20 +657,19 @@ half as many reads:</p>
 <dt id="dms_tools2.plot.plotReadsPerBC">
 <code class="descclassname">dms_tools2.plot.</code><code class="descname">plotReadsPerBC</code><span class="sig-paren">(</span><em>names</em>, <em>readsperbcfiles</em>, <em>plotfile</em>, <em>maxreads=10</em>, <em>maxcol=6</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotReadsPerBC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotReadsPerBC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code> reads-per-barcode stats for set of samples.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>names</cite> (list or series)</dt>
-<dd>Names of samples for which we plot statistics.</dd>
-<dt><cite>readsperbcfiles</cite> (list or series)</dt>
-<dd>Names of <code class="docutils literal notranslate"><span class="pre">*_readsperbc.csv</span></code> files created by <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code>.</dd>
-<dt><cite>plotfile</cite> (str)</dt>
-<dd>Name of PDF plot file to create.</dd>
-<dt><cite>maxreads</cite> (int)</dt>
-<dd>For any barcodes with &gt; this many reads, just make a category
-of &gt;= this.</dd>
-<dt><cite>maxcol</cite> (int)</dt>
-<dd>Number of columns in faceted plot.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>names</cite> (list or series)</dt><dd><p>Names of samples for which we plot statistics.</p>
+</dd>
+<dt><cite>readsperbcfiles</cite> (list or series)</dt><dd><p>Names of <code class="docutils literal notranslate"><span class="pre">*_readsperbc.csv</span></code> files created by <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code>.</p>
+</dd>
+<dt><cite>plotfile</cite> (str)</dt><dd><p>Name of PDF plot file to create.</p>
+</dd>
+<dt><cite>maxreads</cite> (int)</dt><dd><p>For any barcodes with &gt; this many reads, just make a category
+of &gt;= this.</p>
+</dd>
+<dt><cite>maxcol</cite> (int)</dt><dd><p>Number of columns in faceted plot.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -706,36 +681,33 @@ of &gt;= this.</dd>
 <dd><p>Plot site diffsel or fracsurvive along sequence.</p>
 <p>Despite the function name, this function can be used to
 plot either differential selection or fraction surviving.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>names</cite> (list or series)</dt>
-<dd>Names of samples for which we plot statistics.</dd>
-<dt><cite>diffselfiles</cite> (list or series)</dt>
-<dd><code class="docutils literal notranslate"><span class="pre">*sitediffsel.csv</span></code> files from <code class="docutils literal notranslate"><span class="pre">dms2_diffsel</span></code> or
-<code class="docutils literal notranslate"><span class="pre">*sitefracsurvive.csv</span></code> files from <code class="docutils literal notranslate"><span class="pre">dms2_fracsurvive</span></code>.</dd>
-<dt><cite>plotfile</cite> (str)</dt>
-<dd>Name of created PDF plot file.</dd>
-<dt><cite>diffseltype</cite> (str)</dt>
-<dd><dl class="first last docutils">
-<dt>Type of diffsel or fracsurvive to plot:</dt>
-<dd><ul class="first last simple">
-<li><cite>positive</cite>: positive sitediffsel</li>
-<li><cite>total</cite>: positive and negative sitediffsel</li>
-<li><cite>max</cite>: maximum mutdiffsel</li>
-<li><cite>minmax</cite>: minimum and maximum mutdiffsel</li>
-<li><cite>avgfracsurvive</cite>: total site fracsurvive</li>
-<li><cite>maxfracsurvive</cite>: max mutfracsurvive at site</li>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>names</cite> (list or series)</dt><dd><p>Names of samples for which we plot statistics.</p>
+</dd>
+<dt><cite>diffselfiles</cite> (list or series)</dt><dd><p><code class="docutils literal notranslate"><span class="pre">*sitediffsel.csv</span></code> files from <code class="docutils literal notranslate"><span class="pre">dms2_diffsel</span></code> or
+<code class="docutils literal notranslate"><span class="pre">*sitefracsurvive.csv</span></code> files from <code class="docutils literal notranslate"><span class="pre">dms2_fracsurvive</span></code>.</p>
+</dd>
+<dt><cite>plotfile</cite> (str)</dt><dd><p>Name of created PDF plot file.</p>
+</dd>
+<dt><cite>diffseltype</cite> (str)</dt><dd><dl class="simple">
+<dt>Type of diffsel or fracsurvive to plot:</dt><dd><ul class="simple">
+<li><p><cite>positive</cite>: positive sitediffsel</p></li>
+<li><p><cite>total</cite>: positive and negative sitediffsel</p></li>
+<li><p><cite>max</cite>: maximum mutdiffsel</p></li>
+<li><p><cite>minmax</cite>: minimum and maximum mutdiffsel</p></li>
+<li><p><cite>avgfracsurvive</cite>: total site fracsurvive</p></li>
+<li><p><cite>maxfracsurvive</cite>: max mutfracsurvive at site</p></li>
 </ul>
 </dd>
 </dl>
 </dd>
-<dt><cite>maxcol</cite> (int)</dt>
-<dd>Number of columns in faceted plot.</dd>
-<dt><cite>white_bg</cite> (bool)</dt>
-<dd>Plots will have a white background with limited other formatting.</dd>
-<dt><cite>highlighted_sites</cite> (list)</dt>
-<dd>Highlight sites of interest (passed in string format) in grey.</dd>
+<dt><cite>maxcol</cite> (int)</dt><dd><p>Number of columns in faceted plot.</p>
+</dd>
+<dt><cite>white_bg</cite> (bool)</dt><dd><p>Plots will have a white background with limited other formatting.</p>
+</dd>
+<dt><cite>highlighted_sites</cite> (list)</dt><dd><p>Highlight sites of interest (passed in string format) in grey.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -745,7 +717,6 @@ plot either differential selection or fraction surviving.</p>
 
 
           </div>
-          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -778,7 +749,7 @@ plot either differential selection or fraction surviving.</p>
     
 
 <p>
-<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -822,20 +793,10 @@ plot either differential selection or fraction surviving.</p>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
         </div>
       </div>
       <div class="clearer"></div>
@@ -844,8 +805,8 @@ plot either differential selection or fraction surviving.</p>
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
       <a href="_sources/dms_tools2.plot.rst.txt"

@@ -1,19 +1,18 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>protstruct &#8212; dms_tools2 2.4.10 documentation</title>
+    <meta charset="utf-8" />
+    <title>protstruct &#8212; dms_tools2 2.4.12 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="rplot" href="dms_tools2.rplot.html" />
@@ -30,8 +29,6 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          
-
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.protstruct"></span><div class="section" id="protstruct">
@@ -41,15 +38,14 @@
 <dt id="dms_tools2.protstruct.atomDist">
 <code class="descclassname">dms_tools2.protstruct.</code><code class="descname">atomDist</code><span class="sig-paren">(</span><em>a1</em>, <em>a2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/protstruct.html#atomDist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.protstruct.atomDist" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates distance between two atoms.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>a1</cite>, <cite>a2</cite> (<cite>Bio.PDB.Atom.Atom</cite> objects)</dt>
-<dd>The two atoms.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>a1</cite>, <cite>a2</cite> (<cite>Bio.PDB.Atom.Atom</cite> objects)</dt><dd><p>The two atoms.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>The distance between the two atoms.</dd>
+<dt>Returns:</dt><dd><p>The distance between the two atoms.</p>
+</dd>
 </dl>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Atom</span> <span class="o">=</span> <span class="n">Bio</span><span class="o">.</span><span class="n">PDB</span><span class="o">.</span><span class="n">Atom</span><span class="o">.</span><span class="n">Atom</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">a1</span> <span class="o">=</span> <span class="n">Atom</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;CA&#39;</span><span class="p">,</span> <span class="n">coord</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">),</span> <span class="n">bfactor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">occupancy</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -66,32 +62,31 @@
 <dt id="dms_tools2.protstruct.distMatrix">
 <code class="descclassname">dms_tools2.protstruct.</code><code class="descname">distMatrix</code><span class="sig-paren">(</span><em>pdbfile</em>, <em>chains</em>, <em>dist_type</em>, <em>equivchains={}</em>, <em>ignore_hetero=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/protstruct.html#distMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.protstruct.distMatrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Residue-residue distance matrix for protein or homo-oligomer.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>pdbfile</cite> (str)</dt>
-<dd>Name of PDB file.</dd>
-<dt><cite>chains</cite> (str or list of str)</dt>
-<dd>Chain in <cite>pdbfile</cite> for which we compute residue distances,
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>pdbfile</cite> (str)</dt><dd><p>Name of PDB file.</p>
+</dd>
+<dt><cite>chains</cite> (str or list of str)</dt><dd><p>Chain in <cite>pdbfile</cite> for which we compute residue distances,
 or list of chains if the residues span several chains 
-(as for proteins like HA which are cleaved to subunits).</dd>
-<dt><cite>dist_type</cite> (str)</dt>
-<dd>Distances to measure. Use <cite>CA</cite> for alpha carbon distances,
-and <cite>any</cite> for nearest distances of any atom in residues.</dd>
-<dt><cite>equivchains</cite> (dict)</dt>
-<dd>If the structure is a homo-oligomer, each chain may
+(as for proteins like HA which are cleaved to subunits).</p>
+</dd>
+<dt><cite>dist_type</cite> (str)</dt><dd><p>Distances to measure. Use <cite>CA</cite> for alpha carbon distances,
+and <cite>any</cite> for nearest distances of any atom in residues.</p>
+</dd>
+<dt><cite>equivchains</cite> (dict)</dt><dd><p>If the structure is a homo-oligomer, each chain may
 have other equivalent chains. In this case, for each
 <cite>chain</cite>, <cite>equivchains[chain]</cite> should be list of equivalent
-chains that we also include in the distance calculations.</dd>
-<dt><cite>ignorehetero</cite> (bool)</dt>
-<dd>Ignore hetero-residues, and only consider protein ones.</dd>
+chains that we also include in the distance calculations.</p>
+</dd>
+<dt><cite>ignorehetero</cite> (bool)</dt><dd><p>Ignore hetero-residues, and only consider protein ones.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>The 2-tuple <cite>(residues, distmatrix)</cite> where <cite>residues</cite> is a
+<dt>Returns:</dt><dd><p>The 2-tuple <cite>(residues, distmatrix)</cite> where <cite>residues</cite> is a
 list of the residue names (as strings) and <cite>distmatrix</cite> is a 
 <cite>numpy.ndarray</cite> with element <cite>distmatrix[i, j]</cite> giving
-the distance between residue <cite>residues[i]</cite> and <cite>residues[j]</cite>.</dd>
+the distance between residue <cite>residues[i]</cite> and <cite>residues[j]</cite>.</p>
+</dd>
 </dl>
 <p>Here is an example computation of distances between two residues
 spanning two chains:</p>
@@ -137,19 +132,18 @@ spanning two chains:</p>
 <dt id="dms_tools2.protstruct.residueDist">
 <code class="descclassname">dms_tools2.protstruct.</code><code class="descname">residueDist</code><span class="sig-paren">(</span><em>r1</em>, <em>r2</em>, <em>atom=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/protstruct.html#residueDist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.protstruct.residueDist" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates distance between closest atoms in two residues.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>r1</cite>, <cite>r2</cite> (<cite>Bio.PDB.Residue.Residue</cite> objects)</dt>
-<dd>The two residues.</dd>
-<dt><cite>atom</cite> (<cite>None</cite> or str)</dt>
-<dd>If <cite>None</cite>, computes closest distance between any atoms.
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>r1</cite>, <cite>r2</cite> (<cite>Bio.PDB.Residue.Residue</cite> objects)</dt><dd><p>The two residues.</p>
+</dd>
+<dt><cite>atom</cite> (<cite>None</cite> or str)</dt><dd><p>If <cite>None</cite>, computes closest distance between any atoms.
 If a string, only computes closest distance among atoms
-of this type (e.g., <cite>CA</cite> for alpha carbon distances).</dd>
+of this type (e.g., <cite>CA</cite> for alpha carbon distances).</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>Distance between closest atoms in the two residues.</dd>
+<dt>Returns:</dt><dd><p>Distance between closest atoms in the two residues.</p>
+</dd>
 </dl>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Residue</span> <span class="o">=</span> <span class="n">Bio</span><span class="o">.</span><span class="n">PDB</span><span class="o">.</span><span class="n">Residue</span><span class="o">.</span><span class="n">Residue</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Atom</span> <span class="o">=</span> <span class="n">Bio</span><span class="o">.</span><span class="n">PDB</span><span class="o">.</span><span class="n">Atom</span><span class="o">.</span><span class="n">Atom</span>
@@ -176,7 +170,6 @@ of this type (e.g., <cite>CA</cite> for alpha carbon distances).</dd>
 
 
           </div>
-          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -209,7 +202,7 @@ of this type (e.g., <cite>CA</cite> for alpha carbon distances).</dd>
     
 
 <p>
-<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -253,20 +246,10 @@ of this type (e.g., <cite>CA</cite> for alpha carbon distances).</dd>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
         </div>
       </div>
       <div class="clearer"></div>
@@ -275,8 +258,8 @@ of this type (e.g., <cite>CA</cite> for alpha carbon distances).</dd>
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
       <a href="_sources/dms_tools2.protstruct.rst.txt"

@@ -1,19 +1,18 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dssp &#8212; dms_tools2 2.4.10 documentation</title>
+    <meta charset="utf-8" />
+    <title>dssp &#8212; dms_tools2 2.4.12 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="fracsurvive" href="dms_tools2.fracsurvive.html" />
@@ -30,8 +29,6 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          
-
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.dssp"></span><div class="section" id="dssp">
@@ -61,51 +58,45 @@ least given the format of that output as of Sept-4-2017.</p>
 <p>It returns a <cite>pandas.DataFrame</cite> that gives the secondary
 structure and solvent accessibility for each residue in the
 <code class="docutils literal notranslate"><span class="pre">dssp</span></code> output.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>dsspfile</cite> (str)</dt>
-<dd>Name of text file containing <code class="docutils literal notranslate"><span class="pre">dssp</span></code> output.</dd>
-<dt><cite>chain</cite> (str or <cite>None</cite>)</dt>
-<dd>If the PDB file analyzed by <code class="docutils literal notranslate"><span class="pre">dssp</span></code> to create <cite>dsspfile</cite>
+<dl>
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>dsspfile</cite> (str)</dt><dd><p>Name of text file containing <code class="docutils literal notranslate"><span class="pre">dssp</span></code> output.</p>
+</dd>
+<dt><cite>chain</cite> (str or <cite>None</cite>)</dt><dd><p>If the PDB file analyzed by <code class="docutils literal notranslate"><span class="pre">dssp</span></code> to create <cite>dsspfile</cite>
 has more than one chain, specify the letter code for one
-of those chains with this argument.</dd>
-<dt><cite>max_asa</cite> (dict)</dt>
-<dd>Max surface area for each amino acid in square angstroms.</dd>
+of those chains with this argument.</p>
+</dd>
+<dt><cite>max_asa</cite> (dict)</dt><dd><p>Max surface area for each amino acid in square angstroms.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd><p class="first">A <cite>pandas.DataFrame</cite> with the following columns:</p>
-<blockquote class="last">
+<dt>Returns:</dt><dd><p>A <cite>pandas.DataFrame</cite> with the following columns:</p>
+<blockquote>
 <div><ul>
-<li><p class="first"><cite>site</cite>: residue number for all sites in <cite>dsspfile</cite>.</p>
-</li>
-<li><p class="first"><cite>amino_acid</cite>: amino acid identity of site in <cite>dsspfile</cite>.</p>
-</li>
-<li><p class="first"><cite>ASA</cite>: absolute solvent accessibility of the residue.</p>
-</li>
-<li><p class="first"><cite>RSA</cite>: relative solvent accessibility of the residue.</p>
-</li>
-<li><p class="first"><cite>SS</cite>: <code class="docutils literal notranslate"><span class="pre">dssp</span></code> secondary structure code, one of:</p>
+<li><p><cite>site</cite>: residue number for all sites in <cite>dsspfile</cite>.</p></li>
+<li><p><cite>amino_acid</cite>: amino acid identity of site in <cite>dsspfile</cite>.</p></li>
+<li><p><cite>ASA</cite>: absolute solvent accessibility of the residue.</p></li>
+<li><p><cite>RSA</cite>: relative solvent accessibility of the residue.</p></li>
+<li><p><cite>SS</cite>: <code class="docutils literal notranslate"><span class="pre">dssp</span></code> secondary structure code, one of:</p>
 <blockquote>
 <div><ul class="simple">
-<li><em>G</em>: 3-10 helix</li>
-<li><em>H</em>: alpha helix</li>
-<li><em>I</em>: pi helix</li>
-<li><em>B</em>: beta bridge</li>
-<li><em>E</em>: beta bulge</li>
-<li><em>T</em>: turn</li>
-<li><em>S</em>: high curvature</li>
-<li><em>-</em>: loop</li>
+<li><p><em>G</em>: 3-10 helix</p></li>
+<li><p><em>H</em>: alpha helix</p></li>
+<li><p><em>I</em>: pi helix</p></li>
+<li><p><em>B</em>: beta bridge</p></li>
+<li><p><em>E</em>: beta bulge</p></li>
+<li><p><em>T</em>: turn</p></li>
+<li><p><em>S</em>: high curvature</p></li>
+<li><p><em>-</em>: loop</p></li>
 </ul>
 </div></blockquote>
 </li>
-<li><p class="first"><cite>SS_class</cite>: broader secondary structure class:</p>
+<li><p><cite>SS_class</cite>: broader secondary structure class:</p>
 <blockquote>
 <div><ul class="simple">
-<li><em>helix</em>: <cite>SS</cite> value of <em>G</em>, <em>H</em>, or <em>I</em></li>
-<li><em>strand</em>: <cite>SS</cite> value of <em>B</em> or <em>E</em></li>
-<li><em>loop</em>: any of the other <cite>SS</cite> values.</li>
+<li><p><em>helix</em>: <cite>SS</cite> value of <em>G</em>, <em>H</em>, or <em>I</em></p></li>
+<li><p><em>strand</em>: <cite>SS</cite> value of <em>B</em> or <em>E</em></p></li>
+<li><p><em>loop</em>: any of the other <cite>SS</cite> values.</p></li>
 </ul>
 </div></blockquote>
 </li>
@@ -119,7 +110,6 @@ of those chains with this argument.</dd>
 
 
           </div>
-          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -152,7 +142,7 @@ of those chains with this argument.</dd>
     
 
 <p>
-<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -196,20 +186,10 @@ of those chains with this argument.</dd>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
         </div>
       </div>
       <div class="clearer"></div>
@@ -218,8 +198,8 @@ of those chains with this argument.</dd>
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
       <a href="_sources/dms_tools2.dssp.rst.txt"

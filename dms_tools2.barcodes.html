@@ -1,19 +1,18 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>barcodes &#8212; dms_tools2 2.4.10 documentation</title>
+    <meta charset="utf-8" />
+    <title>barcodes &#8212; dms_tools2 2.4.12 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="codonvarianttable" href="dms_tools2.codonvarianttable.html" />
@@ -30,8 +29,6 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          
-
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.barcodes"></span><div class="section" id="barcodes">
@@ -56,35 +53,34 @@ using R2 then <cite>upstream</cite> must fully cover the region between
 where R2 starts and the barcode. However, it is fine if R1
 reads backwards past <cite>upstream</cite>, and if <cite>R2</cite> reads forward
 past <cite>downstream</cite>.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>bclen</cite> (int or <cite>None</cite>)</dt>
-<dd>Length of the barcode, or <cite>None</cite> if length is to be
-determined from <cite>valid_barcodes</cite> argument.</dd>
-<dt><cite>upstream</cite> (str)</dt>
-<dd>Sequence upstream of the barcode.</dd>
-<dt><cite>downstream</cite> (str)</dt>
-<dd>Sequence downstream of barcode.</dd>
-<dt><cite>upstream_mismatch</cite> (int)</dt>
-<dd>Max number of mismatches allowed in <cite>upstream</cite>.</dd>
-<dt><cite>downstream_mismatch</cite> (int)</dt>
-<dd>Like <cite>upstream_mismatches</cite> but for <cite>downstream</cite>.</dd>
-<dt><cite>valid_barcodes</cite> (<cite>None</cite> or iterable such as list, Series)</dt>
-<dd>If not <cite>None</cite>, only retain barcodes listed here.
-Use if you know the set of possible valid barcodes.</dd>
-<dt><cite>rc_barcode</cite> (bool)</dt>
-<dd>Parse the reverse complement of the barcode (the
-orientation read by R1).</dd>
-<dt><cite>minq</cite> (int)</dt>
-<dd>Require at least this quality score for all bases
-in barcode.</dd>
-<dt><cite>chastity_filter</cite> (bool)</dt>
-<dd>Drop any reads that fail Illumina chastity filter.</dd>
-<dt><cite>list_all_valid_barcodes</cite> (bool)</dt>
-<dd>If using <cite>valid_barcodes</cite>, then barcode sets returned
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>bclen</cite> (int or <cite>None</cite>)</dt><dd><p>Length of the barcode, or <cite>None</cite> if length is to be
+determined from <cite>valid_barcodes</cite> argument.</p>
+</dd>
+<dt><cite>upstream</cite> (str)</dt><dd><p>Sequence upstream of the barcode.</p>
+</dd>
+<dt><cite>downstream</cite> (str)</dt><dd><p>Sequence downstream of barcode.</p>
+</dd>
+<dt><cite>upstream_mismatch</cite> (int)</dt><dd><p>Max number of mismatches allowed in <cite>upstream</cite>.</p>
+</dd>
+<dt><cite>downstream_mismatch</cite> (int)</dt><dd><p>Like <cite>upstream_mismatches</cite> but for <cite>downstream</cite>.</p>
+</dd>
+<dt><cite>valid_barcodes</cite> (<cite>None</cite> or iterable such as list, Series)</dt><dd><p>If not <cite>None</cite>, only retain barcodes listed here.
+Use if you know the set of possible valid barcodes.</p>
+</dd>
+<dt><cite>rc_barcode</cite> (bool)</dt><dd><p>Parse the reverse complement of the barcode (the
+orientation read by R1).</p>
+</dd>
+<dt><cite>minq</cite> (int)</dt><dd><p>Require at least this quality score for all bases
+in barcode.</p>
+</dd>
+<dt><cite>chastity_filter</cite> (bool)</dt><dd><p>Drop any reads that fail Illumina chastity filter.</p>
+</dd>
+<dt><cite>list_all_valid_barcodes</cite> (bool)</dt><dd><p>If using <cite>valid_barcodes</cite>, then barcode sets returned
 by <a class="reference internal" href="#dms_tools2.barcodes.IlluminaBarcodeParser.parse" title="dms_tools2.barcodes.IlluminaBarcodeParser.parse"><code class="xref py py-class docutils literal notranslate"><span class="pre">IlluminaBarcodeParser.parse</span></code></a> includes all
-valid barcodes even if no counts.</dd>
+valid barcodes even if no counts.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -315,32 +311,31 @@ barcode whitelist:</p>
 <dt id="dms_tools2.barcodes.IlluminaBarcodeParser.parse">
 <code class="descname">parse</code><span class="sig-paren">(</span><em>r1files</em>, <em>r2files=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#IlluminaBarcodeParser.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.IlluminaBarcodeParser.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses barcodes from files.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>r1files</cite> (str or list)</dt>
-<dd>Name of R1 FASTQ file, or list of such files
-Can optionally be gzipped.</dd>
-<dt><cite>r2files</cite> (<cite>None</cite>, str, or list)</dt>
-<dd><cite>None</cite> or empty list if not using R2, otherwise like R1.</dd>
+<dl>
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>r1files</cite> (str or list)</dt><dd><p>Name of R1 FASTQ file, or list of such files
+Can optionally be gzipped.</p>
+</dd>
+<dt><cite>r2files</cite> (<cite>None</cite>, str, or list)</dt><dd><p><cite>None</cite> or empty list if not using R2, otherwise like R1.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd><p class="first">The 2-tuple <cite>(barcodes, fates)</cite>. In this 2-tuple:</p>
-<blockquote class="last">
+<dt>Returns:</dt><dd><p>The 2-tuple <cite>(barcodes, fates)</cite>. In this 2-tuple:</p>
+<blockquote>
 <div><ul class="simple">
-<li><cite>barcodes</cite> is a pandas DataFrame giving the
+<li><p><cite>barcodes</cite> is a pandas DataFrame giving the
 number of observations of each barcode. The
-columns are named “barcode” and “count”.</li>
-<li><cite>fates</cite> is a pandas DataFrame giving the
+columns are named “barcode” and “count”.</p></li>
+<li><p><cite>fates</cite> is a pandas DataFrame giving the
 total number of reads with each fate. The
-columns are named “fate” and “count”.<ul>
-<li>“valid barcode”</li>
-<li>“invalid barcode”: not in our barcode whitelist</li>
-<li>“R1 / R2 disagree”</li>
-<li>“low quality barcode”: sequencing quality low</li>
-<li>“unparseable barcode”: invalid flanking sequences
-or N in barcode.</li>
+columns are named “fate” and “count”.</p>
+<ul>
+<li><p>“valid barcode”</p></li>
+<li><p>“invalid barcode”: not in our barcode whitelist</p></li>
+<li><p>“R1 / R2 disagree”</p></li>
+<li><p>“low quality barcode”: sequencing quality low</p></li>
+<li><p>“unparseable barcode”: invalid flanking sequences
+or N in barcode.</p></li>
 </ul>
 </li>
 </ul>
@@ -358,19 +353,17 @@ or N in barcode.</li>
 <p>This function mimics the pandas <cite>duplicated</cite>
 function except it can also mark as duplicated almost
 but not exactly identical sequences.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>barcodes</cite> (list or pandas Series)</dt>
-<dd>Lists all the barcodes, which should be strings
-of same length.</dd>
-<dt><cite>threshold</cite> (int)</dt>
-<dd>Max number of mismatches for barcodes to be
-considered almost identical.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>barcodes</cite> (list or pandas Series)</dt><dd><p>Lists all the barcodes, which should be strings
+of same length.</p>
+</dd>
+<dt><cite>threshold</cite> (int)</dt><dd><p>Max number of mismatches for barcodes to be
+considered almost identical.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A pandas Series of the same length as <cite>barcodes</cite>
+<dt>Returns:</dt><dd><p>A pandas Series of the same length as <cite>barcodes</cite>
 filled with bools that indicates whether a barcode
 is a near duplicate. For each group of barcodes within
 <cite>threshold</cite> of each other, only one barcode will have
@@ -380,7 +373,8 @@ is chosen as follows: (1) it has the most abundant barcode
 in the group, (2) among barcodes that are equivalent abundant
 we take the one listed first in <cite>barcodes</cite>.
 Groups are computed using the directional method of
-<a class="reference external" href="https://github.com/CGATOxford/UMI-tools">umi_tools</a>.</dd>
+<a class="reference external" href="https://github.com/CGATOxford/UMI-tools">umi_tools</a>.</p>
+</dd>
 </dl>
 <p>When <cite>threshold</cite> is zero, just like <cite>pandas.duplicated</cite>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">barcodes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;CTC&#39;</span><span class="p">,</span> <span class="s1">&#39;ATG&#39;</span><span class="p">,</span> <span class="s1">&#39;ATG&#39;</span><span class="p">,</span> <span class="s1">&#39;ATA&#39;</span><span class="p">]</span>
@@ -425,25 +419,24 @@ We then compute the average of this fraction over all pairs.</p>
 <p>In the case where we are sequencing barcoded genes, the square
 root of this fraction can be interpreted as the sequencing accuracy
 per variant.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>df</cite> (pandas Data Frame)</dt>
-<dd>Holds barcodes, variants, and (optionally) library names.</dd>
-<dt><cite>barcode_col</cite> (str)</dt>
-<dd>Name of column holding barcodes.</dd>
-<dt><cite>variant_col</cite> (str)</dt>
-<dd>Name of column holding variants (these are what we
-compare to see if they are identical).</dd>
-<dt><cite>library_col</cite> (str or None)</dt>
-<dd>Name of libary. We do the computation separately
-for each library. Set to <cite>None</cite> if only one library.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>df</cite> (pandas Data Frame)</dt><dd><p>Holds barcodes, variants, and (optionally) library names.</p>
+</dd>
+<dt><cite>barcode_col</cite> (str)</dt><dd><p>Name of column holding barcodes.</p>
+</dd>
+<dt><cite>variant_col</cite> (str)</dt><dd><p>Name of column holding variants (these are what we
+compare to see if they are identical).</p>
+</dd>
+<dt><cite>library_col</cite> (str or None)</dt><dd><p>Name of libary. We do the computation separately
+for each library. Set to <cite>None</cite> if only one library.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A pandas data frame with columns named <cite>fraction_identical</cite>
+<dt>Returns:</dt><dd><p>A pandas data frame with columns named <cite>fraction_identical</cite>
 and <cite>accuracy</cite> that contain the computed fraction identical
-and accuracy for each library.</dd>
+and accuracy for each library.</p>
+</dd>
 </dl>
 <p>Here is an example. In this data frame, we see that
 of the four pairs (one for barcode <em>AT</em> and three for
@@ -478,44 +471,42 @@ with barcodes found multiple times:</p>
 <dt id="dms_tools2.barcodes.simpleConsensus">
 <code class="descclassname">dms_tools2.barcodes.</code><code class="descname">simpleConsensus</code><span class="sig-paren">(</span><em>df</em>, <em>*</em>, <em>barcode_col='barcode'</em>, <em>substitution_col='substitutions'</em>, <em>insertion_col='insertions'</em>, <em>deletion_col='deletions'</em>, <em>library_col=None</em>, <em>max_sub_diffs=1</em>, <em>max_indel_diffs=2</em>, <em>max_minor_muts=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#simpleConsensus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.simpleConsensus" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simple method to get consensus of mutations within barcode.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>df</cite> (pandas Data Frame)</dt>
-<dd>Holds variants and their barcodes. Each row gives a
+<dl>
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>df</cite> (pandas Data Frame)</dt><dd><p>Holds variants and their barcodes. Each row gives a
 sequence variant and its barcode. There need to be
 columns with the names given by the next four arguments
-described below.</dd>
-<dt><cite>barcode_col</cite> (str)</dt>
-<dd>Name of column holding barcodes.</dd>
-<dt><cite>substitution_col</cite> (str)</dt>
-<dd>Name of column holding substitutions as list of strings.</dd>
-<dt><cite>insertion_col</cite> (str)</dt>
-<dd>Name of column holding insertions as list of strings.</dd>
-<dt><cite>deletion_col</cite> (str)</dt>
-<dd>Name of column holding insertions as list of strings.</dd>
-<dt><cite>library_col</cite> (<cite>None</cite> or str)</dt>
-<dd>If we have multiple libraries, analyze each barcode only
+described below.</p>
+</dd>
+<dt><cite>barcode_col</cite> (str)</dt><dd><p>Name of column holding barcodes.</p>
+</dd>
+<dt><cite>substitution_col</cite> (str)</dt><dd><p>Name of column holding substitutions as list of strings.</p>
+</dd>
+<dt><cite>insertion_col</cite> (str)</dt><dd><p>Name of column holding insertions as list of strings.</p>
+</dd>
+<dt><cite>deletion_col</cite> (str)</dt><dd><p>Name of column holding insertions as list of strings.</p>
+</dd>
+<dt><cite>library_col</cite> (<cite>None</cite> or str)</dt><dd><p>If we have multiple libraries, analyze each barcode only
 within its library. In that case, <cite>library_col</cite> should be
-name of column giving library name.</dd>
-<dt><cite>max_sub_diffs</cite> (int)</dt>
-<dd>Drop any barcode where any variant differs from all other
+name of column giving library name.</p>
+</dd>
+<dt><cite>max_sub_diffs</cite> (int)</dt><dd><p>Drop any barcode where any variant differs from all other
 variants for that barcode by more than this many substitution
-(point mutation) differences.</dd>
-<dt><cite>max_indel_diffs</cite> (int)</dt>
-<dd>Drop any barcode where any variant differs from all other
+(point mutation) differences.</p>
+</dd>
+<dt><cite>max_indel_diffs</cite> (int)</dt><dd><p>Drop any barcode where any variant differs from all other
 variants for that barcode by more than this many indel
-(insertion or deletion) differences.</dd>
-<dt><cite>max_minor_muts</cite> (int)</dt>
-<dd>Drop any barcode where there is a minor (non-consensus)
-mutation found more than this many times.</dd>
+(insertion or deletion) differences.</p>
+</dd>
+<dt><cite>max_minor_muts</cite> (int)</dt><dd><p>Drop any barcode where there is a minor (non-consensus)
+mutation found more than this many times.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd><p class="first">The 2-tuple <cite>(consensus, dropped)</cite>. These are each data frames:</p>
-<blockquote class="last">
+<dt>Returns:</dt><dd><p>The 2-tuple <cite>(consensus, dropped)</cite>. These are each data frames:</p>
+<blockquote>
 <div><ul class="simple">
-<li><cite>consensus</cite> is a new data frame with a row for each
+<li><p><cite>consensus</cite> is a new data frame with a row for each
 barcode for which we could call the consensus. The
 columns have the same names as <cite>barcode_col</cite>,
 <cite>substitution_col</cite>, <cite>insertion_col</cite>, <cite>deletion_col</cite>,
@@ -523,12 +514,12 @@ and (optionally) <cite>library_col</cite>–but the the three
 columns for the mutations now just list the <strong>consensus</strong>
 mutations of that type. In addition, there is a new
 column called “variant_call_support” that gives the number
-of sequences supporting the call of that barcode.</li>
-<li><cite>dropped</cite> simply contains all rows in the original <cite>df</cite>
+of sequences supporting the call of that barcode.</p></li>
+<li><p><cite>dropped</cite> simply contains all rows in the original <cite>df</cite>
 that correspond to sequences that were dropped due to
 <cite>max_diffs</cite> or <cite>max_minor_muts</cite> not being satisfied.
 There is also a column called “drop_reason” that gives
-the reason that the barcode was dropped.</li>
+the reason that the barcode was dropped.</p></li>
 </ul>
 </div></blockquote>
 </dd>
@@ -536,28 +527,28 @@ the reason that the barcode was dropped.</li>
 <p>The approach is as follows:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li>Group all variants by library and barcode.</li>
-<li>If there are multiple sequences, check if any of them differ
+<li><p>Group all variants by library and barcode.</p></li>
+<li><p>If there are multiple sequences, check if any of them differ
 from all the others by more than <cite>max_diffs</cite> mutations total
 (taking substitutions, insertions, and deletions together).
 If so, drop the entire barcode. The reason is that if there
 are variants that are very different, it becomes likely that
 it isn’t just sequencing error, but rather something is wrong
 with that barcode (multiple variants with same barcode or
-strand exchange).</li>
-<li>Take the consensus of the sequences, which means keeping
+strand exchange).</p></li>
+<li><p>Take the consensus of the sequences, which means keeping
 mutations that are present in <strong>greater</strong> than half of the
 variants. Note that this calling scheme means that the
 consensus being called is dependent on the reference used
 to call the mutations, which is an important caveat if you
 are calling variants relative to multiple different parent
-sequences.</li>
-<li>If there are any minor mutations (mutations not in consensus)
+sequences.</p></li>
+<li><p>If there are any minor mutations (mutations not in consensus)
 that are present in more than <cite>max_minor_muts</cite> variants or missing
 from more than <cite>max_minor_muts</cite> variants, then
 drop that barcode. The reason is that recurring minor mutations
 also suggest some problem more complex than sequencing error
-that may render the whole barcode family invalid.</li>
+that may render the whole barcode family invalid.</p></li>
 </ol>
 </div></blockquote>
 <p>Note that this method returns a consensus even if there is just
@@ -615,7 +606,6 @@ is expected to be.</p>
 
 
           </div>
-          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -648,7 +638,7 @@ is expected to be.</p>
     
 
 <p>
-<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -692,20 +682,10 @@ is expected to be.</p>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
         </div>
       </div>
       <div class="clearer"></div>
@@ -714,8 +694,8 @@ is expected to be.</p>
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
       <a href="_sources/dms_tools2.barcodes.rst.txt"

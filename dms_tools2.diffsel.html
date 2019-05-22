@@ -1,19 +1,18 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>diffsel &#8212; dms_tools2 2.4.10 documentation</title>
+    <meta charset="utf-8" />
+    <title>diffsel &#8212; dms_tools2 2.4.12 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="dssp" href="dms_tools2.dssp.html" />
@@ -30,8 +29,6 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          
-
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.diffsel"></span><div class="section" id="diffsel">
@@ -41,27 +38,24 @@
 <dt id="dms_tools2.diffsel.avgMutDiffSel">
 <code class="descclassname">dms_tools2.diffsel.</code><code class="descname">avgMutDiffSel</code><span class="sig-paren">(</span><em>mutdiffselfiles</em>, <em>avgtype</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/diffsel.html#avgMutDiffSel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.diffsel.avgMutDiffSel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets mean or median mutation differential selection.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>mutdiffselfiles</cite> (list)</dt>
-<dd>List of CSV files with mutdiffsel as returned by
-<code class="docutils literal notranslate"><span class="pre">dms2_diffsel</span></code>.</dd>
-<dt><cite>avgtype</cite> (str)</dt>
-<dd><dl class="first last docutils">
-<dt>Type of “average” to calculate. Possibilities:</dt>
-<dd><ul class="first last simple">
-<li><cite>mean</cite></li>
-<li><cite>median</cite></li>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>mutdiffselfiles</cite> (list)</dt><dd><p>List of CSV files with mutdiffsel as returned by
+<code class="docutils literal notranslate"><span class="pre">dms2_diffsel</span></code>.</p>
+</dd>
+<dt><cite>avgtype</cite> (str)</dt><dd><dl class="simple">
+<dt>Type of “average” to calculate. Possibilities:</dt><dd><ul class="simple">
+<li><p><cite>mean</cite></p></li>
+<li><p><cite>median</cite></p></li>
 </ul>
 </dd>
 </dl>
 </dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A <cite>pandas.DataFrame</cite> containing the mean or median
-mutation differential selection.</dd>
+<dt>Returns:</dt><dd><p>A <cite>pandas.DataFrame</cite> containing the mean or median
+mutation differential selection.</p>
+</dd>
 </dl>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tf</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tf</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f1</span><span class="p">,</span> <span class="n">tf</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f2</span><span class="p">,</span> <span class="n">tf</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f3</span><span class="p">:</span>
@@ -103,32 +97,31 @@ mutation differential selection.</dd>
 <dt id="dms_tools2.diffsel.computeMutDiffSel">
 <code class="descclassname">dms_tools2.diffsel.</code><code class="descname">computeMutDiffSel</code><span class="sig-paren">(</span><em>sel</em>, <em>mock</em>, <em>countcharacters</em>, <em>pseudocount</em>, <em>translate_to_aa</em>, <em>err=None</em>, <em>mincount=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/diffsel.html#computeMutDiffSel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.diffsel.computeMutDiffSel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute mutation differential selection.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>sel</cite> (pandas.DataFrame)</dt>
-<dd>Counts for selected sample. Columns should be
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>sel</cite> (pandas.DataFrame)</dt><dd><p>Counts for selected sample. Columns should be
 <cite>site</cite>, <cite>wildtype</cite>, and every character in
-<cite>countcharacters</cite>.</dd>
-<dt><cite>mock</cite> (pandas.DataFrame)</dt>
-<dd>Like <cite>sel</cite> but counts for mock-selected sample.</dd>
-<dt><cite>countcharacters</cite> (list)</dt>
-<dd>List of all characters (e.g., codons).</dd>
-<dt><cite>pseudocount</cite> (int or float &gt; 0)</dt>
-<dd>Pseudocount to add to counts.</dd>
-<dt><cite>translate_to_aa</cite> (bool)</dt>
-<dd>Should be <cite>True</cite> if counts are for codons and we are
-estimating diffsel for amino acids, <cite>False</cite> otherwise.</dd>
-<dt><cite>err</cite> (pandas.DataFrame or <cite>None</cite>)</dt>
-<dd>Optional error-control counts, in same format as <cite>sel</cite>.</dd>
-<dt><cite>mincount</cite> (int &gt;= 0)</dt>
-<dd>Report as <cite>NaN</cite> the mutdiffsel for any mutation in which
-neither <cite>sel</cite> nor <cite>mock</cite> has at least this many counts.</dd>
+<cite>countcharacters</cite>.</p>
+</dd>
+<dt><cite>mock</cite> (pandas.DataFrame)</dt><dd><p>Like <cite>sel</cite> but counts for mock-selected sample.</p>
+</dd>
+<dt><cite>countcharacters</cite> (list)</dt><dd><p>List of all characters (e.g., codons).</p>
+</dd>
+<dt><cite>pseudocount</cite> (int or float &gt; 0)</dt><dd><p>Pseudocount to add to counts.</p>
+</dd>
+<dt><cite>translate_to_aa</cite> (bool)</dt><dd><p>Should be <cite>True</cite> if counts are for codons and we are
+estimating diffsel for amino acids, <cite>False</cite> otherwise.</p>
+</dd>
+<dt><cite>err</cite> (pandas.DataFrame or <cite>None</cite>)</dt><dd><p>Optional error-control counts, in same format as <cite>sel</cite>.</p>
+</dd>
+<dt><cite>mincount</cite> (int &gt;= 0)</dt><dd><p>Report as <cite>NaN</cite> the mutdiffsel for any mutation in which
+neither <cite>sel</cite> nor <cite>mock</cite> has at least this many counts.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A <cite>pandas.DataFrame</cite> with the mutation differential selection.
-Columns are <cite>site</cite>, <cite>wildtype</cite>, <cite>mutation</cite>, <cite>mutdiffsel</cite>.</dd>
+<dt>Returns:</dt><dd><p>A <cite>pandas.DataFrame</cite> with the mutation differential selection.
+Columns are <cite>site</cite>, <cite>wildtype</cite>, <cite>mutation</cite>, <cite>mutdiffsel</cite>.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -139,24 +132,23 @@ Columns are <cite>site</cite>, <cite>wildtype</cite>, <cite>mutation</cite>, <ci
 <p>Designed to expand data frame listing CSV files with site or
 mutation-level selection information into a data frame listing
 the information in these CSV files.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>df</cite> (pandas DataFrame)</dt>
-<dd>Each row gives files and associated information.</dd>
-<dt><cite>filecols</cite> (list)</dt>
-<dd>List of columns in <cite>df</cite> that give filenames of CSV files
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>df</cite> (pandas DataFrame)</dt><dd><p>Each row gives files and associated information.</p>
+</dd>
+<dt><cite>filecols</cite> (list)</dt><dd><p>List of columns in <cite>df</cite> that give filenames of CSV files
 to add to data frame. These CSV files cannot have column
-names already in <cite>df</cite>.</dd>
-<dt><cite>order_sites</cite> (bool)</dt>
-<dd>Expect a <cite>site</cite> column, make it naturally sorted
+names already in <cite>df</cite>.</p>
+</dd>
+<dt><cite>order_sites</cite> (bool)</dt><dd><p>Expect a <cite>site</cite> column, make it naturally sorted
 categorical variable, and add <cite>isite</cite> column
-that numbers sites 0, 1, …</dd>
+that numbers sites 0, 1, …</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A data frame where the entries in the files are now
-read as columns.</dd>
+<dt>Returns:</dt><dd><p>A data frame where the entries in the files are now
+read as columns.</p>
+</dd>
 </dl>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tf</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tf</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">sitediffsel1</span><span class="p">,</span> <span class="n">tf</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">sitediffsel2</span><span class="p">,</span> \
@@ -228,23 +220,20 @@ read as columns.</dd>
 <dt id="dms_tools2.diffsel.mutToSiteDiffSel">
 <code class="descclassname">dms_tools2.diffsel.</code><code class="descname">mutToSiteDiffSel</code><span class="sig-paren">(</span><em>mutdiffsel</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/diffsel.html#mutToSiteDiffSel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.diffsel.mutToSiteDiffSel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes sitediffsel from mutdiffsel.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>mutdiffsel</cite> (pandas.DataFrame)</dt>
-<dd>Dataframe with mutdiffsel as returned by <cite>computeMutDiffSel</cite></dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>mutdiffsel</cite> (pandas.DataFrame)</dt><dd><p>Dataframe with mutdiffsel as returned by <cite>computeMutDiffSel</cite></p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd><dl class="first last docutils">
-<dt>The dataframe <cite>sitediffsel</cite>, which has the following columns:</dt>
-<dd><ul class="first last simple">
-<li><cite>site</cite></li>
-<li><cite>abs_diffsel</cite>: sum of absolute values of mutdiffsel at site</li>
-<li><cite>positive_diffsel</cite>: sum of positive mutdiffsel at site</li>
-<li><cite>negative_diffsel</cite>: sum of negative mutdiffsel at site</li>
-<li><cite>max_diffsel</cite>: maximum mutdiffsel at site</li>
-<li><cite>min_diffsel</cite>: minimum mutdiffsel at site</li>
+<dt>Returns:</dt><dd><dl class="simple">
+<dt>The dataframe <cite>sitediffsel</cite>, which has the following columns:</dt><dd><ul class="simple">
+<li><p><cite>site</cite></p></li>
+<li><p><cite>abs_diffsel</cite>: sum of absolute values of mutdiffsel at site</p></li>
+<li><p><cite>positive_diffsel</cite>: sum of positive mutdiffsel at site</p></li>
+<li><p><cite>negative_diffsel</cite>: sum of negative mutdiffsel at site</p></li>
+<li><p><cite>max_diffsel</cite>: maximum mutdiffsel at site</p></li>
+<li><p><cite>min_diffsel</cite>: minimum mutdiffsel at site</p></li>
 </ul>
 </dd>
 </dl>
@@ -291,22 +280,21 @@ read as columns.</dd>
 also other dataframes, such as the <cite>fracsurvive</cite> ones
 from <code class="docutils literal notranslate"><span class="pre">dms_fracsurvive</span></code> are in tidy form. This function
 converts them to wide form.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>tidy_df</cite> (pandas DataFrame)</dt>
-<dd>Data frame in tidy form. Should have columns named
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>tidy_df</cite> (pandas DataFrame)</dt><dd><p>Data frame in tidy form. Should have columns named
 <cite>site</cite>, <cite>wildtype</cite>, <cite>mutation</cite>, and something
-with the name matching <cite>valuecol</cite>.</dd>
-<dt><cite>valuecol</cite> (string)</dt>
-<dd>Name of value column in <cite>df</cite>, such <cite>diffsel</cite> or
-<cite>fracsurvive</cite>.</dd>
+with the name matching <cite>valuecol</cite>.</p>
+</dd>
+<dt><cite>valuecol</cite> (string)</dt><dd><p>Name of value column in <cite>df</cite>, such <cite>diffsel</cite> or
+<cite>fracsurvive</cite>.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>Wide form dataframe. Will have columns <cite>site</cite> (as string), 
+<dt>Returns:</dt><dd><p>Wide form dataframe. Will have columns <cite>site</cite> (as string), 
 <cite>wildtype</cite>, and all characters (e.g., amino acids)
-for which values are given. Natural sorted by <cite>site</cite>.</dd>
+for which values are given. Natural sorted by <cite>site</cite>.</p>
+</dd>
 </dl>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tidy_df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="sd">&#39;&#39;&#39;site wildtype mutation diffsel</span>
@@ -331,7 +319,6 @@ for which values are given. Natural sorted by <cite>site</cite>.</dd>
 
 
           </div>
-          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -364,7 +351,7 @@ for which values are given. Natural sorted by <cite>site</cite>.</dd>
     
 
 <p>
-<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -408,20 +395,10 @@ for which values are given. Natural sorted by <cite>site</cite>.</dd>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
         </div>
       </div>
       <div class="clearer"></div>
@@ -430,8 +407,8 @@ for which values are given. Natural sorted by <cite>site</cite>.</dd>
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
       <a href="_sources/dms_tools2.diffsel.rst.txt"

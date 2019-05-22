@@ -1,19 +1,18 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms2_batch_fracsurvive &#8212; dms_tools2 2.4.10 documentation</title>
+    <meta charset="utf-8" />
+    <title>dms2_batch_fracsurvive &#8212; dms_tools2 2.4.12 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="dms2_logoplot" href="dms2_logoplot.html" />
@@ -30,25 +29,25 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          
-
           <div class="body" role="main">
             
   <div class="section" id="dms2-batch-fracsurvive">
 <span id="id1"></span><h1><code class="docutils literal notranslate"><span class="pre">dms2_batch_fracsurvive</span></code><a class="headerlink" href="#dms2-batch-fracsurvive" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
-<li><a class="reference internal" href="#overview" id="id3">Overview</a></li>
-<li><a class="reference internal" href="#command-line-usage" id="id4">Command-line usage</a><ul>
-<li><a class="reference internal" href="#Named Arguments" id="id5">Named Arguments</a></li>
+<li><p><a class="reference internal" href="#overview" id="id3">Overview</a></p></li>
+<li><p><a class="reference internal" href="#command-line-usage" id="id4">Command-line usage</a></p>
+<ul>
+<li><p><a class="reference internal" href="#Named Arguments" id="id5">Named Arguments</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#output-files" id="id6">Output files</a><ul>
-<li><a class="reference internal" href="#results-for-each-sample" id="id7">Results for each sample</a></li>
-<li><a class="reference internal" href="#mean-and-median-fraction-surviving" id="id8">Mean and median fraction surviving</a></li>
-<li><a class="reference internal" href="#correlation-plots" id="id9">Correlation plots</a></li>
-<li><a class="reference internal" href="#fracsurvive-plots" id="id10">Fracsurvive plots</a></li>
-<li><a class="reference internal" href="#log-file" id="id11">Log file</a></li>
+<li><p><a class="reference internal" href="#output-files" id="id6">Output files</a></p>
+<ul>
+<li><p><a class="reference internal" href="#results-for-each-sample" id="id7">Results for each sample</a></p></li>
+<li><p><a class="reference internal" href="#mean-and-median-fraction-surviving" id="id8">Mean and median fraction surviving</a></p></li>
+<li><p><a class="reference internal" href="#correlation-plots" id="id9">Correlation plots</a></p></li>
+<li><p><a class="reference internal" href="#fracsurvive-plots" id="id10">Fracsurvive plots</a></p></li>
+<li><p><a class="reference internal" href="#log-file" id="id11">Log file</a></p></li>
 </ul>
 </li>
 </ul>
@@ -65,7 +64,8 @@ It then creates the summary plots described in <a class="reference internal" hre
 </div>
 <div class="section" id="command-line-usage">
 <span id="batch-fracsurvive-commandlineusage"></span><h2><a class="toc-backref" href="#id4">Command-line usage</a><a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
-<p>Perform runs of <code class="docutils literal notranslate"><span class="pre">dms2_fracsurvive</span></code> and summarize results. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.4.10) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
+<p><p>Perform runs of <code class="docutils literal notranslate"><span class="pre">dms2_fracsurvive</span></code> and summarize results. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.4.12) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
+</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">dms2_batch_fracsurvive</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">outdir</span> <span class="n">OUTDIR</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">ncpus</span> <span class="n">NCPUS</span><span class="p">]</span>
                               <span class="p">[</span><span class="o">--</span><span class="n">use_existing</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">indir</span> <span class="n">INDIR</span><span class="p">]</span>
                               <span class="p">[</span><span class="o">--</span><span class="n">chartype</span> <span class="p">{</span><span class="n">codon_to_aa</span><span class="p">}]</span> <span class="p">[</span><span class="o">--</span><span class="n">aboveavg</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span>
@@ -77,77 +77,63 @@ It then creates the summary plots described in <a class="reference internal" hre
 </div>
 <div class="section" id="Named Arguments">
 <h3><a class="toc-backref" href="#id5">Named Arguments</a><a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h3>
-<table class="docutils option-list" frame="void" rules="none">
-<col class="option" />
-<col class="description" />
-<tbody valign="top">
-<tr><td class="option-group">
-<kbd>--outdir</kbd></td>
-<td>Output files to this directory (create if needed).</td></tr>
-<tr><td class="option-group">
-<kbd>--ncpus</kbd></td>
-<td><p class="first">Number of CPUs to use, -1 is all available.</p>
-<p class="last">Default: -1</p>
-</td></tr>
-<tr><td class="option-group">
-<kbd>--use_existing</kbd></td>
-<td><p class="first">Possible choices: yes, no</p>
+<dl class="option-list">
+<dt><kbd>--outdir</kbd></dt>
+<dd><p>Output files to this directory (create if needed).</p>
+</dd>
+<dt><kbd>--ncpus</kbd></dt>
+<dd><p>Number of CPUs to use, -1 is all available.</p>
+<p>Default: -1</p>
+</dd>
+<dt><kbd>--use_existing</kbd></dt>
+<dd><p>Possible choices: yes, no</p>
 <p>If files with names of expected output already exist, do not re-run.</p>
-<p class="last">Default: “no”</p>
-</td></tr>
-<tr><td class="option-group">
-<kbd>-v, --version</kbd></td>
-<td>show program’s version number and exit</td></tr>
-<tr><td class="option-group">
-<kbd>--indir</kbd></td>
-<td>Input counts files in this directory.</td></tr>
-<tr><td class="option-group">
-<kbd>--chartype</kbd></td>
-<td><p class="first">Possible choices: codon_to_aa</p>
+<p>Default: “no”</p>
+</dd>
+<dt><kbd>-v, --version</kbd></dt>
+<dd><p>show program’s version number and exit</p>
+</dd>
+<dt><kbd>--indir</kbd></dt>
+<dd><p>Input counts files in this directory.</p>
+</dd>
+<dt><kbd>--chartype</kbd></dt>
+<dd><p>Possible choices: codon_to_aa</p>
 <p>Characters for which fraction surviving selection is estimated. <cite>codon_to_aa</cite> = amino acids from codon counts.</p>
-<p class="last">Default: “codon_to_aa”</p>
-</td></tr>
-<tr><td class="option-group">
-<kbd>--aboveavg</kbd></td>
-<td><p class="first">Possible choices: yes, no</p>
+<p>Default: “codon_to_aa”</p>
+</dd>
+<dt><kbd>--aboveavg</kbd></dt>
+<dd><p>Possible choices: yes, no</p>
 <p>Report fracsurvive <strong>above</strong> the library average rather than direct fracsurvive values.</p>
-<p class="last">Default: “no”</p>
-</td></tr>
-<tr><td class="option-group">
-<kbd>--excludestop</kbd></td>
-<td><p class="first">Possible choices: yes, no</p>
+<p>Default: “no”</p>
+</dd>
+<dt><kbd>--excludestop</kbd></dt>
+<dd><p>Possible choices: yes, no</p>
 <p>Exclude stop codons as a possible amino acid?</p>
-<p class="last">Default: “yes”</p>
-</td></tr>
-<tr><td class="option-group">
-<kbd>--pseudocount</kbd></td>
-<td><p class="first">Pseudocount added to each count for sample with smaller depth; pseudocount for other sample scaled by relative depth.</p>
-<p class="last">Default: 5</p>
-</td></tr>
-<tr><td class="option-group">
-<kbd>--mincount</kbd></td>
-<td><p class="first">Report as <cite>NaN</cite> the fracsurvive of mutations for which both selected and mock-selected samples have &lt; this many counts.</p>
-<p class="last">Default: 0</p>
-</td></tr>
-<tr><td class="option-group">
-<kbd>--batchfile</kbd></td>
-<td><p class="first">CSV file specifying each <code class="docutils literal notranslate"><span class="pre">dms2_fracsurvive</span></code> run. Must have these columns: <cite>name</cite>, <cite>sel</cite>, <cite>mock</cite>, <cite>libfracsurvive</cite>. Can also have these <cite>err</cite>, <cite>group</cite>, <cite>grouplabel</cite>. If <cite>group</cite> is used, samples are grouped in summary plots labeled by <cite>group</cite>, or by <cite>grouplabel</cite> if it is specified. Other columns are ignored, so other <code class="docutils literal notranslate"><span class="pre">dms2_fracsurvive</span></code> args should be passed as separate command line args rather than in <code class="docutils literal notranslate"><span class="pre">--batchfile</span></code>.</p>
+<p>Default: “yes”</p>
+</dd>
+<dt><kbd>--pseudocount</kbd></dt>
+<dd><p>Pseudocount added to each count for sample with smaller depth; pseudocount for other sample scaled by relative depth.</p>
+<p>Default: 5</p>
+</dd>
+<dt><kbd>--mincount</kbd></dt>
+<dd><p>Report as <cite>NaN</cite> the fracsurvive of mutations for which both selected and mock-selected samples have &lt; this many counts.</p>
+<p>Default: 0</p>
+</dd>
+<dt><kbd>--batchfile</kbd></dt>
+<dd><p>CSV file specifying each <code class="docutils literal notranslate"><span class="pre">dms2_fracsurvive</span></code> run. Must have these columns: <cite>name</cite>, <cite>sel</cite>, <cite>mock</cite>, <cite>libfracsurvive</cite>. Can also have these <cite>err</cite>, <cite>group</cite>, <cite>grouplabel</cite>. If <cite>group</cite> is used, samples are grouped in summary plots labeled by <cite>group</cite>, or by <cite>grouplabel</cite> if it is specified. Other columns are ignored, so other <code class="docutils literal notranslate"><span class="pre">dms2_fracsurvive</span></code> args should be passed as separate command line args rather than in <code class="docutils literal notranslate"><span class="pre">--batchfile</span></code>.</p>
 <p>Each of the arguments <cite>name</cite>, <cite>sel</cite>, <cite>mock</cite>, <cite>libfracsurvive</cite>, and optionally <cite>err</cite> gives the value of the same parameter passed to <code class="docutils literal notranslate"><span class="pre">dms2_fracsurvive</span></code>.
 If <cite>group</cite> is being used, then the <cite>group</cite> is pre-pended to <cite>name</cite> for that sample.
 In addition, <cite>group</cite> is used to organize output for similar runs that should be grouped when calculating means / medians and plotting.</p>
-<p class="last">If you are running with no error-control counts, then do <strong>not</strong> specify <code class="docutils literal notranslate"><span class="pre">--err</span></code>.</p>
-</td></tr>
-<tr><td class="option-group" colspan="2">
-<kbd>--summaryprefix</kbd></td>
-</tr>
-<tr><td>&#160;</td><td><p class="first">Prefix of output summary files and plots.</p>
-<p class="last">As detailed in <cite>Output files</cite> below, <code class="docutils literal notranslate"><span class="pre">dms2_batch_fracsurvive</span></code> creates a variety of plots summarizing the output.
+<p>If you are running with no error-control counts, then do <strong>not</strong> specify <code class="docutils literal notranslate"><span class="pre">--err</span></code>.</p>
+</dd>
+<dt><kbd>--summaryprefix</kbd></dt>
+<dd><p>Prefix of output summary files and plots.</p>
+<p>As detailed in <cite>Output files</cite> below, <code class="docutils literal notranslate"><span class="pre">dms2_batch_fracsurvive</span></code> creates a variety of plots summarizing the output.
 These files are in the directory specified by <code class="docutils literal notranslate"><span class="pre">--outdir</span></code>, and have the prefix specified here.
 This name should only contain letters, numbers, dashes, and spaces.
 Underscores are <strong>not</strong> allowed as they are a LaTex special character.</p>
-</td></tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </div>
 </div>
 <div class="section" id="output-files">
@@ -218,8 +204,8 @@ These plots show the mean and median values for each group, and are faceted by <
 If you run with <code class="docutils literal notranslate"><span class="pre">--summaryprefix</span> <span class="pre">summary</span></code>, then the plots will be:</p>
 <blockquote>
 <div><ul class="simple">
-<li><cite>avgfracsurvive</cite>: files <code class="docutils literal notranslate"><span class="pre">summary_meanavgfracsurvive.pdf</span></code> and <code class="docutils literal notranslate"><span class="pre">summary_medianavgfracsurvive.pdf</span></code> show the average <cite>mutfracsurvive</cite> across all mutations for each site.</li>
-<li><cite>maxfracsurvive</cite>: files <code class="docutils literal notranslate"><span class="pre">summary_meanmaxfracsurvive.pdf</span></code> and <code class="docutils literal notranslate"><span class="pre">summary_medianmaxfracsurvive.pdf</span></code> show the maximum <cite>mutfracsurvive</cite> across all mutations for each site.</li>
+<li><p><cite>avgfracsurvive</cite>: files <code class="docutils literal notranslate"><span class="pre">summary_meanavgfracsurvive.pdf</span></code> and <code class="docutils literal notranslate"><span class="pre">summary_medianavgfracsurvive.pdf</span></code> show the average <cite>mutfracsurvive</cite> across all mutations for each site.</p></li>
+<li><p><cite>maxfracsurvive</cite>: files <code class="docutils literal notranslate"><span class="pre">summary_meanmaxfracsurvive.pdf</span></code> and <code class="docutils literal notranslate"><span class="pre">summary_medianmaxfracsurvive.pdf</span></code> show the maximum <cite>mutfracsurvive</cite> across all mutations for each site.</p></li>
 </ul>
 </div></blockquote>
 </div>
@@ -233,7 +219,6 @@ For instance, if you run <code class="docutils literal notranslate"><span class=
 
 
           </div>
-          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -266,7 +251,7 @@ For instance, if you run <code class="docutils literal notranslate"><span class=
     
 
 <p>
-<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -316,20 +301,10 @@ For instance, if you run <code class="docutils literal notranslate"><span class=
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
         </div>
       </div>
       <div class="clearer"></div>
@@ -338,8 +313,8 @@ For instance, if you run <code class="docutils literal notranslate"><span class=
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
       <a href="_sources/dms2_batch_fracsurvive.rst.txt"

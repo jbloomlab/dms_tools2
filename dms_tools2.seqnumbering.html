@@ -1,19 +1,18 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>seqnumbering &#8212; dms_tools2 2.4.10 documentation</title>
+    <meta charset="utf-8" />
+    <title>seqnumbering &#8212; dms_tools2 2.4.12 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="sra" href="dms_tools2.sra.html" />
@@ -30,8 +29,6 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          
-
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.seqnumbering"></span><div class="section" id="seqnumbering">
@@ -52,39 +49,37 @@ to CDSs encoded on that chromosome.</p>
 class, numbering is assumed to be 1, 2, …. Note that
 this is different than the 0, 1, … numbering used
 by Python for strings.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>genbankfile</cite> (str)</dt>
-<dd>Genbank file with one or more loci, each of which
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>genbankfile</cite> (str)</dt><dd><p>Genbank file with one or more loci, each of which
 should be a separate chromosome. The features
 of relevance are called <cite>mRNA</cite> and <cite>CDS</cite>.
 Each of these features should have a qualifier
-called <cite>label</cite> that gives its name.</dd>
-<dt><cite>ignore_other_features</cite> (bool)</dt>
-<dd>If <cite>genbankfile</cite> contains features not <cite>mRNA</cite>
-or <cite>CDS</cite>, ignore them or raise error?</dd>
-<dt><cite>to_upper</cite> (bool)</dt>
-<dd>Convert all sequences to upper case letters?</dd>
+called <cite>label</cite> that gives its name.</p>
+</dd>
+<dt><cite>ignore_other_features</cite> (bool)</dt><dd><p>If <cite>genbankfile</cite> contains features not <cite>mRNA</cite>
+or <cite>CDS</cite>, ignore them or raise error?</p>
+</dd>
+<dt><cite>to_upper</cite> (bool)</dt><dd><p>Convert all sequences to upper case letters?</p>
+</dd>
 </dl>
 </dd>
-<dt>Attributes:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>chromosomes</cite> (dict)</dt>
-<dd>Keyed by chromosome names, values are
-<cite>Bio.SeqRecord.SeqRecord</cite> for chromosomes.</dd>
-<dt><cite>mRNAs</cite> (dict)</dt>
-<dd>Keyed by mRNA names, values are
-<cite>Bio.SeqFeature.SeqFeature</cite> for mRNA.</dd>
-<dt><cite>CDSs</cite> (dict)</dt>
-<dd>Keyed by CDS names, values are
-<cite>Bio.SeqFeature.SeqFeature</cite> for CDS.</dd>
-<dt><cite>mRNA_chromosome</cite> (dict)</dt>
-<dd>Keyed by mRNA name, values is name of chromosome
-containing mRNA.</dd>
-<dt><cite>chromosome_CDSs</cite> (dict)</dt>
-<dd>Keyed by chromosome names, values are names of
-CDSs on chromosome.</dd>
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt><cite>chromosomes</cite> (dict)</dt><dd><p>Keyed by chromosome names, values are
+<cite>Bio.SeqRecord.SeqRecord</cite> for chromosomes.</p>
+</dd>
+<dt><cite>mRNAs</cite> (dict)</dt><dd><p>Keyed by mRNA names, values are
+<cite>Bio.SeqFeature.SeqFeature</cite> for mRNA.</p>
+</dd>
+<dt><cite>CDSs</cite> (dict)</dt><dd><p>Keyed by CDS names, values are
+<cite>Bio.SeqFeature.SeqFeature</cite> for CDS.</p>
+</dd>
+<dt><cite>mRNA_chromosome</cite> (dict)</dt><dd><p>Keyed by mRNA name, values is name of chromosome
+containing mRNA.</p>
+</dd>
+<dt><cite>chromosome_CDSs</cite> (dict)</dt><dd><p>Keyed by chromosome names, values are names of
+CDSs on chromosome.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -199,27 +194,25 @@ in the latter):</p>
 <dd><p>Amino-acid substitutions from point mutation to chromosome.</p>
 <p>Gets all amino-acid substitutions in CDSs caused by a
 point mutation to a chromosome.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>chromosome</cite> (str)</dt>
-<dd>Name of chromosome.</dd>
-<dt><cite>mutation</cite> (str or 3-tuple)</dt>
-<dd>Point mutation in chromosome based numbering. A str
+<dl>
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>chromosome</cite> (str)</dt><dd><p>Name of chromosome.</p>
+</dd>
+<dt><cite>mutation</cite> (str or 3-tuple)</dt><dd><p>Point mutation in chromosome based numbering. A str
 like “A50T”, or tuple <cite>(wt, i, mut)</cite> where <cite>wt</cite> is
-wildtype nt, <cite>i</cite> is site, and <cite>mut</cite> is mutant nt.</dd>
-<dt><cite>aa_3letter</cite> (bool)</dt>
-<dd>Use 3-letter rather than 1-letter amino-acid codes?</dd>
+wildtype nt, <cite>i</cite> is site, and <cite>mut</cite> is mutant nt.</p>
+</dd>
+<dt><cite>aa_3letter</cite> (bool)</dt><dd><p>Use 3-letter rather than 1-letter amino-acid codes?</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd><p class="first">A string giving the amino-acid mutations:</p>
-<blockquote class="last">
+<dt>Returns:</dt><dd><p>A string giving the amino-acid mutations:</p>
+<blockquote>
 <div><ul class="simple">
-<li>If no mutations, returns empty str.</li>
-<li>If one mutation, will be str like ‘fluNS1-Asp12Val’.</li>
-<li>If several mutations, will be str like
-‘fluNS1-His169Leu_fluNS2-Ile12Leu’.</li>
+<li><p>If no mutations, returns empty str.</p></li>
+<li><p>If one mutation, will be str like ‘fluNS1-Asp12Val’.</p></li>
+<li><p>If several mutations, will be str like
+‘fluNS1-His169Leu_fluNS2-Ile12Leu’.</p></li>
 </ul>
 </div></blockquote>
 </dd>
@@ -230,23 +223,22 @@ wildtype nt, <cite>i</cite> is site, and <cite>mut</cite> is mutant nt.</dd>
 <dt id="dms_tools2.seqnumbering.TranscriptConverter.i_mRNAtoChromosome">
 <code class="descname">i_mRNAtoChromosome</code><span class="sig-paren">(</span><em>mRNA</em>, <em>i</em>, <em>*</em>, <em>mRNAfragment=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/seqnumbering.html#TranscriptConverter.i_mRNAtoChromosome"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.seqnumbering.TranscriptConverter.i_mRNAtoChromosome" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert site number in mRNA to number in chromosome.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>mRNA</cite> (str)</dt>
-<dd>Name of a valid mRNA.</dd>
-<dt><cite>i</cite> (int)</dt>
-<dd>Site number in mRNA.</dd>
-<dt><cite>mRNAfragment</cite> (str or <cite>None</cite>)</dt>
-<dd>Substring sequence of <cite>mRNA</cite>. In this case, <cite>i</cite>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>mRNA</cite> (str)</dt><dd><p>Name of a valid mRNA.</p>
+</dd>
+<dt><cite>i</cite> (int)</dt><dd><p>Site number in mRNA.</p>
+</dd>
+<dt><cite>mRNAfragment</cite> (str or <cite>None</cite>)</dt><dd><p>Substring sequence of <cite>mRNA</cite>. In this case, <cite>i</cite>
 is taken as the site in this substring of the
 <cite>mRNA</cite>. Useful because sometimes mutations may
 be called in a fragment of the full mRNA. Set
-to <cite>None</cite> if <cite>i</cite> is site in full mRNA.</dd>
+to <cite>None</cite> if <cite>i</cite> is site in full mRNA.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>Site number in chromosome that contains <cite>mRNA</cite>.</dd>
+<dt>Returns:</dt><dd><p>Site number in chromosome that contains <cite>mRNA</cite>.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -254,17 +246,16 @@ to <cite>None</cite> if <cite>i</cite> is site in full mRNA.</dd>
 <dt id="dms_tools2.seqnumbering.TranscriptConverter.ntIdentity">
 <code class="descname">ntIdentity</code><span class="sig-paren">(</span><em>chromosome</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/seqnumbering.html#TranscriptConverter.ntIdentity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.seqnumbering.TranscriptConverter.ntIdentity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets identity at site in chromosome.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>chromosome</cite> (str)</dt>
-<dd>Name of chromosome.</dd>
-<dt><cite>i</cite> (int)</dt>
-<dd>Site in chromosome.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>chromosome</cite> (str)</dt><dd><p>Name of chromosome.</p>
+</dd>
+<dt><cite>i</cite> (int)</dt><dd><p>Site in chromosome.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>Nucleotide in <cite>chromosome</cite> at site <cite>i</cite>.</dd>
+<dt>Returns:</dt><dd><p>Nucleotide in <cite>chromosome</cite> at site <cite>i</cite>.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -274,7 +265,6 @@ to <cite>None</cite> if <cite>i</cite> is site in full mRNA.</dd>
 
 
           </div>
-          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -307,7 +297,7 @@ to <cite>None</cite> if <cite>i</cite> is site in full mRNA.</dd>
     
 
 <p>
-<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -351,20 +341,10 @@ to <cite>None</cite> if <cite>i</cite> is site in full mRNA.</dd>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
         </div>
       </div>
       <div class="clearer"></div>
@@ -373,8 +353,8 @@ to <cite>None</cite> if <cite>i</cite> is site in full mRNA.</dd>
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
       <a href="_sources/dms_tools2.seqnumbering.rst.txt"

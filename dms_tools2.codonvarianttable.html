@@ -1,19 +1,18 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>codonvarianttable &#8212; dms_tools2 2.4.10 documentation</title>
+    <meta charset="utf-8" />
+    <title>codonvarianttable &#8212; dms_tools2 2.4.12 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="compareprefs" href="dms_tools2.compareprefs.html" />
@@ -30,8 +29,6 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          
-
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.codonvarianttable"></span><div class="section" id="codonvarianttable">
@@ -51,54 +48,52 @@ on barcoded codon-mutant libraries of a gene.</p>
 <em class="property">class </em><code class="descclassname">dms_tools2.codonvarianttable.</code><code class="descname">CodonVariantTable</code><span class="sig-paren">(</span><em>*</em>, <em>barcode_variant_file</em>, <em>geneseq</em>, <em>substitutions_are_codon=False</em>, <em>extra_cols=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#CodonVariantTable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.CodonVariantTable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Associates barcodes with codon mutants of gene.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>barcode_variant_file</cite> (str)</dt>
-<dd>CSV file giving barcodes and variants. Must have
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>barcode_variant_file</cite> (str)</dt><dd><p>CSV file giving barcodes and variants. Must have
 columns named “library”, “barcode”, “substitutions”,
 (nucleotide mutations in 1, … numbering in a format
 like “G301A A302T G856C”), and “variant_call_support”
 (sequences supporting barcode-variant call). Any
 additional columns are removed unless they are specified
-in <cite>extra_cols</cite>.</dd>
-<dt><cite>geneseq</cite> (str)</dt>
-<dd>Sequence of wildtype protein-coding gene.</dd>
-<dt><cite>substitutions_are_codon</cite> (bool)</dt>
-<dd>If <cite>True</cite>, then the “substitutions” column in
+in <cite>extra_cols</cite>.</p>
+</dd>
+<dt><cite>geneseq</cite> (str)</dt><dd><p>Sequence of wildtype protein-coding gene.</p>
+</dd>
+<dt><cite>substitutions_are_codon</cite> (bool)</dt><dd><p>If <cite>True</cite>, then the “substitutions” column in
 <cite>barcode_variant_file</cite> gives the substitutions
 as codon rather than nucleotide mutations (e.g.,
 “ATG1ATA GTA5CCC” for substitutions at codons
-1 and 5 in 1, 2, … numbering).</dd>
-<dt><cite>extra_cols</cite> (list)</dt>
-<dd>Additional columns in <cite>barcode_variant_file</cite> to
+1 and 5 in 1, 2, … numbering).</p>
+</dd>
+<dt><cite>extra_cols</cite> (list)</dt><dd><p>Additional columns in <cite>barcode_variant_file</cite> to
 retain when creating <cite>barcode_variant_df</cite> and
-<cite>variant_count_df</cite> attributes.</dd>
+<cite>variant_count_df</cite> attributes.</p>
+</dd>
 </dl>
 </dd>
-<dt>Attributes:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>geneseq</cite> (str)</dt>
-<dd><cite>geneseq</cite> passed at initialization.</dd>
-<dt><cite>sites</cite> (list)</dt>
-<dd>List of all codon sites in 1, 2, … numbering.</dd>
-<dt><cite>codons</cite> (OrderedDict)</dt>
-<dd><cite>codons[r]</cite> is wildtype codon at site <cite>r</cite>, ordered
-by sites.</dd>
-<dt><cite>aas</cite> (OrderedDict)</dt>
-<dd><cite>aas[r]</cite> is wildtype amino acid at site <cite>r</cite>,
-ordered by sites.</dd>
-<dt><cite>libraries</cite> (list)</dt>
-<dd>List of libraries in <cite>barcode_variantfile</cite>.</dd>
-<dt><cite>barcode_variant_df</cite> (pandas DataFrame)</dt>
-<dd>Info about codon mutations parsed from <cite>barcode_variantfile</cite>.</dd>
-<dt><cite>variant_count_df</cite> (pandas DataFrame or None)</dt>
-<dd>Initially <cite>None</cite>, but after data are added with
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt><cite>geneseq</cite> (str)</dt><dd><p><cite>geneseq</cite> passed at initialization.</p>
+</dd>
+<dt><cite>sites</cite> (list)</dt><dd><p>List of all codon sites in 1, 2, … numbering.</p>
+</dd>
+<dt><cite>codons</cite> (OrderedDict)</dt><dd><p><cite>codons[r]</cite> is wildtype codon at site <cite>r</cite>, ordered
+by sites.</p>
+</dd>
+<dt><cite>aas</cite> (OrderedDict)</dt><dd><p><cite>aas[r]</cite> is wildtype amino acid at site <cite>r</cite>,
+ordered by sites.</p>
+</dd>
+<dt><cite>libraries</cite> (list)</dt><dd><p>List of libraries in <cite>barcode_variantfile</cite>.</p>
+</dd>
+<dt><cite>barcode_variant_df</cite> (pandas DataFrame)</dt><dd><p>Info about codon mutations parsed from <cite>barcode_variantfile</cite>.</p>
+</dd>
+<dt><cite>variant_count_df</cite> (pandas DataFrame or None)</dt><dd><p>Initially <cite>None</cite>, but after data are added with
 <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.addSampleCounts" title="dms_tools2.codonvarianttable.CodonVariantTable.addSampleCounts"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.addSampleCounts</span></code></a>, holds
 counts of each variant for each sample. Differs from
 <cite>barcode_variant_df</cite> in that the former just holds
 initial barcode-variant data, whereas <cite>variant_count_df</cite>
-is updated with variant counts for samples.</dd>
+is updated with variant counts for samples.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -406,24 +401,23 @@ normalization) for <cite>lib_2</cite> so we get an error:</p>
 <dt id="dms_tools2.codonvarianttable.CodonVariantTable.addMergedLibraries">
 <em class="property">static </em><code class="descname">addMergedLibraries</code><span class="sig-paren">(</span><em>df</em>, <em>*</em>, <em>all_lib='all libraries'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#CodonVariantTable.addMergedLibraries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.CodonVariantTable.addMergedLibraries" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add data to <cite>df</cite> for all libraries merged.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>df</cite> (pandas DataFrame)</dt>
-<dd>DataFrame that includes columns named
-“library” and “barcode”.</dd>
-<dt><cite>all_lib</cite> (str)</dt>
-<dd>Name given to library that is merge of all
-other libraries.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>df</cite> (pandas DataFrame)</dt><dd><p>DataFrame that includes columns named
+“library” and “barcode”.</p>
+</dd>
+<dt><cite>all_lib</cite> (str)</dt><dd><p>Name given to library that is merge of all
+other libraries.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>If <cite>df</cite> only has data for one library, just returns
+<dt>Returns:</dt><dd><p>If <cite>df</cite> only has data for one library, just returns
 <cite>df</cite>. Otherwise returns a copy of <cite>df</cite> that has a
 new library with the name given by <cite>all_lib</cite>
 and contains the data for all individual libraries,
 with the “barcode” column giving the original
-library name followed by a hyphen and the barcode.</dd>
+library name followed by a hyphen and the barcode.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -431,21 +425,20 @@ library name followed by a hyphen and the barcode.</dd>
 <dt id="dms_tools2.codonvarianttable.CodonVariantTable.addSampleCounts">
 <code class="descname">addSampleCounts</code><span class="sig-paren">(</span><em>library</em>, <em>sample</em>, <em>barcodecounts</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#CodonVariantTable.addSampleCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.CodonVariantTable.addSampleCounts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add variant counts for a sample to <cite>variant_count_df</cite>.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>library</cite> (str)</dt>
-<dd>Valid <cite>library</cite> for the <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable" title="dms_tools2.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>.</dd>
-<dt><cite>sample</cite> (str)</dt>
-<dd>Sample name, must <strong>not</strong> already be in
-<a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.samples" title="dms_tools2.codonvarianttable.CodonVariantTable.samples"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.samples</span></code></a> for <cite>library</cite>.</dd>
-<dt><cite>barcodecounts</cite> (pandas DataFrame)</dt>
-<dd>Gives counts for each variant by barcode. Must
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>library</cite> (str)</dt><dd><p>Valid <cite>library</cite> for the <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable" title="dms_tools2.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>.</p>
+</dd>
+<dt><cite>sample</cite> (str)</dt><dd><p>Sample name, must <strong>not</strong> already be in
+<a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.samples" title="dms_tools2.codonvarianttable.CodonVariantTable.samples"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.samples</span></code></a> for <cite>library</cite>.</p>
+</dd>
+<dt><cite>barcodecounts</cite> (pandas DataFrame)</dt><dd><p>Gives counts for each variant by barcode. Must
 have columns named “barcode” and “count”. The
 “barcode” column must contain all the barcodes
 in <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.valid_barcodes" title="dms_tools2.codonvarianttable.CodonVariantTable.valid_barcodes"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.valid_barcodes</span></code></a> for
 <cite>library</cite>. Such data frames are returned
-by <a class="reference internal" href="dms_tools2.barcodes.html#dms_tools2.barcodes.IlluminaBarcodeParser.parse" title="dms_tools2.barcodes.IlluminaBarcodeParser.parse"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_tools2.barcodes.IlluminaBarcodeParser.parse</span></code></a>.</dd>
+by <a class="reference internal" href="dms_tools2.barcodes.html#dms_tools2.barcodes.IlluminaBarcodeParser.parse" title="dms_tools2.barcodes.IlluminaBarcodeParser.parse"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_tools2.barcodes.IlluminaBarcodeParser.parse</span></code></a>.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -455,35 +448,33 @@ by <a class="reference internal" href="dms_tools2.barcodes.html#dms_tools2.barco
 <dt id="dms_tools2.codonvarianttable.CodonVariantTable.classifyVariants">
 <em class="property">static </em><code class="descname">classifyVariants</code><span class="sig-paren">(</span><em>df</em>, <em>*</em>, <em>variant_class_col='variant_class'</em>, <em>max_aa=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#CodonVariantTable.classifyVariants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.CodonVariantTable.classifyVariants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Classifies codon variants in <cite>df</cite>.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>df</cite> (pandas DataFrame)</dt>
-<dd>Must have columns named ‘aa_substitutions’,
+<dl>
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>df</cite> (pandas DataFrame)</dt><dd><p>Must have columns named ‘aa_substitutions’,
 ‘n_aa_substitutions’, and ‘n_codon_substitutions’.
 For instance, a data frame of this type can
 be obtained via the <cite>variant_count_df</cite> or
 <cite>barcode_variant_df</cite> of a <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable" title="dms_tools2.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>,
-or via <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.func_scores" title="dms_tools2.codonvarianttable.CodonVariantTable.func_scores"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.func_scores()</span></code></a>.</dd>
-<dt><cite>variant_class_col</cite> (str)</dt>
-<dd>Name of column added to <cite>df</cite> that contains
-variant classification. Overwritten if already exists.</dd>
-<dt><cite>max_aa</cite> (int)</dt>
-<dd>When classifying variants, group all with &gt;=
-this many amino-acid mutations.</dd>
+or via <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.func_scores" title="dms_tools2.codonvarianttable.CodonVariantTable.func_scores"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.func_scores()</span></code></a>.</p>
+</dd>
+<dt><cite>variant_class_col</cite> (str)</dt><dd><p>Name of column added to <cite>df</cite> that contains
+variant classification. Overwritten if already exists.</p>
+</dd>
+<dt><cite>max_aa</cite> (int)</dt><dd><p>When classifying variants, group all with &gt;=
+this many amino-acid mutations.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd><p class="first">A copy of <cite>df</cite> with the column specified by
+<dt>Returns:</dt><dd><p>A copy of <cite>df</cite> with the column specified by
 <cite>variant_class_col</cite> classifying variants as:</p>
-<blockquote class="last">
+<blockquote>
 <div><ul class="simple">
-<li>‘wildtype’: no codon mutations</li>
-<li>‘synonymous’: only synonymous codon mutations</li>
-<li>‘stop’: at least one stop-codon mutation</li>
-<li>‘{n_aa} nonsynonymous’ where <cite>n_aa</cite> is the
+<li><p>‘wildtype’: no codon mutations</p></li>
+<li><p>‘synonymous’: only synonymous codon mutations</p></li>
+<li><p>‘stop’: at least one stop-codon mutation</p></li>
+<li><p>‘{n_aa} nonsynonymous’ where <cite>n_aa</cite> is the
 number of amino-acid mutations, or is ‘&gt;{max_aa}’
-if there are more than <cite>max_aa</cite> such mutations.</li>
+if there are more than <cite>max_aa</cite> such mutations.</p></li>
 </ul>
 </div></blockquote>
 </dd>
@@ -515,16 +506,15 @@ if there are more than <cite>max_aa</cite> such mutations.</li>
 <dt id="dms_tools2.codonvarianttable.CodonVariantTable.codonToAAMuts">
 <em class="property">classmethod </em><code class="descname">codonToAAMuts</code><span class="sig-paren">(</span><em>codon_mut_str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#CodonVariantTable.codonToAAMuts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.CodonVariantTable.codonToAAMuts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts string of codon mutations to amino-acid mutations.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>codon_mut_str</cite> (str)</dt>
-<dd>Codon mutations, delimited by a space and in
-1, 2, … numbering.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>codon_mut_str</cite> (str)</dt><dd><p>Codon mutations, delimited by a space and in
+1, 2, … numbering.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>String with amino acid mutations in 1, 2, … numbering.</dd>
+<dt>Returns:</dt><dd><p>String with amino acid mutations in 1, 2, … numbering.</p>
+</dd>
 </dl>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">CodonVariantTable</span><span class="o">.</span><span class="n">codonToAAMuts</span><span class="p">(</span><span class="s1">&#39;ATG1GTG GGA2GGC TGA3AGA&#39;</span><span class="p">)</span>
 <span class="go">&#39;M1V *3R&#39;</span>
@@ -541,29 +531,28 @@ if there are more than <cite>max_aa</cite> such mutations.</li>
 simulates the variants, not counts for samples.
 To add those, then use <a class="reference internal" href="#dms_tools2.codonvarianttable.simulateSampleCounts" title="dms_tools2.codonvarianttable.simulateSampleCounts"><code class="xref py py-func docutils literal notranslate"><span class="pre">simulateSampleCounts()</span></code></a>
 and <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.addSampleCounts" title="dms_tools2.codonvarianttable.CodonVariantTable.addSampleCounts"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.addSampleCounts()</span></code></a>.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>geneseq</cite> (str)</dt>
-<dd>Sequence of wildtype protein-coding gene.</dd>
-<dt><cite>bclen</cite> (int)</dt>
-<dd>Length of the barcodes; must enable complexity
-at least 10-fold greater than max number of variants.</dd>
-<dt><cite>library_specs</cite> (dict)</dt>
-<dd>Specifications for each simulated library. Keys
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>geneseq</cite> (str)</dt><dd><p>Sequence of wildtype protein-coding gene.</p>
+</dd>
+<dt><cite>bclen</cite> (int)</dt><dd><p>Length of the barcodes; must enable complexity
+at least 10-fold greater than max number of variants.</p>
+</dd>
+<dt><cite>library_specs</cite> (dict)</dt><dd><p>Specifications for each simulated library. Keys
 are ‘avgmuts’ and ‘nvariants’, and values are
 average-codon mutations per variant and number of
-variants. Mutations per variant are Poisson distributed.</dd>
-<dt><cite>seed</cite> (int or <cite>None</cite>)</dt>
-<dd>Random number seed or <cite>None</cite> to set no seed.</dd>
-<dt><cite>variant_call_support</cite> (int or 2-tuple)</dt>
-<dd>If an integer, all variant call supports are set to this.
+variants. Mutations per variant are Poisson distributed.</p>
+</dd>
+<dt><cite>seed</cite> (int or <cite>None</cite>)</dt><dd><p>Random number seed or <cite>None</cite> to set no seed.</p>
+</dd>
+<dt><cite>variant_call_support</cite> (int or 2-tuple)</dt><dd><p>If an integer, all variant call supports are set to this.
 If a 2-tuple, variant call support is drawn as a random
-integer uniformly from this range (inclusive).</dd>
+integer uniformly from this range (inclusive).</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>The simulated <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable" title="dms_tools2.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>.</dd>
+<dt>Returns:</dt><dd><p>The simulated <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable" title="dms_tools2.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -574,27 +563,26 @@ integer uniformly from this range (inclusive).</dd>
 <p>Use this method when you have written a CSV file of the
 <cite>variant_count_df</cite> attribute of a <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable" title="dms_tools2.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>,
 and now wish to re-initialize that <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable" title="dms_tools2.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>variant_count_df_file</cite> (str)</dt>
-<dd>Name of CSV file containing the <cite>variant_count_df</cite>.
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>variant_count_df_file</cite> (str)</dt><dd><p>Name of CSV file containing the <cite>variant_count_df</cite>.
 Must have following columns: “barcode”, “library”,
 “variant_call_support”, “codon_substitutions”,
-“sample”, and “count”.</dd>
-<dt><cite>geneseq</cite> (str)</dt>
-<dd>Sequence of wildtype protein-coding gene.</dd>
-<dt><cite>drop_all_libs</cite> (bool)</dt>
-<dd>If there is a library named “all libraries”,
+“sample”, and “count”.</p>
+</dd>
+<dt><cite>geneseq</cite> (str)</dt><dd><p>Sequence of wildtype protein-coding gene.</p>
+</dd>
+<dt><cite>drop_all_libs</cite> (bool)</dt><dd><p>If there is a library named “all libraries”,
 drop it from the list of libraries in the created
 <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable" title="dms_tools2.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a> as it probably was
 added by <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.addMergedLibraries" title="dms_tools2.codonvarianttable.CodonVariantTable.addMergedLibraries"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.addMergedLibraries()</span></code></a>
-and duplicates information for the individual libraries.</dd>
+and duplicates information for the individual libraries.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>The <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable" title="dms_tools2.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a> used to write
-<cite>variant_count_df_file</cite>.</dd>
+<dt>Returns:</dt><dd><p>The <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable" title="dms_tools2.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a> used to write
+<cite>variant_count_df_file</cite>.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -618,62 +606,59 @@ For both calculations, a pseudocount (see <cite>pseudocount</cite> argument)
 is added to each count first. The wildtype counts are computed
 across all <strong>fully wildtype</strong> variants (see <cite>syn_as_wt</cite> for
 how this is defined).</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>preselection</cite> (str or dict)</dt>
-<dd>The pre-selection sample. If the same for all post-
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>preselection</cite> (str or dict)</dt><dd><p>The pre-selection sample. If the same for all post-
 selection samples, then provide the name of the
 pre-selection sample. If it differs among post-selection
 samples, then provide a dict keyed by each post-selection
-sample with the pre-selection sample being the value.</dd>
-<dt><cite>pseudocount</cite> (float)</dt>
-<dd>The pseudocount added to each count.</dd>
-<dt><cite>by</cite> (str)</dt>
-<dd>Compute effects for each “barcode”, set of
+sample with the pre-selection sample being the value.</p>
+</dd>
+<dt><cite>pseudocount</cite> (float)</dt><dd><p>The pseudocount added to each count.</p>
+</dd>
+<dt><cite>by</cite> (str)</dt><dd><p>Compute effects for each “barcode”, set of
 “aa_substitutions”, or set of “codon_substitutions”.
 In the latter two cases, all barcodes with each
 set of substitutions are combined (see <cite>combine_libs</cite>).
 Note that if you use “aa_substitutions” then it may
-be more sensible to set <cite>syn_as_wt</cite> to <cite>True</cite>.</dd>
-<dt><cite>syn_as_wt</cite> (bool)</dt>
-<dd>In the formula for the functional scores, consider
+be more sensible to set <cite>syn_as_wt</cite> to <cite>True</cite>.</p>
+</dd>
+<dt><cite>syn_as_wt</cite> (bool)</dt><dd><p>In the formula for the functional scores, consider
 variants with only synonymous mutations when determining
 wildtype counts? If <cite>False</cite>, only variants with <strong>no</strong>
-mutations of any type contribute to wildtype counts.</dd>
-<dt><cite>combine_libs</cite> (bool)</dt>
-<dd>If <cite>by</cite> is “aa_substitutions” or “codon_substitutions”,
-do we combine across libraries as well as barcodes?</dd>
-<dt><cite>logbase</cite> (float)</dt>
-<dd>Base for logarithm when calculating functional score.</dd>
-<dt><cite>permit_zero_wt</cite> (bool)</dt>
-<dd>If the wildtype counts are zero for any sample, do
+mutations of any type contribute to wildtype counts.</p>
+</dd>
+<dt><cite>combine_libs</cite> (bool)</dt><dd><p>If <cite>by</cite> is “aa_substitutions” or “codon_substitutions”,
+do we combine across libraries as well as barcodes?</p>
+</dd>
+<dt><cite>logbase</cite> (float)</dt><dd><p>Base for logarithm when calculating functional score.</p>
+</dd>
+<dt><cite>permit_zero_wt</cite> (bool)</dt><dd><p>If the wildtype counts are zero for any sample, do
 we raise an error or permit the calculation to proceed
-just using the pseudocount?</dd>
-<dt><cite>permit_self_comp</cite> (bool)</dt>
-<dd>Permit comparisons where the same sample is used as
-the pre- and post-selection?</dd>
+just using the pseudocount?</p>
+</dd>
+<dt><cite>permit_self_comp</cite> (bool)</dt><dd><p>Permit comparisons where the same sample is used as
+the pre- and post-selection?</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd><dl class="first last docutils">
-<dt>A pandas Data Frame with the following columns:</dt>
-<dd><ul class="first last simple">
-<li>“library”: the library (“all libraries” if <cite>combine_libs</cite>)</li>
-<li>“pre_sample”: the pre-selection sample</li>
-<li>“post_sample”: the post-selection sample</li>
-<li>the value corresponding to the grouping we are using
-to compute effects (the value of <cite>by</cite>)</li>
-<li>“func_score”: the functional score</li>
-<li>“func_score_var”: variance on the functional score</li>
-<li>“pre_count”: pre-selection counts</li>
-<li>“post_count: post-selection counts</li>
-<li>“pre_count_wt”: pre-selection counts for all wildtype</li>
-<li>“post_count_wt”: post-selection counts for all wildtype</li>
-<li>“pseudocount”: the pseudocount value</li>
-<li>as many of “aa_substitutions”, “n_aa_substitutions”,
+<dt>Returns:</dt><dd><dl class="simple">
+<dt>A pandas Data Frame with the following columns:</dt><dd><ul class="simple">
+<li><p>“library”: the library (“all libraries” if <cite>combine_libs</cite>)</p></li>
+<li><p>“pre_sample”: the pre-selection sample</p></li>
+<li><p>“post_sample”: the post-selection sample</p></li>
+<li><p>the value corresponding to the grouping we are using
+to compute effects (the value of <cite>by</cite>)</p></li>
+<li><p>“func_score”: the functional score</p></li>
+<li><p>“func_score_var”: variance on the functional score</p></li>
+<li><p>“pre_count”: pre-selection counts</p></li>
+<li><p>“post_count: post-selection counts</p></li>
+<li><p>“pre_count_wt”: pre-selection counts for all wildtype</p></li>
+<li><p>“post_count_wt”: post-selection counts for all wildtype</p></li>
+<li><p>“pseudocount”: the pseudocount value</p></li>
+<li><p>as many of “aa_substitutions”, “n_aa_substitutions”,
 “codon_substitutions”, and “n_codon_substitutions”
-as can be retained given the value of <cite>by</cite>.</li>
+as can be retained given the value of <cite>by</cite>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -685,20 +670,19 @@ as can be retained given the value of <cite>by</cite>.</li>
 <dt id="dms_tools2.codonvarianttable.CodonVariantTable.mutCounts">
 <code class="descname">mutCounts</code><span class="sig-paren">(</span><em>variant_type</em>, <em>mut_type</em>, <em>*</em>, <em>libraries='all'</em>, <em>samples='all'</em>, <em>min_support=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#CodonVariantTable.mutCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.CodonVariantTable.mutCounts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get counts of each individual mutation.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>variant_type</cite> (“single” or “all”)</dt>
-<dd>Include just single mutants, or all mutants?</dd>
-<dt>Other args:</dt>
-<dd>Same meaning as for
-<a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a></dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>variant_type</cite> (“single” or “all”)</dt><dd><p>Include just single mutants, or all mutants?</p>
+</dd>
+<dt>Other args:</dt><dd><p>Same meaning as for
+<a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a></p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A tidy data frame with columns named “library”,
+<dt>Returns:</dt><dd><p>A tidy data frame with columns named “library”,
 “sample”, “mutation”, “count”, “mutation_type”,
-and “site”.</dd>
+and “site”.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -706,22 +690,21 @@ and “site”.</dd>
 <dt id="dms_tools2.codonvarianttable.CodonVariantTable.n_variants_df">
 <code class="descname">n_variants_df</code><span class="sig-paren">(</span><em>*</em>, <em>libraries='all'</em>, <em>samples='all'</em>, <em>min_support=1</em>, <em>variant_type='all'</em>, <em>mut_type=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#CodonVariantTable.n_variants_df"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.CodonVariantTable.n_variants_df" title="Permalink to this definition">¶</a></dt>
 <dd><p>Number of variants per library / sample.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>variant_type</cite> (“single” or “all”)</dt>
-<dd>Include just variants with &lt;= 1 <cite>mut_type</cite> mutation.</dd>
-<dt><cite>mut_type</cite> (“aa”, “codon”, or <cite>None</cite>)</dt>
-<dd>If <cite>variant_type</cite> is single, set to “codon” or “aa”
-to indicate how to filter for single mutants.</dd>
-<dt>All other args:</dt>
-<dd>Same meaning as for
-<a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a>.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>variant_type</cite> (“single” or “all”)</dt><dd><p>Include just variants with &lt;= 1 <cite>mut_type</cite> mutation.</p>
+</dd>
+<dt><cite>mut_type</cite> (“aa”, “codon”, or <cite>None</cite>)</dt><dd><p>If <cite>variant_type</cite> is single, set to “codon” or “aa”
+to indicate how to filter for single mutants.</p>
+</dd>
+<dt>All other args:</dt><dd><p>Same meaning as for
+<a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a>.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>DataFrame giving number of variants per library /
-sample.</dd>
+<dt>Returns:</dt><dd><p>DataFrame giving number of variants per library /
+sample.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -729,24 +712,23 @@ sample.</dd>
 <dt id="dms_tools2.codonvarianttable.CodonVariantTable.plotCumulMutCoverage">
 <code class="descname">plotCumulMutCoverage</code><span class="sig-paren">(</span><em>variant_type</em>, <em>mut_type</em>, <em>*</em>, <em>libraries='all'</em>, <em>samples='all'</em>, <em>plotfile=None</em>, <em>orientation='h'</em>, <em>widthscale=1</em>, <em>heightscale=1</em>, <em>min_support=1</em>, <em>max_count=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#CodonVariantTable.plotCumulMutCoverage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.CodonVariantTable.plotCumulMutCoverage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fraction of mutation seen &lt;= some number of times.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>variant_type</cite> (“single” or “all”)</dt>
-<dd>Include just single mutants, or all mutants?
-Mutations are counted relative to <cite>mut_type</cite>.</dd>
-<dt><cite>max_count</cite> (<cite>None</cite> or int)</dt>
-<dd>Plot cumulative fraction plot out to this
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>variant_type</cite> (“single” or “all”)</dt><dd><p>Include just single mutants, or all mutants?
+Mutations are counted relative to <cite>mut_type</cite>.</p>
+</dd>
+<dt><cite>max_count</cite> (<cite>None</cite> or int)</dt><dd><p>Plot cumulative fraction plot out to this
 number of observations of mutation. If <cite>None</cite>,
-a reasonable value is automatically determined.</dd>
-<dt>Other args:</dt>
-<dd>Same meaning as for
-<a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a></dd>
+a reasonable value is automatically determined.</p>
+</dd>
+<dt>Other args:</dt><dd><p>Same meaning as for
+<a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a></p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A <a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a>
-plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</dd>
+<dt>Returns:</dt><dd><p>A <a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a>
+plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -754,24 +736,23 @@ plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</dd>
 <dt id="dms_tools2.codonvarianttable.CodonVariantTable.plotCumulVariantCounts">
 <code class="descname">plotCumulVariantCounts</code><span class="sig-paren">(</span><em>*</em>, <em>variant_type='all'</em>, <em>libraries='all'</em>, <em>samples='all'</em>, <em>plotfile=None</em>, <em>orientation='h'</em>, <em>widthscale=1</em>, <em>heightscale=1</em>, <em>min_support=1</em>, <em>mut_type='aa'</em>, <em>tot_variants_hline=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#CodonVariantTable.plotCumulVariantCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.CodonVariantTable.plotCumulVariantCounts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot number variants with &gt;= that each number of counts.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>variant_type</cite> (“single” or “all”)</dt>
-<dd>Include just variants with &lt;= one mutation of type,
-<cite>mut_type</cite> or all mutants?</dd>
-<dt><cite>tot_variants_hline</cite> (bool)</dt>
-<dd>Include a dotted horizontal line indicating the total
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>variant_type</cite> (“single” or “all”)</dt><dd><p>Include just variants with &lt;= one mutation of type,
+<cite>mut_type</cite> or all mutants?</p>
+</dd>
+<dt><cite>tot_variants_hline</cite> (bool)</dt><dd><p>Include a dotted horizontal line indicating the total
 number of variants (useful since ones not observed
-at all will not apparent on plot).</dd>
-<dt>Other args:</dt>
-<dd>Same meaning as for
-<a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram()</span></code></a>.</dd>
+at all will not apparent on plot).</p>
+</dd>
+<dt>Other args:</dt><dd><p>Same meaning as for
+<a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram()</span></code></a>.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd><a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a>
-plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</dd>
+<dt>Returns:</dt><dd><p><a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a>
+plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -779,13 +760,13 @@ plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</dd>
 <dt id="dms_tools2.codonvarianttable.CodonVariantTable.plotMutFreqs">
 <code class="descname">plotMutFreqs</code><span class="sig-paren">(</span><em>variant_type</em>, <em>mut_type</em>, <em>*</em>, <em>libraries='all'</em>, <em>samples='all'</em>, <em>plotfile=None</em>, <em>orientation='h'</em>, <em>widthscale=1</em>, <em>heightscale=1</em>, <em>min_support=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#CodonVariantTable.plotMutFreqs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.CodonVariantTable.plotMutFreqs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mutation frequency along length of gene.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>Args have same meaning as for
-<a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.plotCumulMutCoverage" title="dms_tools2.codonvarianttable.CodonVariantTable.plotCumulMutCoverage"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.plotCumulMutCoverage()</span></code></a>.</dd>
-<dt>Returns:</dt>
-<dd>A <a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a>
-plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><p>Args have same meaning as for
+<a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.plotCumulMutCoverage" title="dms_tools2.codonvarianttable.CodonVariantTable.plotCumulMutCoverage"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.plotCumulMutCoverage()</span></code></a>.</p>
+</dd>
+<dt>Returns:</dt><dd><p>A <a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a>
+plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -793,19 +774,18 @@ plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</dd>
 <dt id="dms_tools2.codonvarianttable.CodonVariantTable.plotMutHeatmap">
 <code class="descname">plotMutHeatmap</code><span class="sig-paren">(</span><em>variant_type</em>, <em>mut_type</em>, <em>*</em>, <em>count_or_frequency='frequency'</em>, <em>libraries='all'</em>, <em>samples='all'</em>, <em>plotfile=None</em>, <em>orientation='h'</em>, <em>widthscale=1</em>, <em>heightscale=1</em>, <em>min_support=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#CodonVariantTable.plotMutHeatmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.CodonVariantTable.plotMutHeatmap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Heatmap of mutation counts or frequencies.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>count_or_frequency</cite> (“count” or “frequency”)</dt>
-<dd>Plot mutation counts or frequencies?</dd>
-<dt>All other args</dt>
-<dd>Same meaning as for
-<a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.plotCumulMutCoverage" title="dms_tools2.codonvarianttable.CodonVariantTable.plotCumulMutCoverage"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.plotCumulMutCoverage()</span></code></a>.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>count_or_frequency</cite> (“count” or “frequency”)</dt><dd><p>Plot mutation counts or frequencies?</p>
+</dd>
+<dt>All other args</dt><dd><p>Same meaning as for
+<a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.plotCumulMutCoverage" title="dms_tools2.codonvarianttable.CodonVariantTable.plotCumulMutCoverage"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.plotCumulMutCoverage()</span></code></a>.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A <a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a>
-plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</dd>
+<dt>Returns:</dt><dd><p>A <a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a>
+plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -813,20 +793,19 @@ plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</dd>
 <dt id="dms_tools2.codonvarianttable.CodonVariantTable.plotNumCodonMutsByType">
 <code class="descname">plotNumCodonMutsByType</code><span class="sig-paren">(</span><em>variant_type</em>, <em>*</em>, <em>libraries='all'</em>, <em>samples='all'</em>, <em>plotfile=None</em>, <em>orientation='h'</em>, <em>widthscale=1</em>, <em>heightscale=1</em>, <em>min_support=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#CodonVariantTable.plotNumCodonMutsByType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.CodonVariantTable.plotNumCodonMutsByType" title="Permalink to this definition">¶</a></dt>
 <dd><p>Nonsynonymous, synonymous, stop mutations per variant.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>variant_type</cite> (“single” or “all”)</dt>
-<dd>Include just single-codon mutants and wildtype,
-or include all mutants.</dd>
-<dt>Other args:</dt>
-<dd>Same meaning as for
-<a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a></dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>variant_type</cite> (“single” or “all”)</dt><dd><p>Include just single-codon mutants and wildtype,
+or include all mutants.</p>
+</dd>
+<dt>Other args:</dt><dd><p>Same meaning as for
+<a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a></p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A <a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a>
-plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</dd>
+<dt>Returns:</dt><dd><p>A <a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a>
+plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -834,40 +813,39 @@ plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</dd>
 <dt id="dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram">
 <code class="descname">plotNumMutsHistogram</code><span class="sig-paren">(</span><em>mut_type</em>, <em>*</em>, <em>libraries='all'</em>, <em>samples='all'</em>, <em>plotfile=None</em>, <em>orientation='h'</em>, <em>widthscale=1</em>, <em>heightscale=1</em>, <em>min_support=1</em>, <em>max_muts=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#CodonVariantTable.plotNumMutsHistogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot histograms of number of mutations per variant.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>mut_type</cite> (str)</dt>
-<dd>Type of mutation: “codon” or “aa”.</dd>
-<dt><cite>libraries</cite> (“all”, “all_only”, or list)</dt>
-<dd>Set to “all” to include all libraries including
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>mut_type</cite> (str)</dt><dd><p>Type of mutation: “codon” or “aa”.</p>
+</dd>
+<dt><cite>libraries</cite> (“all”, “all_only”, or list)</dt><dd><p>Set to “all” to include all libraries including
 a merge of the libraries, “all_only” to only
 include the merge of the libraries, or a list
-of libraries.</dd>
-<dt><cite>samples</cite> (the str “all”, <cite>None</cite>, or list)</dt>
-<dd>Set to “all” to include all samples, <cite>None</cite> to
+of libraries.</p>
+</dd>
+<dt><cite>samples</cite> (the str “all”, <cite>None</cite>, or list)</dt><dd><p>Set to “all” to include all samples, <cite>None</cite> to
 just count each barcoded variant once, or specify
-a list of samples.</dd>
-<dt><cite>plotfile</cite> (<cite>None</cite> or str)</dt>
-<dd>Name of file to which we save plot.</dd>
-<dt><cite>orientation</cite> (the str ‘h’ or ‘v’)</dt>
-<dd>Do we facet libraries horizontally or vertically?</dd>
-<dt><cite>widthscale</cite> (float or int)</dt>
-<dd>Expand width of plot by this much.</dd>
-<dt><cite>heightscale</cite> (float or int)</dt>
-<dd>Expand height of plot by this much.</dd>
-<dt><cite>min_support</cite> (int)</dt>
-<dd>Only include variants with at least this large
-of a variant call support.</dd>
-<dt><cite>max_muts</cite> (int or <cite>None</cite>)</dt>
-<dd>In histogram, group together all variants with
+a list of samples.</p>
+</dd>
+<dt><cite>plotfile</cite> (<cite>None</cite> or str)</dt><dd><p>Name of file to which we save plot.</p>
+</dd>
+<dt><cite>orientation</cite> (the str ‘h’ or ‘v’)</dt><dd><p>Do we facet libraries horizontally or vertically?</p>
+</dd>
+<dt><cite>widthscale</cite> (float or int)</dt><dd><p>Expand width of plot by this much.</p>
+</dd>
+<dt><cite>heightscale</cite> (float or int)</dt><dd><p>Expand height of plot by this much.</p>
+</dd>
+<dt><cite>min_support</cite> (int)</dt><dd><p>Only include variants with at least this large
+of a variant call support.</p>
+</dd>
+<dt><cite>max_muts</cite> (int or <cite>None</cite>)</dt><dd><p>In histogram, group together all variants with
 &gt;= this many mutations; set to <cite>None</cite> for no
-cutoff.</dd>
+cutoff.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd><a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a>
-plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</dd>
+<dt>Returns:</dt><dd><p><a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a>
+plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -875,16 +853,15 @@ plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</dd>
 <dt id="dms_tools2.codonvarianttable.CodonVariantTable.samples">
 <code class="descname">samples</code><span class="sig-paren">(</span><em>library</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#CodonVariantTable.samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.CodonVariantTable.samples" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of all samples for <cite>library</cite>.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>library</cite> (str)</dt>
-<dd>Valid <cite>library</cite> for the <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable" title="dms_tools2.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>library</cite> (str)</dt><dd><p>Valid <cite>library</cite> for the <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable" title="dms_tools2.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>List of all samples for which barcode counts have
-been added.</dd>
+<dt>Returns:</dt><dd><p>List of all samples for which barcode counts have
+been added.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -902,11 +879,9 @@ been added.</dd>
 <a class="reference external" href="https://jbloomlab.github.io/dms_tools2/dms2_bcsubamp.html#id12">format</a>
 produced by
 <a class="reference external" href="https://jbloomlab.github.io/dms_tools2/dms2_bcsubamp.html">dms2_bcsubamp</a>.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>single_or_all</cite> (“single” or “all”)</dt>
-<dd>If “single”, then counts are just from single-codon
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>single_or_all</cite> (“single” or “all”)</dt><dd><p>If “single”, then counts are just from single-codon
 mutants and wildtype, and we count all wildtype codons
 and just mutated codon for single-codon mutants. If
 “all”, we count all codons for all variants at all
@@ -914,21 +889,22 @@ sites. This is appropriate if enrichment of each mutation
 is supposed to represent its effect for “single”, and if
 enrichment of mutation is supposed to represent its
 average effect across genetic backgrounds in the library
-for “all” provided mutations are Poisson distributed.</dd>
-<dt><cite>outdir</cite> (<cite>None</cite> or str)</dt>
-<dd>Name of directory into which we write counts,
+for “all” provided mutations are Poisson distributed.</p>
+</dd>
+<dt><cite>outdir</cite> (<cite>None</cite> or str)</dt><dd><p>Name of directory into which we write counts,
 created if it does not exist. Use <cite>None</cite> to
-write to current directory.</dd>
-<dt><cite>include_all_libs</cite> (bool)</dt>
-<dd>Include data for a library (named “all-libraries”)
+write to current directory.</p>
+</dd>
+<dt><cite>include_all_libs</cite> (bool)</dt><dd><p>Include data for a library (named “all-libraries”)
 that has the summmed data for all individual libraries
-if there are multiple libraries?</dd>
+if there are multiple libraries?</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>Pandas data frame with columns “library”, “sample”,
+<dt>Returns:</dt><dd><p>Pandas data frame with columns “library”, “sample”,
 and “countfile”. The “countfile” columns gives name of the
-createad CSV file, <code class="docutils literal notranslate"><span class="pre">&lt;library&gt;_&lt;sample&gt;_codoncounts.csv</span></code>.</dd>
+createad CSV file, <code class="docutils literal notranslate"><span class="pre">&lt;library&gt;_&lt;sample&gt;_codoncounts.csv</span></code>.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -952,30 +928,28 @@ from a compound normal distribution biased to negative values.</p>
 <code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.barcode_variant_df()</span></code> to
 <a class="reference internal" href="#dms_tools2.codonvarianttable.PhenotypeSimulator.latentPhenotype" title="dms_tools2.codonvarianttable.PhenotypeSimulator.latentPhenotype"><code class="xref py py-meth docutils literal notranslate"><span class="pre">PhenotypeSimulator.latentPhenotype()</span></code></a> or
 <a class="reference internal" href="#dms_tools2.codonvarianttable.PhenotypeSimulator.observedPhenotype" title="dms_tools2.codonvarianttable.PhenotypeSimulator.observedPhenotype"><code class="xref py py-meth docutils literal notranslate"><span class="pre">PhenotypeSimulator.observedPhenotype()</span></code></a>.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>geneseq</cite> (str)</dt>
-<dd>Codon sequence of wild-type gene.</dd>
-<dt><cite>seed</cite> (int)</dt>
-<dd>Random number seed.</dd>
-<dt><cite>wt_latent</cite> (float)</dt>
-<dd>Latent phenotype of wildtype.</dd>
-<dt><cite>norm_weights</cite> (list of tuples)</dt>
-<dd>Specifies compound normal distribution of mutational
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>geneseq</cite> (str)</dt><dd><p>Codon sequence of wild-type gene.</p>
+</dd>
+<dt><cite>seed</cite> (int)</dt><dd><p>Random number seed.</p>
+</dd>
+<dt><cite>wt_latent</cite> (float)</dt><dd><p>Latent phenotype of wildtype.</p>
+</dd>
+<dt><cite>norm_weights</cite> (list of tuples)</dt><dd><p>Specifies compound normal distribution of mutational
 effects on latent phenotype. Each tuple is
 <cite>(weight, mean, sd)</cite>, giving weight, mean, and standard
-deviation of each Gaussian in compound normal.</dd>
-<dt><cite>stop_effect</cite> (float)</dt>
-<dd>Effect of stop codon at any position.</dd>
+deviation of each Gaussian in compound normal.</p>
+</dd>
+<dt><cite>stop_effect</cite> (float)</dt><dd><p>Effect of stop codon at any position.</p>
+</dd>
 </dl>
 </dd>
-<dt>Attributes:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>wt_latent</cite> (float)</dt>
-<dd>Value for wildtype latent phenotype.</dd>
-<dt><cite>muteffects</cite> (dict)</dt>
-<dd>Effects on latent phenotype of each amino-acid mutation.</dd>
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt><cite>wt_latent</cite> (float)</dt><dd><p>Value for wildtype latent phenotype.</p>
+</dd>
+<dt><cite>muteffects</cite> (dict)</dt><dd><p>Effects on latent phenotype of each amino-acid mutation.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -983,12 +957,11 @@ deviation of each Gaussian in compound normal.</dd>
 <dt id="dms_tools2.codonvarianttable.PhenotypeSimulator.latentPhenotype">
 <code class="descname">latentPhenotype</code><span class="sig-paren">(</span><em>v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#PhenotypeSimulator.latentPhenotype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.PhenotypeSimulator.latentPhenotype" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns latent phenotype of a variant.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>v</cite> (dict or row of pandas DataFrame)</dt>
-<dd>Must have key ‘aa_substitutions’ that gives
-space de-limited list of amino-acid mutations.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>v</cite> (dict or row of pandas DataFrame)</dt><dd><p>Must have key ‘aa_substitutions’ that gives
+space de-limited list of amino-acid mutations.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -1011,20 +984,19 @@ space de-limited list of amino-acid mutations.</dd>
 <code class="descname">plotLatentVersusObservedPhenotype</code><span class="sig-paren">(</span><em>*</em>, <em>latent_min=-15</em>, <em>latent_max=5</em>, <em>npoints=200</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#PhenotypeSimulator.plotLatentVersusObservedPhenotype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.PhenotypeSimulator.plotLatentVersusObservedPhenotype" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots observed phenotype as function of latent phenotype.</p>
 <p>Plot includes a vertical line at wildtype latent phenotype.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>latent_min</cite> (float)</dt>
-<dd>Smallest value of latent phenotype on plot.</dd>
-<dt><cite>latent_max</cite> (float)</dt>
-<dd>Largest value of latent phenotype on plot.</dd>
-<dt><cite>npoints</cite> (int)</dt>
-<dd>Plot a line fit to this many points.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>latent_min</cite> (float)</dt><dd><p>Smallest value of latent phenotype on plot.</p>
+</dd>
+<dt><cite>latent_max</cite> (float)</dt><dd><p>Largest value of latent phenotype on plot.</p>
+</dd>
+<dt><cite>npoints</cite> (int)</dt><dd><p>Plot a line fit to this many points.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A <a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a>
-plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</dd>
+<dt>Returns:</dt><dd><p>A <a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a>
+plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -1033,21 +1005,20 @@ plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</dd>
 <code class="descname">plotMutsHistogram</code><span class="sig-paren">(</span><em>latent_or_observed</em>, <em>*</em>, <em>mutant_order=1</em>, <em>bins=30</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#PhenotypeSimulator.plotMutsHistogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.PhenotypeSimulator.plotMutsHistogram" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots distribution of phenotype for all mutants.</p>
 <p>Plot includes a vertical line at wildtype phenotype.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>latent_or_observed</cite> (“latent” or “observed”)</dt>
-<dd>Which type of phenotype to plot.</dd>
-<dt><cite>mutant_order</cite> (int)</dt>
-<dd>Plot mutations of this order. Currently only works
-for 1 (single mutants).</dd>
-<dt><cite>bins</cite> (int)</dt>
-<dd>Number of bins in histogram.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>latent_or_observed</cite> (“latent” or “observed”)</dt><dd><p>Which type of phenotype to plot.</p>
+</dd>
+<dt><cite>mutant_order</cite> (int)</dt><dd><p>Plot mutations of this order. Currently only works
+for 1 (single mutants).</p>
+</dd>
+<dt><cite>bins</cite> (int)</dt><dd><p>Number of bins in histogram.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A <a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a>
-plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</dd>
+<dt>Returns:</dt><dd><p>A <a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a>
+plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -1057,26 +1028,25 @@ plot; can be displayed in a Jupyter notebook with <cite>p.draw()</cite>.</dd>
 <dt id="dms_tools2.codonvarianttable.codonSubsToSeq">
 <code class="descclassname">dms_tools2.codonvarianttable.</code><code class="descname">codonSubsToSeq</code><span class="sig-paren">(</span><em>wildtype</em>, <em>codon_subs</em>, <em>return_aa=False</em>, <em>aa_subs=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#codonSubsToSeq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.codonSubsToSeq" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert codon substitutions to sequence.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>wildtype</cite> (str)</dt>
-<dd>The wildtype sequence</dd>
-<dt><cite>codon_subs</cite> (str)</dt>
-<dd>String of space delimited codon substitutions, in the format:
-OldCodonSiteNewCodon</dd>
-<dt><cite>return_aa</cite> (bool)</dt>
-<dd>Specify whether to return sequence as nucleotide or amino acid.
-Default is nucleotide.</dd>
-<dt><cite>aa_subs</cite> (bool)</dt>
-<dd>Specify whether the substitutions are in amino acid form
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>wildtype</cite> (str)</dt><dd><p>The wildtype sequence</p>
+</dd>
+<dt><cite>codon_subs</cite> (str)</dt><dd><p>String of space delimited codon substitutions, in the format:
+OldCodonSiteNewCodon</p>
+</dd>
+<dt><cite>return_aa</cite> (bool)</dt><dd><p>Specify whether to return sequence as nucleotide or amino acid.
+Default is nucleotide.</p>
+</dd>
+<dt><cite>aa_subs</cite> (bool)</dt><dd><p>Specify whether the substitutions are in amino acid form
 rather than codon. Default is codon. <cite>return_aa</cite> must be True
 in order for <cite>aa_subs</cite> to be True, since there are numerous
-possible nucleotide sequences for an amino acid sequence.</dd>
+possible nucleotide sequences for an amino acid sequence.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A str of the sequence with all the codon substitutions</dd>
+<dt>Returns:</dt><dd><p>A str of the sequence with all the codon substitutions</p>
+</dd>
 </dl>
 <p>Here is an example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">codonSubsToSeq</span><span class="p">(</span><span class="s1">&#39;ATGGAACAA&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
@@ -1093,24 +1063,23 @@ possible nucleotide sequences for an amino acid sequence.</dd>
 <dt id="dms_tools2.codonvarianttable.func_score_to_gpm">
 <code class="descclassname">dms_tools2.codonvarianttable.</code><code class="descname">func_score_to_gpm</code><span class="sig-paren">(</span><em>func_scores_df</em>, <em>wildtype</em>, <em>metric='func_score'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#func_score_to_gpm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.func_score_to_gpm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a genotype phenotype map from a functional score dataframe.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>func_scores_df</cite> (functional score dataframe)</dt>
-<dd>A functional score dataframe (from the
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>func_scores_df</cite> (functional score dataframe)</dt><dd><p>A functional score dataframe (from the
 <a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable.func_scores" title="dms_tools2.codonvarianttable.CodonVariantTable.func_scores"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.func_scores()</span></code></a> method), narrowed down to one
 post sample condition, typically with something like:
-<cite>func_scores_df.query(‘library == &#64;library &amp; sample == &#64;sample’)</cite></dd>
-<dt><cite>wildtype</cite> (str)</dt>
-<dd>A string containing the wildtype sequence</dd>
-<dt><cite>metric</cite> (str)</dt>
-<dd>A string specifying which metric to use as a phenotype</dd>
+<cite>func_scores_df.query(‘library == &#64;library &amp; sample == &#64;sample’)</cite></p>
+</dd>
+<dt><cite>wildtype</cite> (str)</dt><dd><p>A string containing the wildtype sequence</p>
+</dd>
+<dt><cite>metric</cite> (str)</dt><dd><p>A string specifying which metric to use as a phenotype</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A genotype phenotype map object from the Harms lab
+<dt>Returns:</dt><dd><p>A genotype phenotype map object from the Harms lab
 <a class="reference external" href="https://github.com/harmslab/gpmap">gpmap package</a>
-to be used as in input into epistasis models in the epistasis package.</dd>
+to be used as in input into epistasis models in the epistasis package.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -1118,26 +1087,25 @@ to be used as in input into epistasis models in the epistasis package.</dd>
 <dt id="dms_tools2.codonvarianttable.getCumulVariantsByCount">
 <code class="descclassname">dms_tools2.codonvarianttable.</code><code class="descname">getCumulVariantsByCount</code><span class="sig-paren">(</span><em>df</em>, <em>*</em>, <em>group_cols=None</em>, <em>group_cols_as_str=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/codonvarianttable.html#getCumulVariantsByCount"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.codonvarianttable.getCumulVariantsByCount" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get number of variants with observed &gt;= each number of times.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>df</cite> (pandas DataFrame)</dt>
-<dd>A row for each variant, and a column named “count” giving
-how many times variant observed. Can have other columns.</dd>
-<dt><cite>group_cols</cite> (None or list)</dt>
-<dd>Group by these columns and analyze each group separately.</dd>
-<dt><cite>group_cols_as_str</cite> (bool)</dt>
-<dd>Explicitly convert any <cite>group_cols</cite> columns to str type.
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>df</cite> (pandas DataFrame)</dt><dd><p>A row for each variant, and a column named “count” giving
+how many times variant observed. Can have other columns.</p>
+</dd>
+<dt><cite>group_cols</cite> (None or list)</dt><dd><p>Group by these columns and analyze each group separately.</p>
+</dd>
+<dt><cite>group_cols_as_str</cite> (bool)</dt><dd><p>Explicitly convert any <cite>group_cols</cite> columns to str type.
 For some reason, this is needed if you are calling in <code class="docutils literal notranslate"><span class="pre">R</span></code>
-using <a class="reference external" href="https://rstudio.github.io/reticulate/">reticulate</a>.</dd>
+using <a class="reference external" href="https://rstudio.github.io/reticulate/">reticulate</a>.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A pandas Data Frame with columns named “count”, “nvariants”,
+<dt>Returns:</dt><dd><p>A pandas Data Frame with columns named “count”, “nvariants”,
 and “total_variants” (plus any columns in <cite>group_cols</cite>).
 For each value of “count”, “nvariants” gives the number of
 variants with &gt;= that many counts. The “total_variants”
-column gives the total number of variants.</dd>
+column gives the total number of variants.</p>
+</dd>
 </dl>
 <p>Here is an example. First, create input Data Frame:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span>
@@ -1175,28 +1143,27 @@ is now analyzed separately:</p>
 <dd><p>Rarefaction curve of barcode observations.</p>
 <p>Uses analytical formula for rarefaction defined
 <a class="reference external" href="https://en.wikipedia.org/wiki/Rarefaction_(ecology)#Derivation">here</a>.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>barcodecounts</cite> (pandas DataFrame)</dt>
-<dd>Has columns with names matching <cite>barcodecol</cite> and <cite>countcol</cite>.</dd>
-<dt><cite>barcodecol</cite> (str)</dt>
-<dd>Name of column listing all unique barcodes.</dd>
-<dt><cite>countcol</cite> (str)</dt>
-<dd>Name of column with observed counts of each barcode.</dd>
-<dt><cite>maxpoints</cite> (int)</dt>
-<dd>Only calculate rarefaction curve at this many points.
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>barcodecounts</cite> (pandas DataFrame)</dt><dd><p>Has columns with names matching <cite>barcodecol</cite> and <cite>countcol</cite>.</p>
+</dd>
+<dt><cite>barcodecol</cite> (str)</dt><dd><p>Name of column listing all unique barcodes.</p>
+</dd>
+<dt><cite>countcol</cite> (str)</dt><dd><p>Name of column with observed counts of each barcode.</p>
+</dd>
+<dt><cite>maxpoints</cite> (int)</dt><dd><p>Only calculate rarefaction curve at this many points.
 The benefit is that it can become very costly to calculate
-the curve for many points.</dd>
-<dt><cite>logspace</cite> (bool)</dt>
-<dd>Logarithmically space the <cite>maxpoint</cite> points. If False,
-space them linearly.</dd>
+the curve for many points.</p>
+</dd>
+<dt><cite>logspace</cite> (bool)</dt><dd><p>Logarithmically space the <cite>maxpoint</cite> points. If False,
+space them linearly.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A pandas DataFrame with the columns <cite>ncounts</cite> and
+<dt>Returns:</dt><dd><p>A pandas DataFrame with the columns <cite>ncounts</cite> and
 <cite>nbarcodes</cite>, giving the number of unique barcodes
-observed for each total number observed counts.</dd>
+observed for each total number observed counts.</p>
+</dd>
 </dl>
 <p>Here is a small example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">barcodecounts</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;barcode&#39;</span><span class="p">:[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">],</span>
@@ -1239,22 +1206,20 @@ obtained by random sampling:</p>
 <dd><p>Simulate pre- and post-selection variant counts.</p>
 <p>Simulate variant counts for experiment where barcodes
 are sequenced pre- and post-selection.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>variants</cite> (<a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable" title="dms_tools2.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>)</dt>
-<dd>Holds variants used in simulation.</dd>
-<dt><cite>phenotype_func</cite> (function)</dt>
-<dd>Takes a row from <cite>variants.barcode_variant_df</cite>
+<dl>
+<dt>Args:</dt><dd><dl>
+<dt><cite>variants</cite> (<a class="reference internal" href="#dms_tools2.codonvarianttable.CodonVariantTable" title="dms_tools2.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>)</dt><dd><p>Holds variants used in simulation.</p>
+</dd>
+<dt><cite>phenotype_func</cite> (function)</dt><dd><p>Takes a row from <cite>variants.barcode_variant_df</cite>
 and returns the phenotype. Typically this is
 calculated from the “aa_substitutions” or
 “codon_substitutions” column. The phenotype is a
 number &gt;= 0, and represents the expected enrichment of
 the variant relative to wildtype post-selection (values
 &gt; 1 indicate beneficial). For instance, you could pass
-<a class="reference internal" href="#dms_tools2.codonvarianttable.PhenotypeSimulator.observedPhenotype" title="dms_tools2.codonvarianttable.PhenotypeSimulator.observedPhenotype"><code class="xref py py-meth docutils literal notranslate"><span class="pre">PhenotypeSimulator.observedPhenotype()</span></code></a>.</dd>
-<dt><cite>variant_error_rate</cite> (float)</dt>
-<dd>Rate at which variants in <cite>variants</cite> are
+<a class="reference internal" href="#dms_tools2.codonvarianttable.PhenotypeSimulator.observedPhenotype" title="dms_tools2.codonvarianttable.PhenotypeSimulator.observedPhenotype"><code class="xref py py-meth docutils literal notranslate"><span class="pre">PhenotypeSimulator.observedPhenotype()</span></code></a>.</p>
+</dd>
+<dt><cite>variant_error_rate</cite> (float)</dt><dd><p>Rate at which variants in <cite>variants</cite> are
 mis-called. Provide the probability that a
 variant has a spuriously called (or missing)
 codon mutation: with this probability, each
@@ -1262,28 +1227,27 @@ variant then has a random codon mutation added
 or taken away before being passed to
 <cite>phenotype_func</cite>. Designed to simulate the fact
 that the method used to link barcodes to variants
-is probably not perfect.</dd>
-<dt><cite>pre_sample</cite> (pandas DataFrame or dict)</dt>
-<dd><p class="first">The counts of each variant pre-selection. You can
+is probably not perfect.</p>
+</dd>
+<dt><cite>pre_sample</cite> (pandas DataFrame or dict)</dt><dd><p>The counts of each variant pre-selection. You can
 specify counts or have them simulated:</p>
-<blockquote class="last">
+<blockquote>
 <div><ul class="simple">
-<li>To specify counts, provide a data frame with
+<li><p>To specify counts, provide a data frame with
 columns “library”, “barcode”, and “count”
-where “count” is the pre-selection counts.</li>
-<li>To simulate, provide dict with keys “total_count”
+where “count” is the pre-selection counts.</p></li>
+<li><p>To simulate, provide dict with keys “total_count”
 and “uniformity”. For each library, we simulate
 pre-selection counts as a draw of “total_count”
 counts from a multinomial parameterized by
 pre-selection frequences drawn from a Dirichlet
 distribution with a concentration parameter of
 of “uniformity” (larger uniformity values mean
-more even libraries; 5 is reasonable value).</li>
+more even libraries; 5 is reasonable value).</p></li>
 </ul>
 </div></blockquote>
 </dd>
-<dt><cite>post_samples</cite> (dict)</dt>
-<dd><p class="first">Nested dict indicating post-selection samples.
+<dt><cite>post_samples</cite> (dict)</dt><dd><p>Nested dict indicating post-selection samples.
 Keyed by name of each post-selection sample, with
 value being another dict. The post-selection counts
 are drawn from a multinomial parameterized
@@ -1291,39 +1255,38 @@ by the pre-selection frequencies (frequencies calculated from
 counts if <cite>pre_sample</cite> gives counts, Dirichlet frequencies
 if <cite>pre_sample</cite> is simulated). Add noise by the
 following parameters provided in the dict for each sample:</p>
-<blockquote class="last">
+<blockquote>
 <div><ul class="simple">
-<li>“total_count”: total overall counts per library.</li>
-<li>“noise”: add additional noise to selection by
+<li><p>“total_count”: total overall counts per library.</p></li>
+<li><p>“noise”: add additional noise to selection by
 multiplying phenotype times a random variable
 drawn from a normal distribution with mean 1
 and this standard deviation (truncated at lower
-end to zero). Set noise to 0 for no noise.</li>
-<li>“bottleneck”: put the pre-selection frequencies
+end to zero). Set noise to 0 for no noise.</p></li>
+<li><p>“bottleneck”: put the pre-selection frequencies
 through a bottleneck of this size, then re-calcuate
 initial frequencies that selection acts upon. Set
-to <cite>None</cite> for no bottleneck.</li>
+to <cite>None</cite> for no bottleneck.</p></li>
 </ul>
 </div></blockquote>
 </dd>
-<dt><cite>pre_sample_name</cite> (str)</dt>
-<dd>Name used for the pre-selection sample.</dd>
-<dt><cite>seed</cite> (None or int)</dt>
-<dd>If not <cite>None</cite>, random number seed set before executing
-function (sets <cite>scipy.random.seed</cite>).</dd>
+<dt><cite>pre_sample_name</cite> (str)</dt><dd><p>Name used for the pre-selection sample.</p>
+</dd>
+<dt><cite>seed</cite> (None or int)</dt><dd><p>If not <cite>None</cite>, random number seed set before executing
+function (sets <cite>scipy.random.seed</cite>).</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd><p class="first">A pandas DataFrame with the following columns:</p>
+<dt>Returns:</dt><dd><p>A pandas DataFrame with the following columns:</p>
 <blockquote>
 <div><ul class="simple">
-<li>“library”</li>
-<li>“barcode”</li>
-<li>“sample”</li>
-<li>“count”</li>
+<li><p>“library”</p></li>
+<li><p>“barcode”</p></li>
+<li><p>“sample”</p></li>
+<li><p>“count”</p></li>
 </ul>
 </div></blockquote>
-<p class="last">The first two columns indicate the library and barcode
+<p>The first two columns indicate the library and barcode
 for each variant as in the <cite>barcode_variant_df</cite> attribute
 of <cite>variants</cite>, the “sample” and “count” columns give counts
 for each sample.</p>
@@ -1337,23 +1300,21 @@ for each sample.</p>
 <dd><p>Split values of a column and expand so new DataFrame has one split
 value per row. Filters rows where the column is missing.</p>
 <p>Taken from <a class="reference external" href="https://stackoverflow.com/a/39946744">https://stackoverflow.com/a/39946744</a></p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt>df <span class="classifier-delimiter">:</span> <span class="classifier">pandas DataFrame</span></dt>
-<dd>dataframe with the column to split and expand</dd>
-<dt>column <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>the column to split and expand</dd>
-<dt>sep <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>the string used to split the column’s values</dd>
-<dt>keep <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
-<dd>whether to retain the presplit value as it’s own row</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>df<span class="classifier">pandas DataFrame</span></dt><dd><p>dataframe with the column to split and expand</p>
+</dd>
+<dt>column<span class="classifier">str</span></dt><dd><p>the column to split and expand</p>
+</dd>
+<dt>sep<span class="classifier">str</span></dt><dd><p>the string used to split the column’s values</p>
+</dd>
+<dt>keep<span class="classifier">bool</span></dt><dd><p>whether to retain the presplit value as it’s own row</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd><dl class="first last docutils">
-<dt>pandas DataFrame</dt>
-<dd>Returns a dataframe with the same columns as <cite>df</cite>.</dd>
+<dt>Returns:</dt><dd><dl class="simple">
+<dt>pandas DataFrame</dt><dd><p>Returns a dataframe with the same columns as <cite>df</cite>.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -1363,7 +1324,6 @@ value per row. Filters rows where the column is missing.</p>
 
 
           </div>
-          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -1396,7 +1356,7 @@ value per row. Filters rows where the column is missing.</p>
     
 
 <p>
-<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -1440,20 +1400,10 @@ value per row. Filters rows where the column is missing.</p>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
         </div>
       </div>
       <div class="clearer"></div>
@@ -1462,8 +1412,8 @@ value per row. Filters rows where the column is missing.</p>
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
       <a href="_sources/dms_tools2.codonvarianttable.rst.txt"

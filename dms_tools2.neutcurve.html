@@ -1,19 +1,18 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>neutcurve &#8212; dms_tools2 2.4.10 documentation</title>
+    <meta charset="utf-8" />
+    <title>neutcurve &#8212; dms_tools2 2.4.12 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="pacbio" href="dms_tools2.pacbio.html" />
@@ -30,8 +29,6 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          
-
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.neutcurve"></span><div class="section" id="neutcurve">
@@ -44,40 +41,39 @@
 <p>Fits a set of 4-parameter logistic neutralization curves
 as defined by <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic" title="dms_tools2.neutcurve.fourParamLogistic"><code class="xref py py-class docutils literal notranslate"><span class="pre">fourParamLogistic</span></code></a>. Then makes a faceted
 plot showing all these curves.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>neutdata</cite> (panda DataFrame)</dt>
-<dd>Data to fit. There should be a column
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>neutdata</cite> (panda DataFrame)</dt><dd><p>Data to fit. There should be a column
 named <cite>concentration</cite> and every other column
 should be named by the sample and give the 
-fraction surviving at each concentration.</dd>
-<dt><cite>plotfile</cite> (str)</dt>
-<dd>Name of created plot file showing the fitted
-curves (e.g., PDF or PNG)</dd>
-<dt><cite>fixbottom</cite></dt>
-<dd>Same meaning as for <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic" title="dms_tools2.neutcurve.fourParamLogistic"><code class="xref py py-class docutils literal notranslate"><span class="pre">fourParamLogistic</span></code></a></dd>
-<dt><cite>fixtop</cite></dt>
-<dd>Same meaning as for <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic" title="dms_tools2.neutcurve.fourParamLogistic"><code class="xref py py-class docutils literal notranslate"><span class="pre">fourParamLogistic</span></code></a></dd>
-<dt><cite>xlabel</cite> (str)</dt>
-<dd>x-label on plot</dd>
-<dt><cite>ylabel</cite> (str)</dt>
-<dd>y-label on plot</dd>
-<dt><cite>maxcol</cite> (int)</dt>
-<dd>Max number of columns in faceted plot</dd>
-<dt><cite>ic50_in_name</cite> (bool)</dt>
-<dd>Same meaning as for <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.plot" title="dms_tools2.neutcurve.fourParamLogistic.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fourParamLogistic.plot()</span></code></a></dd>
-<dt><cite>nfitpoints</cite> (int)</dt>
-<dd>Same meaning as for <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.plot" title="dms_tools2.neutcurve.fourParamLogistic.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fourParamLogistic.plot()</span></code></a></dd>
-<dt><cite>cextend</cite> (float)</dt>
-<dd>Same meaning as for <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.plot" title="dms_tools2.neutcurve.fourParamLogistic.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fourParamLogistic.plot()</span></code></a></dd>
+fraction surviving at each concentration.</p>
+</dd>
+<dt><cite>plotfile</cite> (str)</dt><dd><p>Name of created plot file showing the fitted
+curves (e.g., PDF or PNG)</p>
+</dd>
+<dt><cite>fixbottom</cite></dt><dd><p>Same meaning as for <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic" title="dms_tools2.neutcurve.fourParamLogistic"><code class="xref py py-class docutils literal notranslate"><span class="pre">fourParamLogistic</span></code></a></p>
+</dd>
+<dt><cite>fixtop</cite></dt><dd><p>Same meaning as for <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic" title="dms_tools2.neutcurve.fourParamLogistic"><code class="xref py py-class docutils literal notranslate"><span class="pre">fourParamLogistic</span></code></a></p>
+</dd>
+<dt><cite>xlabel</cite> (str)</dt><dd><p>x-label on plot</p>
+</dd>
+<dt><cite>ylabel</cite> (str)</dt><dd><p>y-label on plot</p>
+</dd>
+<dt><cite>maxcol</cite> (int)</dt><dd><p>Max number of columns in faceted plot</p>
+</dd>
+<dt><cite>ic50_in_name</cite> (bool)</dt><dd><p>Same meaning as for <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.plot" title="dms_tools2.neutcurve.fourParamLogistic.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fourParamLogistic.plot()</span></code></a></p>
+</dd>
+<dt><cite>nfitpoints</cite> (int)</dt><dd><p>Same meaning as for <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.plot" title="dms_tools2.neutcurve.fourParamLogistic.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fourParamLogistic.plot()</span></code></a></p>
+</dd>
+<dt><cite>cextend</cite> (float)</dt><dd><p>Same meaning as for <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.plot" title="dms_tools2.neutcurve.fourParamLogistic.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fourParamLogistic.plot()</span></code></a></p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A dictionary keyed by each sample in <cite>neutdata</cite>,
+<dt>Returns:</dt><dd><p>A dictionary keyed by each sample in <cite>neutdata</cite>,
 and with the values being the <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic" title="dms_tools2.neutcurve.fourParamLogistic"><code class="xref py py-class docutils literal notranslate"><span class="pre">fourParamLogistic</span></code></a>
 fitted object for that sample. You can use these
-objects to get detailed information about the fits.</dd>
+objects to get detailed information about the fits.</p>
+</dd>
 </dl>
 <p>Here is an example of plotting three curves in a 
 single row (we keep the default <cite>maxcol=3</cite>):</p>
@@ -132,17 +128,15 @@ of <cite>top</cite> and <cite>bottom</cite> will be reversed. However, this clas
 has <strong>not</strong> been extensively tested in that scenario, and
 so may not work completely correctly if you have
 <span class="math notranslate nohighlight">\(f(c)\)</span> represent the fraction neutralized.</p>
-<dl class="docutils">
-<dt>To initialize and fit an object, provide the following:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>cs</cite> (array-like)</dt>
-<dd>Concentrations for which we have measurements
-to fit.</dd>
-<dt><cite>fs</cite> (array-like)</dt>
-<dd>Same length as <cite>cs</cite>, with <cite>fs[i]</cite> giving
-fraction surviving at <cite>cs[i]</cite>.</dd>
-<dt><cite>fixbottom</cite> (bool)</dt>
-<dd>If <cite>False</cite>, we fit the bottom value of the
+<dl class="simple">
+<dt>To initialize and fit an object, provide the following:</dt><dd><dl class="simple">
+<dt><cite>cs</cite> (array-like)</dt><dd><p>Concentrations for which we have measurements
+to fit.</p>
+</dd>
+<dt><cite>fs</cite> (array-like)</dt><dd><p>Same length as <cite>cs</cite>, with <cite>fs[i]</cite> giving
+fraction surviving at <cite>cs[i]</cite>.</p>
+</dd>
+<dt><cite>fixbottom</cite> (bool)</dt><dd><p>If <cite>False</cite>, we fit the bottom value of the
 curve. If you instead want to fix it,
 provide the number to fix it to (typically 0).
 Fix this number if you think that the neutralization
@@ -151,36 +145,36 @@ concentration. For some viruses (such as HIV),
 the neutralization never goes to completion as 
 there are some resistant viruses (such as due
 to glycan heterogeneity) – if that is the case,
-you want to fit the bottom rather than fix it to 0.</dd>
-<dt><cite>fixtop</cite> (<cite>False</cite> or a float)</dt>
-<dd>If <cite>False</cite>, we fit the top value of the
+you want to fit the bottom rather than fix it to 0.</p>
+</dd>
+<dt><cite>fixtop</cite> (<cite>False</cite> or a float)</dt><dd><p>If <cite>False</cite>, we fit the top value of the
 curve. If you instead want to fix it,
 provide the number to fix it to (typically 1).
 Usually you do <strong>not</strong> want to fit this value,
 as the fraction surviving should always be one
-at sufficiently low antibody concentration.</dd>
+at sufficiently low antibody concentration.</p>
+</dd>
 </dl>
 </dd>
-<dt>After initialization, has the following attributes:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>cs</cite> (numpy array)</dt>
-<dd>Array of the concentration measurements we have
-fitted, sorted from lowest to highest.</dd>
-<dt><cite>fs</cite> (numpy array)</dt>
-<dd>Array of the fraction surviving measurements
-corresponding to the entries in <cite>cs</cite>.</dd>
-<dt><cite>midpoint</cite> (float)</dt>
-<dd>Midpoint of curve, <span class="math notranslate nohighlight">\(m\)</span> in equation above.
+<dt>After initialization, has the following attributes:</dt><dd><dl class="simple">
+<dt><cite>cs</cite> (numpy array)</dt><dd><p>Array of the concentration measurements we have
+fitted, sorted from lowest to highest.</p>
+</dd>
+<dt><cite>fs</cite> (numpy array)</dt><dd><p>Array of the fraction surviving measurements
+corresponding to the entries in <cite>cs</cite>.</p>
+</dd>
+<dt><cite>midpoint</cite> (float)</dt><dd><p>Midpoint of curve, <span class="math notranslate nohighlight">\(m\)</span> in equation above.
 Note that the midpoint may <strong>not</strong> be the same
-as the <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.ic50" title="dms_tools2.neutcurve.fourParamLogistic.ic50"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ic50()</span></code></a></dd>
-<dt><cite>slope</cite> (float)</dt>
-<dd>Hill slope of curve, <span class="math notranslate nohighlight">\(s\)</span> in equation above.</dd>
-<dt><cite>bottom</cite> (float)</dt>
-<dd>Bottom of curve (value as <span class="math notranslate nohighlight">\(c\)</span> gets large),
-<span class="math notranslate nohighlight">\(b\)</span> in equation above.</dd>
-<dt><cite>top</cite> (float)</dt>
-<dd>Top of curve (value as <span class="math notranslate nohighlight">\(c\)</span> get small),
-<span class="math notranslate nohighlight">\(t\)</span> in equation above.</dd>
+as the <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.ic50" title="dms_tools2.neutcurve.fourParamLogistic.ic50"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ic50()</span></code></a></p>
+</dd>
+<dt><cite>slope</cite> (float)</dt><dd><p>Hill slope of curve, <span class="math notranslate nohighlight">\(s\)</span> in equation above.</p>
+</dd>
+<dt><cite>bottom</cite> (float)</dt><dd><p>Bottom of curve (value as <span class="math notranslate nohighlight">\(c\)</span> gets large),
+<span class="math notranslate nohighlight">\(b\)</span> in equation above.</p>
+</dd>
+<dt><cite>top</cite> (float)</dt><dd><p>Top of curve (value as <span class="math notranslate nohighlight">\(c\)</span> get small),
+<span class="math notranslate nohighlight">\(t\)</span> in equation above.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -285,22 +279,21 @@ the curve:</p>
 <dd><p>IC50 value.</p>
 <p>Concentration where <cite>fracsurvive</cite> is 0.5. Equals
 <cite>midpoint</cite> if and only if <cite>top = 1</cite> and <cite>bottom = 0</cite>.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>extrapolate</cite> (bool)</dt>
-<dd>Do we extrapolate IC50 outside of range
-of data we fit? (Generally a bad idea.)</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>extrapolate</cite> (bool)</dt><dd><p>Do we extrapolate IC50 outside of range
+of data we fit? (Generally a bad idea.)</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A number giving the IC50 if the fitted value
+<dt>Returns:</dt><dd><p>A number giving the IC50 if the fitted value
 is in the range of concentrations used
 to fit the curve. Otherwise returns <cite>None</cite>
 unless <cite>extrapolate</cite> is <cite>True</cite>. Will still
 return <cite>None</cite> even if <cite>extrapolate</cite> is <cite>True</cite>
 if the fit parameters are such that the
-extrapolated curve never reaches 0.5.</dd>
+extrapolated curve never reaches 0.5.</p>
+</dd>
 </dl>
 <p>Calculated from:
 <span class="math notranslate nohighlight">\(0.5 = b + \frac{t - b}{1 + (ic50/m)^s}\)</span>,
@@ -322,25 +315,24 @@ range of fitted data, such as by being: <cite>&gt; 0.5</cite>.</p>
 <dt id="dms_tools2.neutcurve.fourParamLogistic.plot">
 <code class="descname">plot</code><span class="sig-paren">(</span><em>plotfile</em>, <em>samplename</em>, <em>ic50_in_name=True</em>, <em>xlabel='antibody concentration'</em>, <em>ylabel='fraction surviving'</em>, <em>nfitpoints=100</em>, <em>cextend=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/neutcurve.html#fourParamLogistic.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.neutcurve.fourParamLogistic.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots neutralization points and fitted curve.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>plotfile</cite> (str)</dt>
-<dd>Name of plot to create (e.g., PDF or PNG).</dd>
-<dt><cite>samplename</cite> (str)</dt>
-<dd>Sample name (put at top of plot)</dd>
-<dt><cite>ic50_in_name</cite> (bool)</dt>
-<dd>Include IC50 at top of plot with sample name?</dd>
-<dt><cite>xlabel</cite> (str)</dt>
-<dd>x-axis label</dd>
-<dt><cite>ylabel</cite> (str)</dt>
-<dd>y-axis label</dd>
-<dt><cite>nfitpoints</cite> (int)</dt>
-<dd>Number of points used to draw fit line.</dd>
-<dt><cite>cextend</cite> (float)</dt>
-<dd>Concentrations extend this much fold
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>plotfile</cite> (str)</dt><dd><p>Name of plot to create (e.g., PDF or PNG).</p>
+</dd>
+<dt><cite>samplename</cite> (str)</dt><dd><p>Sample name (put at top of plot)</p>
+</dd>
+<dt><cite>ic50_in_name</cite> (bool)</dt><dd><p>Include IC50 at top of plot with sample name?</p>
+</dd>
+<dt><cite>xlabel</cite> (str)</dt><dd><p>x-axis label</p>
+</dd>
+<dt><cite>ylabel</cite> (str)</dt><dd><p>y-axis label</p>
+</dd>
+<dt><cite>nfitpoints</cite> (int)</dt><dd><p>Number of points used to draw fit line.</p>
+</dd>
+<dt><cite>cextend</cite> (float)</dt><dd><p>Concentrations extend this much fold
 below / above the min / max values used
-for fitting.</dd>
+for fitting.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -352,7 +344,6 @@ for fitting.</dd>
 
 
           </div>
-          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -385,7 +376,7 @@ for fitting.</dd>
     
 
 <p>
-<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -429,20 +420,10 @@ for fitting.</dd>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
         </div>
       </div>
       <div class="clearer"></div>
@@ -451,8 +432,8 @@ for fitting.</dd>
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
       <a href="_sources/dms_tools2.neutcurve.rst.txt"

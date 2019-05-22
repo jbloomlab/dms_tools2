@@ -1,19 +1,18 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms_tools2.utils &#8212; dms_tools2 2.4.10 documentation</title>
+    <meta charset="utf-8" />
+    <title>dms_tools2.utils &#8212; dms_tools2 2.4.12 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
    
@@ -28,8 +27,6 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          
-
           <div class="body" role="main">
             
   <h1>Source code for dms_tools2.utils</h1><div class="highlight"><pre>
@@ -53,15 +50,17 @@
 <span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">collections</span>
 <span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">re</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">scipy.misc</span>
 <span class="kn">import</span> <span class="nn">scipy.special</span>
 <span class="kn">import</span> <span class="nn">pandas</span>
 <span class="kn">import</span> <span class="nn">HTSeq</span>
+<span class="kn">import</span> <span class="nn">gzip</span>
 
 <span class="kn">import</span> <span class="nn">dms_tools2</span>
-<span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="k">import</span> <span class="n">CODONS</span><span class="p">,</span> <span class="n">CODON_TO_AA</span><span class="p">,</span> <span class="n">AAS_WITHSTOP</span><span class="p">,</span> <span class="n">AA_TO_CODONS</span>
+<span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="k">import</span> <span class="n">CODONS</span><span class="p">,</span> <span class="n">CODON_TO_AA</span><span class="p">,</span> <span class="n">AAS_WITHSTOP</span><span class="p">,</span> <span class="n">AA_TO_CODONS</span><span class="p">,</span> <span class="n">NTS</span>
 <span class="kn">import</span> <span class="nn">dms_tools2._cutils</span>
 
 
@@ -1198,6 +1197,281 @@
         <span class="k">assert</span> <span class="n">postdecimal</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;{{:.</span><span class="si">{postdecimal}</span><span class="s2">f}}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="getSubstitutions"><a class="viewcode-back" href="../../dms_tools2.utils.html#dms_tools2.utils.getSubstitutions">[docs]</a><span class="k">def</span> <span class="nf">getSubstitutions</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">mutant</span><span class="p">,</span> <span class="n">amino_acid</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get space delimited string of substitutions</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `wildtype` (str):</span>
+<span class="sd">             The wildtype sequence</span>
+<span class="sd">        `mutant` (str):</span>
+<span class="sd">             The mutant sequence</span>
+<span class="sd">        `amino_acid` (bool)</span>
+<span class="sd">             Specify whether the sequence is amino acid.</span>
+<span class="sd">             Default is False</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A space delimited string of substitutions present in the</span>
+<span class="sd">        mutant sequence</span>
+
+<span class="sd">    &gt;&gt;&gt; getSubstitutions(&#39;AGT&#39;, &#39;TGT&#39;)</span>
+<span class="sd">    &#39;A1T&#39;</span>
+<span class="sd">    &gt;&gt;&gt; getSubstitutions(&#39;AAGTAACGA&#39;, &#39;ATCTAACGA&#39;)</span>
+<span class="sd">    &#39;A2T G3C&#39;</span>
+<span class="sd">    &gt;&gt;&gt; getSubstitutions(&#39;TYARV&#39;, &#39;GYAGV&#39;, amino_acid=True)</span>
+<span class="sd">    &#39;T1G R4G&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">wildtype</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mutant</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;wildtype and mutant must be same length&#39;</span><span class="p">)</span>
+    <span class="n">subs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wildtype</span><span class="p">)):</span>
+        <span class="n">wt</span> <span class="o">=</span> <span class="n">wildtype</span><span class="p">[</span><span class="n">site</span><span class="p">]</span>
+        <span class="n">mut</span> <span class="o">=</span> <span class="n">mutant</span><span class="p">[</span><span class="n">site</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">amino_acid</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">wt</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">AAS_WITHSTOP</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span> <span class="p">(</span><span class="n">f</span><span class="s2">&quot;Invalid wt residue </span><span class="si">{wt}</span><span class="s2"> at site {site+1}&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">mut</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">AAS_WITHSTOP</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span> <span class="p">(</span><span class="n">f</span><span class="s2">&quot;Invalid mutant residue </span><span class="si">{mut}</span><span class="s2"> at site {site+1}&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">wt</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">NTS</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span> <span class="p">(</span><span class="n">f</span><span class="s2">&quot;Invalid wt nucleotide </span><span class="si">{wt}</span><span class="s2"> at site {site+1}&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">mut</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">NTS</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span> <span class="p">(</span><span class="n">f</span><span class="s2">&quot;Invalid mutant nucleotide </span><span class="si">{mut}</span><span class="s2"> at site {site+1}&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">wt</span><span class="o">!=</span><span class="n">mut</span><span class="p">:</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">site</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">subs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{wt}{pos}{mut}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">subs</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">subs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">subs</span></div>
+
+
+<div class="viewcode-block" id="barcodeInfoToCodonVariantTable"><a class="viewcode-back" href="../../dms_tools2.utils.html#dms_tools2.utils.barcodeInfoToCodonVariantTable">[docs]</a><span class="k">def</span> <span class="nf">barcodeInfoToCodonVariantTable</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">geneseq</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert barcode info files into a CodonVariantTable</span>
+
+<span class="sd">    Convert barcode info files output from `dms2_bcsubamp` into a</span>
+<span class="sd">    `CodonVariantTable`. Barcode info files contain reads and barcodes from</span>
+<span class="sd">    barcoded subamplicon sequencing, described </span>
+<span class="sd">    `here &lt;https://jbloomlab.github.io/dms_tools2/bcsubamp.html&gt;`_.</span>
+<span class="sd">    This function takes consensus reads retained by `dms2_bcsubamp`, </span>
+<span class="sd">    gives each unique sequence a numerical barcode (since the barcodes from </span>
+<span class="sd">    `dms2_bcsubamp` could come from the same variant), and counts the number</span>
+<span class="sd">    of retained consensus reads corresponding to each sequence. Then, a</span>
+<span class="sd">    `CodonVariantTable` is made using the sequences and their numerical </span>
+<span class="sd">    barcodes, and counts are added based on the number of retained consensus</span>
+<span class="sd">    reads of those sequences. Therefore, the `CodonVariantTable` will only </span>
+<span class="sd">    contain one &#39;variant&#39; for each unique sequence with the total count for all</span>
+<span class="sd">    the unbarcoded variants in the experiment which had the same sequence.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `samples` (dict):</span>
+<span class="sd">            Dictionary with libraries as keys and lists of info file prefixes</span>
+<span class="sd">            (file names without the &#39;_bcinfo.txt.gz&#39;) for files corresponding</span>
+<span class="sd">            to those libraries as values.</span>
+<span class="sd">            </span>
+<span class="sd">            Example: {&#39;library-1&#39;:[&#39;condition-1-library-1&#39;],</span>
+<span class="sd">                      &#39;library-2&#39;:[&#39;condition-1-library-2&#39;]}</span>
+<span class="sd">        `geneseq` (str):</span>
+<span class="sd">            The wildtype gene sequence</span>
+<span class="sd">        `path` (str)</span>
+<span class="sd">            Directory in which barcode info files are located</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A CodonVariantTable with &#39;counts&#39; generated from the</span>
+<span class="sd">        barcode info files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Set up re matchers for looking at lines</span>
+    <span class="n">matcher</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;(?P&lt;linetype&gt;^.*\:) &#39;</span>
+                         <span class="s1">&#39;(?P&lt;contents&gt;.*$)&#39;</span><span class="p">)</span>
+
+    <span class="n">alt_matcher</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;(?P&lt;linetype&gt;^R\d READS:$)&#39;</span><span class="p">)</span>
+
+    <span class="n">read_matcher</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;(?P&lt;read&gt;^[ATGCN\s]*$)&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Create a dictionary to contain dictionaries of each library&#39;s barcodes</span>
+    <span class="n">libraries</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Initialize lists for making the codonvarianttable</span>
+    <span class="n">barcodes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">subs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">variant_call_support</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">library_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># For each library, go through each sample file and collect data</span>
+    <span class="k">for</span> <span class="n">library</span> <span class="ow">in</span> <span class="n">samples</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="c1"># Initialize dictionary to contain this library&#39;s reads and barcodes</span>
+        <span class="n">barcode_dictionary</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># Start a barcode count for this library</span>
+        <span class="n">cur_barcode</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="c1"># For each barcode info file corresponding to a sample in this library</span>
+        <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">[</span><span class="n">library</span><span class="p">]:</span>
+
+            <span class="c1"># Set initial conditions</span>
+            <span class="n">take_next</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">description_skipped</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="c1"># Find the file</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{sample}</span><span class="s2">_bcinfo.txt.gz&quot;</span>
+            <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+                <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">f</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">file_path</span> <span class="o">=</span> <span class="n">f</span>
+
+            <span class="c1"># Open the file and loop through it to find retained consensus</span>
+            <span class="c1"># reads and give them each a new barcode</span>
+            <span class="k">with</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="c1"># Make sure the first line looks like it is supposed to</span>
+                <span class="n">firstline</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+                <span class="n">firstline</span> <span class="o">=</span> <span class="n">firstline</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+                <span class="n">first_match</span> <span class="o">=</span> <span class="n">matcher</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">firstline</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">first_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;BARCODE:&#39;</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unexpected first line </span><span class="si">{firstline}</span><span class="s2">: may be &quot;</span>
+                    <span class="s2">&quot;unexpected file type&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">previous_line</span> <span class="o">=</span> <span class="n">first_match</span>
+
+                <span class="c1"># Go through the lines, making they are in the expected order</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+                    <span class="n">line_match</span> <span class="o">=</span> <span class="n">matcher</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">line_match</span><span class="p">:</span>
+                        <span class="n">line_match</span> <span class="o">=</span> <span class="n">alt_matcher</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">line_match</span><span class="p">:</span>
+                        <span class="n">read_match</span> <span class="o">=</span> <span class="n">read_matcher</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">read_match</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unable to recognize line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">line_is_read</span> <span class="o">=</span> <span class="kc">True</span>
+                            <span class="n">previous_linetype</span> <span class="o">=</span> <span class="n">previous_line</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">previous_linetype</span> <span class="o">!=</span> <span class="s1">&#39;R1 READS:&#39;</span> <span class="ow">and</span> \
+                               <span class="n">previous_linetype</span> <span class="o">!=</span> <span class="s1">&#39;R2 READS:&#39;</span><span class="p">:</span>
+                               <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">line_is_read</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">if</span> <span class="n">previous_line</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;BARCODE:&#39;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">line_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;RETAINED:&#39;</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="c1"># Decide whether to retain the next consensus or not</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">line_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;contents&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;False&#39;</span><span class="p">:</span>
+                                <span class="n">retain</span> <span class="o">=</span> <span class="kc">False</span>
+                            <span class="k">elif</span> <span class="n">line_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;contents&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;True&#39;</span><span class="p">:</span>
+                                <span class="n">retain</span> <span class="o">=</span> <span class="kc">True</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">previous_line</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;RETAINED:&#39;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">line_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;DESCRIPTION:&#39;</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">previous_line</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;DESCRIPTION:&#39;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">line_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;CONSENSUS:&#39;</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="c1"># Make sure we know whether to retain or not</span>
+                        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">retain</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                            <span class="n">f</span><span class="s2">&quot;Unclear whether to retain {line_match.group(&#39;contents&#39;)}&quot;</span>
+                            <span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">retain</span><span class="p">:</span>
+                            <span class="n">read</span> <span class="o">=</span> <span class="n">line_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;contents&#39;</span><span class="p">)</span>
+                            <span class="c1"># Add the read to the dictionary if not in it</span>
+                            <span class="c1"># Also give it a barcode</span>
+                            <span class="k">if</span> <span class="s1">&#39;N&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">read</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="n">read</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">barcode_dictionary</span><span class="p">:</span>
+                                    <span class="c1"># Create the sequence in the dictionary</span>
+                                    <span class="n">barcode_dictionary</span><span class="p">[</span><span class="n">read</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                                    <span class="c1"># Give it an initial count of 1 for this sample</span>
+                                    <span class="n">barcode_dictionary</span><span class="p">[</span><span class="n">read</span><span class="p">][</span><span class="n">sample</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                                    <span class="c1"># Give it the next barcode</span>
+                                    <span class="n">barcode_dictionary</span><span class="p">[</span><span class="n">read</span><span class="p">][</span><span class="s1">&#39;barcode&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cur_barcode</span>
+                                    <span class="c1"># Save values for making CodonVariantTable</span>
+                                    <span class="n">barcodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cur_barcode</span><span class="p">)</span>
+                                    <span class="n">subs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">getSubstitutions</span><span class="p">(</span><span class="n">geneseq</span><span class="p">,</span> <span class="n">read</span><span class="p">))</span>
+                                    <span class="n">variant_call_support</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                                    <span class="n">library_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">library</span><span class="p">)</span>
+                                    <span class="c1"># Advance current barcode</span>
+                                    <span class="n">cur_barcode</span> <span class="o">+=</span> <span class="mi">1</span>
+                                <span class="k">else</span><span class="p">:</span>
+                                    <span class="c1"># Add a counter for the sample if sequence</span>
+                                    <span class="c1"># not seen for this sample yet</span>
+                                    <span class="k">if</span> <span class="n">sample</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">barcode_dictionary</span><span class="p">[</span><span class="n">read</span><span class="p">]:</span>
+                                        <span class="n">barcode_dictionary</span><span class="p">[</span><span class="n">read</span><span class="p">][</span><span class="n">sample</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                                    <span class="k">else</span><span class="p">:</span>
+                                        <span class="c1"># Add another count to this read for</span>
+                                        <span class="c1"># this sample</span>
+                                        <span class="n">barcode_dictionary</span><span class="p">[</span><span class="n">read</span><span class="p">][</span><span class="n">sample</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="c1"># Set retain to None</span>
+                        <span class="n">retain</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">elif</span> <span class="n">previous_line</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;CONSENSUS:&#39;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">line_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;R1 READS:&#39;</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">previous_line</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;R1 READS:&#39;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">line_is_read</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">line_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;R2 READS:&#39;</span><span class="p">:</span>
+                                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">previous_line</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;R2 READS:&#39;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">line_is_read</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">line_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;BARCODE:&#39;</span><span class="p">:</span>
+                                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="c1"># Save this line as the previous line if it is not a read</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">line_is_read</span><span class="p">:</span>
+                        <span class="n">previous_line</span> <span class="o">=</span> <span class="n">line_match</span>
+        <span class="c1"># After going through each file for a library, save its dictionary with</span>
+        <span class="c1"># reads and barcodes</span>
+        <span class="n">libraries</span><span class="p">[</span><span class="n">library</span><span class="p">]</span> <span class="o">=</span> <span class="n">barcode_dictionary</span>
+
+    <span class="c1"># Make the dataframe for creating the codonvarianttable</span>
+    <span class="n">df</span> <span class="o">=</span>  <span class="p">{</span><span class="s1">&#39;barcode&#39;</span><span class="p">:</span><span class="n">barcodes</span><span class="p">,</span>
+            <span class="s1">&#39;substitutions&#39;</span><span class="p">:</span><span class="n">subs</span><span class="p">,</span>
+            <span class="s1">&#39;library&#39;</span><span class="p">:</span><span class="n">library_list</span><span class="p">,</span>
+            <span class="s1">&#39;variant_call_support&#39;</span><span class="p">:</span><span class="n">variant_call_support</span><span class="p">,</span>
+           <span class="p">}</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+    <span class="c1"># Make the codonvarianttable</span>
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="n">variants</span> <span class="o">=</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">codonvarianttable</span><span class="o">.</span><span class="n">CodonVariantTable</span><span class="p">(</span>
+                    <span class="n">barcode_variant_file</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">geneseq</span><span class="o">=</span><span class="n">geneseq</span><span class="p">)</span>
+
+    <span class="c1"># Make the counts dataframe:</span>
+    <span class="c1"># Initialize list of dataframes</span>
+    <span class="n">dfs</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Loop through each library and produce count dataframes for each sample</span>
+    <span class="k">for</span> <span class="n">library</span> <span class="ow">in</span> <span class="n">libraries</span><span class="p">:</span>
+        <span class="n">barcode_dictionary</span> <span class="o">=</span> <span class="n">libraries</span><span class="p">[</span><span class="n">library</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">[</span><span class="n">library</span><span class="p">]:</span>
+            <span class="n">barcodes_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">counts_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">sample_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">library_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1"># Get counts for this sample</span>
+            <span class="k">for</span> <span class="n">sequence</span> <span class="ow">in</span> <span class="n">barcode_dictionary</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">sample</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">barcode_dictionary</span><span class="p">[</span><span class="n">sequence</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">counts_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">counts_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">barcode_dictionary</span><span class="p">[</span><span class="n">sequence</span><span class="p">][</span><span class="n">sample</span><span class="p">])</span>
+                <span class="n">barcodes_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">barcode_dictionary</span><span class="p">[</span><span class="n">sequence</span><span class="p">][</span><span class="s1">&#39;barcode&#39;</span><span class="p">])</span>
+                <span class="n">sample_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
+                <span class="n">library_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">library</span><span class="p">)</span>
+            <span class="c1"># Make a dataframe for this sample</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;barcode&#39;</span><span class="p">:</span><span class="n">barcodes_list</span><span class="p">,</span>
+                    <span class="s1">&#39;count&#39;</span><span class="p">:</span><span class="n">counts_list</span><span class="p">,</span>
+                    <span class="s1">&#39;sample&#39;</span><span class="p">:</span><span class="n">sample_list</span><span class="p">,</span>
+                    <span class="s1">&#39;library&#39;</span><span class="p">:</span><span class="n">library_list</span><span class="p">,</span>
+                   <span class="p">}</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="c1"># Append it to the list of dataframes</span>
+            <span class="n">dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="c1"># Concatenate the list of dataframes into a counts dataframe</span>
+        <span class="n">barcode_counts</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dfs</span><span class="p">)</span>
+    <span class="c1"># Add the counts for each sample to the codonvarianttable</span>
+    <span class="k">for</span> <span class="n">library</span> <span class="ow">in</span> <span class="n">libraries</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">[</span><span class="n">library</span><span class="p">]:</span>
+            <span class="n">icounts</span> <span class="o">=</span> <span class="n">barcode_counts</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;library == @library &amp; sample == @sample&#39;</span><span class="p">)</span>
+            <span class="n">icounts</span> <span class="o">=</span> <span class="n">icounts</span><span class="p">[[</span><span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">]]</span>
+            <span class="n">variants</span><span class="o">.</span><span class="n">addSampleCounts</span><span class="p">(</span><span class="n">library</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="n">icounts</span><span class="p">)</span>
+
+    <span class="k">return</span><span class="p">(</span><span class="n">variants</span><span class="p">)</span></div>
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">doctest</span>
@@ -1205,7 +1479,6 @@
 </pre></div>
 
           </div>
-          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -1238,7 +1511,7 @@
     
 
 <p>
-<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -1275,20 +1548,10 @@
     <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
         </div>
       </div>
       <div class="clearer"></div>
@@ -1297,8 +1560,8 @@
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
     </div>
 

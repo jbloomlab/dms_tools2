@@ -1,19 +1,18 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Fraction surviving &#8212; dms_tools2 2.4.10 documentation</title>
+    <meta charset="utf-8" />
+    <title>Fraction surviving &#8212; dms_tools2 2.4.12 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Executable programs" href="programs.html" />
@@ -30,21 +29,20 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          
-
           <div class="body" role="main">
             
   <div class="section" id="fraction-surviving">
 <span id="fracsurvive"></span><h1>Fraction surviving<a class="headerlink" href="#fraction-surviving" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
-<li><a class="reference internal" href="#overview" id="id2">Overview</a></li>
-<li><a class="reference internal" href="#definition-of-fraction-surviving" id="id3">Definition of fraction surviving</a><ul>
-<li><a class="reference internal" href="#fraction-surviving-above-average" id="id4">Fraction surviving above average</a></li>
-<li><a class="reference internal" href="#error-correction" id="id5">Error correction</a></li>
+<li><p><a class="reference internal" href="#overview" id="id2">Overview</a></p></li>
+<li><p><a class="reference internal" href="#definition-of-fraction-surviving" id="id3">Definition of fraction surviving</a></p>
+<ul>
+<li><p><a class="reference internal" href="#fraction-surviving-above-average" id="id4">Fraction surviving above average</a></p></li>
+<li><p><a class="reference internal" href="#error-correction" id="id5">Error correction</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#programs-and-examples" id="id6">Programs and examples</a></li>
+<li><p><a class="reference internal" href="#programs-and-examples" id="id6">Programs and examples</a></p></li>
 </ul>
 </div>
 <div class="section" id="overview">
@@ -66,7 +64,7 @@ This figure shows hypothetical data for four viral variants: wildtype and three 
 <strong>(A)</strong> Virions with the V1K mutation (orange) completely survive an antibody concentration where most other virions are neutralized.
 <strong>(B)</strong> This resistance is manifested by a large shift in V1K’s neutralization curve.
 <strong>(C)</strong> For each dotted vertical line drawn through the neutralization curves in (B), we calculate the fraction of virions with that mutation that survive the antibody, and indicate this fraction by the height of the letter corresponding to that amino acid at that site.
-<strong>(D-F)</strong> Similar data to the first three panels, but now V1K has only a small antigenic effect, and so only modestly increases the fraction of virions that survive antibody treatment.</span></p>
+<strong>(D-F)</strong> Similar data to the first three panels, but now V1K has only a small antigenic effect, and so only modestly increases the fraction of virions that survive antibody treatment.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 <p>The <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> software contains programs to estimate the fraction of each mutation surviving from the overall fraction of the library that survives the selection and the deep sequencing data.
 Specifically, you can make these estimates using <a class="reference internal" href="dms2_batch_fracsurvive.html#dms2-batch-fracsurvive"><span class="std std-ref">dms2_batch_fracsurvive</span></a>, which in turn calls <a class="reference internal" href="dms2_fracsurvive.html#dms2-fracsurvive"><span class="std std-ref">dms2_fracsurvive</span></a>.
@@ -79,8 +77,8 @@ These programs create visualizations of the results, and you can also visualize 
 <p>In order to calculate <span class="math notranslate nohighlight">\(F_{r,x}\)</span>, we need three pieces of information:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li>The <strong>overall</strong> fraction of the entire library that survives the selection. We will denote this quantity as <span class="math notranslate nohighlight">\(\gamma\)</span>, and it should range from zero to one. For instance, <span class="math notranslate nohighlight">\(\gamma\)</span> might be calculated by using qPCR to determine the number of virions that infect cells in the presence of antibody versus the number that infect cells in the absence of antibody – the ratio of these two numbers would be the overall fraction of the entire library the survives the selection. You could also compute <span class="math notranslate nohighlight">\(\gamma\)</span> directly from deep-sequencing if your library contains some internal control variant that you know will not be affected by the selection (e.g., a variant with a totally orthogonal envelope protein that is not recognized by the antibody).</li>
-<li>The number of deep sequencing counts of each character <span class="math notranslate nohighlight">\(x\)</span> at each site <span class="math notranslate nohighlight">\(r\)</span> in both the selected (e.g., antibody neutralized) and mock-selected samples. Denote these quantities as <span class="math notranslate nohighlight">\(n_{r,x}^{\rm{selected}}\)</span> and <span class="math notranslate nohighlight">\(n_{r,x}^{\rm{mock}}\)</span>, respectively. Also define variables that give the total number of counts at each site for each condition as <span class="math notranslate nohighlight">\(N_r^{\rm{selected}} = \sum_x n_{r,x}^{\rm{selected}}\)</span> and <span class="math notranslate nohighlight">\(N_r^{\rm{mock}} = \sum_x n_{r,x}^{\rm{mock}}\)</span>.</li>
+<li><p>The <strong>overall</strong> fraction of the entire library that survives the selection. We will denote this quantity as <span class="math notranslate nohighlight">\(\gamma\)</span>, and it should range from zero to one. For instance, <span class="math notranslate nohighlight">\(\gamma\)</span> might be calculated by using qPCR to determine the number of virions that infect cells in the presence of antibody versus the number that infect cells in the absence of antibody – the ratio of these two numbers would be the overall fraction of the entire library the survives the selection. You could also compute <span class="math notranslate nohighlight">\(\gamma\)</span> directly from deep-sequencing if your library contains some internal control variant that you know will not be affected by the selection (e.g., a variant with a totally orthogonal envelope protein that is not recognized by the antibody).</p></li>
+<li><p>The number of deep sequencing counts of each character <span class="math notranslate nohighlight">\(x\)</span> at each site <span class="math notranslate nohighlight">\(r\)</span> in both the selected (e.g., antibody neutralized) and mock-selected samples. Denote these quantities as <span class="math notranslate nohighlight">\(n_{r,x}^{\rm{selected}}\)</span> and <span class="math notranslate nohighlight">\(n_{r,x}^{\rm{mock}}\)</span>, respectively. Also define variables that give the total number of counts at each site for each condition as <span class="math notranslate nohighlight">\(N_r^{\rm{selected}} = \sum_x n_{r,x}^{\rm{selected}}\)</span> and <span class="math notranslate nohighlight">\(N_r^{\rm{mock}} = \sum_x n_{r,x}^{\rm{mock}}\)</span>.</p></li>
 </ol>
 </div></blockquote>
 <p>Given these pieces of information, the estimated fraction of variants in the selected and mock-selected libraries that contain character <span class="math notranslate nohighlight">\(x\)</span> at site <span class="math notranslate nohighlight">\(r\)</span> are calculated as:</p>
@@ -108,8 +106,8 @@ Note that this quantity is calculated for the wildtype character at each site as
 These measures are calculated over all <strong>non</strong>-wildtype characters at each site:</p>
 <blockquote>
 <div><ul class="simple">
-<li>The <cite>avgfracsurvive</cite> which is simply the average over all non-wildtype characters of the <cite>mutfracsurvive</cite> values at a site. If some <cite>mutfracsurvive</cite> values are <cite>NaN</cite> (which can happen if you use the <code class="docutils literal notranslate"><span class="pre">--mincounts</span></code> option), they are <strong>not</strong> included in the average.</li>
-<li>The <cite>maxfracsurvive</cite> which is simply the <strong>maximum</strong> <cite>mutfracsurvive</cite> over all non-wildtype characters at a site.</li>
+<li><p>The <cite>avgfracsurvive</cite> which is simply the average over all non-wildtype characters of the <cite>mutfracsurvive</cite> values at a site. If some <cite>mutfracsurvive</cite> values are <cite>NaN</cite> (which can happen if you use the <code class="docutils literal notranslate"><span class="pre">--mincounts</span></code> option), they are <strong>not</strong> included in the average.</p></li>
+<li><p>The <cite>maxfracsurvive</cite> which is simply the <strong>maximum</strong> <cite>mutfracsurvive</cite> over all non-wildtype characters at a site.</p></li>
 </ul>
 </div></blockquote>
 <div class="section" id="fraction-surviving-above-average">
@@ -153,15 +151,15 @@ n_{r,x} / \epsilon_{r,x} &amp; \mbox{if } x = \operatorname{wt}\left(r\right) \\
 <p>The <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> software contains programs to calculate the fraction of each mutation surviving:</p>
 <blockquote>
 <div><ul class="simple">
-<li><a class="reference internal" href="dms2_fracsurvive.html#dms2-fracsurvive"><span class="std std-ref">dms2_fracsurvive</span></a> estimates the fraction surviving from counts files and the overall library fractiont that survives.</li>
-<li><a class="reference internal" href="dms2_batch_fracsurvive.html#dms2-batch-fracsurvive"><span class="std std-ref">dms2_batch_fracsurvive</span></a> runs <a class="reference internal" href="dms2_fracsurvive.html#dms2-fracsurvive"><span class="std std-ref">dms2_fracsurvive</span></a> on a set of samples and summarizes the results. It is generally easier to use <a class="reference internal" href="dms2_batch_fracsurvive.html#dms2-batch-fracsurvive"><span class="std std-ref">dms2_batch_fracsurvive</span></a> rather than runnning <a class="reference internal" href="dms2_fracsurvive.html#dms2-fracsurvive"><span class="std std-ref">dms2_fracsurvive</span></a> directly.</li>
-<li><a class="reference internal" href="dms2_logoplot.html#dms2-logoplot"><span class="std std-ref">dms2_logoplot</span></a> can be used to create logo plots that visualize the fraction surviving.</li>
+<li><p><a class="reference internal" href="dms2_fracsurvive.html#dms2-fracsurvive"><span class="std std-ref">dms2_fracsurvive</span></a> estimates the fraction surviving from counts files and the overall library fractiont that survives.</p></li>
+<li><p><a class="reference internal" href="dms2_batch_fracsurvive.html#dms2-batch-fracsurvive"><span class="std std-ref">dms2_batch_fracsurvive</span></a> runs <a class="reference internal" href="dms2_fracsurvive.html#dms2-fracsurvive"><span class="std std-ref">dms2_fracsurvive</span></a> on a set of samples and summarizes the results. It is generally easier to use <a class="reference internal" href="dms2_batch_fracsurvive.html#dms2-batch-fracsurvive"><span class="std std-ref">dms2_batch_fracsurvive</span></a> rather than runnning <a class="reference internal" href="dms2_fracsurvive.html#dms2-fracsurvive"><span class="std std-ref">dms2_fracsurvive</span></a> directly.</p></li>
+<li><p><a class="reference internal" href="dms2_logoplot.html#dms2-logoplot"><span class="std std-ref">dms2_logoplot</span></a> can be used to create logo plots that visualize the fraction surviving.</p></li>
 </ul>
 </div></blockquote>
 <p>Here are some example analyses:</p>
 <blockquote>
 <div><ul class="simple">
-<li><a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2018/analysis_notebook.ipynb">Doud2018 example</a></li>
+<li><p><a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2018/analysis_notebook.ipynb">Doud2018 example</a></p></li>
 </ul>
 </div></blockquote>
 </div>
@@ -169,7 +167,6 @@ n_{r,x} / \epsilon_{r,x} &amp; \mbox{if } x = \operatorname{wt}\left(r\right) \\
 
 
           </div>
-          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -202,7 +199,7 @@ n_{r,x} / \epsilon_{r,x} &amp; \mbox{if } x = \operatorname{wt}\left(r\right) \\
     
 
 <p>
-<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -244,20 +241,10 @@ n_{r,x} / \epsilon_{r,x} &amp; \mbox{if } x = \operatorname{wt}\left(r\right) \\
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
         </div>
       </div>
       <div class="clearer"></div>
@@ -266,8 +253,8 @@ n_{r,x} / \epsilon_{r,x} &amp; \mbox{if } x = \operatorname{wt}\left(r\right) \\
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
       <a href="_sources/fracsurvive.rst.txt"

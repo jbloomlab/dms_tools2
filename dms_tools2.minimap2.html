@@ -1,19 +1,18 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>minimap2 &#8212; dms_tools2 2.4.10 documentation</title>
+    <meta charset="utf-8" />
+    <title>minimap2 &#8212; dms_tools2 2.4.12 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="neutcurve" href="dms_tools2.neutcurve.html" />
@@ -30,8 +29,6 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          
-
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.minimap2"></span><div class="section" id="minimap2">
@@ -116,55 +113,52 @@ aligner.</p>
 <em class="property">class </em><code class="descclassname">dms_tools2.minimap2.</code><code class="descname">Mapper</code><span class="sig-paren">(</span><em>targetfile</em>, <em>options</em>, <em>*</em>, <em>prog='minimap2'</em>, <em>target_isoforms={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#Mapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.Mapper" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Class to run <code class="docutils literal notranslate"><span class="pre">minimap2</span></code> and get results.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>targetfile</cite> (str)</dt>
-<dd>FASTA file with target (reference) to which we align
-reads.</dd>
-<dt><cite>options</cite> (list)</dt>
-<dd><p class="first">Command line options to <code class="docutils literal notranslate"><span class="pre">minimap2</span></code>. For
+<dl>
+<dt>Args:</dt><dd><dl>
+<dt><cite>targetfile</cite> (str)</dt><dd><p>FASTA file with target (reference) to which we align
+reads.</p>
+</dd>
+<dt><cite>options</cite> (list)</dt><dd><p>Command line options to <code class="docutils literal notranslate"><span class="pre">minimap2</span></code>. For
 recommended options, for different situations, see:</p>
-<blockquote class="last">
+<blockquote>
 <div><ul class="simple">
-<li><a class="reference internal" href="#dms_tools2.minimap2.OPTIONS_CODON_DMS" title="dms_tools2.minimap2.OPTIONS_CODON_DMS"><code class="xref py py-data docutils literal notranslate"><span class="pre">OPTIONS_CODON_DMS</span></code></a></li>
-<li><a class="reference internal" href="#dms_tools2.minimap2.OPTIONS_VIRUS_W_DEL" title="dms_tools2.minimap2.OPTIONS_VIRUS_W_DEL"><code class="xref py py-data docutils literal notranslate"><span class="pre">OPTIONS_VIRUS_W_DEL</span></code></a></li>
+<li><p><a class="reference internal" href="#dms_tools2.minimap2.OPTIONS_CODON_DMS" title="dms_tools2.minimap2.OPTIONS_CODON_DMS"><code class="xref py py-data docutils literal notranslate"><span class="pre">OPTIONS_CODON_DMS</span></code></a></p></li>
+<li><p><a class="reference internal" href="#dms_tools2.minimap2.OPTIONS_VIRUS_W_DEL" title="dms_tools2.minimap2.OPTIONS_VIRUS_W_DEL"><code class="xref py py-data docutils literal notranslate"><span class="pre">OPTIONS_VIRUS_W_DEL</span></code></a></p></li>
 </ul>
 </div></blockquote>
 </dd>
-<dt><cite>prog</cite> (str or <cite>None</cite>)</dt>
-<dd>Path to <code class="docutils literal notranslate"><span class="pre">minimap2</span></code> executable. Class is only
+<dt><cite>prog</cite> (str or <cite>None</cite>)</dt><dd><p>Path to <code class="docutils literal notranslate"><span class="pre">minimap2</span></code> executable. Class is only
 tested against version &gt;=2.11 but may work with
-other versions too.</dd>
-<dt><cite>target_isoforms</cite> (dict)</dt>
-<dd>Sometimes targets might be be isoforms of each
+other versions too.</p>
+</dd>
+<dt><cite>target_isoforms</cite> (dict)</dt><dd><p>Sometimes targets might be be isoforms of each
 other. You can specify that with this dict, which
 is keyed by target names and has values that are sets
 of other targets. If targets <cite>M1</cite> and <cite>M2</cite> are isoforms,
 set <cite>target_isoforms={‘M1’:[‘M2’], ‘M2’:[‘M1’]}</cite>.
 This argument is just used to set the <cite>target_isoforms</cite>
-attribute, but isn’t used during alignment.</dd>
+attribute, but isn’t used during alignment.</p>
+</dd>
 </dl>
 </dd>
-<dt>Attributes:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>targetfile</cite> (str)</dt>
-<dd>Target (reference) file set at initialization.</dd>
-<dt><cite>targetseqs</cite> (OrderedDict)</dt>
-<dd>Sequences in <cite>targetfile</cite>. Keys are sequence
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt><cite>targetfile</cite> (str)</dt><dd><p>Target (reference) file set at initialization.</p>
+</dd>
+<dt><cite>targetseqs</cite> (OrderedDict)</dt><dd><p>Sequences in <cite>targetfile</cite>. Keys are sequence
 names, values are sequences as strings. In
-same order as listing in <cite>targetfile</cite>.</dd>
-<dt><cite>prog</cite> (str)</dt>
-<dd>Path to <code class="docutils literal notranslate"><span class="pre">minimap2</span></code> set at initialization.</dd>
-<dt><cite>options</cite> (list)</dt>
-<dd>Options to <code class="docutils literal notranslate"><span class="pre">minimap2</span></code> set at initialization.</dd>
-<dt><cite>version</cite> (str)</dt>
-<dd>Version of <code class="docutils literal notranslate"><span class="pre">minimap2</span></code>.</dd>
-<dt><cite>target_isoforms</cite> (dict)</dt>
-<dd>Isoforms for each target. This is the value set
+same order as listing in <cite>targetfile</cite>.</p>
+</dd>
+<dt><cite>prog</cite> (str)</dt><dd><p>Path to <code class="docutils literal notranslate"><span class="pre">minimap2</span></code> set at initialization.</p>
+</dd>
+<dt><cite>options</cite> (list)</dt><dd><p>Options to <code class="docutils literal notranslate"><span class="pre">minimap2</span></code> set at initialization.</p>
+</dd>
+<dt><cite>version</cite> (str)</dt><dd><p>Version of <code class="docutils literal notranslate"><span class="pre">minimap2</span></code>.</p>
+</dd>
+<dt><cite>target_isoforms</cite> (dict)</dt><dd><p>Isoforms for each target. This is the value set
 by <cite>target_isoforms</cite> at initialization plus
 ensuring that each target is listed as an isoform
-of itself.</dd>
+of itself.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -254,32 +248,30 @@ to a PAF file.</p>
 <p>This is <strong>not</strong> a memory-efficient implementation as
 a lot is read into memory. So if you have very large
 queries or targets, that may pose a problem.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>queryfile</cite> (str)</dt>
-<dd>FASTA file with query sequences to align.
-Headers should be unique.</dd>
-<dt><cite>outfile</cite> (<cite>None</cite> or str)</dt>
-<dd>Name of output file containing alignment
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>queryfile</cite> (str)</dt><dd><p>FASTA file with query sequences to align.
+Headers should be unique.</p>
+</dd>
+<dt><cite>outfile</cite> (<cite>None</cite> or str)</dt><dd><p>Name of output file containing alignment
 results in PAF format if a str is provided.
 Provide <cite>None</cite> if you don’t want to create
-a permanent alignment file.</dd>
-<dt><cite>introns_to_gaps</cite> (bool)</dt>
-<dd>If there are introns in the alignment CIGARs, convert
-to gaps by running through <a class="reference internal" href="#dms_tools2.minimap2.intronsToGaps" title="dms_tools2.minimap2.intronsToGaps"><code class="xref py py-meth docutils literal notranslate"><span class="pre">intronsToGaps()</span></code></a>.</dd>
-<dt><cite>shift_indels</cite> (bool)</dt>
-<dd>Pass alignments through <a class="reference internal" href="#dms_tools2.minimap2.shiftIndels" title="dms_tools2.minimap2.shiftIndels"><code class="xref py py-meth docutils literal notranslate"><span class="pre">shiftIndels()</span></code></a>.
+a permanent alignment file.</p>
+</dd>
+<dt><cite>introns_to_gaps</cite> (bool)</dt><dd><p>If there are introns in the alignment CIGARs, convert
+to gaps by running through <a class="reference internal" href="#dms_tools2.minimap2.intronsToGaps" title="dms_tools2.minimap2.intronsToGaps"><code class="xref py py-meth docutils literal notranslate"><span class="pre">intronsToGaps()</span></code></a>.</p>
+</dd>
+<dt><cite>shift_indels</cite> (bool)</dt><dd><p>Pass alignments through <a class="reference internal" href="#dms_tools2.minimap2.shiftIndels" title="dms_tools2.minimap2.shiftIndels"><code class="xref py py-meth docutils literal notranslate"><span class="pre">shiftIndels()</span></code></a>.
 Only applies to alignments returned in dict,
-does not affect any results in <cite>outfile</cite>.</dd>
-<dt><cite>check_alignments</cite> (bool)</dt>
-<dd>Run all alignments through <a class="reference internal" href="#dms_tools2.minimap2.checkAlignment" title="dms_tools2.minimap2.checkAlignment"><code class="xref py py-meth docutils literal notranslate"><span class="pre">checkAlignment()</span></code></a>
+does not affect any results in <cite>outfile</cite>.</p>
+</dd>
+<dt><cite>check_alignments</cite> (bool)</dt><dd><p>Run all alignments through <a class="reference internal" href="#dms_tools2.minimap2.checkAlignment" title="dms_tools2.minimap2.checkAlignment"><code class="xref py py-meth docutils literal notranslate"><span class="pre">checkAlignment()</span></code></a>
 before returning, and raise error if any are invalid.
-This is a good debugging check, but costs time.</dd>
+This is a good debugging check, but costs time.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A dict where keys are the name of each query in
+<dt>Returns:</dt><dd><p>A dict where keys are the name of each query in
 <cite>queryfile</cite> for which there is an alignment (there
 are no keys for queries that do not align). If there
 is a single alignment for a query, the value is that
@@ -288,7 +280,8 @@ alignments (<a class="reference external" href="https://github.com/lh3/minimap2/
 If there are multiple alignments, the value is the
 <a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a> with the highest score, and the remaining
 alignments are listed in the <a class="reference internal" href="#dms_tools2.minimap2.Alignment.additional" title="dms_tools2.minimap2.Alignment.additional"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment.additional</span></code></a>
-attribute of that “best” alignment.</dd>
+attribute of that “best” alignment.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -299,34 +292,33 @@ attribute of that “best” alignment.</dd>
 <em class="property">class </em><code class="descclassname">dms_tools2.minimap2.</code><code class="descname">MutationCaller</code><span class="sig-paren">(</span><em>mapper</em>, <em>*</em>, <em>transcriptconverter=None</em>, <em>targetindex=1</em>, <em>target_clip=0</em>, <em>query_softclip=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#MutationCaller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.MutationCaller" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Call <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> from <a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a>.</p>
-<dl class="docutils">
-<dt>Attributes:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>mapper</cite> (<a class="reference internal" href="#dms_tools2.minimap2.Mapper" title="dms_tools2.minimap2.Mapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapper</span></code></a>)</dt>
-<dd>The <a class="reference internal" href="#dms_tools2.minimap2.Mapper" title="dms_tools2.minimap2.Mapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapper</span></code></a> used to create the alignments.</dd>
-<dt><cite>transcriptconverter</cite> (<a class="reference internal" href="dms_tools2.seqnumbering.html#dms_tools2.seqnumbering.TranscriptConverter" title="dms_tools2.seqnumbering.TranscriptConverter"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_tools2.seqnumbering.TranscriptConverter</span></code></a> or <cite>None</cite>)</dt>
-<dd>Use if the alignments made by <cite>mapper</cite> are to transcripts
+<dl class="simple">
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt><cite>mapper</cite> (<a class="reference internal" href="#dms_tools2.minimap2.Mapper" title="dms_tools2.minimap2.Mapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapper</span></code></a>)</dt><dd><p>The <a class="reference internal" href="#dms_tools2.minimap2.Mapper" title="dms_tools2.minimap2.Mapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapper</span></code></a> used to create the alignments.</p>
+</dd>
+<dt><cite>transcriptconverter</cite> (<a class="reference internal" href="dms_tools2.seqnumbering.html#dms_tools2.seqnumbering.TranscriptConverter" title="dms_tools2.seqnumbering.TranscriptConverter"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_tools2.seqnumbering.TranscriptConverter</span></code></a> or <cite>None</cite>)</dt><dd><p>Use if the alignments made by <cite>mapper</cite> are to transcripts
 (or partial transcripts) and you want to convert the numbering
 of mutations to 1, 2, … numbering of the chromosomes
 containing these transcripts, plus indicate amino-acid
 substitutions in any CDSs. The target names in <cite>mapper</cite> should
 match the mRNA names in <cite>transcriptconverter</cite>. If you
-use a <cite>transcriptconverter</cite>, <cite>targetindex</cite> must be 1.</dd>
-<dt><cite>targetindex</cite> (int)</dt>
-<dd>Number assigned to first nucleotide of target when
+use a <cite>transcriptconverter</cite>, <cite>targetindex</cite> must be 1.</p>
+</dd>
+<dt><cite>targetindex</cite> (int)</dt><dd><p>Number assigned to first nucleotide of target when
 numbering mutations. A value of 1 means that the first
-nucleotide of the target is position 1.</dd>
-<dt><cite>target_clip</cite> (int)</dt>
-<dd>Ignore any mutations that occur within this many
+nucleotide of the target is position 1.</p>
+</dd>
+<dt><cite>target_clip</cite> (int)</dt><dd><p>Ignore any mutations that occur within this many
 nucleotides of the termini of target. If an indel
 includes any nucleotides that are not ignored,
-then the full indel is reported.</dd>
-<dt><cite>query_softclip</cite> (int)</dt>
-<dd>Ignore any mutations that occur within this many
+then the full indel is reported.</p>
+</dd>
+<dt><cite>query_softclip</cite> (int)</dt><dd><p>Ignore any mutations that occur within this many
 nucleotides of the termini of the query <strong>and</strong>
 are soft clipped in the alignment. If an indel
 includes any nucleotides not ignored, then the full
-indel is reported.</dd>
+indel is reported.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -475,41 +467,39 @@ substitution are also indicated in the results:</p>
 <dt id="dms_tools2.minimap2.MutationCaller.call">
 <code class="descname">call</code><span class="sig-paren">(</span><em>a</em>, <em>qvals=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#MutationCaller.call"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.MutationCaller.call" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call mutations in alignment.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>a</cite> (<a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a>)</dt>
-<dd>Call mutations in this alignment.</dd>
-<dt><cite>qvals</cite> (<cite>None</cite> or numpy array)</dt>
-<dd>Array of Q-values for the <strong>entire</strong> query used
-to build alignment, not just aligned region.</dd>
+<dl>
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>a</cite> (<a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a>)</dt><dd><p>Call mutations in this alignment.</p>
+</dd>
+<dt><cite>qvals</cite> (<cite>None</cite> or numpy array)</dt><dd><p>Array of Q-values for the <strong>entire</strong> query used
+to build alignment, not just aligned region.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd><p class="first">A <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> object holding the mutations.
+<dt>Returns:</dt><dd><p>A <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> object holding the mutations.
 If you are <strong>not</strong> using <cite>transcriptconverter</cite>,
 mutations are named like this:</p>
 <blockquote>
 <div><ul class="simple">
-<li>“A60T” for substitution (at site 60)</li>
-<li>“ins5len10” for insertion (starts at 5, length 10)</li>
-<li>“del12to14” for deletion (12, 13, and 14 deleted)</li>
+<li><p>“A60T” for substitution (at site 60)</p></li>
+<li><p>“ins5len10” for insertion (starts at 5, length 10)</p></li>
+<li><p>“del12to14” for deletion (12, 13, and 14 deleted)</p></li>
 </ul>
 </div></blockquote>
 <p>where the number refers to the alignment target in
 <cite>mapper</cite>.</p>
 <p>If you are using <cite>transcriptconverter</cite>, then mutations are
 named like this:</p>
-<blockquote class="last">
+<blockquote>
 <div><ul class="simple">
-<li>“fluNS-A61T_fluNS1-Asp12Val” indicating
+<li><p>“fluNS-A61T_fluNS1-Asp12Val” indicating
 substitution at site 61 in the “fluNS” chromosome
 causing amino-acid substitution Asp12Val in
 the “fluNS1” CDS. If there is no amino-acid
-substitution, the name will just be “fluNS-A61T”.</li>
-<li>“fluNS-ins4len10” for insertion (again, now
-in coordinates of the chromosome, which is “fluNS”.</li>
-<li>“fluNS-del11to13” for deletion.</li>
+substitution, the name will just be “fluNS-A61T”.</p></li>
+<li><p>“fluNS-ins4len10” for insertion (again, now
+in coordinates of the chromosome, which is “fluNS”.</p></li>
+<li><p>“fluNS-del11to13” for deletion.</p></li>
 </ul>
 </div></blockquote>
 </dd>
@@ -533,34 +523,32 @@ of templates, errors during library preparation) may be present.</p>
 <p>Initialize a <a class="reference internal" href="#dms_tools2.minimap2.MutationConsensus" title="dms_tools2.minimap2.MutationConsensus"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutationConsensus</span></code></a> object with arguments
 below, which become attributes of the object. Then call consensus
 mutations with <a class="reference internal" href="#dms_tools2.minimap2.MutationConsensus.callConsensus" title="dms_tools2.minimap2.MutationConsensus.callConsensus"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutationConsensus.callConsensus</span></code></a> method.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>n_mut</cite> (int)</dt>
-<dd>At least this many sequences must have mutation to
-call it in consensus.</dd>
-<dt><cite>min_acc</cite> (float)</dt>
-<dd>Completely ignore any mutations with accuracy lower
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>n_mut</cite> (int)</dt><dd><p>At least this many sequences must have mutation to
+call it in consensus.</p>
+</dd>
+<dt><cite>min_acc</cite> (float)</dt><dd><p>Completely ignore any mutations with accuracy lower
 than this. Should be a threshold that just gets rid
 of really low-accuracy ones. Is <strong>not</strong> applied to
-mutations with an accuracy of NaN (<cite>math.nan</cite>).</dd>
-<dt><cite>min_sub_frac</cite> (float)</dt>
-<dd>More than this fraction of sequences must have
-substitution (point mutation) to call it as present.</dd>
-<dt><cite>min_indel_frac</cite> (float)</dt>
-<dd>More than this fraction of sequences must have an
+mutations with an accuracy of NaN (<cite>math.nan</cite>).</p>
+</dd>
+<dt><cite>min_sub_frac</cite> (float)</dt><dd><p>More than this fraction of sequences must have
+substitution (point mutation) to call it as present.</p>
+</dd>
+<dt><cite>min_indel_frac</cite> (float)</dt><dd><p>More than this fraction of sequences must have an
 indel to call it as present. By default this is more
 stringent than <cite>min_sub_frac</cite> because indel sequencing
 errors are more common and deletions can be enriched
-during PCR.</dd>
-<dt><cite>group_indel_frac</cite> (float)</dt>
-<dd>If other overlap by &gt;= this fraction of their
+during PCR.</p>
+</dd>
+<dt><cite>group_indel_frac</cite> (float)</dt><dd><p>If other overlap by &gt;= this fraction of their
 total net length with the most common indel,
 group them together as the most common indel.
 Designed to handle this case where alignment issues
-slightly change called boundaries of long indels.</dd>
-<dt><cite>homopolymer_calling</cite> (dict)</dt>
-<dd>More stringent calling of <strong>single-nucleotide</strong>
+slightly change called boundaries of long indels.</p>
+</dd>
+<dt><cite>homopolymer_calling</cite> (dict)</dt><dd><p>More stringent calling of <strong>single-nucleotide</strong>
 indels in hompolymers, which are defined as runs of
 &gt;= 3 consecutive nucleotides. Rationale
 is that main mode of PacBio sequencing errors is
@@ -570,7 +558,8 @@ Then for single-nucleotide indels in &gt;= 3 nt homopolymers,
 increases calling stringency to these new parameters.
 If no entry in dict, just uses main values set for
 other mutations, so supply empty dict if you want to
-no homopolymer correction.</dd>
+no homopolymer correction.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -578,23 +567,23 @@ no homopolymer correction.</dd>
 passed to <a class="reference internal" href="#dms_tools2.minimap2.MutationConsensus.callConsensus" title="dms_tools2.minimap2.MutationConsensus.callConsensus"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutationConsensus.callConsensus</span></code></a> as follows:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li>Ignore any mutations with accuracy less then <cite>min_acc</cite>,
+<li><p>Ignore any mutations with accuracy less then <cite>min_acc</cite>,
 but do <strong>not</strong> eliminate mutations with accuracy that
-is <cite>math.nan</cite>.</li>
-<li>If there are less then <cite>n_mut</cite> <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> passed,
-and they have no mutations, call as wildtype.</li>
-<li>If there are less than <cite>n_mut</cite> <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a>
-passed and some have mutations, call as ambiguous.</li>
-<li>If there are at least <cite>n_mut</cite> <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a>
+is <cite>math.nan</cite>.</p></li>
+<li><p>If there are less then <cite>n_mut</cite> <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> passed,
+and they have no mutations, call as wildtype.</p></li>
+<li><p>If there are less than <cite>n_mut</cite> <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a>
+passed and some have mutations, call as ambiguous.</p></li>
+<li><p>If there are at least <cite>n_mut</cite> <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a>
 passed but less than <cite>n_mut</cite> of them have a mutation,
-call as wildtype.</li>
-<li>If there are at least <cite>n_mut</cite> <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a>
+call as wildtype.</p></li>
+<li><p>If there are at least <cite>n_mut</cite> <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a>
 that contain a specific mutation
 <strong>and</strong> the fraction of <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> that
 have this mutation is &gt;= <cite>min_sub_frac</cite> (for point
 mutations) or <cite>min_indel_frac</cite> (for indels), then call
-the sequence as having the mutation.</li>
-<li>Otherwise call as wildtype.</li>
+the sequence as having the mutation.</p></li>
+<li><p>Otherwise call as wildtype.</p></li>
 </ol>
 </div></blockquote>
 <p>Here is an example.</p>
@@ -745,28 +734,27 @@ and the other only has one (not enough to be called):</p>
 <dd><p>Calls consensus from <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a>.</p>
 <p>The calling is done using the criteria described in the
 main docs for <a class="reference internal" href="#dms_tools2.minimap2.MutationConsensus" title="dms_tools2.minimap2.MutationConsensus"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutationConsensus</span></code></a>.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>mutationlist</cite> (list)</dt>
-<dd>List of one or more <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> from
-which we call consensus.</dd>
-<dt><cite>mutation_type</cite> (str)</dt>
-<dd>Type of mutation to call. Should be one of
-‘substitutions’, ‘insertions’, or ‘deletions’.</dd>
-<dt><cite>include_stats</cite> (bool)</dt>
-<dd>Include statistics on number of CCSs that have
-mutation for each called mutation.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>mutationlist</cite> (list)</dt><dd><p>List of one or more <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> from
+which we call consensus.</p>
+</dd>
+<dt><cite>mutation_type</cite> (str)</dt><dd><p>Type of mutation to call. Should be one of
+‘substitutions’, ‘insertions’, or ‘deletions’.</p>
+</dd>
+<dt><cite>include_stats</cite> (bool)</dt><dd><p>Include statistics on number of CCSs that have
+mutation for each called mutation.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A str giving the result. If consensus of mutations
+<dt>Returns:</dt><dd><p>A str giving the result. If consensus of mutations
 cannot be called, returns the string “unknown”.
 Otherwise returns empty string if no consensus mutations,
 or a string giving the mutations separated by spaces
 the same way they are returned by the methods of
 <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a>. Mutations are sorted first by
-number of times observed, and then alphabetically.</dd>
+number of times observed, and then alphabetically.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -787,21 +775,19 @@ not known. The Q-values are used to calculate accuracy
 of mutations via <a class="reference internal" href="dms_tools2.pacbio.html#dms_tools2.pacbio.qvalsToAccuracy" title="dms_tools2.pacbio.qvalsToAccuracy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">dms_tools2.pacbio.qvalsToAccuracy()</span></code></a>.
 Likewise, pass <cite>math.nan</cite> for homopolymer lengths if they
 are not known.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>substitution_tuples</cite> (list)</dt>
-<dd>Substitutions <cite>(i, mut_str, q)</cite> where
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>substitution_tuples</cite> (list)</dt><dd><p>Substitutions <cite>(i, mut_str, q)</cite> where
 <cite>i</cite> is the site number, <cite>mut_str</cite> is a string
-describing substitution, and <cite>q</cite> is the Q-value.</dd>
-<dt><cite>insertion_tuples</cite> (list)</dt>
-<dd>Insertions <cite>(i, ins_len, mut_str, qs, hplen)</cite> where <cite>i</cite>
+describing substitution, and <cite>q</cite> is the Q-value.</p>
+</dd>
+<dt><cite>insertion_tuples</cite> (list)</dt><dd><p>Insertions <cite>(i, ins_len, mut_str, qs, hplen)</cite> where <cite>i</cite>
 is site <strong>after</strong> insertion, <cite>inslen</cite> is insertion length,
 <cite>mut_str</cite> is string describing insertion, <cite>qs</cite> is
 numpy array of Q-values, and <cite>hplen</cite> is length of homopolymer
-in which insertion occurs.</dd>
-<dt><cite>deletion_tuples</cite> (list)</dt>
-<dd>Deletions <cite>(istart, iend, mut_str, q, hplen)</cite> where
+in which insertion occurs.</p>
+</dd>
+<dt><cite>deletion_tuples</cite> (list)</dt><dd><p>Deletions <cite>(istart, iend, mut_str, q, hplen)</cite> where
 <cite>istart</cite> is first site of deletion, <cite>iend</cite> is
 last site of deletion (so a single nucleotide
 deletion has <cite>istart == iend</cite>), <cite>mut_str</cite> is string
@@ -809,10 +795,11 @@ describing deletion , <cite>q</cite> is the Q-value of the
 site immediately <strong>after</strong> the deletion in accordance with
 <a class="reference external" href="https://github.com/PacificBiosciences/unanimity/blob/develop/doc/PBCCS.md#interpretting-qual-values">PacBio CCS</a>
 specification, and <cite>hplen</cite> is length of homopolymer
-in which deletion occurs.</dd>
-<dt><cite>acc_not_q</cite> (bool)</dt>
-<dd>If <cite>True</cite>, then the tuples used to pass the mutations
-should give the accuracy rather than the Q-values.</dd>
+in which deletion occurs.</p>
+</dd>
+<dt><cite>acc_not_q</cite> (bool)</dt><dd><p>If <cite>True</cite>, then the tuples used to pass the mutations
+should give the accuracy rather than the Q-values.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -900,33 +887,31 @@ are no mutations:</p>
 <dt id="dms_tools2.minimap2.Mutations.deletions">
 <code class="descname">deletions</code><span class="sig-paren">(</span><em>*</em>, <em>returnval='mutation'</em>, <em>min_acc=None</em>, <em>min_acc_filter_nan=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#Mutations.deletions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.Mutations.deletions" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of deletions.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>min_acc</cite> (float or <cite>None</cite>)</dt>
-<dd>Only include deletions with &gt;= this accuracy.</dd>
-<dt><cite>min_acc_filter_nan</cite> (bool)</dt>
-<dd>If using <cite>min_acc</cite> filter, do we also remove
-mutations with an accuracy that is <cite>math.nan</cite>?</dd>
-<dt><cite>returnval</cite> (str)</dt>
-<dd><p class="first">Type of value to return in list:</p>
-<ul class="last simple">
-<li>“mutation”: Strings giving mutations, where
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>min_acc</cite> (float or <cite>None</cite>)</dt><dd><p>Only include deletions with &gt;= this accuracy.</p>
+</dd>
+<dt><cite>min_acc_filter_nan</cite> (bool)</dt><dd><p>If using <cite>min_acc</cite> filter, do we also remove
+mutations with an accuracy that is <cite>math.nan</cite>?</p>
+</dd>
+<dt><cite>returnval</cite> (str)</dt><dd><p>Type of value to return in list:</p>
+<ul class="simple">
+<li><p>“mutation”: Strings giving mutations, where
 “del12to13” means deletion of nucleotides 12
-to 13, inclusive.</li>
-<li>“site”: Sites of where deletions start.</li>
-<li>“length”: Integers giving deletion lengths.</li>
-<li>“accuracy”: Numbers giving accuracy of each
+to 13, inclusive.</p></li>
+<li><p>“site”: Sites of where deletions start.</p></li>
+<li><p>“length”: Integers giving deletion lengths.</p></li>
+<li><p>“accuracy”: Numbers giving accuracy of each
 mutation. Accuracy is for first nucleotide <strong>after</strong>
-deletion.</li>
-<li>“homopolymer_length”: Integers giving length
-of homopolymer in which deletion is found.</li>
+deletion.</p></li>
+<li><p>“homopolymer_length”: Integers giving length
+of homopolymer in which deletion is found.</p></li>
 </ul>
 </dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>List of mutations or other value specified by <cite>returnval</cite>.</dd>
+<dt>Returns:</dt><dd><p>List of mutations or other value specified by <cite>returnval</cite>.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -934,17 +919,16 @@ of homopolymer in which deletion is found.</li>
 <dt id="dms_tools2.minimap2.Mutations.from_str">
 <em class="property">classmethod </em><code class="descname">from_str</code><span class="sig-paren">(</span><em>mut_str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#Mutations.from_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.Mutations.from_str" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> from str representation.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>mut_str</cite> (str)</dt>
-<dd>String representation as returned by <cite>str(mut)</cite>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>mut_str</cite> (str)</dt><dd><p>String representation as returned by <cite>str(mut)</cite>
 where <cite>mut</cite> is a <a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> object.
-See the examples below for more details.</dd>
+See the examples below for more details.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd><a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> object.</dd>
+<dt>Returns:</dt><dd><p><a class="reference internal" href="#dms_tools2.minimap2.Mutations" title="dms_tools2.minimap2.Mutations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations</span></code></a> object.</p>
+</dd>
 </dl>
 <p>Examples of creating <a class="reference internal" href="#dms_tools2.minimap2.Mutations.from_str" title="dms_tools2.minimap2.Mutations.from_str"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mutations.from_str</span></code></a>.
 First, a single substitution without an accuracy:</p>
@@ -994,33 +978,31 @@ First, a single substitution without an accuracy:</p>
 <dt id="dms_tools2.minimap2.Mutations.insertions">
 <code class="descname">insertions</code><span class="sig-paren">(</span><em>*</em>, <em>returnval='mutation'</em>, <em>min_acc=None</em>, <em>min_acc_filter_nan=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#Mutations.insertions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.Mutations.insertions" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of insertions.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>min_acc</cite> (float or <cite>None</cite>)</dt>
-<dd>Only include insertions with &gt;= this accuracy.</dd>
-<dt><cite>min_acc_filter_nan</cite> (bool)</dt>
-<dd>If using <cite>min_acc</cite> filter, do we also remove
-mutations with an accuracy that is <cite>math.nan</cite>?</dd>
-<dt><cite>returnval</cite> (str)</dt>
-<dd><p class="first">Type of value to return in list:</p>
-<ul class="last simple">
-<li>“mutation”: Strings giving mutations, where
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>min_acc</cite> (float or <cite>None</cite>)</dt><dd><p>Only include insertions with &gt;= this accuracy.</p>
+</dd>
+<dt><cite>min_acc_filter_nan</cite> (bool)</dt><dd><p>If using <cite>min_acc</cite> filter, do we also remove
+mutations with an accuracy that is <cite>math.nan</cite>?</p>
+</dd>
+<dt><cite>returnval</cite> (str)</dt><dd><p>Type of value to return in list:</p>
+<ul class="simple">
+<li><p>“mutation”: Strings giving mutations, where
 “ins10len20” means insertion of length 20
-immediately before site 10.</li>
-<li>“site”: Sites of insertions.</li>
-<li>“length”: Integers giving insertion lengths.</li>
-<li>“accuracy”: Numbers giving accuracy of each
+immediately before site 10.</p></li>
+<li><p>“site”: Sites of insertions.</p></li>
+<li><p>“length”: Integers giving insertion lengths.</p></li>
+<li><p>“accuracy”: Numbers giving accuracy of each
 mutation. Accuracy of insertion is averaged
-over its length.</li>
-<li>“homopolymer_length”: Integers giving length
-of homopolymer in which insertion is found.</li>
+over its length.</p></li>
+<li><p>“homopolymer_length”: Integers giving length
+of homopolymer in which insertion is found.</p></li>
 </ul>
 </dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>List of mutations or other value specified by <cite>returnval</cite>.</dd>
+<dt>Returns:</dt><dd><p>List of mutations or other value specified by <cite>returnval</cite>.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -1028,28 +1010,26 @@ of homopolymer in which insertion is found.</li>
 <dt id="dms_tools2.minimap2.Mutations.substitutions">
 <code class="descname">substitutions</code><span class="sig-paren">(</span><em>*</em>, <em>returnval='mutation'</em>, <em>min_acc=None</em>, <em>min_acc_filter_nan=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#Mutations.substitutions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.Mutations.substitutions" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of substitutions or associated values.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>min_acc</cite> (float or <cite>None</cite>)</dt>
-<dd>Only include substitutions with &gt;= this accuracy.</dd>
-<dt><cite>min_acc_filter_nan</cite> (bool)</dt>
-<dd>If using <cite>min_acc</cite> filter, do we also remove
-mutations with an accuracy that is <cite>math.nan</cite>?</dd>
-<dt><cite>returnval</cite> (str)</dt>
-<dd><p class="first">Type of value to return in list:</p>
-<ul class="last simple">
-<li>“mutation”: Strings giving mutations, where
-“A1T” means site 1 is mutated from A to T.</li>
-<li>“site”: Sites of substitutions.</li>
-<li>“accuracy”: Numbers giving accuracy of each
-mutation.</li>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>min_acc</cite> (float or <cite>None</cite>)</dt><dd><p>Only include substitutions with &gt;= this accuracy.</p>
+</dd>
+<dt><cite>min_acc_filter_nan</cite> (bool)</dt><dd><p>If using <cite>min_acc</cite> filter, do we also remove
+mutations with an accuracy that is <cite>math.nan</cite>?</p>
+</dd>
+<dt><cite>returnval</cite> (str)</dt><dd><p>Type of value to return in list:</p>
+<ul class="simple">
+<li><p>“mutation”: Strings giving mutations, where
+“A1T” means site 1 is mutated from A to T.</p></li>
+<li><p>“site”: Sites of substitutions.</p></li>
+<li><p>“accuracy”: Numbers giving accuracy of each
+mutation.</p></li>
 </ul>
 </dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>List of mutations or other value specified by <cite>returnval</cite>.</dd>
+<dt>Returns:</dt><dd><p>List of mutations or other value specified by <cite>returnval</cite>.</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -1095,52 +1075,50 @@ class to take the alignments and see if they instead exactly
 match a variant of the target.</p>
 <p>Initialize to specify the target variants, then classify
 using <a class="reference internal" href="#dms_tools2.minimap2.TargetVariants.call" title="dms_tools2.minimap2.TargetVariants.call"><code class="xref py py-class docutils literal notranslate"><span class="pre">TargetVariants.call</span></code></a>.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>variantfiles</cite> (dict)</dt>
-<dd>Specifies FASTA files giving the target variants.
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>variantfiles</cite> (dict)</dt><dd><p>Specifies FASTA files giving the target variants.
 Each file must have the same target names as in
 <cite>mapper.targetfile</cite>. These are the variants to
 which we compare the queries, and they must be
 point mutants (same length) as the targets for
 <cite>mapper</cite>. Currently only works when there are
-two sets of variants.</dd>
-<dt><cite>mapper</cite> (<a class="reference internal" href="#dms_tools2.minimap2.Mapper" title="dms_tools2.minimap2.Mapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapper</span></code></a>)</dt>
-<dd>The mapper used to make the alignments. Used to check
+two sets of variants.</p>
+</dd>
+<dt><cite>mapper</cite> (<a class="reference internal" href="#dms_tools2.minimap2.Mapper" title="dms_tools2.minimap2.Mapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapper</span></code></a>)</dt><dd><p>The mapper used to make the alignments. Used to check
 that the sequences specified in <cite>variantfiles</cite> are
-proper point mutant variants of the alignment targets.</dd>
-<dt><cite>variantsites_min_acc</cite> (float or <cite>None</cite>)</dt>
-<dd>Minimum required accuracy (computed from Q-values)
-required for calling by <a class="reference internal" href="#dms_tools2.minimap2.TargetVariants.call" title="dms_tools2.minimap2.TargetVariants.call"><code class="xref py py-class docutils literal notranslate"><span class="pre">TargetVariants.call</span></code></a>.</dd>
+proper point mutant variants of the alignment targets.</p>
+</dd>
+<dt><cite>variantsites_min_acc</cite> (float or <cite>None</cite>)</dt><dd><p>Minimum required accuracy (computed from Q-values)
+required for calling by <a class="reference internal" href="#dms_tools2.minimap2.TargetVariants.call" title="dms_tools2.minimap2.TargetVariants.call"><code class="xref py py-class docutils literal notranslate"><span class="pre">TargetVariants.call</span></code></a>.</p>
+</dd>
 </dl>
 </dd>
-<dt>Attributes:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>variantfiles</cite> (dict)</dt>
-<dd>See above.</dd>
-<dt><cite>mapper</cite> (<a class="reference internal" href="#dms_tools2.minimap2.Mapper" title="dms_tools2.minimap2.Mapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapper</span></code></a>)</dt>
-<dd>See above.</dd>
-<dt><cite>variantsites_min_acc</cite> (float or <cite>None</cite>)</dt>
-<dd>See above.</dd>
-<dt><cite>variantnames</cite> (list)</dt>
-<dd>Alphabeticized list of the variant names that key
-<cite>variantfiles</cite>.</dd>
-<dt><cite>targetnames</cite> (list)</dt>
-<dd>Alphabeticized list of the target names.</dd>
-<dt><cite>variantseqs</cite> (dict)</dt>
-<dd>The actual sequences in <cite>variantfiles</cite>. Keyed
+<dt>Attributes:</dt><dd><dl class="simple">
+<dt><cite>variantfiles</cite> (dict)</dt><dd><p>See above.</p>
+</dd>
+<dt><cite>mapper</cite> (<a class="reference internal" href="#dms_tools2.minimap2.Mapper" title="dms_tools2.minimap2.Mapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapper</span></code></a>)</dt><dd><p>See above.</p>
+</dd>
+<dt><cite>variantsites_min_acc</cite> (float or <cite>None</cite>)</dt><dd><p>See above.</p>
+</dd>
+<dt><cite>variantnames</cite> (list)</dt><dd><p>Alphabeticized list of the variant names that key
+<cite>variantfiles</cite>.</p>
+</dd>
+<dt><cite>targetnames</cite> (list)</dt><dd><p>Alphabeticized list of the target names.</p>
+</dd>
+<dt><cite>variantseqs</cite> (dict)</dt><dd><p>The actual sequences in <cite>variantfiles</cite>. Keyed
 by each variant in <cite>variantnames</cite>, then keyed
 by each name in <cite>targetnames</cite>, and values
-are the sequences for that variant of that target.</dd>
-<dt><cite>variablesites</cite> (dict)</dt>
-<dd>Keyed by target names, each value is a list of
+are the sequences for that variant of that target.</p>
+</dd>
+<dt><cite>variablesites</cite> (dict)</dt><dd><p>Keyed by target names, each value is a list of
 all sites that differ between target variants,
-sorted and in 0, 1, … indexing.</dd>
-<dt><cite>sitevariants</cite> (dict)</dt>
-<dd><cite>sitevariants[target][variant]</cite> is a list that gives
+sorted and in 0, 1, … indexing.</p>
+</dd>
+<dt><cite>sitevariants</cite> (dict)</dt><dd><p><cite>sitevariants[target][variant]</cite> is a list that gives
 the identity of  <cite>variant</cite> for target ` at each site
-in <cite>variablesites[target]</cite>.</dd>
+in <cite>variablesites[target]</cite>.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -1268,45 +1246,43 @@ threshold:</p>
 <dt id="dms_tools2.minimap2.TargetVariants.call">
 <code class="descname">call</code><span class="sig-paren">(</span><em>a</em>, <em>qvals=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#TargetVariants.call"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.TargetVariants.call" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call target variant for an alignment.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>a</cite> (<a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a>)</dt>
-<dd>The alignment (built with <cite>mapper</cite>) for which
-we want to call the target variant.</dd>
-<dt><cite>qvals</cite> (<cite>None</cite> or numpy array)</dt>
-<dd>Array of all Q-values for <strong>entire</strong> query used to
+<dl>
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>a</cite> (<a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a>)</dt><dd><p>The alignment (built with <cite>mapper</cite>) for which
+we want to call the target variant.</p>
+</dd>
+<dt><cite>qvals</cite> (<cite>None</cite> or numpy array)</dt><dd><p>Array of all Q-values for <strong>entire</strong> query used to
 build alignment, not just aligned region. If not <cite>None</cite>
 <strong>and</strong> <cite>variantsites_min_acc</cite> attribute is not <cite>None</cite>,
-then an accuracy requirement is imposed.</dd>
+then an accuracy requirement is imposed.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd><p class="first">The 2-tuple <cite>(variant, new_a)</cite>. Possible values are:</p>
-<blockquote class="last">
+<dt>Returns:</dt><dd><p>The 2-tuple <cite>(variant, new_a)</cite>. Possible values are:</p>
+<blockquote>
 <div><ul class="simple">
-<li>If <cite>a</cite> does not cover any of the variable sites,
+<li><p>If <cite>a</cite> does not cover any of the variable sites,
 then <cite>variant</cite> is “unknown” and <cite>new_a</cite> is
-just <cite>a</cite>.</li>
-<li>If any of the variable sites in <cite>a</cite> don’t meet
+just <cite>a</cite>.</p></li>
+<li><p>If any of the variable sites in <cite>a</cite> don’t meet
 the accuracy threshold of <cite>variantsites_min_acc</cite>, then
-<cite>variant</cite> is “low accuracy” and <cite>new_a</cite> is just <cite>a</cite>.</li>
-<li>If all of the variable sites present in <cite>a</cite> don’t
+<cite>variant</cite> is “low accuracy” and <cite>new_a</cite> is just <cite>a</cite>.</p></li>
+<li><p>If all of the variable sites present in <cite>a</cite> don’t
 exactly match one of the variants, then <cite>variant</cite>
-is “mixed” and <cite>new_a</cite> is just <cite>a</cite>.</li>
-<li>If <cite>a</cite> exactly matches one of the target variants
+is “mixed” and <cite>new_a</cite> is just <cite>a</cite>.</p></li>
+<li><p>If <cite>a</cite> exactly matches one of the target variants
 at all variable sites, then <cite>variant</cite> is a
 variant in <code class="xref py py-class docutils literal notranslate"><span class="pre">TargetVariant.variantnames</span></code> and
 <cite>new_a</cite> is a version of <cite>a</cite> in which any mismatches
 relative to this target variant have been removed
-from the <a class="reference internal" href="#dms_tools2.minimap2.Alignment.cigar_str" title="dms_tools2.minimap2.Alignment.cigar_str"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment.cigar_str</span></code></a> attribute.</li>
-<li>If <cite>a</cite> only covers some of the variable sites but all
+from the <a class="reference internal" href="#dms_tools2.minimap2.Alignment.cigar_str" title="dms_tools2.minimap2.Alignment.cigar_str"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment.cigar_str</span></code></a> attribute.</p></li>
+<li><p>If <cite>a</cite> only covers some of the variable sites but all
 of these match one of the target variants, then
 <cite>variant</cite> is “partial &lt;variant&gt;” where &lt;variant&gt;
 is a variant in <code class="xref py py-class docutils literal notranslate"><span class="pre">TargetVariant.variantnames</span></code>,
 and <cite>new_a</cite> is a version of <cite>a</cite> in which any mismatches
 relative to this target variant havea been removed
-from the <a class="reference internal" href="#dms_tools2.minimap2.Alignment.cigar_str" title="dms_tools2.minimap2.Alignment.cigar_str"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment.cigar_str</span></code></a> attribute.</li>
+from the <a class="reference internal" href="#dms_tools2.minimap2.Alignment.cigar_str" title="dms_tools2.minimap2.Alignment.cigar_str"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment.cigar_str</span></code></a> attribute.</p></li>
 </ul>
 </div></blockquote>
 </dd>
@@ -1319,22 +1295,21 @@ from the <a class="reference internal" href="#dms_tools2.minimap2.Alignment.ciga
 <dt id="dms_tools2.minimap2.checkAlignment">
 <code class="descclassname">dms_tools2.minimap2.</code><code class="descname">checkAlignment</code><span class="sig-paren">(</span><em>a</em>, <em>target</em>, <em>query</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#checkAlignment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.checkAlignment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks alignment is valid given target and query.</p>
-<dl class="docutils">
-<dt>Arguments:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>a</cite> (<a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a>)</dt>
-<dd>The alignment.</dd>
-<dt><cite>target</cite> (str)</dt>
-<dd>The target to which <cite>query</cite> is aligned.</dd>
-<dt><cite>query</cite> (str)</dt>
-<dd>The query aligned to <cite>target</cite>.</dd>
+<dl class="simple">
+<dt>Arguments:</dt><dd><dl class="simple">
+<dt><cite>a</cite> (<a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a>)</dt><dd><p>The alignment.</p>
+</dd>
+<dt><cite>target</cite> (str)</dt><dd><p>The target to which <cite>query</cite> is aligned.</p>
+</dd>
+<dt><cite>query</cite> (str)</dt><dd><p>The query aligned to <cite>target</cite>.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd><cite>True</cite> if <cite>a</cite> is a valid alignment of <cite>query</cite>
+<dt>Returns:</dt><dd><p><cite>True</cite> if <cite>a</cite> is a valid alignment of <cite>query</cite>
 to <cite>target</cite>, <cite>False</cite> otherwise. Being valid does
 not mean an alignment is good, just that the
-start / ends and CIGAR in <cite>a</cite> are valid.</dd>
+start / ends and CIGAR in <cite>a</cite> are valid.</p>
+</dd>
 </dl>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;ATGCAT&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;TACA&#39;</span>
@@ -1365,16 +1340,15 @@ start / ends and CIGAR in <cite>a</cite> are valid.</dd>
 <p>Cannot handle CIGAR strings with intron operations.
 To check those, you first need to run through
 <a class="reference internal" href="#dms_tools2.minimap2.intronsToGaps" title="dms_tools2.minimap2.intronsToGaps"><code class="xref py py-meth docutils literal notranslate"><span class="pre">intronsToGaps()</span></code></a>.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>cigar</cite> (str)</dt>
-<dd>CIGAR string.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>cigar</cite> (str)</dt><dd><p>CIGAR string.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>The 2-tuple <cite>(query, target)</cite>, where each is
-a string giving the encoded query and target.</dd>
+<dt>Returns:</dt><dd><p>The 2-tuple <cite>(query, target)</cite>, where each is
+a string giving the encoded query and target.</p>
+</dd>
 </dl>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cigarToQueryAndTarget</span><span class="p">(</span><span class="s1">&#39;=AT*ac=G+at=AG-ac=T&#39;</span><span class="p">)</span>
 <span class="go">(&#39;ATCGATAGT&#39;, &#39;ATAGAGACT&#39;)</span>
@@ -1390,18 +1364,17 @@ a string giving the encoded query and target.</dd>
 <dt id="dms_tools2.minimap2.iTargetToQuery">
 <code class="descclassname">dms_tools2.minimap2.</code><code class="descname">iTargetToQuery</code><span class="sig-paren">(</span><em>a</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#iTargetToQuery"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.iTargetToQuery" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets index in query aligned to target index.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>a</cite> (<a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a>)</dt>
-<dd>The alignment.</dd>
-<dt><cite>i</cite> (int)</dt>
-<dd>Index in target in 0-based numbering.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>a</cite> (<a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a>)</dt><dd><p>The alignment.</p>
+</dd>
+<dt><cite>i</cite> (int)</dt><dd><p>Index in target in 0-based numbering.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>Index in query that aligns to site <cite>i</cite> in target,
-or <cite>None</cite> if there is not an alignment at that site.</dd>
+<dt>Returns:</dt><dd><p>Index in query that aligns to site <cite>i</cite> in target,
+or <cite>None</cite> if there is not an alignment at that site.</p>
+</dd>
 </dl>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">Alignment</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="s1">&#39;target&#39;</span><span class="p">,</span> <span class="n">r_st</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">r_en</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">r_len</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span>
 <span class="gp">... </span>        <span class="n">q_st</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">q_en</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">q_len</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">strand</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -1434,15 +1407,14 @@ than gaps in the target. This function converts
 the intron notation to gaps. This is useful if you are
 using the introns as an ad-hoc way to identify
 long gaps.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>cigar</cite> (str)</dt>
-<dd>PAF long CIGAR string, format is
-<a class="reference external" href="https://github.com/lh3/minimap2#cs">detailed here</a>.</dd>
-<dt><cite>target</cite> (str)</dt>
-<dd>The exact portion of the target aligned to the query
-in <cite>cigar</cite>.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>cigar</cite> (str)</dt><dd><p>PAF long CIGAR string, format is
+<a class="reference external" href="https://github.com/lh3/minimap2#cs">detailed here</a>.</p>
+</dd>
+<dt><cite>target</cite> (str)</dt><dd><p>The exact portion of the target aligned to the query
+in <cite>cigar</cite>.</p>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -1466,24 +1438,23 @@ deletions. So a deletion can overwrite a mutation or insertion.
 The entire insertion counts as just one added site when indexing
 the deletions. You will get an error if deletions and insertions
 overlap.</p>
-<dl class="docutils">
-<dt>Arguments:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>wtseq</cite> (str)</dt>
-<dd>The wildtype sequence.</dd>
-<dt><cite>mutations</cite> (list)</dt>
-<dd>List of point mutations in form <cite>(i, mut)</cite> where
+<dl class="simple">
+<dt>Arguments:</dt><dd><dl class="simple">
+<dt><cite>wtseq</cite> (str)</dt><dd><p>The wildtype sequence.</p>
+</dd>
+<dt><cite>mutations</cite> (list)</dt><dd><p>List of point mutations in form <cite>(i, mut)</cite> where
 <cite>i</cite> is site and <cite>mut</cite> is mutant amino acid (can be
-same as wildtype).</dd>
-<dt><cite>deletions</cite> (list)</dt>
-<dd>List of deletion locations in form <cite>(istart, iend)</cite>.</dd>
-<dt><cite>insertions</cite> (list)</dt>
-<dd>List of insertions in form <cite>(i, seqtoinsert)</cite>.</dd>
+same as wildtype).</p>
+</dd>
+<dt><cite>deletions</cite> (list)</dt><dd><p>List of deletion locations in form <cite>(istart, iend)</cite>.</p>
+</dd>
+<dt><cite>insertions</cite> (list)</dt><dd><p>List of insertions in form <cite>(i, seqtoinsert)</cite>.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>The 2-tuple <cite>(mutantseq, cigar)</cite> where <cite>cigar</cite> is the CIGAR
-in <a class="reference external" href="https://github.com/lh3/minimap2#cs">PAF long format</a>.</dd>
+<dt>Returns:</dt><dd><p>The 2-tuple <cite>(mutantseq, cigar)</cite> where <cite>cigar</cite> is the CIGAR
+in <a class="reference external" href="https://github.com/lh3/minimap2#cs">PAF long format</a>.</p>
+</dd>
 </dl>
 <p>Here is an example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">wtseq</span> <span class="o">=</span> <span class="s1">&#39;ATGGAATGA&#39;</span>
@@ -1509,17 +1480,16 @@ in <a class="reference external" href="https://github.com/lh3/minimap2#cs">PAF l
 <dt id="dms_tools2.minimap2.numAligned">
 <code class="descclassname">dms_tools2.minimap2.</code><code class="descname">numAligned</code><span class="sig-paren">(</span><em>cigar</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#numAligned"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.numAligned" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets number of aligned nucleotides from PAF long CIGAR.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>cigar</cite> (str)</dt>
-<dd>CIGAR str.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>cigar</cite> (str)</dt><dd><p>CIGAR str.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>The number of aligned nucleotides in the cigar, where a
+<dt>Returns:</dt><dd><p>The number of aligned nucleotides in the cigar, where a
 nucleotide is considered aligned if it is either a
-match or a point mutation, but not if it is an indel.</dd>
+match or a point mutation, but not if it is an indel.</p>
+</dd>
 </dl>
 <p>Example: the CIGAR below has 3 matches, a deletion, 5 matches,
 2 mutations, 2 matches, an insertion, 3 matches, 1 mutation, and
@@ -1551,28 +1521,27 @@ creates long <cite>cs</cite> tags with the CIGAR string.</p>
 <p>PAF format is <a class="reference external" href="https://github.com/lh3/miniasm/blob/master/PAF.md">described here</a>.
 PAF long CIGAR string format from <code class="docutils literal notranslate"><span class="pre">minimap2</span></code> is
 <a class="reference external" href="https://github.com/lh3/minimap2#cs">detailed here</a>.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>paf_file</cite> (str or iterator)</dt>
-<dd>If str, should be name of <code class="docutils literal notranslate"><span class="pre">*.paf</span></code> file.
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>paf_file</cite> (str or iterator)</dt><dd><p>If str, should be name of <code class="docutils literal notranslate"><span class="pre">*.paf</span></code> file.
 Otherwise should be an iterator that returns
-lines as would be read from a PAF file.</dd>
-<dt><cite>targets</cite> (dict or <cite>None</cite>)</dt>
-<dd>If not <cite>None</cite>, is dict keyed by target names,
+lines as would be read from a PAF file.</p>
+</dd>
+<dt><cite>targets</cite> (dict or <cite>None</cite>)</dt><dd><p>If not <cite>None</cite>, is dict keyed by target names,
 with values target sequences. You need to provide
 this if <code class="docutils literal notranslate"><span class="pre">minimap2</span></code> is run with a <code class="docutils literal notranslate"><span class="pre">--splice</span></code>
-option and <cite>introns_to_gaps</cite> is <cite>True</cite>.</dd>
-<dt><cite>introns_to_gap</cite> (bool)</dt>
-<dd>Pass CIGAR strings through <a class="reference internal" href="#dms_tools2.minimap2.intronsToGaps" title="dms_tools2.minimap2.intronsToGaps"><code class="xref py py-meth docutils literal notranslate"><span class="pre">intronsToGaps()</span></code></a>.
-Requires you to provide <cite>targets</cite>.</dd>
+option and <cite>introns_to_gaps</cite> is <cite>True</cite>.</p>
+</dd>
+<dt><cite>introns_to_gap</cite> (bool)</dt><dd><p>Pass CIGAR strings through <a class="reference internal" href="#dms_tools2.minimap2.intronsToGaps" title="dms_tools2.minimap2.intronsToGaps"><code class="xref py py-meth docutils literal notranslate"><span class="pre">intronsToGaps()</span></code></a>.
+Requires you to provide <cite>targets</cite>.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A generator that yields query / alignments on each line in
+<dt>Returns:</dt><dd><p>A generator that yields query / alignments on each line in
 <cite>paf_file</cite>. Returned as the 2-tuple <cite>(query_name, a)</cite>,
 where <cite>query_name</cite> is a str giving the name of the query
-sequence, and <cite>a</cite> is an <a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a>.</dd>
+sequence, and <cite>a</cite> is an <a class="reference internal" href="#dms_tools2.minimap2.Alignment" title="dms_tools2.minimap2.Alignment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Alignment</span></code></a>.</p>
+</dd>
 </dl>
 <p>Here is a short example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">paf_file</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
@@ -1625,24 +1594,23 @@ to <code class="docutils literal notranslate"><span class="pre">-ggaac</span></c
 <dt id="dms_tools2.minimap2.removeCIGARmutations">
 <code class="descclassname">dms_tools2.minimap2.</code><code class="descname">removeCIGARmutations</code><span class="sig-paren">(</span><em>cigar</em>, <em>muts_to_remove</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#removeCIGARmutations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.removeCIGARmutations" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes point mutations from CIGAR string.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>cigar</cite> (str)</dt>
-<dd>Long format CIGAR string.</dd>
-<dt><cite>muts_to_remove</cite> (dict)</dt>
-<dd>Dict keyed by site number in 0-based numbering of
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>cigar</cite> (str)</dt><dd><p>Long format CIGAR string.</p>
+</dd>
+<dt><cite>muts_to_remove</cite> (dict)</dt><dd><p>Dict keyed by site number in 0-based numbering of
 target starting at first target position in <cite>cigar</cite>,
 values are nucleotides that we want to make the new
 target identity for the CIGAR at that site. All
 of these nucleotides must be the wildtype in the
-current CIGAR mutation.</dd>
+current CIGAR mutation.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>New CIGAR string expected if <cite>cigar</cite> was actually to the
+<dt>Returns:</dt><dd><p>New CIGAR string expected if <cite>cigar</cite> was actually to the
 target where the wildtype identity is what is given by
-the mutation.</dd>
+the mutation.</p>
+</dd>
 </dl>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cigar</span> <span class="o">=</span> <span class="s1">&#39;=AT-gca=T*at=G+ca*ga=T*at&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">muts_to_remove</span> <span class="o">=</span> <span class="p">{</span><span class="mi">6</span><span class="p">:</span><span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="mi">8</span><span class="p">:</span><span class="s1">&#39;A&#39;</span><span class="p">}</span>
@@ -1659,17 +1627,16 @@ the mutation.</dd>
 <p>In some cases it is ambiguous where to place insertions /
 deletions in the CIGAR string. This function moves them
 to a consistent location (as far forward as possible).</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>cigar</cite> (str)</dt>
-<dd>PAF long CIGAR string, format is
-<a class="reference external" href="https://github.com/lh3/minimap2#cs">detailed here</a>.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>cigar</cite> (str)</dt><dd><p>PAF long CIGAR string, format is
+<a class="reference external" href="https://github.com/lh3/minimap2#cs">detailed here</a>.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A version of <cite>cigar</cite> with indels shifted as far
-forward as possible.</dd>
+<dt>Returns:</dt><dd><p>A version of <cite>cigar</cite> with indels shifted as far
+forward as possible.</p>
+</dd>
 </dl>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">shiftIndels</span><span class="p">(</span><span class="s1">&#39;=AAC-atagcc=GGG-ac=T&#39;</span><span class="p">)</span>
 <span class="go">&#39;=AA-catagc=CGGG-ac=T&#39;</span>
@@ -1690,19 +1657,18 @@ forward as possible.</dd>
 <code class="descclassname">dms_tools2.minimap2.</code><code class="descname">trimCigar</code><span class="sig-paren">(</span><em>side</em>, <em>cigar</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/minimap2.html#trimCigar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.minimap2.trimCigar" title="Permalink to this definition">¶</a></dt>
 <dd><p>Trims a nucleotide from CIGAR string.</p>
 <p>Currently just trims one site.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt><cite>side</cite> (str)</dt>
-<dd>“start” trim from start, “end” to trim from end.</dd>
-<dt><cite>cigar</cite> (str)</dt>
-<dd>PAF long CIGAR string, format is
-<a class="reference external" href="https://github.com/lh3/minimap2#cs">detailed here</a>.</dd>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>side</cite> (str)</dt><dd><p>“start” trim from start, “end” to trim from end.</p>
+</dd>
+<dt><cite>cigar</cite> (str)</dt><dd><p>PAF long CIGAR string, format is
+<a class="reference external" href="https://github.com/lh3/minimap2#cs">detailed here</a>.</p>
+</dd>
 </dl>
 </dd>
-<dt>Returns:</dt>
-<dd>A version of <cite>cigar</cite> with a single site trimmed
-from start or end.</dd>
+<dt>Returns:</dt><dd><p>A version of <cite>cigar</cite> with a single site trimmed
+from start or end.</p>
+</dd>
 </dl>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">trimCigar</span><span class="p">(</span><span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="s1">&#39;=ATG&#39;</span><span class="p">)</span>
 <span class="go">&#39;=TG&#39;</span>
@@ -1724,7 +1690,6 @@ from start or end.</dd>
 
 
           </div>
-          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -1757,7 +1722,7 @@ from start or end.</dd>
     
 
 <p>
-<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -1801,20 +1766,10 @@ from start or end.</dd>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
         </div>
       </div>
       <div class="clearer"></div>
@@ -1823,8 +1778,8 @@ from start or end.</dd>
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
       <a href="_sources/dms_tools2.minimap2.rst.txt"

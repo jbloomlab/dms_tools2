@@ -1,19 +1,18 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>dms2_batch_bcsubamp &#8212; dms_tools2 2.4.10 documentation</title>
+    <meta charset="utf-8" />
+    <title>dms2_batch_bcsubamp &#8212; dms_tools2 2.4.12 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="dms2_prefs" href="dms2_prefs.html" />
@@ -30,25 +29,25 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          
-
           <div class="body" role="main">
             
   <div class="section" id="dms2-batch-bcsubamp">
 <span id="id1"></span><h1><code class="docutils literal notranslate"><span class="pre">dms2_batch_bcsubamp</span></code><a class="headerlink" href="#dms2-batch-bcsubamp" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
-<li><a class="reference internal" href="#overview" id="id3">Overview</a></li>
-<li><a class="reference internal" href="#command-line-usage" id="id4">Command-line usage</a><ul>
-<li><a class="reference internal" href="#Named Arguments" id="id5">Named Arguments</a></li>
+<li><p><a class="reference internal" href="#overview" id="id3">Overview</a></p></li>
+<li><p><a class="reference internal" href="#command-line-usage" id="id4">Command-line usage</a></p>
+<ul>
+<li><p><a class="reference internal" href="#Named Arguments" id="id5">Named Arguments</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#output-files" id="id6">Output files</a><ul>
-<li><a class="reference internal" href="#results-for-each-sample" id="id7">Results for each sample</a></li>
-<li><a class="reference internal" href="#summary-files" id="id8">Summary files</a></li>
+<li><p><a class="reference internal" href="#output-files" id="id6">Output files</a></p>
+<ul>
+<li><p><a class="reference internal" href="#results-for-each-sample" id="id7">Results for each sample</a></p></li>
+<li><p><a class="reference internal" href="#summary-files" id="id8">Summary files</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#memory-usage" id="id9">Memory usage</a></li>
+<li><p><a class="reference internal" href="#memory-usage" id="id9">Memory usage</a></p></li>
 </ul>
 </div>
 <div class="section" id="overview">
@@ -63,7 +62,8 @@ The result is the output for each individual run of <a class="reference internal
 </div>
 <div class="section" id="command-line-usage">
 <span id="batch-bcsubamp-commandlineusage"></span><h2><a class="toc-backref" href="#id4">Command-line usage</a><a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
-<p>Perform many runs of <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code> and plot results. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.4.10) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
+<p><p>Perform many runs of <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code> and plot results. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.4.12) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
+</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">dms2_batch_bcsubamp</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">outdir</span> <span class="n">OUTDIR</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">ncpus</span> <span class="n">NCPUS</span><span class="p">]</span>
                            <span class="p">[</span><span class="o">--</span><span class="n">use_existing</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span> <span class="o">--</span><span class="n">refseq</span> <span class="n">REFSEQ</span>
                            <span class="o">--</span><span class="n">alignspecs</span> <span class="n">ALIGNSPECS</span> <span class="p">[</span><span class="n">ALIGNSPECS</span> <span class="o">...</span><span class="p">]</span>
@@ -80,118 +80,100 @@ The result is the output for each individual run of <a class="reference internal
 </div>
 <div class="section" id="Named Arguments">
 <h3><a class="toc-backref" href="#id5">Named Arguments</a><a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h3>
-<table class="docutils option-list" frame="void" rules="none">
-<col class="option" />
-<col class="description" />
-<tbody valign="top">
-<tr><td class="option-group">
-<kbd>--outdir</kbd></td>
-<td>Output files to this directory (create if needed).</td></tr>
-<tr><td class="option-group">
-<kbd>--ncpus</kbd></td>
-<td><p class="first">Number of CPUs to use, -1 is all available.</p>
+<dl class="option-list">
+<dt><kbd>--outdir</kbd></dt>
+<dd><p>Output files to this directory (create if needed).</p>
+</dd>
+<dt><kbd>--ncpus</kbd></dt>
+<dd><p>Number of CPUs to use, -1 is all available.</p>
 <p>Default: -1</p>
-<p class="last">Multiple runs of <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code> can be performed in parallel on the different samples specified by <code class="docutils literal notranslate"><span class="pre">--batchfile</span></code>.
+<p>Multiple runs of <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code> can be performed in parallel on the different samples specified by <code class="docutils literal notranslate"><span class="pre">--batchfile</span></code>.
 This argument determines how many CPUs are used if running multiple jobs.</p>
-</td></tr>
-<tr><td class="option-group">
-<kbd>--use_existing</kbd></td>
-<td><p class="first">Possible choices: yes, no</p>
+</dd>
+<dt><kbd>--use_existing</kbd></dt>
+<dd><p>Possible choices: yes, no</p>
 <p>If files with names of expected output already exist, do not re-run.</p>
-<p class="last">Default: “no”</p>
-</td></tr>
-<tr><td class="option-group">
-<kbd>-v, --version</kbd></td>
-<td>show program’s version number and exit</td></tr>
-<tr><td class="option-group">
-<kbd>--refseq</kbd></td>
-<td>Align subamplicons to gene in this FASTA file.</td></tr>
-<tr><td class="option-group">
-<kbd>--alignspecs</kbd></td>
-<td>Subamplicon alignment positions as ‘REFSEQSTART,REFSEQEND,R1START,R2START’. REFSEQSTART is nt (1, 2, … numbering) in ‘refseq’ where nt R1START in R1 aligns. REFSEQEND is nt in ‘refseq’ where nt R2START in R2 aligns.’</td></tr>
-<tr><td class="option-group">
-<kbd>--bclen</kbd></td>
-<td><p class="first">Length of NNN… barcode at start of each read. Assumed to be same for R1 and R2, use <cite>–bclen2</cite> if this is not the case.</p>
-<p class="last">Default: 8</p>
-</td></tr>
-<tr><td class="option-group">
-<kbd>--fastqdir</kbd></td>
-<td>R1 and R2 files in this directory.</td></tr>
-<tr><td class="option-group">
-<kbd>--R2</kbd></td>
-<td>Read 2 (R2) FASTQ files assumed to have same names as R1 but with ‘_R1’ replaced by ‘_R2’. If that is not case, provide names here.</td></tr>
-<tr><td class="option-group">
-<kbd>--R1trim</kbd></td>
-<td>Trim R1 from 3’ end to this length. One value for all reads or values for each subamplicon in <code class="docutils literal notranslate"><span class="pre">--alignspecs</span></code>.</td></tr>
-<tr><td class="option-group">
-<kbd>--R2trim</kbd></td>
-<td>Like ‘–R1trim’, but for R2.</td></tr>
-<tr><td class="option-group">
-<kbd>--bclen2</kbd></td>
-<td>If R1 and R2 have different length barcodes, use <cite>–bclen</cite> for R1 length and <cite>–bclen2</cite> for R2 length.</td></tr>
-<tr><td class="option-group">
-<kbd>--chartype</kbd></td>
-<td><p class="first">Possible choices: codon</p>
+<p>Default: “no”</p>
+</dd>
+<dt><kbd>-v, --version</kbd></dt>
+<dd><p>show program’s version number and exit</p>
+</dd>
+<dt><kbd>--refseq</kbd></dt>
+<dd><p>Align subamplicons to gene in this FASTA file.</p>
+</dd>
+<dt><kbd>--alignspecs</kbd></dt>
+<dd><p>Subamplicon alignment positions as ‘REFSEQSTART,REFSEQEND,R1START,R2START’. REFSEQSTART is nt (1, 2, … numbering) in ‘refseq’ where nt R1START in R1 aligns. REFSEQEND is nt in ‘refseq’ where nt R2START in R2 aligns.’</p>
+</dd>
+<dt><kbd>--bclen</kbd></dt>
+<dd><p>Length of NNN… barcode at start of each read. Assumed to be same for R1 and R2, use <cite>–bclen2</cite> if this is not the case.</p>
+<p>Default: 8</p>
+</dd>
+<dt><kbd>--fastqdir</kbd></dt>
+<dd><p>R1 and R2 files in this directory.</p>
+</dd>
+<dt><kbd>--R2</kbd></dt>
+<dd><p>Read 2 (R2) FASTQ files assumed to have same names as R1 but with ‘_R1’ replaced by ‘_R2’. If that is not case, provide names here.</p>
+</dd>
+<dt><kbd>--R1trim</kbd></dt>
+<dd><p>Trim R1 from 3’ end to this length. One value for all reads or values for each subamplicon in <code class="docutils literal notranslate"><span class="pre">--alignspecs</span></code>.</p>
+</dd>
+<dt><kbd>--R2trim</kbd></dt>
+<dd><p>Like ‘–R1trim’, but for R2.</p>
+</dd>
+<dt><kbd>--bclen2</kbd></dt>
+<dd><p>If R1 and R2 have different length barcodes, use <cite>–bclen</cite> for R1 length and <cite>–bclen2</cite> for R2 length.</p>
+</dd>
+<dt><kbd>--chartype</kbd></dt>
+<dd><p>Possible choices: codon</p>
 <p>Character type for which we count mutations.</p>
-<p class="last">Default: “codon”</p>
-</td></tr>
-<tr><td class="option-group">
-<kbd>--maxmuts</kbd></td>
-<td><p class="first">Max allowed mismatches in alignment of subamplicon; mismatches counted in terms of character ‘–chartype’.</p>
-<p class="last">Default: 4</p>
-</td></tr>
-<tr><td class="option-group">
-<kbd>--minq</kbd></td>
-<td><p class="first">Only call nucleotides with Q score &gt;= this.</p>
-<p class="last">Default: 15</p>
-</td></tr>
-<tr><td class="option-group">
-<kbd>--minreads</kbd></td>
-<td><p class="first">Require this many reads in a barcode to agree to call consensus nucleotide identity.</p>
-<p class="last">Default: 2</p>
-</td></tr>
-<tr><td class="option-group">
-<kbd>--minfraccall</kbd></td>
-<td><p class="first">Retain only barcodes where trimmed consensus sequence for each read has &gt;= this frac sites called.</p>
-<p class="last">Default: 0.95</p>
-</td></tr>
-<tr><td class="option-group">
-<kbd>--minconcur</kbd></td>
-<td><p class="first">Only call consensus identity for barcode when &gt;= this fraction of reads concur.</p>
-<p class="last">Default: 0.75</p>
-</td></tr>
-<tr><td class="option-group">
-<kbd>--sitemask</kbd></td>
-<td>Use to only consider mutations at a subset of sites. Should be a CSV file with column named <cite>site</cite> listing all sites to include.</td></tr>
-<tr><td class="option-group">
-<kbd>--purgeread</kbd></td>
-<td><p class="first">Randomly purge read pairs with this probability to subsample data.</p>
-<p class="last">Default: 0</p>
-</td></tr>
-<tr><td class="option-group">
-<kbd>--purgebc</kbd></td>
-<td><p class="first">Randomly purge barcodes with this probability to subsample data.</p>
-<p class="last">Default: 0</p>
-</td></tr>
-<tr><td class="option-group">
-<kbd>--bcinfo</kbd></td>
-<td><p class="first">Create file with suffix ‘bcinfo.txt.gz’ with info about each barcode.</p>
-<p class="last">Default: False</p>
-</td></tr>
-<tr><td class="option-group">
-<kbd>--batchfile</kbd></td>
-<td>CSV file specifying each <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code> run. Must have these columns: <cite>name</cite>, <cite>R1</cite>. Can optionally have columns <cite>R1trim</cite> and <cite>R2trim</cite> with spaces delimiting subamplicon-specific trimming. If <cite>R1trim</cite> / <cite>R2trim</cite> in batch file, do <strong>not</strong> also give values for <code class="docutils literal notranslate"><span class="pre">--R1trim</span></code> and <code class="docutils literal notranslate"><span class="pre">--R2trim</span></code>. Other columns are ignored, so other <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code> args should be passed as separate command line args rather than in <code class="docutils literal notranslate"><span class="pre">--batchfile</span></code>.</td></tr>
-<tr><td class="option-group" colspan="2">
-<kbd>--summaryprefix</kbd></td>
-</tr>
-<tr><td>&#160;</td><td><p class="first">Prefix of output summary plots.</p>
-<p class="last">As detailed in <cite>Output files</cite> below, <code class="docutils literal notranslate"><span class="pre">dms2_batch_bcsubamp</span></code> creates a variety of plots summarizing the output.
+<p>Default: “codon”</p>
+</dd>
+<dt><kbd>--maxmuts</kbd></dt>
+<dd><p>Max allowed mismatches in alignment of subamplicon; mismatches counted in terms of character ‘–chartype’.</p>
+<p>Default: 4</p>
+</dd>
+<dt><kbd>--minq</kbd></dt>
+<dd><p>Only call nucleotides with Q score &gt;= this.</p>
+<p>Default: 15</p>
+</dd>
+<dt><kbd>--minreads</kbd></dt>
+<dd><p>Require this many reads in a barcode to agree to call consensus nucleotide identity.</p>
+<p>Default: 2</p>
+</dd>
+<dt><kbd>--minfraccall</kbd></dt>
+<dd><p>Retain only barcodes where trimmed consensus sequence for each read has &gt;= this frac sites called.</p>
+<p>Default: 0.95</p>
+</dd>
+<dt><kbd>--minconcur</kbd></dt>
+<dd><p>Only call consensus identity for barcode when &gt;= this fraction of reads concur.</p>
+<p>Default: 0.75</p>
+</dd>
+<dt><kbd>--sitemask</kbd></dt>
+<dd><p>Use to only consider mutations at a subset of sites. Should be a CSV file with column named <cite>site</cite> listing all sites to include.</p>
+</dd>
+<dt><kbd>--purgeread</kbd></dt>
+<dd><p>Randomly purge read pairs with this probability to subsample data.</p>
+<p>Default: 0</p>
+</dd>
+<dt><kbd>--purgebc</kbd></dt>
+<dd><p>Randomly purge barcodes with this probability to subsample data.</p>
+<p>Default: 0</p>
+</dd>
+<dt><kbd>--bcinfo</kbd></dt>
+<dd><p>Create file with suffix ‘bcinfo.txt.gz’ with info about each barcode.</p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>--batchfile</kbd></dt>
+<dd><p>CSV file specifying each <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code> run. Must have these columns: <cite>name</cite>, <cite>R1</cite>. Can optionally have columns <cite>R1trim</cite> and <cite>R2trim</cite> with spaces delimiting subamplicon-specific trimming. If <cite>R1trim</cite> / <cite>R2trim</cite> in batch file, do <strong>not</strong> also give values for <code class="docutils literal notranslate"><span class="pre">--R1trim</span></code> and <code class="docutils literal notranslate"><span class="pre">--R2trim</span></code>. Other columns are ignored, so other <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code> args should be passed as separate command line args rather than in <code class="docutils literal notranslate"><span class="pre">--batchfile</span></code>.</p>
+</dd>
+<dt><kbd>--summaryprefix</kbd></dt>
+<dd><p>Prefix of output summary plots.</p>
+<p>As detailed in <cite>Output files</cite> below, <code class="docutils literal notranslate"><span class="pre">dms2_batch_bcsubamp</span></code> creates a variety of plots summarizing the output.
 These files are in the directory specified by <code class="docutils literal notranslate"><span class="pre">--outdir</span></code>, and have the prefix specified here.
 This prefix should only contain letters, numbers, dashes, and spaces.
 Underscores are <strong>not</strong> allowed as they are a LaTex special character.</p>
-</td></tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </div>
 </div>
 <div class="section" id="output-files">
@@ -209,17 +191,17 @@ So for instance, if you run <code class="docutils literal notranslate"><span cla
 They will have the suffixes listed below:</p>
 <blockquote>
 <div><ul class="simple">
-<li><code class="docutils literal notranslate"><span class="pre">.log</span></code>: a text file that logs the progress of the program.</li>
-<li><code class="docutils literal notranslate"><span class="pre">_readstats.pdf</span></code>: plot of reads for each sample.</li>
-<li><code class="docutils literal notranslate"><span class="pre">_bcstats.pdf</span></code>: plot of barcodes for each sample.</li>
-<li><code class="docutils literal notranslate"><span class="pre">_readsperbc.pdf</span></code>: plot of distribution of the number of reads per-barcode for each sample.</li>
-<li><code class="docutils literal notranslate"><span class="pre">_depth.pdf</span></code>: plot of number of counts called at each site for each sample.</li>
-<li><code class="docutils literal notranslate"><span class="pre">_mutfreq.pdf</span></code>: plot of mutation frequency at each site for each sample.</li>
-<li><code class="docutils literal notranslate"><span class="pre">_codonmuttypes.pdf</span></code>: plot of average frequency of different types of codon mutations.</li>
-<li><code class="docutils literal notranslate"><span class="pre">_codonmuttypes.csv</span></code>: numerical data in <code class="docutils literal notranslate"><span class="pre">_codonmuttypes.pdf</span></code>.</li>
-<li><code class="docutils literal notranslate"><span class="pre">_codnntchanges.pdf</span></code>: plot of average frequency of codon mutations with different numbers of nucleotide changes.</li>
-<li><code class="docutils literal notranslate"><span class="pre">_singlentchanges.pdf</span></code>: plot frequencies of different types of nucleotide mutations among codons with just one nucleotide change.</li>
-<li><code class="docutils literal notranslate"><span class="pre">_cumulmutcounts.pdf</span></code>: plot fraction of mutations that occur <span class="math notranslate nohighlight">\(\leq\)</span> a given number of times.</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.log</span></code>: a text file that logs the progress of the program.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_readstats.pdf</span></code>: plot of reads for each sample.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_bcstats.pdf</span></code>: plot of barcodes for each sample.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_readsperbc.pdf</span></code>: plot of distribution of the number of reads per-barcode for each sample.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_depth.pdf</span></code>: plot of number of counts called at each site for each sample.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_mutfreq.pdf</span></code>: plot of mutation frequency at each site for each sample.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_codonmuttypes.pdf</span></code>: plot of average frequency of different types of codon mutations.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_codonmuttypes.csv</span></code>: numerical data in <code class="docutils literal notranslate"><span class="pre">_codonmuttypes.pdf</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_codnntchanges.pdf</span></code>: plot of average frequency of codon mutations with different numbers of nucleotide changes.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_singlentchanges.pdf</span></code>: plot frequencies of different types of nucleotide mutations among codons with just one nucleotide change.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_cumulmutcounts.pdf</span></code>: plot fraction of mutations that occur <span class="math notranslate nohighlight">\(\leq\)</span> a given number of times.</p></li>
 </ul>
 </div></blockquote>
 <p>Examples and more detailed explanations of these plots can be found in the <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/blob/master/examples/Doud2016/analysis_notebook.ipynb">Doud2016 example</a>.</p>
@@ -234,7 +216,6 @@ So obviously running it multiple times in parallel with <code class="docutils li
 
 
           </div>
-          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -267,7 +248,7 @@ So obviously running it multiple times in parallel with <code class="docutils li
     
 
 <p>
-<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -317,20 +298,10 @@ So obviously running it multiple times in parallel with <code class="docutils li
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
         </div>
       </div>
       <div class="clearer"></div>
@@ -339,8 +310,8 @@ So obviously running it multiple times in parallel with <code class="docutils li
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
       <a href="_sources/dms2_batch_bcsubamp.rst.txt"
