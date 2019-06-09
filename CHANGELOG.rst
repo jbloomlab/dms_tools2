@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.4.13
+------
+* Added option for single-color logoplots for `dms2_logoplot`
+
 2.4.12
 ---------
 * Makes sample names a category to preserve order in `plot.plotCodonMutTypes`.
