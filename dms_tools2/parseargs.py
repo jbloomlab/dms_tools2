@@ -539,13 +539,15 @@ def logoplotParser():
             'before plotting.')
 
     parser.add_argument('--mapmetric', default='functionalgroup', choices=[
-            'kd', 'mw', 'charge', 'functionalgroup'], help='Color amino acids '
+            'kd', 'mw', 'charge', 'functionalgroup', 'singlecolor'],
+            help='Color amino acids '
             'by Kyte-Doolittle hydrophobicity, molecular weight, charge, '
             'or functional group.')
 
     parser.add_argument('--colormap', default='jet', help="`matplotlib "
             "color map <http://matplotlib.org/users/colormaps.html>`_ for"
-            " amino acids when `--mapmetric` is 'kd' or 'mw'.")
+            " amino acids when `--mapmetric` is 'kd' or 'mw'; name of "
+            "single color when it is 'singlecolor'.")
 
     parser.add_argument('--overlay1', nargs=3,
             metavar=('FILE', 'SHORTNAME', 'LONGNAME'),

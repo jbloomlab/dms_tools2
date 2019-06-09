@@ -63,7 +63,7 @@ setup(
         'pystan==2.16', # fails with 2.17
         'scipy>=1.0,<1.3',
         'seaborn>=0.8',
-        'phydms>=2.1.4',
+        'phydms>=2.3.2',
         'statsmodels>=0.8',
         'regex>=2.4.153',
         'packaging',
