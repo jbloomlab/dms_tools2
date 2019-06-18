@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.4.14
+-------
+* Allow non-integer `--letterheight` for `dms2_logoplot`
+
 2.4.13
 ------
 * Added option for single-color logoplots for `dms2_logoplot`
