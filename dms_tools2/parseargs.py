@@ -582,7 +582,7 @@ def logoplotParser():
             "color map <http://matplotlib.org/users/colormaps.html>`_ for"
             " overlay bars (e.g., 'jet' or 'YlOrRd').")
 
-    parser.add_argument('--letterheight', type=int, default=1,
+    parser.add_argument('--letterheight', type=float, default=1,
             help="Relative height of letter stacks in logo plot.")
 
     parser.add_argument('--ignore_extracols', default='no',
