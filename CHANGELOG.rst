@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.4.15
+---------
+* Relax dependency requirements for `pysam`
+
 2.4.14
 -------
 * Allow non-integer `--letterheight` for `dms2_logoplot`
