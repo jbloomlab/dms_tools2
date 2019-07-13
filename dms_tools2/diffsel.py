@@ -6,6 +6,7 @@ diffsel
 Performs operations related to estimating differential selection.
 """
 
+import math
 import os
 import io
 import tempfile
@@ -13,7 +14,203 @@ import tempfile
 import natsort
 import numpy
 import pandas
+import scipy.stats
 from dms_tools2 import CODONS, CODON_TO_AA
+
+
+def beta_diversity(tidy_df, *, samplecol, sitecol, valcol,
+                   index, dropdups=True):
+    """Computes beta diversity of selection across sites.
+
+    Args:
+        `tidy_df` (pandas DataFrame)
+            Tidy data frame with selection values.
+        `samplecol` (str)
+            Column in `tidy_df` giving different samples.
+        `sitecol` (str)
+            Column in `tidy_df` giving sites.
+        `valcol` (str)
+            Column in `tidy_df` giving value (e.g., 'positive_diffsel')
+        `index` {'shannon', 'simpson'}
+            Type of diversity index to use.
+        `dropdups` (bool)
+            If duplicate columns for a site, drop them? Otherwise error.
+
+    Returns:
+        For each sample, the diversity is calculated by examining the
+        total fraction of selection (as defined in `valcol`) allocated
+        to each site (as defined in `sitecol`) and considering that to
+        represent the weighted "species" abundance. Alpha and gamma diversity
+        are then calculated using the indicated index as in Jost,
+        "Partitioning diversity into independent alpha and beta components"
+        (https://pdfs.semanticscholar.org/88c4/67e65b42eff088d19354632f41df6ca5804d.pdf).
+        The beta diversity is the ratio of gamma to alpha diversity:
+        larger values indicate the samples are more diverse in sites of selection.
+
+    As an example, first create a data frame for three samples.
+    Sample `a` is similar to `b`, but both are quite different from `c`:
+
+    >>> a_df = pandas.DataFrame({
+    ...     'sample': 'a',
+    ...     'site': [1, 2, 3, 4],
+    ...     'positive_diffsel': [0.2, 5.1, 0.2, 0.3]})
+    >>> b_df = pandas.DataFrame({
+    ...     'sample': 'b',
+    ...     'site': [1, 2, 3, 4],
+    ...     'positive_diffsel': [0.3, 4.2, 0.2, 0.3]})
+    >>> c_df = pandas.DataFrame({
+    ...     'sample': 'c',
+    ...     'site': [1, 2, 3, 4],
+    ...     'positive_diffsel': [0.3, 0.2, 0.2, 4.3]})
+    >>> tidy_df = pandas.concat([a_df, b_df, c_df], ignore_index=True)
+    >>> tidy_df
+       sample  site  positive_diffsel
+    0       a     1               0.2
+    1       a     2               5.1
+    2       a     3               0.2
+    3       a     4               0.3
+    4       b     1               0.3
+    5       b     2               4.2
+    6       b     3               0.2
+    7       b     4               0.3
+    8       c     1               0.3
+    9       c     2               0.2
+    10      c     3               0.2
+    11      c     4               4.3
+
+    Calculate beta diversity of all three samples using Shannon index.
+    The value is relatively high because sample `c` is a lot different
+    than `a` and `b`:
+
+    >>> round(beta_diversity(tidy_df,
+    ...                      samplecol='sample',
+    ...                      sitecol='site',
+    ...                      valcol='positive_diffsel',
+    ...                      index='shannon'),
+    ...       4)
+    1.4914
+
+    If we repeat the same using the Simpson index we get a higher
+    diversity because the large-selection sites (which are up-weighted by
+    Simpson index relative to Shannon) are diferent between `c` and `a` / `b`:
+
+    >>> round(beta_diversity(tidy_df,
+    ...                      samplecol='sample',
+    ...                      sitecol='site',
+    ...                      valcol='positive_diffsel',
+    ...                      index='simpson'),
+    ...       4)
+    1.6478
+
+    If we calculate the beta diversity of just samples `a` and `b`, we
+    get a smaller value because those samples are quite similar:
+
+    >>> round(beta_diversity(tidy_df.query('sample in ["a", "b"]'),
+    ...                      samplecol='sample',
+    ...                      sitecol='site',
+    ...                      valcol='positive_diffsel',
+    ...                      index='shannon'),
+    ...       4)
+    1.0022
+
+    Here the Simpson index gives lower diversity than the Shannon since
+    `a` and `b` share the largest selection site:
+
+    >>> round(beta_diversity(tidy_df.query('sample in ["a", "b"]'),
+    ...                      samplecol='sample',
+    ...                      sitecol='site',
+    ...                      valcol='positive_diffsel',
+    ...                      index='simpson'),
+    ...       4)
+    1.0008
+
+    And of course the beta diversity of two identical samples is one:
+
+    >>> round(beta_diversity(pandas.concat([a_df, a_df.assign(sample='a2')]),
+    ...                      samplecol='sample',
+    ...                      sitecol='site',
+    ...                      valcol='positive_diffsel',
+    ...                      index='shannon'),
+    ...       4)
+    1.0
+    >>> round(beta_diversity(pandas.concat([a_df, a_df.assign(sample='a2')]),
+    ...                      samplecol='sample',
+    ...                      sitecol='site',
+    ...                      valcol='positive_diffsel',
+    ...                      index='simpson'),
+    ...       4)
+    1.0
+
+    """
+    cols = [samplecol, sitecol, valcol]
+    if set(cols) > set(tidy_df.columns):
+        raise ValueError(f"`tidy_df` lacks required columns: {cols}")
+    if len(tidy_df[samplecol].unique()) < 2:
+        raise ValueError('`tidy_df` must have at least two unique samples')
+    df = (tidy_df
+          [cols]
+          .drop_duplicates()
+          )
+    if (len(df) != len(tidy_df)) and not dropdups:
+        raise ValueError(f"`tidy_df` has duplicate entries in columns: {cols}")
+    sites = set(df[sitecol].unique())
+    if any(set(idf[sitecol]) != sites for _, idf in df.groupby(samplecol)):
+        raise ValueError('not same set of sites for all samples in `tidy_df`')
+    if any(len(sites) != len(idf[sitecol]) for _, idf in df.groupby(samplecol)):
+        raise ValueError('duplicate sites for a sample in `tidy_df`.')
+
+    if 'normval' in cols:
+        raise ValueError('`tidy_df` cannot have column named "normval"')
+    df = (df
+          .assign(normval=lambda x: (x[valcol] /
+                                     (x.groupby(samplecol)
+                                      [valcol]
+                                      .transform('sum')
+                                      )
+                                     )
+                  )
+          [[samplecol, sitecol, 'normval']]
+          )
+
+    if index == 'shannon':
+        gamma_diversity = math.exp(scipy.stats.entropy(
+            df
+            .groupby(sitecol)
+            .aggregate({'normval': 'mean'})
+            ['normval']
+            ))
+        alpha_diversity = math.exp(
+            df
+            .groupby(samplecol)
+            ['normval']
+            .apply(scipy.stats.entropy)
+            .reset_index()
+            ['normval']
+            .mean()
+            )
+    elif index == 'simpson':
+        gamma_diversity = 1 / (
+            df
+            .groupby(sitecol)
+            .aggregate({'normval': 'mean'})
+            .assign(normval=lambda x: x['normval']**2)
+            ['normval']
+            .sum()
+            )
+        alpha_diversity = 1 / (
+            df
+            .assign(normval=lambda x: x['normval']**2)
+            .groupby(samplecol)
+            ['normval']
+            .aggregate('sum')
+            .reset_index()
+            ['normval']
+            .mean()
+            )
+    else:
+        raise ValueError(f"invalid `index` of {index}")
+
+    return gamma_diversity / alpha_diversity
 
 
 def tidyToWide(tidy_df, valuecol):

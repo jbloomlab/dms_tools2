@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.4.16
+------
+* Added `diffsel.beta_diversity`
+
 2.4.15
 ---------
 * Relax dependency requirements for `pysam`
