@@ -1,4 +1,4 @@
 .. automodule:: dms_tools2.fracsurvive
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

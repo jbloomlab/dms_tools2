@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>prefs &#8212; dms_tools2 2.4.13 documentation</title>
+    <title>prefs &#8212; dms_tools2 2.4.16 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -29,6 +29,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.prefs"></span><div class="section" id="prefs">
@@ -39,13 +41,13 @@ preferences.</p>
 to perform MCMC for Bayesian inferences.</p>
 <dl class="data">
 <dt id="dms_tools2.prefs.PRIOR_MIN_VALUE">
-<code class="descclassname">dms_tools2.prefs.</code><code class="descname">PRIOR_MIN_VALUE</code><em class="property"> = 1e-07</em><a class="headerlink" href="#dms_tools2.prefs.PRIOR_MIN_VALUE" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.prefs.</code><code class="sig-name descname">PRIOR_MIN_VALUE</code><em class="property"> = 1e-07</em><a class="headerlink" href="#dms_tools2.prefs.PRIOR_MIN_VALUE" title="Permalink to this definition">¶</a></dt>
 <dd><p>minimum value for Dirichlet prior elements</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="dms_tools2.prefs.StanModelDifferentErr">
-<em class="property">class </em><code class="descclassname">dms_tools2.prefs.</code><code class="descname">StanModelDifferentErr</code><span class="sig-paren">(</span><em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#StanModelDifferentErr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.StanModelDifferentErr" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">dms_tools2.prefs.</code><code class="sig-name descname">StanModelDifferentErr</code><span class="sig-paren">(</span><em class="sig-param">verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#StanModelDifferentErr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.StanModelDifferentErr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">pystan</span></code> model when <cite>error_model</cite> is <cite>different</cite>.</p>
 <p>For use by inferSitePrefs`.</p>
@@ -53,7 +55,7 @@ to perform MCMC for Bayesian inferences.</p>
 
 <dl class="class">
 <dt id="dms_tools2.prefs.StanModelNoneErr">
-<em class="property">class </em><code class="descclassname">dms_tools2.prefs.</code><code class="descname">StanModelNoneErr</code><span class="sig-paren">(</span><em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#StanModelNoneErr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.StanModelNoneErr" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">dms_tools2.prefs.</code><code class="sig-name descname">StanModelNoneErr</code><span class="sig-paren">(</span><em class="sig-param">verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#StanModelNoneErr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.StanModelNoneErr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">pystan</span></code> model when <cite>error_model</cite> is <cite>none</cite>.</p>
 <p>For use by inferSitePrefs`.</p>
@@ -61,7 +63,7 @@ to perform MCMC for Bayesian inferences.</p>
 
 <dl class="class">
 <dt id="dms_tools2.prefs.StanModelSameErr">
-<em class="property">class </em><code class="descclassname">dms_tools2.prefs.</code><code class="descname">StanModelSameErr</code><span class="sig-paren">(</span><em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#StanModelSameErr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.StanModelSameErr" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">dms_tools2.prefs.</code><code class="sig-name descname">StanModelSameErr</code><span class="sig-paren">(</span><em class="sig-param">verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#StanModelSameErr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.StanModelSameErr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">pystan</span></code> model when <cite>error_model</cite> is <cite>same</cite>.</p>
 <p>For use by inferSitePrefs`.</p>
@@ -69,7 +71,7 @@ to perform MCMC for Bayesian inferences.</p>
 
 <dl class="function">
 <dt id="dms_tools2.prefs.aafreqsFromAlignment">
-<code class="descclassname">dms_tools2.prefs.</code><code class="descname">aafreqsFromAlignment</code><span class="sig-paren">(</span><em>alignmentfile</em>, <em>codon_to_aa</em>, <em>ignore_gaps=True</em>, <em>ignore_stop=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#aafreqsFromAlignment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.aafreqsFromAlignment" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.prefs.</code><code class="sig-name descname">aafreqsFromAlignment</code><span class="sig-paren">(</span><em class="sig-param">alignmentfile</em>, <em class="sig-param">codon_to_aa</em>, <em class="sig-param">ignore_gaps=True</em>, <em class="sig-param">ignore_stop=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#aafreqsFromAlignment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.aafreqsFromAlignment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get amino-acid frequencies at each site in alignment.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><dl class="simple">
@@ -114,7 +116,7 @@ giving frequencies in alignment.</p>
 
 <dl class="function">
 <dt id="dms_tools2.prefs.avgPrefs">
-<code class="descclassname">dms_tools2.prefs.</code><code class="descname">avgPrefs</code><span class="sig-paren">(</span><em>prefsfiles</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#avgPrefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.avgPrefs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.prefs.</code><code class="sig-name descname">avgPrefs</code><span class="sig-paren">(</span><em class="sig-param">prefsfiles</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#avgPrefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.avgPrefs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets average of site-specific preferences.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><dl class="simple">
@@ -156,7 +158,7 @@ data frame, <cite>site</cite> is the index</p>
 
 <dl class="function">
 <dt id="dms_tools2.prefs.inferPrefsByRatio">
-<code class="descclassname">dms_tools2.prefs.</code><code class="descname">inferPrefsByRatio</code><span class="sig-paren">(</span><em>charlist</em>, <em>sites</em>, <em>wts</em>, <em>pre</em>, <em>post</em>, <em>errpre</em>, <em>errpost</em>, <em>pseudocount</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#inferPrefsByRatio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.inferPrefsByRatio" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.prefs.</code><code class="sig-name descname">inferPrefsByRatio</code><span class="sig-paren">(</span><em class="sig-param">charlist</em>, <em class="sig-param">sites</em>, <em class="sig-param">wts</em>, <em class="sig-param">pre</em>, <em class="sig-param">post</em>, <em class="sig-param">errpre</em>, <em class="sig-param">errpost</em>, <em class="sig-param">pseudocount</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#inferPrefsByRatio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.inferPrefsByRatio" title="Permalink to this definition">¶</a></dt>
 <dd><p>Site-specific preferences from normalized enrichment ratios.</p>
 <p>Calculates site-specific preference <span class="math notranslate nohighlight">\(\pi_{r,a}\)</span> of each
 site <span class="math notranslate nohighlight">\(r\)</span> for each character <span class="math notranslate nohighlight">\(a\)</span> using re-normalized
@@ -265,7 +267,7 @@ for that character.</p>
 
 <dl class="function">
 <dt id="dms_tools2.prefs.inferSitePrefs">
-<code class="descclassname">dms_tools2.prefs.</code><code class="descname">inferSitePrefs</code><span class="sig-paren">(</span><em>charlist</em>, <em>wtchar</em>, <em>error_model</em>, <em>counts</em>, <em>priors</em>, <em>seed=1</em>, <em>niter=10000</em>, <em>increasetries=5</em>, <em>n_jobs=1</em>, <em>r_max=1.1</em>, <em>neff_min=100</em>, <em>nchains=4</em>, <em>increasefac=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#inferSitePrefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.inferSitePrefs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.prefs.</code><code class="sig-name descname">inferSitePrefs</code><span class="sig-paren">(</span><em class="sig-param">charlist</em>, <em class="sig-param">wtchar</em>, <em class="sig-param">error_model</em>, <em class="sig-param">counts</em>, <em class="sig-param">priors</em>, <em class="sig-param">seed=1</em>, <em class="sig-param">niter=10000</em>, <em class="sig-param">increasetries=5</em>, <em class="sig-param">n_jobs=1</em>, <em class="sig-param">r_max=1.1</em>, <em class="sig-param">neff_min=100</em>, <em class="sig-param">nchains=4</em>, <em class="sig-param">increasefac=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#inferSitePrefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.inferSitePrefs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Infers site-specific preferences by MCMC for a specific site.</p>
 <p>Infer the site-specific preferences <span class="math notranslate nohighlight">\(\pi_{r,a}\)</span> for some site
 <span class="math notranslate nohighlight">\(r\)</span> for each character <span class="math notranslate nohighlight">\(a\)</span> by integrating over the 
@@ -383,7 +385,7 @@ R to be <cite>1 + 1.5 (r_max - 1)</cite>.</p>
 
 <dl class="function">
 <dt id="dms_tools2.prefs.prefsEntropy">
-<code class="descclassname">dms_tools2.prefs.</code><code class="descname">prefsEntropy</code><span class="sig-paren">(</span><em>prefs</em>, <em>charlist</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#prefsEntropy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.prefsEntropy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.prefs.</code><code class="sig-name descname">prefsEntropy</code><span class="sig-paren">(</span><em class="sig-param">prefs</em>, <em class="sig-param">charlist</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#prefsEntropy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.prefsEntropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate site entropy and number of effective characters.</p>
 <p>The site entropy <span class="math notranslate nohighlight">\(h_r\)</span> for site <span class="math notranslate nohighlight">\(r\)</span> is defined as
 <span class="math notranslate nohighlight">\(h_r = -\sum_{x} \pi_{r,x} \log\left(\pi_{r,x}\right)\)</span>
@@ -432,7 +434,7 @@ the entropies, log is taken to base <span class="math notranslate nohighlight">\
 
 <dl class="function">
 <dt id="dms_tools2.prefs.prefsToMutEffects">
-<code class="descclassname">dms_tools2.prefs.</code><code class="descname">prefsToMutEffects</code><span class="sig-paren">(</span><em>prefs</em>, <em>charlist</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#prefsToMutEffects"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.prefsToMutEffects" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.prefs.</code><code class="sig-name descname">prefsToMutEffects</code><span class="sig-paren">(</span><em class="sig-param">prefs</em>, <em class="sig-param">charlist</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#prefsToMutEffects"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.prefsToMutEffects" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts amino acid preferences to effects of specific mutations.</p>
 <p>If the preference of site <span class="math notranslate nohighlight">\(r\)</span> for amino acid <span class="math notranslate nohighlight">\(a\)</span> is
 <span class="math notranslate nohighlight">\(\pi_{r,a}\)</span>, then the estimated effect (e.g., ratio of
@@ -490,7 +492,7 @@ a column for every character in <cite>charlist</cite>.</p>
 
 <dl class="function">
 <dt id="dms_tools2.prefs.prefsToMutFromWtEffects">
-<code class="descclassname">dms_tools2.prefs.</code><code class="descname">prefsToMutFromWtEffects</code><span class="sig-paren">(</span><em>prefs</em>, <em>charlist</em>, <em>wts</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#prefsToMutFromWtEffects"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.prefsToMutFromWtEffects" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.prefs.</code><code class="sig-name descname">prefsToMutFromWtEffects</code><span class="sig-paren">(</span><em class="sig-param">prefs</em>, <em class="sig-param">charlist</em>, <em class="sig-param">wts</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#prefsToMutFromWtEffects"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.prefsToMutFromWtEffects" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts preferences effects of mutations away from wildtype.</p>
 <p>This function is similar to <a class="reference internal" href="#dms_tools2.prefs.prefsToMutEffects" title="dms_tools2.prefs.prefsToMutEffects"><code class="xref py py-func docutils literal notranslate"><span class="pre">prefsToMutEffects()</span></code></a> but
 computes the effects of mutations away from a given wildtype
@@ -540,7 +542,7 @@ rather than “initial” and “final”.</p>
 
 <dl class="function">
 <dt id="dms_tools2.prefs.rescalePrefs">
-<code class="descclassname">dms_tools2.prefs.</code><code class="descname">rescalePrefs</code><span class="sig-paren">(</span><em>prefs</em>, <em>stringency</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#rescalePrefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.rescalePrefs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.prefs.</code><code class="sig-name descname">rescalePrefs</code><span class="sig-paren">(</span><em class="sig-param">prefs</em>, <em class="sig-param">stringency</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/prefs.html#rescalePrefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.prefs.rescalePrefs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Re-scale amino acid preferences by stringency parameter.</p>
 <p>If the initial preference of site <span class="math notranslate nohighlight">\(r\)</span> for amino-acid 
 <span class="math notranslate nohighlight">\(a\)</span> is <span class="math notranslate nohighlight">\(\pi_{r,a}\)</span>, then the re-scaled preference is</p>
@@ -584,6 +586,7 @@ re-scaled preferences.</p>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -616,7 +619,7 @@ re-scaled preferences.</p>
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -655,15 +658,23 @@ re-scaled preferences.</p>
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -672,8 +683,8 @@ re-scaled preferences.</p>
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/dms_tools2.prefs.rst.txt"

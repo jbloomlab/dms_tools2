@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>neutcurve &#8212; dms_tools2 2.4.13 documentation</title>
+    <title>neutcurve &#8212; dms_tools2 2.4.16 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -29,6 +29,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.neutcurve"></span><div class="section" id="neutcurve">
@@ -36,7 +38,7 @@
 <p>Module for fitting neutralization curves.</p>
 <dl class="function">
 <dt id="dms_tools2.neutcurve.fit_fourParamLogistics">
-<code class="descclassname">dms_tools2.neutcurve.</code><code class="descname">fit_fourParamLogistics</code><span class="sig-paren">(</span><em>neutdata</em>, <em>plotfile</em>, <em>fixbottom=False</em>, <em>fixtop=1</em>, <em>xlabel='antibody concentration'</em>, <em>ylabel='fraction surviving'</em>, <em>maxcol=3</em>, <em>ic50_in_name=True</em>, <em>nfitpoints=100</em>, <em>cextend=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/neutcurve.html#fit_fourParamLogistics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.neutcurve.fit_fourParamLogistics" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.neutcurve.</code><code class="sig-name descname">fit_fourParamLogistics</code><span class="sig-paren">(</span><em class="sig-param">neutdata</em>, <em class="sig-param">plotfile</em>, <em class="sig-param">fixbottom=False</em>, <em class="sig-param">fixtop=1</em>, <em class="sig-param">xlabel='antibody concentration'</em>, <em class="sig-param">ylabel='fraction surviving'</em>, <em class="sig-param">maxcol=3</em>, <em class="sig-param">ic50_in_name=True</em>, <em class="sig-param">nfitpoints=100</em>, <em class="sig-param">cextend=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/neutcurve.html#fit_fourParamLogistics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.neutcurve.fit_fourParamLogistics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fits and plots set of neutralization curves.</p>
 <p>Fits a set of 4-parameter logistic neutralization curves
 as defined by <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic" title="dms_tools2.neutcurve.fourParamLogistic"><code class="xref py py-class docutils literal notranslate"><span class="pre">fourParamLogistic</span></code></a>. Then makes a faceted
@@ -109,7 +111,7 @@ the returned <a class="reference internal" href="#dms_tools2.neutcurve.fourParam
 
 <dl class="class">
 <dt id="dms_tools2.neutcurve.fourParamLogistic">
-<em class="property">class </em><code class="descclassname">dms_tools2.neutcurve.</code><code class="descname">fourParamLogistic</code><span class="sig-paren">(</span><em>cs</em>, <em>fs</em>, <em>fixbottom=False</em>, <em>fixtop=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/neutcurve.html#fourParamLogistic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.neutcurve.fourParamLogistic" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">dms_tools2.neutcurve.</code><code class="sig-name descname">fourParamLogistic</code><span class="sig-paren">(</span><em class="sig-param">cs</em>, <em class="sig-param">fs</em>, <em class="sig-param">fixbottom=False</em>, <em class="sig-param">fixtop=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/neutcurve.html#fourParamLogistic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.neutcurve.fourParamLogistic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A fitted 4-parameter logistic neutralization curve.</p>
 <p>Fits <span class="math notranslate nohighlight">\(f(c) = b + \frac{t - b}{1 + (c/m)^s}\)</span>
@@ -261,21 +263,21 @@ the curve:</p>
 <span class="go">&#39;$&gt;0.00064$&#39;</span>
 </pre></div>
 </div>
-<dl class="staticmethod">
+<dl class="method">
 <dt id="dms_tools2.neutcurve.fourParamLogistic.evaluate">
-<em class="property">static </em><code class="descname">evaluate</code><span class="sig-paren">(</span><em>c</em>, <em>m</em>, <em>s</em>, <em>b</em>, <em>t</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/neutcurve.html#fourParamLogistic.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.neutcurve.fourParamLogistic.evaluate" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param">c</em>, <em class="sig-param">m</em>, <em class="sig-param">s</em>, <em class="sig-param">b</em>, <em class="sig-param">t</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/neutcurve.html#fourParamLogistic.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.neutcurve.fourParamLogistic.evaluate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <span class="math notranslate nohighlight">\(f(c) = b + \frac{t - b}{1 + (c/m)^s}\)</span>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="dms_tools2.neutcurve.fourParamLogistic.fracsurvive">
-<code class="descname">fracsurvive</code><span class="sig-paren">(</span><em>c</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/neutcurve.html#fourParamLogistic.fracsurvive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.neutcurve.fourParamLogistic.fracsurvive" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">fracsurvive</code><span class="sig-paren">(</span><em class="sig-param">c</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/neutcurve.html#fourParamLogistic.fracsurvive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.neutcurve.fourParamLogistic.fracsurvive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fraction surviving at <cite>c</cite> for fitted parameters.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="dms_tools2.neutcurve.fourParamLogistic.ic50">
-<code class="descname">ic50</code><span class="sig-paren">(</span><em>extrapolate=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/neutcurve.html#fourParamLogistic.ic50"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.neutcurve.fourParamLogistic.ic50" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">ic50</code><span class="sig-paren">(</span><em class="sig-param">extrapolate=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/neutcurve.html#fourParamLogistic.ic50"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.neutcurve.fourParamLogistic.ic50" title="Permalink to this definition">¶</a></dt>
 <dd><p>IC50 value.</p>
 <p>Concentration where <cite>fracsurvive</cite> is 0.5. Equals
 <cite>midpoint</cite> if and only if <cite>top = 1</cite> and <cite>bottom = 0</cite>.</p>
@@ -303,7 +305,7 @@ which solves to
 
 <dl class="method">
 <dt id="dms_tools2.neutcurve.fourParamLogistic.ic50_str">
-<code class="descname">ic50_str</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/neutcurve.html#fourParamLogistic.ic50_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.neutcurve.fourParamLogistic.ic50_str" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">ic50_str</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/neutcurve.html#fourParamLogistic.ic50_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.neutcurve.fourParamLogistic.ic50_str" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns string containing IC50.</p>
 <p>Unlike <a class="reference internal" href="#dms_tools2.neutcurve.fourParamLogistic.ic50" title="dms_tools2.neutcurve.fourParamLogistic.ic50"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ic50()</span></code></a>, it returns a string.
 This is useful because the string will indicate
@@ -313,7 +315,7 @@ range of fitted data, such as by being: <cite>&gt; 0.5</cite>.</p>
 
 <dl class="method">
 <dt id="dms_tools2.neutcurve.fourParamLogistic.plot">
-<code class="descname">plot</code><span class="sig-paren">(</span><em>plotfile</em>, <em>samplename</em>, <em>ic50_in_name=True</em>, <em>xlabel='antibody concentration'</em>, <em>ylabel='fraction surviving'</em>, <em>nfitpoints=100</em>, <em>cextend=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/neutcurve.html#fourParamLogistic.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.neutcurve.fourParamLogistic.plot" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">plotfile</em>, <em class="sig-param">samplename</em>, <em class="sig-param">ic50_in_name=True</em>, <em class="sig-param">xlabel='antibody concentration'</em>, <em class="sig-param">ylabel='fraction surviving'</em>, <em class="sig-param">nfitpoints=100</em>, <em class="sig-param">cextend=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/neutcurve.html#fourParamLogistic.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.neutcurve.fourParamLogistic.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots neutralization points and fitted curve.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><dl class="simple">
@@ -344,6 +346,7 @@ for fitting.</p>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -376,7 +379,7 @@ for fitting.</p>
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -415,15 +418,23 @@ for fitting.</p>
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -432,8 +443,8 @@ for fitting.</p>
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/dms_tools2.neutcurve.rst.txt"

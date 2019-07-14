@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>barcodes &#8212; dms_tools2 2.4.13 documentation</title>
+    <title>barcodes &#8212; dms_tools2 2.4.16 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -29,6 +29,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.barcodes"></span><div class="section" id="barcodes">
@@ -36,7 +38,7 @@
 <p>Operations for sequence barcodes and UMIs.</p>
 <dl class="class">
 <dt id="dms_tools2.barcodes.IlluminaBarcodeParser">
-<em class="property">class </em><code class="descclassname">dms_tools2.barcodes.</code><code class="descname">IlluminaBarcodeParser</code><span class="sig-paren">(</span><em>*</em>, <em>bclen=None</em>, <em>upstream=''</em>, <em>downstream=''</em>, <em>upstream_mismatch=0</em>, <em>downstream_mismatch=0</em>, <em>valid_barcodes=None</em>, <em>rc_barcode=True</em>, <em>minq=20</em>, <em>chastity_filter=True</em>, <em>list_all_valid_barcodes=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#IlluminaBarcodeParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.IlluminaBarcodeParser" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">dms_tools2.barcodes.</code><code class="sig-name descname">IlluminaBarcodeParser</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">bclen=None</em>, <em class="sig-param">upstream=''</em>, <em class="sig-param">downstream=''</em>, <em class="sig-param">upstream_mismatch=0</em>, <em class="sig-param">downstream_mismatch=0</em>, <em class="sig-param">valid_barcodes=None</em>, <em class="sig-param">rc_barcode=True</em>, <em class="sig-param">minq=20</em>, <em class="sig-param">chastity_filter=True</em>, <em class="sig-param">list_all_valid_barcodes=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#IlluminaBarcodeParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.IlluminaBarcodeParser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Parser for Illumina barcodes.</p>
 <p>The barcodes should be read by R1 and optionally R2.
@@ -303,13 +305,13 @@ barcode whitelist:</p>
 </div>
 <dl class="attribute">
 <dt id="dms_tools2.barcodes.IlluminaBarcodeParser.VALID_NTS">
-<code class="descname">VALID_NTS</code><em class="property"> = 'ACGTN'</em><a class="headerlink" href="#dms_tools2.barcodes.IlluminaBarcodeParser.VALID_NTS" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">VALID_NTS</code><em class="property"> = 'ACGTN'</em><a class="headerlink" href="#dms_tools2.barcodes.IlluminaBarcodeParser.VALID_NTS" title="Permalink to this definition">¶</a></dt>
 <dd><p>valid nucleotide characters</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="dms_tools2.barcodes.IlluminaBarcodeParser.parse">
-<code class="descname">parse</code><span class="sig-paren">(</span><em>r1files</em>, <em>r2files=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#IlluminaBarcodeParser.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.IlluminaBarcodeParser.parse" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">r1files</em>, <em class="sig-param">r2files=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#IlluminaBarcodeParser.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.IlluminaBarcodeParser.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses barcodes from files.</p>
 <dl>
 <dt>Args:</dt><dd><dl class="simple">
@@ -348,7 +350,7 @@ or N in barcode.</p></li>
 
 <dl class="function">
 <dt id="dms_tools2.barcodes.almost_duplicated">
-<code class="descclassname">dms_tools2.barcodes.</code><code class="descname">almost_duplicated</code><span class="sig-paren">(</span><em>barcodes</em>, <em>threshold=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#almost_duplicated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.almost_duplicated" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.barcodes.</code><code class="sig-name descname">almost_duplicated</code><span class="sig-paren">(</span><em class="sig-param">barcodes</em>, <em class="sig-param">threshold=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#almost_duplicated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.almost_duplicated" title="Permalink to this definition">¶</a></dt>
 <dd><p>Identifies nearly identical barcodes.</p>
 <p>This function mimics the pandas <cite>duplicated</cite>
 function except it can also mark as duplicated almost
@@ -406,7 +408,7 @@ barcode (‘ATG’):</p>
 
 <dl class="function">
 <dt id="dms_tools2.barcodes.fracIdentWithinBarcode">
-<code class="descclassname">dms_tools2.barcodes.</code><code class="descname">fracIdentWithinBarcode</code><span class="sig-paren">(</span><em>df</em>, <em>*</em>, <em>barcode_col='barcode'</em>, <em>variant_col='variant'</em>, <em>library_col=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#fracIdentWithinBarcode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.fracIdentWithinBarcode" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.barcodes.</code><code class="sig-name descname">fracIdentWithinBarcode</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">*</em>, <em class="sig-param">barcode_col='barcode'</em>, <em class="sig-param">variant_col='variant'</em>, <em class="sig-param">library_col=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#fracIdentWithinBarcode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.fracIdentWithinBarcode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets fraction of identical variants within barcodes.</p>
 <p>This function is designed for the case when you have barcoded
 variants, and you want to determine how often the variants
@@ -469,7 +471,7 @@ with barcodes found multiple times:</p>
 
 <dl class="function">
 <dt id="dms_tools2.barcodes.simpleConsensus">
-<code class="descclassname">dms_tools2.barcodes.</code><code class="descname">simpleConsensus</code><span class="sig-paren">(</span><em>df</em>, <em>*</em>, <em>barcode_col='barcode'</em>, <em>substitution_col='substitutions'</em>, <em>insertion_col='insertions'</em>, <em>deletion_col='deletions'</em>, <em>library_col=None</em>, <em>max_sub_diffs=1</em>, <em>max_indel_diffs=2</em>, <em>max_minor_muts=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#simpleConsensus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.simpleConsensus" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.barcodes.</code><code class="sig-name descname">simpleConsensus</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">*</em>, <em class="sig-param">barcode_col='barcode'</em>, <em class="sig-param">substitution_col='substitutions'</em>, <em class="sig-param">insertion_col='insertions'</em>, <em class="sig-param">deletion_col='deletions'</em>, <em class="sig-param">library_col=None</em>, <em class="sig-param">max_sub_diffs=1</em>, <em class="sig-param">max_indel_diffs=2</em>, <em class="sig-param">max_minor_muts=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#simpleConsensus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.simpleConsensus" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simple method to get consensus of mutations within barcode.</p>
 <dl>
 <dt>Args:</dt><dd><dl class="simple">
@@ -606,6 +608,7 @@ is expected to be.</p>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -638,7 +641,7 @@ is expected to be.</p>
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -677,15 +680,23 @@ is expected to be.</p>
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -694,8 +705,8 @@ is expected to be.</p>
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/dms_tools2.barcodes.rst.txt"

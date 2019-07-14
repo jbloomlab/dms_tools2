@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>sra &#8212; dms_tools2 2.4.13 documentation</title>
+    <title>sra &#8212; dms_tools2 2.4.16 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -29,6 +29,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.sra"></span><div class="section" id="sra">
@@ -37,7 +39,7 @@
 <a class="reference external" href="https://www.ncbi.nlm.nih.gov/sra">Sequence Read Archive</a> (SRA).</p>
 <dl class="function">
 <dt id="dms_tools2.sra.fastqFromSRA">
-<code class="descclassname">dms_tools2.sra.</code><code class="descname">fastqFromSRA</code><span class="sig-paren">(</span><em>samples</em>, <em>fastq_dump</em>, <em>fastqdir</em>, <em>aspera=None</em>, <em>overwrite=False</em>, <em>passonly=True</em>, <em>no_downloads=False</em>, <em>ncpus=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/sra.html#fastqFromSRA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.sra.fastqFromSRA" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.sra.</code><code class="sig-name descname">fastqFromSRA</code><span class="sig-paren">(</span><em class="sig-param">samples</em>, <em class="sig-param">fastq_dump</em>, <em class="sig-param">fastqdir</em>, <em class="sig-param">aspera=None</em>, <em class="sig-param">overwrite=False</em>, <em class="sig-param">passonly=True</em>, <em class="sig-param">no_downloads=False</em>, <em class="sig-param">ncpus=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/sra.html#fastqFromSRA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.sra.fastqFromSRA" title="Permalink to this definition">¶</a></dt>
 <dd><p>Download data from SRA and extract FASTQ files.</p>
 <p>Currently only works for runs containing paired-end reads.</p>
 <dl class="simple">
@@ -90,6 +92,7 @@ These names have been added as the columns <cite>R1</cite> and
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -122,7 +125,7 @@ These names have been added as the columns <cite>R1</cite> and
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -161,15 +164,23 @@ These names have been added as the columns <cite>R1</cite> and
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -178,8 +189,8 @@ These names have been added as the columns <cite>R1</cite> and
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/dms_tools2.sra.rst.txt"

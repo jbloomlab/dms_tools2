@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>diffsel &#8212; dms_tools2 2.4.13 documentation</title>
+    <title>diffsel &#8212; dms_tools2 2.4.16 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -29,6 +29,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.diffsel"></span><div class="section" id="diffsel">
@@ -36,7 +38,7 @@
 <p>Performs operations related to estimating differential selection.</p>
 <dl class="function">
 <dt id="dms_tools2.diffsel.avgMutDiffSel">
-<code class="descclassname">dms_tools2.diffsel.</code><code class="descname">avgMutDiffSel</code><span class="sig-paren">(</span><em>mutdiffselfiles</em>, <em>avgtype</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/diffsel.html#avgMutDiffSel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.diffsel.avgMutDiffSel" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.diffsel.</code><code class="sig-name descname">avgMutDiffSel</code><span class="sig-paren">(</span><em class="sig-param">mutdiffselfiles</em>, <em class="sig-param">avgtype</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/diffsel.html#avgMutDiffSel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.diffsel.avgMutDiffSel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets mean or median mutation differential selection.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><dl class="simple">
@@ -94,8 +96,137 @@ mutation differential selection.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="dms_tools2.diffsel.beta_diversity">
+<code class="sig-prename descclassname">dms_tools2.diffsel.</code><code class="sig-name descname">beta_diversity</code><span class="sig-paren">(</span><em class="sig-param">tidy_df</em>, <em class="sig-param">*</em>, <em class="sig-param">samplecol</em>, <em class="sig-param">sitecol</em>, <em class="sig-param">valcol</em>, <em class="sig-param">index</em>, <em class="sig-param">dropdups=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/diffsel.html#beta_diversity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.diffsel.beta_diversity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes beta diversity of selection across sites.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>tidy_df</cite> (pandas DataFrame)</dt><dd><p>Tidy data frame with selection values.</p>
+</dd>
+<dt><cite>samplecol</cite> (str)</dt><dd><p>Column in <cite>tidy_df</cite> giving different samples.</p>
+</dd>
+<dt><cite>sitecol</cite> (str)</dt><dd><p>Column in <cite>tidy_df</cite> giving sites.</p>
+</dd>
+<dt><cite>valcol</cite> (str)</dt><dd><p>Column in <cite>tidy_df</cite> giving value (e.g., ‘positive_diffsel’)</p>
+</dd>
+<dt><cite>index</cite> {‘shannon’, ‘simpson’}</dt><dd><p>Type of diversity index to use.</p>
+</dd>
+<dt><cite>dropdups</cite> (bool)</dt><dd><p>If duplicate columns for a site, drop them? Otherwise error.</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>For each sample, the diversity is calculated by examining the
+total fraction of selection (as defined in <cite>valcol</cite>) allocated
+to each site (as defined in <cite>sitecol</cite>) and considering that to
+represent the weighted “species” abundance. Alpha and gamma diversity
+are then calculated using the indicated index as in Jost,
+“Partitioning diversity into independent alpha and beta components”
+(<a class="reference external" href="https://pdfs.semanticscholar.org/88c4/67e65b42eff088d19354632f41df6ca5804d.pdf">https://pdfs.semanticscholar.org/88c4/67e65b42eff088d19354632f41df6ca5804d.pdf</a>).
+The beta diversity is the ratio of gamma to alpha diversity:
+larger values indicate the samples are more diverse in sites of selection.</p>
+</dd>
+</dl>
+<p>As an example, first create a data frame for three samples.
+Sample <cite>a</cite> is similar to <cite>b</cite>, but both are quite different from <cite>c</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a_df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+<span class="gp">... </span>    <span class="s1">&#39;sample&#39;</span><span class="p">:</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;site&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="s1">&#39;positive_diffsel&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">5.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b_df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+<span class="gp">... </span>    <span class="s1">&#39;sample&#39;</span><span class="p">:</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;site&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="s1">&#39;positive_diffsel&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">4.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c_df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+<span class="gp">... </span>    <span class="s1">&#39;sample&#39;</span><span class="p">:</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;site&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="s1">&#39;positive_diffsel&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">4.3</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tidy_df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">a_df</span><span class="p">,</span> <span class="n">b_df</span><span class="p">,</span> <span class="n">c_df</span><span class="p">],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tidy_df</span>
+<span class="go">   sample  site  positive_diffsel</span>
+<span class="go">0       a     1               0.2</span>
+<span class="go">1       a     2               5.1</span>
+<span class="go">2       a     3               0.2</span>
+<span class="go">3       a     4               0.3</span>
+<span class="go">4       b     1               0.3</span>
+<span class="go">5       b     2               4.2</span>
+<span class="go">6       b     3               0.2</span>
+<span class="go">7       b     4               0.3</span>
+<span class="go">8       c     1               0.3</span>
+<span class="go">9       c     2               0.2</span>
+<span class="go">10      c     3               0.2</span>
+<span class="go">11      c     4               4.3</span>
+</pre></div>
+</div>
+<p>Calculate beta diversity of all three samples using Shannon index.
+The value is relatively high because sample <cite>c</cite> is a lot different
+than <cite>a</cite> and <cite>b</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">scipy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">beta_diversity</span><span class="p">(</span><span class="n">tidy_df</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">samplecol</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">sitecol</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">valcol</span><span class="o">=</span><span class="s1">&#39;positive_diffsel&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">index</span><span class="o">=</span><span class="s1">&#39;shannon&#39;</span><span class="p">),</span>
+<span class="gp">... </span>               <span class="mf">1.4914</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>If we repeat the same using the Simpson index we get a higher
+diversity because the large-selection sites (which are up-weighted by
+Simpson index relative to Shannon) are diferent between <cite>c</cite> and <cite>a</cite> / <cite>b</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">scipy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">beta_diversity</span><span class="p">(</span><span class="n">tidy_df</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">samplecol</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">sitecol</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">valcol</span><span class="o">=</span><span class="s1">&#39;positive_diffsel&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">index</span><span class="o">=</span><span class="s1">&#39;simpson&#39;</span><span class="p">),</span>
+<span class="gp">... </span>               <span class="mf">1.6478</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>If we calculate the beta diversity of just samples <cite>a</cite> and <cite>b</cite>, we
+get a smaller value because those samples are quite similar:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">scipy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">beta_diversity</span><span class="p">(</span><span class="n">tidy_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;sample in [&quot;a&quot;, &quot;b&quot;]&#39;</span><span class="p">),</span>
+<span class="gp">... </span>                     <span class="n">samplecol</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">sitecol</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">valcol</span><span class="o">=</span><span class="s1">&#39;positive_diffsel&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">index</span><span class="o">=</span><span class="s1">&#39;shannon&#39;</span><span class="p">),</span>
+<span class="gp">... </span>               <span class="mf">1.0022</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Here the Simpson index gives lower diversity than the Shannon since
+<cite>a</cite> and <cite>b</cite> share the largest selection site:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">scipy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">beta_diversity</span><span class="p">(</span><span class="n">tidy_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;sample in [&quot;a&quot;, &quot;b&quot;]&#39;</span><span class="p">),</span>
+<span class="gp">... </span>                     <span class="n">samplecol</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">sitecol</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">valcol</span><span class="o">=</span><span class="s1">&#39;positive_diffsel&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">index</span><span class="o">=</span><span class="s1">&#39;simpson&#39;</span><span class="p">),</span>
+<span class="gp">... </span>               <span class="mf">1.0008</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>And of course the beta diversity of two identical samples is one:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">scipy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">beta_diversity</span><span class="p">(</span>
+<span class="gp">... </span>                     <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">a_df</span><span class="p">,</span> <span class="n">a_df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">sample</span><span class="o">=</span><span class="s1">&#39;a2&#39;</span><span class="p">)]),</span>
+<span class="gp">... </span>                     <span class="n">samplecol</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">sitecol</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">valcol</span><span class="o">=</span><span class="s1">&#39;positive_diffsel&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">index</span><span class="o">=</span><span class="s1">&#39;shannon&#39;</span><span class="p">),</span>
+<span class="gp">... </span>               <span class="mi">1</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scipy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">beta_diversity</span><span class="p">(</span>
+<span class="gp">... </span>                     <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">a_df</span><span class="p">,</span> <span class="n">a_df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">sample</span><span class="o">=</span><span class="s1">&#39;a2&#39;</span><span class="p">)]),</span>
+<span class="gp">... </span>                     <span class="n">samplecol</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">sitecol</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">valcol</span><span class="o">=</span><span class="s1">&#39;positive_diffsel&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                     <span class="n">index</span><span class="o">=</span><span class="s1">&#39;simpson&#39;</span><span class="p">),</span>
+<span class="gp">... </span>               <span class="mi">1</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
 <dt id="dms_tools2.diffsel.computeMutDiffSel">
-<code class="descclassname">dms_tools2.diffsel.</code><code class="descname">computeMutDiffSel</code><span class="sig-paren">(</span><em>sel</em>, <em>mock</em>, <em>countcharacters</em>, <em>pseudocount</em>, <em>translate_to_aa</em>, <em>err=None</em>, <em>mincount=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/diffsel.html#computeMutDiffSel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.diffsel.computeMutDiffSel" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.diffsel.</code><code class="sig-name descname">computeMutDiffSel</code><span class="sig-paren">(</span><em class="sig-param">sel</em>, <em class="sig-param">mock</em>, <em class="sig-param">countcharacters</em>, <em class="sig-param">pseudocount</em>, <em class="sig-param">translate_to_aa</em>, <em class="sig-param">err=None</em>, <em class="sig-param">mincount=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/diffsel.html#computeMutDiffSel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.diffsel.computeMutDiffSel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute mutation differential selection.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><dl class="simple">
@@ -127,7 +258,7 @@ Columns are <cite>site</cite>, <cite>wildtype</cite>, <cite>mutation</cite>, <ci
 
 <dl class="function">
 <dt id="dms_tools2.diffsel.df_read_filecols">
-<code class="descclassname">dms_tools2.diffsel.</code><code class="descname">df_read_filecols</code><span class="sig-paren">(</span><em>df</em>, <em>filecols</em>, <em>*</em>, <em>order_sites=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/diffsel.html#df_read_filecols"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.diffsel.df_read_filecols" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.diffsel.</code><code class="sig-name descname">df_read_filecols</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">filecols</em>, <em class="sig-param">*</em>, <em class="sig-param">order_sites=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/diffsel.html#df_read_filecols"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.diffsel.df_read_filecols" title="Permalink to this definition">¶</a></dt>
 <dd><p>Merges data frame with entries read from files.</p>
 <p>Designed to expand data frame listing CSV files with site or
 mutation-level selection information into a data frame listing
@@ -218,7 +349,7 @@ read as columns.</p>
 
 <dl class="function">
 <dt id="dms_tools2.diffsel.mutToSiteDiffSel">
-<code class="descclassname">dms_tools2.diffsel.</code><code class="descname">mutToSiteDiffSel</code><span class="sig-paren">(</span><em>mutdiffsel</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/diffsel.html#mutToSiteDiffSel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.diffsel.mutToSiteDiffSel" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.diffsel.</code><code class="sig-name descname">mutToSiteDiffSel</code><span class="sig-paren">(</span><em class="sig-param">mutdiffsel</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/diffsel.html#mutToSiteDiffSel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.diffsel.mutToSiteDiffSel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes sitediffsel from mutdiffsel.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><dl class="simple">
@@ -274,7 +405,7 @@ read as columns.</p>
 
 <dl class="function">
 <dt id="dms_tools2.diffsel.tidyToWide">
-<code class="descclassname">dms_tools2.diffsel.</code><code class="descname">tidyToWide</code><span class="sig-paren">(</span><em>tidy_df</em>, <em>valuecol</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/diffsel.html#tidyToWide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.diffsel.tidyToWide" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.diffsel.</code><code class="sig-name descname">tidyToWide</code><span class="sig-paren">(</span><em class="sig-param">tidy_df</em>, <em class="sig-param">valuecol</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/diffsel.html#tidyToWide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.diffsel.tidyToWide" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts tidy <cite>diffsel</cite> data frame to wide form.</p>
 <p>The <cite>diffsel</cite> data frames returned by <code class="docutils literal notranslate"><span class="pre">dms2_diffsel</span></code> (and
 also other dataframes, such as the <cite>fracsurvive</cite> ones
@@ -319,6 +450,7 @@ for which values are given. Natural sorted by <cite>site</cite>.</p>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -351,7 +483,7 @@ for which values are given. Natural sorted by <cite>site</cite>.</p>
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -390,15 +522,23 @@ for which values are given. Natural sorted by <cite>site</cite>.</p>
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -407,8 +547,8 @@ for which values are given. Natural sorted by <cite>site</cite>.</p>
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/dms_tools2.diffsel.rst.txt"

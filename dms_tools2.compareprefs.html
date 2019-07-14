@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>compareprefs &#8212; dms_tools2 2.4.13 documentation</title>
+    <title>compareprefs &#8212; dms_tools2 2.4.16 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -29,6 +29,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.compareprefs"></span><div class="section" id="compareprefs">
@@ -36,7 +38,7 @@
 <p>Compare site-specific amino-acid preferences among homologs.</p>
 <dl class="function">
 <dt id="dms_tools2.compareprefs.comparePrefs">
-<code class="descclassname">dms_tools2.compareprefs.</code><code class="descname">comparePrefs</code><span class="sig-paren">(</span><em>prefs1, prefs2, sites=None, distmetric='half_sum_abs_diff', chars=['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/compareprefs.html#comparePrefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.compareprefs.comparePrefs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.compareprefs.</code><code class="sig-name descname">comparePrefs</code><span class="sig-paren">(</span><em class="sig-param">prefs1, prefs2, sites=None, distmetric='half_sum_abs_diff', chars=['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/compareprefs.html#comparePrefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.compareprefs.comparePrefs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute error-corrected distance between two sets of preferences.</p>
 <p>Designed for the situation in which you have made replicate
 measurements of the amino-acid preferences for two protein
@@ -114,7 +116,7 @@ replicates for each homolog:</p>
 
 <dl class="function">
 <dt id="dms_tools2.compareprefs.computeRMS">
-<code class="descclassname">dms_tools2.compareprefs.</code><code class="descname">computeRMS</code><span class="sig-paren">(</span><em>v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/compareprefs.html#computeRMS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.compareprefs.computeRMS" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.compareprefs.</code><code class="sig-name descname">computeRMS</code><span class="sig-paren">(</span><em class="sig-param">v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/compareprefs.html#computeRMS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.compareprefs.computeRMS" title="Permalink to this definition">¶</a></dt>
 <dd><p>The root mean square (RMS) of a list of values</p>
 <dl class="simple">
 <dt>Args:</dt><dd><dl class="simple">
@@ -134,7 +136,7 @@ replicates for each homolog:</p>
 
 <dl class="function">
 <dt id="dms_tools2.compareprefs.divJensenShannon">
-<code class="descclassname">dms_tools2.compareprefs.</code><code class="descname">divJensenShannon</code><span class="sig-paren">(</span><em>p1</em>, <em>p2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/compareprefs.html#divJensenShannon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.compareprefs.divJensenShannon" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.compareprefs.</code><code class="sig-name descname">divJensenShannon</code><span class="sig-paren">(</span><em class="sig-param">p1</em>, <em class="sig-param">p2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/compareprefs.html#divJensenShannon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.compareprefs.divJensenShannon" title="Permalink to this definition">¶</a></dt>
 <dd><p>Jensen-Shannon divergence between two distributions.</p>
 <p>The logarithms are taken to base 2, so the result will be
 between 0 and 1.</p>
@@ -162,7 +164,7 @@ between 0 and 1.</p>
 
 <dl class="function">
 <dt id="dms_tools2.compareprefs.prefDistance">
-<code class="descclassname">dms_tools2.compareprefs.</code><code class="descname">prefDistance</code><span class="sig-paren">(</span><em>pi1</em>, <em>pi2</em>, <em>distmetric</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/compareprefs.html#prefDistance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.compareprefs.prefDistance" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.compareprefs.</code><code class="sig-name descname">prefDistance</code><span class="sig-paren">(</span><em class="sig-param">pi1</em>, <em class="sig-param">pi2</em>, <em class="sig-param">distmetric</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/compareprefs.html#prefDistance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.compareprefs.prefDistance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the distance between two arrays of preferences.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><dl class="simple">
@@ -199,6 +201,7 @@ between 0 and 1.</p>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -231,7 +234,7 @@ between 0 and 1.</p>
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -270,15 +273,23 @@ between 0 and 1.</p>
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -287,8 +298,8 @@ between 0 and 1.</p>
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/dms_tools2.compareprefs.rst.txt"

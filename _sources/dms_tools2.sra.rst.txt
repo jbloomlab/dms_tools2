@@ -1,4 +1,4 @@
 .. automodule:: dms_tools2.sra
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

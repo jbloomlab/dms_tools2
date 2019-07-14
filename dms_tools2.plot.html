@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>plot &#8212; dms_tools2 2.4.13 documentation</title>
+    <title>plot &#8212; dms_tools2 2.4.16 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -29,6 +29,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <span class="target" id="module-dms_tools2.plot"></span><div class="section" id="plot">
@@ -38,12 +40,12 @@
 and <a class="reference external" href="https://seaborn.pydata.org/index.html">seaborn</a>.</p>
 <dl class="class">
 <dt id="dms_tools2.plot.AugmentedPairGrid">
-<em class="property">class </em><code class="descclassname">dms_tools2.plot.</code><code class="descname">AugmentedPairGrid</code><span class="sig-paren">(</span><em>data</em>, <em>hue=None</em>, <em>hue_order=None</em>, <em>palette=None</em>, <em>hue_kws=None</em>, <em>vars=None</em>, <em>x_vars=None</em>, <em>y_vars=None</em>, <em>diag_sharey=True</em>, <em>height=2.5</em>, <em>aspect=1</em>, <em>despine=True</em>, <em>dropna=True</em>, <em>size=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#AugmentedPairGrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.AugmentedPairGrid" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">dms_tools2.plot.</code><code class="sig-name descname">AugmentedPairGrid</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">hue=None</em>, <em class="sig-param">hue_order=None</em>, <em class="sig-param">palette=None</em>, <em class="sig-param">hue_kws=None</em>, <em class="sig-param">vars=None</em>, <em class="sig-param">x_vars=None</em>, <em class="sig-param">y_vars=None</em>, <em class="sig-param">diag_sharey=True</em>, <em class="sig-param">height=2.5</em>, <em class="sig-param">aspect=1</em>, <em class="sig-param">despine=True</em>, <em class="sig-param">dropna=True</em>, <em class="sig-param">size=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#AugmentedPairGrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.AugmentedPairGrid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">seaborn.axisgrid.PairGrid</span></code></p>
 <p>Augmented version of <cite>seaborn.PairGrid</cite>.</p>
 <dl class="method">
 <dt id="dms_tools2.plot.AugmentedPairGrid.ax_lims_clip_outliers">
-<code class="descname">ax_lims_clip_outliers</code><span class="sig-paren">(</span><em>frac_clip=0.001</em>, <em>extend=0.03</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#AugmentedPairGrid.ax_lims_clip_outliers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.AugmentedPairGrid.ax_lims_clip_outliers" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">ax_lims_clip_outliers</code><span class="sig-paren">(</span><em class="sig-param">frac_clip=0.001</em>, <em class="sig-param">extend=0.03</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#AugmentedPairGrid.ax_lims_clip_outliers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.AugmentedPairGrid.ax_lims_clip_outliers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets axis limits to clip outliers in data.</p>
 <p>Useful if there are a few data points far outside the range
 of most of the data.</p>
@@ -65,7 +67,7 @@ fraction of the data range.</p>
 
 <dl class="data">
 <dt id="dms_tools2.plot.COLOR_BLIND_PALETTE">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">COLOR_BLIND_PALETTE</code><em class="property"> = ['#000000', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7']</em><a class="headerlink" href="#dms_tools2.plot.COLOR_BLIND_PALETTE" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.plot.</code><code class="sig-name descname">COLOR_BLIND_PALETTE</code><em class="property"> = ['#000000', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7']</em><a class="headerlink" href="#dms_tools2.plot.COLOR_BLIND_PALETTE" title="Permalink to this definition">¶</a></dt>
 <dd><p><a class="reference external" href="http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/">color-blind safe palette</a>
 use by adding to your plots the following
 <cite>scale_fill_manual(COLOR_BLIND_PALETTE)</cite> or
@@ -74,7 +76,7 @@ use by adding to your plots the following
 
 <dl class="data">
 <dt id="dms_tools2.plot.COLOR_BLIND_PALETTE_GRAY">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">COLOR_BLIND_PALETTE_GRAY</code><em class="property"> = ['#999999', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7']</em><a class="headerlink" href="#dms_tools2.plot.COLOR_BLIND_PALETTE_GRAY" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.plot.</code><code class="sig-name descname">COLOR_BLIND_PALETTE_GRAY</code><em class="property"> = ['#999999', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7']</em><a class="headerlink" href="#dms_tools2.plot.COLOR_BLIND_PALETTE_GRAY" title="Permalink to this definition">¶</a></dt>
 <dd><p><a class="reference external" href="http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/">color-blind safe palette</a>
 that differs from <cite>COLOR_BLIND_PALETTE</cite> in that first 
 color is gray rather than black.</p>
@@ -82,7 +84,7 @@ color is gray rather than black.</p>
 
 <dl class="function">
 <dt id="dms_tools2.plot.breaksAndLabels">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">breaksAndLabels</code><span class="sig-paren">(</span><em>xi</em>, <em>x</em>, <em>n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#breaksAndLabels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.breaksAndLabels" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.plot.</code><code class="sig-name descname">breaksAndLabels</code><span class="sig-paren">(</span><em class="sig-param">xi</em>, <em class="sig-param">x</em>, <em class="sig-param">n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#breaksAndLabels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.breaksAndLabels" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get breaks and labels for an axis.</p>
 <p>Useful when you would like to re-label a numeric x-axis
 with string labels.</p>
@@ -115,7 +117,7 @@ the label for each break.</p>
 
 <dl class="function">
 <dt id="dms_tools2.plot.findSigSel">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">findSigSel</code><span class="sig-paren">(</span><em>df</em>, <em>valcol</em>, <em>plotfile</em>, <em>fdr=0.05</em>, <em>title=None</em>, <em>method='robust_hist'</em>, <em>mle_frac_censor=0.005</em>, <em>returnplot=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#findSigSel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.findSigSel" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.plot.</code><code class="sig-name descname">findSigSel</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">valcol</em>, <em class="sig-param">plotfile</em>, <em class="sig-param">fdr=0.05</em>, <em class="sig-param">title=None</em>, <em class="sig-param">method='robust_hist'</em>, <em class="sig-param">mle_frac_censor=0.005</em>, <em class="sig-param">returnplot=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#findSigSel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.findSigSel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Finds “significant” selection at sites / mutations.</p>
 <p>Designed for the case where most sites / mutations are not
 under selection, but a few may be. It tries to find those
@@ -240,7 +242,7 @@ simulate the data:</p>
 </pre></div>
 </div>
 <p>(<a class="reference external" href=".//dms_tools2-plot-7.png">png</a>, <a class="reference external" href=".//dms_tools2-plot-7.hires.png">hires.png</a>, <a class="reference external" href=".//dms_tools2-plot-7.pdf">pdf</a>)</p>
-<div class="figure align-center">
+<div class="figure align-default">
 <img alt="_images/dms_tools2-plot-7.png" src="_images/dms_tools2-plot-7.png" />
 </div>
 <p>Now use the ‘mle’ <cite>method</cite>:</p>
@@ -252,20 +254,20 @@ simulate the data:</p>
 </pre></div>
 </div>
 <p>(<a class="reference external" href=".//dms_tools2-plot-8.png">png</a>, <a class="reference external" href=".//dms_tools2-plot-8.hires.png">hires.png</a>, <a class="reference external" href=".//dms_tools2-plot-8.pdf">pdf</a>)</p>
-<div class="figure align-center">
+<div class="figure align-default">
 <img alt="_images/dms_tools2-plot-8.png" src="_images/dms_tools2-plot-8.png" />
 </div>
 </dd></dl>
 
 <dl class="function">
 <dt id="dms_tools2.plot.from_white_cmap">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">from_white_cmap</code><span class="sig-paren">(</span><em>color</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#from_white_cmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.from_white_cmap" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.plot.</code><code class="sig-name descname">from_white_cmap</code><span class="sig-paren">(</span><em class="sig-param">color</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#from_white_cmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.from_white_cmap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get matplotlib color map from white to <cite>color</cite>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="dms_tools2.plot.hist_bins_intsafe">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">hist_bins_intsafe</code><span class="sig-paren">(</span><em>x</em>, <em>method='fd'</em>, <em>shrink_threshold=None</em>, <em>maxbins=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#hist_bins_intsafe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.hist_bins_intsafe" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.plot.</code><code class="sig-name descname">hist_bins_intsafe</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">method='fd'</em>, <em class="sig-param">shrink_threshold=None</em>, <em class="sig-param">maxbins=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#hist_bins_intsafe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.hist_bins_intsafe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Histogram bins that work for integer data.</p>
 <p>You can auto-choose bins using <cite>numpy.histogram</cite>.
 However, if the data are integer, these bins
@@ -319,7 +321,7 @@ True</p>
 
 <dl class="function">
 <dt id="dms_tools2.plot.latexSciNot">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">latexSciNot</code><span class="sig-paren">(</span><em>xlist</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#latexSciNot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.latexSciNot" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.plot.</code><code class="sig-name descname">latexSciNot</code><span class="sig-paren">(</span><em class="sig-param">xlist</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#latexSciNot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.latexSciNot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts list of numbers to LaTex scientific notation.</p>
 <p>Useful for nice axis-tick formatting.</p>
 <dl class="simple">
@@ -356,7 +358,7 @@ or single string if <cite>xlist</cite> is a number.</p>
 
 <dl class="function">
 <dt id="dms_tools2.plot.plotBCStats">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotBCStats</code><span class="sig-paren">(</span><em>names</em>, <em>bcstatsfiles</em>, <em>plotfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotBCStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotBCStats" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.plot.</code><code class="sig-name descname">plotBCStats</code><span class="sig-paren">(</span><em class="sig-param">names</em>, <em class="sig-param">bcstatsfiles</em>, <em class="sig-param">plotfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotBCStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotBCStats" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code> barcode statistics for set of samples.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><dl class="simple">
@@ -373,7 +375,7 @@ or single string if <cite>xlist</cite> is a number.</p>
 
 <dl class="function">
 <dt id="dms_tools2.plot.plotCodonMutTypes">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotCodonMutTypes</code><span class="sig-paren">(</span><em>names</em>, <em>countsfiles</em>, <em>plotfile</em>, <em>classification='aachange'</em>, <em>csvfile=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotCodonMutTypes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotCodonMutTypes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.plot.</code><code class="sig-name descname">plotCodonMutTypes</code><span class="sig-paren">(</span><em class="sig-param">names</em>, <em class="sig-param">countsfiles</em>, <em class="sig-param">plotfile</em>, <em class="sig-param">classification='aachange'</em>, <em class="sig-param">csvfile=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotCodonMutTypes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotCodonMutTypes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot average frequency codon mutation types.</p>
 <p>The averages are determined by summing counts for all sites.</p>
 <dl>
@@ -400,7 +402,7 @@ or single string if <cite>xlist</cite> is a number.</p>
 
 <dl class="function">
 <dt id="dms_tools2.plot.plotColCorrs">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotColCorrs</code><span class="sig-paren">(</span><em>df</em>, <em>plotfile</em>, <em>cols</em>, <em>*</em>, <em>lower_filter=None</em>, <em>title=None</em>, <em>shrink_threshold=25</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotColCorrs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotColCorrs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.plot.</code><code class="sig-name descname">plotColCorrs</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">plotfile</em>, <em class="sig-param">cols</em>, <em class="sig-param">*</em>, <em class="sig-param">lower_filter=None</em>, <em class="sig-param">title=None</em>, <em class="sig-param">shrink_threshold=25</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotColCorrs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotColCorrs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots correlation among columns in pandas Data Frame.</p>
 <p>Plots distribution of each variable and pairwise correlations.</p>
 <dl class="simple">
@@ -431,7 +433,7 @@ the plot.</p>
 
 <dl class="function">
 <dt id="dms_tools2.plot.plotCorrMatrix">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotCorrMatrix</code><span class="sig-paren">(</span><em>names</em>, <em>infiles</em>, <em>plotfile</em>, <em>datatype</em>, <em>trim_unshared=True</em>, <em>title=''</em>, <em>colors='black'</em>, <em>contour=False</em>, <em>ncontours=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotCorrMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotCorrMatrix" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.plot.</code><code class="sig-name descname">plotCorrMatrix</code><span class="sig-paren">(</span><em class="sig-param">names</em>, <em class="sig-param">infiles</em>, <em class="sig-param">plotfile</em>, <em class="sig-param">datatype</em>, <em class="sig-param">trim_unshared=True</em>, <em class="sig-param">title=''</em>, <em class="sig-param">colors='black'</em>, <em class="sig-param">contour=False</em>, <em class="sig-param">ncontours=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotCorrMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotCorrMatrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots correlations among replicates.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><dl class="simple">
@@ -476,7 +478,7 @@ left to right.</p>
 
 <dl class="function">
 <dt id="dms_tools2.plot.plotCumulMutCounts">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotCumulMutCounts</code><span class="sig-paren">(</span><em>names</em>, <em>countsfiles</em>, <em>plotfile</em>, <em>chartype</em>, <em>nmax=15</em>, <em>maxcol=4</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotCumulMutCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotCumulMutCounts" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.plot.</code><code class="sig-name descname">plotCumulMutCounts</code><span class="sig-paren">(</span><em class="sig-param">names</em>, <em class="sig-param">countsfiles</em>, <em class="sig-param">plotfile</em>, <em class="sig-param">chartype</em>, <em class="sig-param">nmax=15</em>, <em class="sig-param">maxcol=4</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotCumulMutCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotCumulMutCounts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot fraction of mutations seen &lt;= some number of times.</p>
 <p>For each set of counts in <cite>countsfiles</cite>, plot the fraction
 of mutations seen greater than or equal to some number of
@@ -507,7 +509,7 @@ times. This is essentially a cumulative fraction plot.</p>
 
 <dl class="function">
 <dt id="dms_tools2.plot.plotDepth">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotDepth</code><span class="sig-paren">(</span><em>names, countsfiles, plotfile, maxcol=4, charlist=['AAA', 'AAC', 'AAG', 'AAT', 'ACA', 'ACC', 'ACG', 'ACT', 'AGA', 'AGC', 'AGG', 'AGT', 'ATA', 'ATC', 'ATG', 'ATT', 'CAA', 'CAC', 'CAG', 'CAT', 'CCA', 'CCC', 'CCG', 'CCT', 'CGA', 'CGC', 'CGG', 'CGT', 'CTA', 'CTC', 'CTG', 'CTT', 'GAA', 'GAC', 'GAG', 'GAT', 'GCA', 'GCC', 'GCG', 'GCT', 'GGA', 'GGC', 'GGG', 'GGT', 'GTA', 'GTC', 'GTG', 'GTT', 'TAA', 'TAC', 'TAG', 'TAT', 'TCA', 'TCC', 'TCG', 'TCT', 'TGA', 'TGC', 'TGG', 'TGT', 'TTA', 'TTC', 'TTG', 'TTT']</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotDepth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotDepth" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.plot.</code><code class="sig-name descname">plotDepth</code><span class="sig-paren">(</span><em class="sig-param">names, countsfiles, plotfile, maxcol=4, charlist=['AAA', 'AAC', 'AAG', 'AAT', 'ACA', 'ACC', 'ACG', 'ACT', 'AGA', 'AGC', 'AGG', 'AGT', 'ATA', 'ATC', 'ATG', 'ATT', 'CAA', 'CAC', 'CAG', 'CAT', 'CCA', 'CCC', 'CCG', 'CCT', 'CGA', 'CGC', 'CGG', 'CGT', 'CTA', 'CTC', 'CTG', 'CTT', 'GAA', 'GAC', 'GAG', 'GAT', 'GCA', 'GCC', 'GCG', 'GCT', 'GGA', 'GGC', 'GGG', 'GGT', 'GTA', 'GTC', 'GTG', 'GTT', 'TAA', 'TAC', 'TAG', 'TAT', 'TCA', 'TCC', 'TCG', 'TCT', 'TGA', 'TGC', 'TGG', 'TGT', 'TTA', 'TTC', 'TTG', 'TTT']</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotDepth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotDepth" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot sequencing depth along primary sequence.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><dl class="simple">
@@ -531,7 +533,7 @@ list of codons or amino acids.</p>
 
 <dl class="function">
 <dt id="dms_tools2.plot.plotFacetedNeutCurves">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotFacetedNeutCurves</code><span class="sig-paren">(</span><em>neutdata</em>, <em>plotfile</em>, <em>xlabel</em>, <em>ylabel</em>, <em>maxcol=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotFacetedNeutCurves"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotFacetedNeutCurves" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.plot.</code><code class="sig-name descname">plotFacetedNeutCurves</code><span class="sig-paren">(</span><em class="sig-param">neutdata</em>, <em class="sig-param">plotfile</em>, <em class="sig-param">xlabel</em>, <em class="sig-param">ylabel</em>, <em class="sig-param">maxcol=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotFacetedNeutCurves"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotFacetedNeutCurves" title="Permalink to this definition">¶</a></dt>
 <dd><p>Faceted neutralization curves with points and fit line.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><dl class="simple">
@@ -557,7 +559,7 @@ that <cite>points</cite> is not <cite>NaN</cite>.</p>
 
 <dl class="function">
 <dt id="dms_tools2.plot.plotMutFreq">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotMutFreq</code><span class="sig-paren">(</span><em>names</em>, <em>countsfiles</em>, <em>plotfile</em>, <em>maxcol=4</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotMutFreq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotMutFreq" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.plot.</code><code class="sig-name descname">plotMutFreq</code><span class="sig-paren">(</span><em class="sig-param">names</em>, <em class="sig-param">countsfiles</em>, <em class="sig-param">plotfile</em>, <em class="sig-param">maxcol=4</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotMutFreq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotMutFreq" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot mutation frequency along primary sequence.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><dl class="simple">
@@ -576,7 +578,7 @@ that <cite>points</cite> is not <cite>NaN</cite>.</p>
 
 <dl class="function">
 <dt id="dms_tools2.plot.plotRarefactionCurves">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotRarefactionCurves</code><span class="sig-paren">(</span><em>df</em>, <em>rarefy_col</em>, <em>plotfile</em>, <em>*</em>, <em>facet_col=None</em>, <em>nrow=1</em>, <em>xlabel='reads'</em>, <em>ylabel=None</em>, <em>facet_scales='free'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotRarefactionCurves"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotRarefactionCurves" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.plot.</code><code class="sig-name descname">plotRarefactionCurves</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">rarefy_col</em>, <em class="sig-param">plotfile</em>, <em class="sig-param">*</em>, <em class="sig-param">facet_col=None</em>, <em class="sig-param">nrow=1</em>, <em class="sig-param">xlabel='reads'</em>, <em class="sig-param">ylabel=None</em>, <em class="sig-param">facet_scales='free'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotRarefactionCurves"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotRarefactionCurves" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots rarefaction curves.</p>
 <p>The rarefaction curves are calculated analytically using
 <a class="reference internal" href="dms_tools2.utils.html#dms_tools2.utils.rarefactionCurve" title="dms_tools2.utils.rarefactionCurve"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dms_tools2.utils.rarefactionCurve</span></code></a>.</p>
@@ -638,7 +640,7 @@ half as many reads:</p>
 
 <dl class="function">
 <dt id="dms_tools2.plot.plotReadStats">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotReadStats</code><span class="sig-paren">(</span><em>names</em>, <em>readstatfiles</em>, <em>plotfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotReadStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotReadStats" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.plot.</code><code class="sig-name descname">plotReadStats</code><span class="sig-paren">(</span><em class="sig-param">names</em>, <em class="sig-param">readstatfiles</em>, <em class="sig-param">plotfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotReadStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotReadStats" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code> read statistics for a set of samples.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><dl class="simple">
@@ -655,7 +657,7 @@ half as many reads:</p>
 
 <dl class="function">
 <dt id="dms_tools2.plot.plotReadsPerBC">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotReadsPerBC</code><span class="sig-paren">(</span><em>names</em>, <em>readsperbcfiles</em>, <em>plotfile</em>, <em>maxreads=10</em>, <em>maxcol=6</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotReadsPerBC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotReadsPerBC" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.plot.</code><code class="sig-name descname">plotReadsPerBC</code><span class="sig-paren">(</span><em class="sig-param">names</em>, <em class="sig-param">readsperbcfiles</em>, <em class="sig-param">plotfile</em>, <em class="sig-param">maxreads=10</em>, <em class="sig-param">maxcol=6</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotReadsPerBC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotReadsPerBC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code> reads-per-barcode stats for set of samples.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><dl class="simple">
@@ -677,7 +679,7 @@ of &gt;= this.</p>
 
 <dl class="function">
 <dt id="dms_tools2.plot.plotSiteDiffSel">
-<code class="descclassname">dms_tools2.plot.</code><code class="descname">plotSiteDiffSel</code><span class="sig-paren">(</span><em>names</em>, <em>diffselfiles</em>, <em>plotfile</em>, <em>diffseltype</em>, <em>maxcol=2</em>, <em>white_bg=False</em>, <em>highlighted_sites=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotSiteDiffSel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotSiteDiffSel" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.plot.</code><code class="sig-name descname">plotSiteDiffSel</code><span class="sig-paren">(</span><em class="sig-param">names</em>, <em class="sig-param">diffselfiles</em>, <em class="sig-param">plotfile</em>, <em class="sig-param">diffseltype</em>, <em class="sig-param">maxcol=2</em>, <em class="sig-param">white_bg=False</em>, <em class="sig-param">highlighted_sites=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/plot.html#plotSiteDiffSel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.plot.plotSiteDiffSel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot site diffsel or fracsurvive along sequence.</p>
 <p>Despite the function name, this function can be used to
 plot either differential selection or fraction surviving.</p>
@@ -717,6 +719,7 @@ plot either differential selection or fraction surviving.</p>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -749,7 +752,7 @@ plot either differential selection or fraction surviving.</p>
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -788,15 +791,23 @@ plot either differential selection or fraction surviving.</p>
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -805,8 +816,8 @@ plot either differential selection or fraction surviving.</p>
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/dms_tools2.plot.rst.txt"

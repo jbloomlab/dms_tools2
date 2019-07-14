@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms2_logoplot &#8212; dms_tools2 2.4.13 documentation</title>
+    <title>dms2_logoplot &#8212; dms_tools2 2.4.16 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -29,6 +29,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="dms2-logoplot">
@@ -58,7 +60,7 @@ The mutational effect calculated by this function is just the ratio of the prefe
 </div>
 <div class="section" id="command-line-usage">
 <span id="logoplot-commandlineusage"></span><h2><a class="toc-backref" href="#id4">Command-line usage</a><a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
-<p><p>Create logo plot visualization. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.4.12) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
+<p><p>Create logo plot visualization. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.4.16) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
 </p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">dms2_logoplot</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">outdir</span> <span class="n">OUTDIR</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">ncpus</span> <span class="n">NCPUS</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">use_existing</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span>
@@ -70,7 +72,7 @@ The mutational effect calculated by this function is just the ratio of the prefe
                      <span class="p">[</span><span class="o">--</span><span class="n">diffselrange</span> <span class="n">MINDIFFSEL</span> <span class="n">MAXDIFFSEL</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">muteffectrange</span> <span class="n">MINMUTEFFECT</span> <span class="n">MAXMUTEFFECT</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">fracsurvivemax</span> <span class="n">FRACSURVIVEMAX</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">sortsites</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span>
-                     <span class="p">[</span><span class="o">--</span><span class="n">mapmetric</span> <span class="p">{</span><span class="n">kd</span><span class="p">,</span><span class="n">mw</span><span class="p">,</span><span class="n">charge</span><span class="p">,</span><span class="n">functionalgroup</span><span class="p">}]</span>
+                     <span class="p">[</span><span class="o">--</span><span class="n">mapmetric</span> <span class="p">{</span><span class="n">kd</span><span class="p">,</span><span class="n">mw</span><span class="p">,</span><span class="n">charge</span><span class="p">,</span><span class="n">functionalgroup</span><span class="p">,</span><span class="n">singlecolor</span><span class="p">}]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">colormap</span> <span class="n">COLORMAP</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">overlay1</span> <span class="n">FILE</span> <span class="n">SHORTNAME</span> <span class="n">LONGNAME</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">overlay2</span> <span class="n">FILE</span> <span class="n">SHORTNAME</span> <span class="n">LONGNAME</span><span class="p">]</span>
@@ -156,12 +158,12 @@ Underscores are <strong>not</strong> allowed as they are a LaTex special charact
 <p>Default: “yes”</p>
 </dd>
 <dt><kbd>--mapmetric</kbd></dt>
-<dd><p>Possible choices: kd, mw, charge, functionalgroup</p>
+<dd><p>Possible choices: kd, mw, charge, functionalgroup, singlecolor</p>
 <p>Color amino acids by Kyte-Doolittle hydrophobicity, molecular weight, charge, or functional group.</p>
 <p>Default: “functionalgroup”</p>
 </dd>
 <dt><kbd>--colormap</kbd></dt>
-<dd><p><a class="reference external" href="http://matplotlib.org/users/colormaps.html">matplotlib color map</a> for amino acids when <cite>–mapmetric</cite> is ‘kd’ or ‘mw’.</p>
+<dd><p><a class="reference external" href="http://matplotlib.org/users/colormaps.html">matplotlib color map</a> for amino acids when <cite>–mapmetric</cite> is ‘kd’ or ‘mw’; name of single color when it is ‘singlecolor’.</p>
 <p>Default: “jet”</p>
 </dd>
 <dt><kbd>--overlay1</kbd></dt>
@@ -218,6 +220,7 @@ An example of such a logo plot is in the <a class="reference external" href="htt
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -250,7 +253,7 @@ An example of such a logo plot is in the <a class="reference external" href="htt
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_tools2">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
@@ -295,15 +298,23 @@ An example of such a logo plot is in the <a class="reference external" href="htt
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -312,8 +323,8 @@ An example of such a logo plot is in the <a class="reference external" href="htt
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/dms2_logoplot.rst.txt"
