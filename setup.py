@@ -67,8 +67,8 @@ setup(
         'statsmodels>=0.8',
         'regex>=2.4.153',
         'packaging',
-        'gpmap>=0.4.5',
         'umi_tools>=1.0.0',
+        'dms_variants>=0.1',
         ],
     extras_require = {
         'rplot':[

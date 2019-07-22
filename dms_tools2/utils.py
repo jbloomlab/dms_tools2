@@ -27,6 +27,8 @@ import pandas
 import HTSeq
 import gzip
 
+import dms_variants.codonvarianttable
+
 import dms_tools2
 from dms_tools2 import CODONS, CODON_TO_AA, AAS_WITHSTOP, AA_TO_CODONS, NTS
 import dms_tools2._cutils
@@ -1242,8 +1244,8 @@ def barcodeInfoToCodonVariantTable(samples, geneseq, path=None):
             Directory in which barcode info files are located
 
     Returns:
-        A CodonVariantTable with 'counts' generated from the
-        barcode info files
+        A `dms_variants.codonvarianttable.CodonVariantTable` with 'counts'
+        generated from the barcode info files
     """
 
     # Set up re matchers for looking at lines
@@ -1396,7 +1398,7 @@ def barcodeInfoToCodonVariantTable(samples, geneseq, path=None):
     with tempfile.NamedTemporaryFile(mode='w') as f:
         df.to_csv(f, index=False)
         f.flush()
-        variants = dms_tools2.codonvarianttable.CodonVariantTable(
+        variants = dms_variants.codonvarianttable.CodonVariantTable(
                     barcode_variant_file=f.name,
                     geneseq=geneseq)
 
