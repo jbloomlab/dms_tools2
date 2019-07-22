@@ -1310,7 +1310,7 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
                         '>{0}\n{1}'.format(*tup) for tup in
                         df.query('{0} != ""'.format(query_col))
                             [['name', query_col]]
-                            .itertuples(index=False, name=False)
+                            .itertuples(index=False, name=None)
                         ]))
         map_dict = mapper.map(queryfile.name, outfile=paf_file)
 
