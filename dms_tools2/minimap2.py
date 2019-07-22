@@ -2245,7 +2245,7 @@ def parsePAF(paf_file, targets=None, introns_to_gaps=False):
             '[\+\-][a-z]+|' # matches indels
             '\~[a-z]{2}\d+[a-z]{2}' # matches introns
             ')+)(?:\s+|$)')
-    score_m = re.compile('AS:i:(?P<score>\d+)(?:\s+|$)')
+    score_m = re.compile('AS:i:(?P<score>[\-\+]?\d+)(?:\s+|$)')
 
     close_paf_file = False
     if isinstance(paf_file, str):
