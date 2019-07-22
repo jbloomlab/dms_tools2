@@ -3,6 +3,8 @@ Change Log
 
 2.5.dev0
 ------
+* Remove `codonvarianttable` module as it is now in `dms_variants <https://github.com/jbloomlab/dms_variants>`_ package
+
 * Parse - / + signs in PAF alignment scores.
 
 2.4.16

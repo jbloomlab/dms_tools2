@@ -41,6 +41,6 @@ class test_barcodeInfoToCodonVariantTable(unittest.TestCase):
         self.assertTrue(test.equals(previous))
         
 if __name__ == '__main__':
-    runner = unitteset.TextTestRunner()
+    runner = unittest.TextTestRunner()
     unittest.main(testRunner=runner)
 
