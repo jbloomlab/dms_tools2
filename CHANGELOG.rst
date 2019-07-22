@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.4.17
+------
+* Parse - / + signs in PAF alignment scores.
+
 2.4.16
 ------
 * Added `diffsel.beta_diversity`
