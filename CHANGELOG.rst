@@ -1,7 +1,7 @@
 Change Log
 ===========
 
-2.5.dev0
+2.5.0
 ------
 * Remove `codonvarianttable` module as it is now in `dms_variants <https://github.com/jbloomlab/dms_variants>`_ package
 
