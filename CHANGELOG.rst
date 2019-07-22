@@ -5,6 +5,8 @@ Change Log
 ------
 * Remove `codonvarianttable` module as it is now in `dms_variants <https://github.com/jbloomlab/dms_variants>`_ package
 
+* Remove `neutcurve` module as it is replated by `neutcurve <https://jbloomlab.github.io/neutcurve>`_ package
+
 * Parse - / + signs in PAF alignment scores.
 
 * Works with `pandas` 0.25
