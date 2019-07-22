@@ -1,7 +1,7 @@
 Change Log
 ===========
 
-2.4.17
+2.5.dev0
 ------
 * Parse - / + signs in PAF alignment scores.
 

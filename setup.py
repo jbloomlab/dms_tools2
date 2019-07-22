@@ -53,7 +53,7 @@ setup(
         'biopython>=1.68',
         'HTSeq>=0.9',
         'pysam>=0.13',
-        'pandas>=0.23',
+        'pandas>=0.23,<=0.24.2',
         'numpy>=1.13',
         'IPython>=5.1',
         'jupyter>=1.0.0',
