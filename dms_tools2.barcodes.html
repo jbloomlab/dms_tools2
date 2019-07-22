@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>barcodes &#8212; dms_tools2 2.4.16 documentation</title>
+    <title>barcodes &#8212; dms_tools2 2.5.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -15,7 +15,7 @@
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="codonvarianttable" href="dms_tools2.codonvarianttable.html" />
+    <link rel="next" title="compareprefs" href="dms_tools2.compareprefs.html" />
     <link rel="prev" title="dms_tools2 package" href="dms_tools2.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -604,6 +604,32 @@ is expected to be.</p>
 </div>
 </dd></dl>
 
+<dl class="function">
+<dt id="dms_tools2.barcodes.tidy_split">
+<code class="sig-prename descclassname">dms_tools2.barcodes.</code><code class="sig-name descname">tidy_split</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">column</em>, <em class="sig-param">sep=' '</em>, <em class="sig-param">keep=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#tidy_split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.tidy_split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split values of a column and expand so new DataFrame has one split
+value per row. Filters rows where the column is missing.</p>
+<p>Taken from <a class="reference external" href="https://stackoverflow.com/a/39946744">https://stackoverflow.com/a/39946744</a></p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>df<span class="classifier">pandas DataFrame</span></dt><dd><p>dataframe with the column to split and expand</p>
+</dd>
+<dt>column<span class="classifier">str</span></dt><dd><p>the column to split and expand</p>
+</dd>
+<dt>sep<span class="classifier">str</span></dt><dd><p>the string used to split the column’s values</p>
+</dd>
+<dt>keep<span class="classifier">bool</span></dt><dd><p>whether to retain the presplit value as it’s own row</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><dl class="simple">
+<dt>pandas DataFrame</dt><dd><p>Returns a dataframe with the same columns as <cite>df</cite>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 
 
@@ -673,7 +699,7 @@ is expected to be.</p>
   <li><a href="api.html">Python API</a><ul>
   <li><a href="dms_tools2.html">dms_tools2 package</a><ul>
       <li>Previous: <a href="dms_tools2.html" title="previous chapter">dms_tools2 package</a></li>
-      <li>Next: <a href="dms_tools2.codonvarianttable.html" title="next chapter">codonvarianttable</a></li>
+      <li>Next: <a href="dms_tools2.compareprefs.html" title="next chapter">compareprefs</a></li>
   </ul></li>
   </ul></li>
   </ul></li>

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_tools2.minimap2 &#8212; dms_tools2 2.4.16 documentation</title>
+    <title>dms_tools2.minimap2 &#8212; dms_tools2 2.5.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -2279,7 +2279,7 @@
             <span class="s1">&#39;[\+\-][a-z]+|&#39;</span> <span class="c1"># matches indels</span>
             <span class="s1">&#39;\~[a-z]</span><span class="si">{2}</span><span class="s1">\d+[a-z]</span><span class="si">{2}</span><span class="s1">&#39;</span> <span class="c1"># matches introns</span>
             <span class="s1">&#39;)+)(?:\s+|$)&#39;</span><span class="p">)</span>
-    <span class="n">score_m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;AS:i:(?P&lt;score&gt;\d+)(?:\s+|$)&#39;</span><span class="p">)</span>
+    <span class="n">score_m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;AS:i:(?P&lt;score&gt;[\-\+]?\d+)(?:\s+|$)&#39;</span><span class="p">)</span>
 
     <span class="n">close_paf_file</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">paf_file</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_tools2.barcodes &#8212; dms_tools2 2.4.16 documentation</title>
+    <title>dms_tools2.barcodes &#8212; dms_tools2 2.5.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -60,9 +60,6 @@
 <span class="kn">import</span> <span class="nn">dms_tools2.utils</span>
 <span class="kn">import</span> <span class="nn">dms_tools2.pacbio</span>
 <span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="k">import</span> <span class="n">CODON_TO_AA</span><span class="p">,</span> <span class="n">CODONS</span><span class="p">,</span> <span class="n">AAS_WITHSTOP</span><span class="p">,</span> <span class="n">AA_TO_CODONS</span>
-
-<span class="c1"># import CodonVariantTable and tidy_split for backward compatibility</span>
-<span class="kn">from</span> <span class="nn">dms_tools2.codonvarianttable</span> <span class="k">import</span> <span class="n">CodonVariantTable</span><span class="p">,</span> <span class="n">tidy_split</span>
 
 <span class="n">_umi_clusterer</span> <span class="o">=</span> <span class="n">umi_tools</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">UMIClusterer</span><span class="p">()</span>
 
@@ -965,6 +962,43 @@
                  <span class="p">)</span>
 
         <span class="k">return</span> <span class="p">(</span><span class="n">barcodes</span><span class="p">,</span> <span class="n">fates</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="tidy_split"><a class="viewcode-back" href="../../dms_tools2.barcodes.html#dms_tools2.barcodes.tidy_split">[docs]</a><span class="k">def</span> <span class="nf">tidy_split</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">column</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Split values of a column and expand so new DataFrame has one split</span>
+<span class="sd">    value per row. Filters rows where the column is missing.</span>
+
+<span class="sd">    Taken from https://stackoverflow.com/a/39946744</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df : pandas DataFrame</span>
+<span class="sd">            dataframe with the column to split and expand</span>
+<span class="sd">        column : str</span>
+<span class="sd">            the column to split and expand</span>
+<span class="sd">        sep : str</span>
+<span class="sd">            the string used to split the column&#39;s values</span>
+<span class="sd">        keep : bool</span>
+<span class="sd">            whether to retain the presplit value as it&#39;s own row</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        pandas DataFrame</span>
+<span class="sd">            Returns a dataframe with the same columns as `df`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">indexes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">new_values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="n">column</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">presplit</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)):</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">presplit</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">keep</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">indexes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">new_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">presplit</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+            <span class="n">indexes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">new_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">new_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">indexes</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">new_df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_values</span>
+    <span class="k">return</span> <span class="n">new_df</span></div>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_tools2.utils &#8212; dms_tools2 2.4.16 documentation</title>
+    <title>dms_tools2.utils &#8212; dms_tools2 2.5.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -60,6 +60,8 @@
 <span class="kn">import</span> <span class="nn">pandas</span>
 <span class="kn">import</span> <span class="nn">HTSeq</span>
 <span class="kn">import</span> <span class="nn">gzip</span>
+
+<span class="kn">import</span> <span class="nn">dms_variants.codonvarianttable</span>
 
 <span class="kn">import</span> <span class="nn">dms_tools2</span>
 <span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="k">import</span> <span class="n">CODONS</span><span class="p">,</span> <span class="n">CODON_TO_AA</span><span class="p">,</span> <span class="n">AAS_WITHSTOP</span><span class="p">,</span> <span class="n">AA_TO_CODONS</span><span class="p">,</span> <span class="n">NTS</span>
@@ -1276,8 +1278,8 @@
 <span class="sd">            Directory in which barcode info files are located</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A CodonVariantTable with &#39;counts&#39; generated from the</span>
-<span class="sd">        barcode info files</span>
+<span class="sd">        A `dms_variants.codonvarianttable.CodonVariantTable` with &#39;counts&#39;</span>
+<span class="sd">        generated from the barcode info files</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Set up re matchers for looking at lines</span>
@@ -1430,7 +1432,7 @@
     <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">f</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
-        <span class="n">variants</span> <span class="o">=</span> <span class="n">dms_tools2</span><span class="o">.</span><span class="n">codonvarianttable</span><span class="o">.</span><span class="n">CodonVariantTable</span><span class="p">(</span>
+        <span class="n">variants</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">codonvarianttable</span><span class="o">.</span><span class="n">CodonVariantTable</span><span class="p">(</span>
                     <span class="n">barcode_variant_file</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                     <span class="n">geneseq</span><span class="o">=</span><span class="n">geneseq</span><span class="p">)</span>
 
