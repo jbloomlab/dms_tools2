@@ -7,6 +7,8 @@ Change Log
 
 * Parse - / + signs in PAF alignment scores.
 
+* Works with `pandas` 0.25
+
 2.4.16
 ------
 * Added `diffsel.beta_diversity`
