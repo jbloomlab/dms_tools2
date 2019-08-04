@@ -110,21 +110,6 @@ class test_build_barcode_variant_table(unittest.TestCase):
                 (x.insertions.apply(len) + x.deletions.apply(len)).astype('bool'))
             )
 
-        fracidentwithinbarcode = (
-            dms_tools2.barcodes.fracIdentWithinBarcode(
-                df_processed
-                    .query('accurate & (not has_indel)')
-                    .assign(variant=lambda x: x.substitutions_str + 
-                            x.insertions_str + x.deletions_str),
-                library_col='library')
-            )
-
-        fracident_file = os.path.join(indir, 'fracidentwithinbarcode.csv')
-        pandas.testing.assert_frame_equal(
-                fracidentwithinbarcode,
-                pandas.read_csv(fracident_file)
-                )
-
         consensus, dropped = dms_tools2.barcodes.simpleConsensus(
                 df_processed.query('accurate'), library_col='library')
 

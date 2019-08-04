@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.5.dev1
+--------
+* Remove `barcodes.fracIdentWithinBarcode` as it is **not** correct. There is a new function being added in `alignparse` that calculates the empirical accuracy correctly.
+
 2.5.0
 ------
 * Remove `codonvarianttable` module as it is now in `dms_variants <https://github.com/jbloomlab/dms_variants>`_ package
