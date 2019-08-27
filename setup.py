@@ -52,7 +52,6 @@ setup(
     install_requires = [
         'attrs>=17.4.0',
         'biopython>=1.68',
-        'HTSeq>=0.9',
         'pysam>=0.13',
         'pandas>=0.23',
         'numpy>=1.13',

@@ -1,9 +1,11 @@
 Change Log
 ===========
 
-2.5.dev1
+2.5.1
 --------
 * Remove `barcodes.fracIdentWithinBarcode` as it is **not** correct. There is a new function being added in `alignparse` that calculates the empirical accuracy correctly.
+
+* Remove dependency on `HTSeq`.
 
 2.5.0
 ------

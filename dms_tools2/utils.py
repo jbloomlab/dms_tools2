@@ -20,11 +20,11 @@ import collections
 import random
 import re
 
+import pysam
 import numpy
 import scipy.misc
 import scipy.special
 import pandas
-import HTSeq
 import gzip
 
 import dms_variants.codonvarianttable
@@ -44,7 +44,7 @@ def sessionInfo():
                     sys.version.replace('\n', ' ')),
             '\tdms_tools2 version: {0}'.format(dms_tools2.__version__),
             ]
-    for modname in ['Bio', 'HTSeq', 'pandas', 'numpy', 'IPython',
+    for modname in ['Bio', 'pandas', 'numpy', 'IPython',
             'jupyter', 'matplotlib', 'plotnine', 'natsort', 'pystan',
             'scipy', 'seaborn', 'phydmslib', 'statsmodels', 'rpy2',
             'regex', 'umi_tools']:
@@ -207,21 +207,31 @@ def iteratePairedFASTQ(r1files, r2files, r1trim=None, r2trim=None):
     elif not all(map(os.path.isfile, r2files)):
         raise ValueError('cannot find all `r2files`')
     for (r1file, r2file) in zip(r1files, r2files):
-        r1reader = HTSeq.FastqReader(r1file, raw_iterator=True)
+        r1reader = pysam.FastxFile(r1file)
         if r2file is None:
             read_iterator = r1reader
         else:
-            r2reader = HTSeq.FastqReader(r2file, raw_iterator=True)
+            r2reader = pysam.FastxFile(r2file)
             read_iterator = zip(r1reader, r2reader)
         for tup in read_iterator:
             if r2file is None:
-               r1, id1, q1, qs1 = tup
+               a1 = tup
                r2 = q2 = None
             else:
-                (r1, id1, q1, qs1), (r2, id2, q2, qs2) = tup
-                id2 = id2.split()
+                a1, a2 = tup
+                r2 = a2.sequence
+                q2 = a2.quality
+                if a2.comment is not None:
+                    id2 = f"{a2.name} {a2.comment}".split()
+                else:
+                    id2 = a2.name.split()
                 name2 = id2[0]
-            id1 = id1.split()
+            r1 = a1.sequence
+            q1 = a1.quality
+            if a1.comment is not None:
+                id1 = f"{a1.name} {a1.comment}".split()
+            else:
+                id1 = a1.name.split()
             name1 = id1[0]
             if r2file is not None:
                 # trims last two chars, need for SRA downloaded files
