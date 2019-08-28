@@ -184,7 +184,7 @@ def bcsubampParentParser():
             "subsample data."))
 
     parser.set_defaults(bcinfo=False)
-    parser.add_argument('--bcinfo', dest='bcinfo', action='store_true', 
+    parser.add_argument('--bcinfo', dest='bcinfo', action='store_true',
             help=("Create file with suffix 'bcinfo.txt.gz' with info "
             "about each barcode."))
 
@@ -316,6 +316,14 @@ def batch_prefsParser():
 
     parser.add_argument('--summaryprefix', required=True,
             help="Prefix of output summary files and plots.")
+
+    parser.set_defaults(no_corr=False)
+    parser.add_argument('--no_corr', dest='no_corr', action='store_true',
+            help='Do not create correlation plot.')
+
+    parser.set_defaults(no_avg=False)
+    parser.add_argument('--no_avg', dest='no_avg', action='store_true',
+            help='Do not create average prefs CSV.')
 
     return parser
 

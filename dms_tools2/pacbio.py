@@ -21,7 +21,6 @@ import regex
 import numpy
 import pandas
 import pysam
-import HTSeq
 import Bio.SeqFeature
 
 # import dms_tools2.plot to set plotting contexts / themes
@@ -320,18 +319,22 @@ class CCS:
             headmatch = re.compile('^(?P<name>\S+)\s+'
                                    'np:i:(?P<passes>\d+)\s+'
                                    'rq:f:(?P<accuracy>\d+\.{0,1}\d*)')
-            for r, head, q, qs in HTSeq.FastqReader(self.ccsfile,
-                                                    raw_iterator=True):
+            for a in pysam.FastxFile(self.ccsfile):
+                if a.comment is not None:
+                    head = f"{a.name} {a.comment}"
+                else:
+                    head = a.name
                 m = headmatch.match(head)
                 if not m:
                     raise ValueError(f"could not match {head}")
-                d['CCS'].append(r)
-                qvals = numpy.array([ord(qi) - 33 for qi in q], dtype='int')
+                d['CCS'].append(a.sequence)
+                qvals = numpy.array([ord(qi) - 33 for qi in a.quality],
+                                    dtype='int')
                 d['CCS_qvals'].append(qvals)
                 d['name'].append(m.group('name'))
                 d['passes'].append(int(m.group('passes')))
                 d['CCS_accuracy'].append(float(m.group('accuracy')))
-                d['CCS_length'].append(len(r))
+                d['CCS_length'].append(len(a.sequence))
                 d['samplename'].append(self.samplename)
 
         else:
