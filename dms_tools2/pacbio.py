@@ -316,9 +316,9 @@ class CCS:
                 d['samplename'].append(self.samplename)
 
         elif ext in {'.fq', '.fastq'}:
-            headmatch = re.compile('^(?P<name>\S+)\s+'
-                                   'np:i:(?P<passes>\d+)\s+'
-                                   'rq:f:(?P<accuracy>\d+\.{0,1}\d*)')
+            headmatch = re.compile(r'^(?P<name>\S+)\s+'
+                                   r'np:i:(?P<passes>\d+)\s+'
+                                   r'rq:f:(?P<accuracy>\d+\.{0,1}\d*)')
             for a in pysam.FastxFile(self.ccsfile):
                 if a.comment is not None:
                     head = f"{a.name} {a.comment}"
@@ -1382,7 +1382,7 @@ def alignSeqs(df, mapper, query_col, aligned_col, *,
 
 
 def qvalsToAccuracy(qvals, encoding='numbers', no_avg=False):
-    """Converts set of quality scores into average accuracy.
+    r"""Converts set of quality scores into average accuracy.
 
     Args:
         `qvals` (numpy array or number or str)
@@ -1537,7 +1537,7 @@ def re_expandIUPAC(re_str):
     # We simply do a simple replacement on all characters not in group
     # names. So first we must find group names:
     groupname_indices = set([])
-    groupname_matcher = regex.compile('\(\?P<[^>]*>')
+    groupname_matcher = regex.compile(r'\(\?P<[^>]*>')
     for m in groupname_matcher.finditer(re_str):
         for i in range(m.start(), m.end()):
             groupname_indices.add(i)

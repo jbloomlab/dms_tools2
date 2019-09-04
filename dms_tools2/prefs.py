@@ -257,7 +257,7 @@ def _initialValuePrefs(error_model, nchains, iwtchar, nchars):
 
 def inferPrefsByRatio(charlist, sites, wts, pre, post, errpre,
         errpost, pseudocount):
-    """Site-specific preferences from normalized enrichment ratios.
+    r"""Site-specific preferences from normalized enrichment ratios.
 
     Calculates site-specific preference :math:`\pi_{r,a}` of each
     site :math:`r` for each character :math:`a` using re-normalized
@@ -269,7 +269,7 @@ def inferPrefsByRatio(charlist, sites, wts, pre, post, errpre,
 
     .. math::
 
-        \pi_{r,a} = \\frac{\phi_{r,a}}{\sum_{a'} \phi_{r,a'}}
+        \pi_{r,a} = \frac{\phi_{r,a}}{\sum_{a'} \phi_{r,a'}}
 
     where :math:`\phi_{r,a}` is the enrichment ratio of character
     :math:`a` relative to wildtype after selection. 
@@ -304,7 +304,7 @@ def inferPrefsByRatio(charlist, sites, wts, pre, post, errpre,
 
     .. math::
 
-       P_r^s = P \\times \\frac{N_r^s}{\min\limits_{s'} N_r^{s'}}.
+       P_r^s = P \times \frac{N_r^s}{\min\limits_{s'} N_r^{s'}}.
 
     This equation makes the pseudocount :math:`P` for the lowest-depth
     sample, and scales up the pseodocounts for all other samples
@@ -316,7 +316,7 @@ def inferPrefsByRatio(charlist, sites, wts, pre, post, errpre,
     
     .. math::
     
-        f_{r,a}^s = \\frac{n_{r,a}^s + P_r^s}{N_{r}^s + A \\times P_r^s}
+        f_{r,a}^s = \frac{n_{r,a}^s + P_r^s}{N_{r}^s + A \times P_r^s}
 
     where :math:`A` is the number of characters in the alphabet (e.g.,
     20 for amino acids without stop codons).
@@ -326,17 +326,17 @@ def inferPrefsByRatio(charlist, sites, wts, pre, post, errpre,
 
     .. math::
 
-        f_{r,a}^{before} &= \max\left(\\frac{P_r^{pre}}{N_{r}^{pre} + A \\times P_r^{pre}},
-        \; f_{r,a}^{pre} + \delta_{a,\\rm{wt}\left(r\\right)}
-        - f_{r,a}^{errpre}\\right)
+        f_{r,a}^{before} &= \max\left(\frac{P_r^{pre}}{N_{r}^{pre} + A \times P_r^{pre}},
+        \; f_{r,a}^{pre} + \delta_{a,\rm{wt}\left(r\right)}
+        - f_{r,a}^{errpre}\right)
 
-        f_{r,a}^{after} &= \max\left(\\frac{P_r^{post}}{N_{r}^{post} + A \\times P_r^{post}},
-        \; f_{r,a}^{post} + \delta_{a,\\rm{wt}\left(r\\right)}
-        - f_{r,a}^{errpost}\\right)
+        f_{r,a}^{after} &= \max\left(\frac{P_r^{post}}{N_{r}^{post} + A \times P_r^{post}},
+        \; f_{r,a}^{post} + \delta_{a,\rm{wt}\left(r\right)}
+        - f_{r,a}^{errpost}\right)
 
-    where :math:`\delta_{a,\\rm{wt}\left(r\\right)}` is the 
+    where :math:`\delta_{a,\rm{wt}\left(r\right)}` is the 
     Kronecker-delta, equal to 1 if :math:`a` is the same as the
-    wildtype character :math:`\\rm{wt}\left(r\\right)` at site
+    wildtype character :math:`\rm{wt}\left(r\right)` at site
     :math:`r`, and 0 otherwise. We use the :math:`\max` operator
     to ensure that even if the error-control frequency exceeds
     the actual estimate, our estimated frequency never drops
@@ -347,15 +347,15 @@ def inferPrefsByRatio(charlist, sites, wts, pre, post, errpre,
 
     .. math::
 
-        \phi_{r,a} = \\frac{\left(f_{r,a}^{after}\\right) / 
-        \left(f_{r,\\rm{wt}\left(r\\right)}^{after}\\right)}
-        {\left(f_{r,a}^{before}\\right) / 
-        \left(f_{r,\\rm{wt}\left(r\\right)}^{before}\\right)}
+        \phi_{r,a} = \frac{\left(f_{r,a}^{after}\right) / 
+        \left(f_{r,\rm{wt}\left(r\right)}^{after}\right)}
+        {\left(f_{r,a}^{before}\right) / 
+        \left(f_{r,\rm{wt}\left(r\right)}^{before}\right)}
 
     In the case where we are **not** using any error-controls, then
     we simply set 
-    :math:`f_{r,\\rm{wt}}^{errpre} = f_{r,\\rm{wt}}^{errpost} 
-    = \delta_{a,\\rm{wt}\left(r\\right)}`.
+    :math:`f_{r,\rm{wt}}^{errpre} = f_{r,\rm{wt}}^{errpost} 
+    = \delta_{a,\rm{wt}\left(r\right)}`.
 
     Args:
         `charlist` (list)
@@ -465,41 +465,41 @@ def inferPrefsByRatio(charlist, sites, wts, pre, post, errpre,
 def inferSitePrefs(charlist, wtchar, error_model, counts, 
         priors, seed=1, niter=10000, increasetries=5, n_jobs=1, 
         r_max=1.1, neff_min=100, nchains=4, increasefac=2):
-    """Infers site-specific preferences by MCMC for a specific site.
+    r"""Infers site-specific preferences by MCMC for a specific site.
 
     Infer the site-specific preferences :math:`\pi_{r,a}` for some site
     :math:`r` for each character :math:`a` by integrating over the 
     posterior defined by the product of the following priors and 
-    likelihoods, where :math:`\\boldsymbol{\mathbf{\pi_r}}` indicates
+    likelihoods, where :math:`\boldsymbol{\mathbf{\pi_r}}` indicates
     the vector of :math:`\pi_{r,a}` values for all characters:
 
     .. math::
 
-        \Pr\left(\\boldsymbol{\mathbf{\pi_r}}\\right) 
-        &= \mathrm{Dirichlet}\left(\\boldsymbol{\mathbf{a_{\pi,r}}}\\right)
+        \Pr\left(\boldsymbol{\mathbf{\pi_r}}\right) 
+        &= \mathrm{Dirichlet}\left(\boldsymbol{\mathbf{a_{\pi,r}}}\right)
 
-        \Pr\left(\\boldsymbol{\mathbf{\mu_r}}\\right) 
-        &= \mathrm{Dirichlet}\left(\\boldsymbol{\mathbf{a_{\mu,r}}}\\right)
+        \Pr\left(\boldsymbol{\mathbf{\mu_r}}\right) 
+        &= \mathrm{Dirichlet}\left(\boldsymbol{\mathbf{a_{\mu,r}}}\right)
 
-        \Pr\left(\\boldsymbol{\mathbf{\epsilon_r}}\\right) 
-        &= \mathrm{Dirichlet}\left(\\boldsymbol{\mathbf{a_{\epsilon,r}}}\\right)
+        \Pr\left(\boldsymbol{\mathbf{\epsilon_r}}\right) 
+        &= \mathrm{Dirichlet}\left(\boldsymbol{\mathbf{a_{\epsilon,r}}}\right)
 
-        \Pr\left(\\boldsymbol{\mathbf{\\rho_r}}\\right) 
-        &= \mathrm{Dirichlet}\left(\\boldsymbol{\mathbf{a_{\\rho,r}}}\\right)
+        \Pr\left(\boldsymbol{\mathbf{\rho_r}}\right) 
+        &= \mathrm{Dirichlet}\left(\boldsymbol{\mathbf{a_{\rho,r}}}\right)
 
-        \Pr\left(\\boldsymbol{\mathbf{n_r^{\\rm{pre}}}} \mid \\boldsymbol{\mathbf{\mu_r}}, \\boldsymbol{\mathbf{\epsilon_r}}\\right) 
-        &= \mathrm{Multinomial}\left(\\boldsymbol{\mathbf{n_r^{\\rm{pre}}}}; \\boldsymbol{\mathbf{\mu_r}} + \\boldsymbol{\mathbf{\epsilon_r}} - \\boldsymbol{\mathbf{\delta_r}}\\right)
+        \Pr\left(\boldsymbol{\mathbf{n_r^{\rm{pre}}}} \mid \boldsymbol{\mathbf{\mu_r}}, \boldsymbol{\mathbf{\epsilon_r}}\right) 
+        &= \mathrm{Multinomial}\left(\boldsymbol{\mathbf{n_r^{\rm{pre}}}}; \boldsymbol{\mathbf{\mu_r}} + \boldsymbol{\mathbf{\epsilon_r}} - \boldsymbol{\mathbf{\delta_r}}\right)
 
-        \Pr\left(\\boldsymbol{\mathbf{n_r^{\\rm{post}}}} \mid \\boldsymbol{\mathbf{\mu_r}}, \\boldsymbol{\mathbf{\epsilon_r}}\\right) 
-        &= \mathrm{Multinomial}\left(\\boldsymbol{\mathbf{n_r^{\\rm{post}}}}; \\frac{\\boldsymbol{\mathbf{\mu_r}} \circ \\boldsymbol{\mathbf{\pi_r}}}{\\boldsymbol{\mathbf{\mu_r}} \cdot \\boldsymbol{\mathbf{\pi_r}}} + \\boldsymbol{\mathbf{\\rho_r}} - \\boldsymbol{\mathbf{\delta_r}}\\right)
+        \Pr\left(\boldsymbol{\mathbf{n_r^{\rm{post}}}} \mid \boldsymbol{\mathbf{\mu_r}}, \boldsymbol{\mathbf{\epsilon_r}}\right) 
+        &= \mathrm{Multinomial}\left(\boldsymbol{\mathbf{n_r^{\rm{post}}}}; \frac{\boldsymbol{\mathbf{\mu_r}} \circ \boldsymbol{\mathbf{\pi_r}}}{\boldsymbol{\mathbf{\mu_r}} \cdot \boldsymbol{\mathbf{\pi_r}}} + \boldsymbol{\mathbf{\rho_r}} - \boldsymbol{\mathbf{\delta_r}}\right)
 
-        \Pr\left(\\boldsymbol{\mathbf{n_r^{\\rm{err,pre}}}} \mid \\boldsymbol{\mathbf{\epsilon_r}}\\right) 
-        &= \mathrm{Multinomial}\left(\\boldsymbol{\mathbf{n_r^{\\rm{err,pre}}}}; \\boldsymbol{\mathbf{\epsilon_r}}\\right)
+        \Pr\left(\boldsymbol{\mathbf{n_r^{\rm{err,pre}}}} \mid \boldsymbol{\mathbf{\epsilon_r}}\right) 
+        &= \mathrm{Multinomial}\left(\boldsymbol{\mathbf{n_r^{\rm{err,pre}}}}; \boldsymbol{\mathbf{\epsilon_r}}\right)
 
-        \Pr\left(\\boldsymbol{\mathbf{n_r^{\\rm{err,post}}}} \mid \\boldsymbol{\mathbf{\\rho_r}}\\right) 
-        &= \mathrm{Multinomial}\left(\\boldsymbol{\mathbf{n_r^{\\rm{err,post}}}}; \\boldsymbol{\mathbf{\\rho_r}}\\right)
+        \Pr\left(\boldsymbol{\mathbf{n_r^{\rm{err,post}}}} \mid \boldsymbol{\mathbf{\rho_r}}\right) 
+        &= \mathrm{Multinomial}\left(\boldsymbol{\mathbf{n_r^{\rm{err,post}}}}; \boldsymbol{\mathbf{\rho_r}}\right)
 
-    where :math:`\\boldsymbol{\mathbf{\delta_r}}` is a vector that is 
+    where :math:`\boldsymbol{\mathbf{\delta_r}}` is a vector that is 
     zero except for a one at the element corresponding to the wildtype.
 
     The MCMC tries to guarantee convergence via the parameters specified
@@ -517,32 +517,32 @@ def inferSitePrefs(charlist, wtchar, error_model, counts,
             as they will not need to be compiled. Can be:
 
               - The str `none` or instance of `StanModelNoneErr`:
-                no errors (:math:`\\boldsymbol{\mathbf{\epsilon_r}} = \\boldsymbol{\mathbf{\\rho_r}} = \mathbf{0}`)
+                no errors (:math:`\boldsymbol{\mathbf{\epsilon_r}} = \boldsymbol{\mathbf{\rho_r}} = \mathbf{0}`)
 
               - The str `same` or instance of `StanModelSameErr`: 
                 same error rates  pre and post-selection 
-                (:math:`\\boldsymbol{\mathbf{\epsilon_r}} = \\boldsymbol{\mathbf{\\rho_r}}`).
+                (:math:`\boldsymbol{\mathbf{\epsilon_r}} = \boldsymbol{\mathbf{\rho_r}}`).
 
               - The str `different` or instance of `StanModelDifferentErr`: 
                 different error rates pre- and post-selection
-                (:math:`\\boldsymbol{\mathbf{\epsilon_r}} \\ne \\boldsymbol{\mathbf{\\rho_r}}`).
+                (:math:`\boldsymbol{\mathbf{\epsilon_r}} \ne \boldsymbol{\mathbf{\rho_r}}`).
 
         `counts` (dict)
             Deep sequencing counts. Each string key should specify
             a dict keyed by all characters in `charlist` with
             the values giving integer counts for that character. The keys:
 
-                - `pre`: :math:`\\boldsymbol{\mathbf{n_r^{\\rm{pre}}}}`
+                - `pre`: :math:`\boldsymbol{\mathbf{n_r^{\rm{pre}}}}`
 
-                - `post`: :math:`\\boldsymbol{\mathbf{n_r^{\\rm{post}}}}`
+                - `post`: :math:`\boldsymbol{\mathbf{n_r^{\rm{post}}}}`
 
                 - *err*: required if `error_model` is `same`, specifies
-                  :math:`\\boldsymbol{\mathbf{n_r^{\\rm{err,pre}}}} = \\boldsymbol{\mathbf{n_r^{\\rm{err,post}}}}`
+                  :math:`\boldsymbol{\mathbf{n_r^{\rm{err,pre}}}} = \boldsymbol{\mathbf{n_r^{\rm{err,post}}}}`
 
                 - `errpre` and `errpost`: required if `error_model` is
                   `different`, specify 
-                  :math:`\\boldsymbol{\mathbf{n_r^{\\rm{err,pre}}}}` and
-                  :math:`\\boldsymbol{\mathbf{n_r^{\\rm{err,post}}}}`.
+                  :math:`\boldsymbol{\mathbf{n_r^{\rm{err,pre}}}}` and
+                  :math:`\boldsymbol{\mathbf{n_r^{\rm{err,post}}}}`.
 
         `priors` (dict)
             Specifies parameter vectors for Dirichlet priors. Each string
@@ -550,17 +550,17 @@ def inferSitePrefs(charlist, wtchar, error_model, counts,
             giving the prior for that character. Values less than 
             `PRIOR_MIN_VALUE` are set to `PRIOR_MIN_VALUE`. Keys are
 
-                - `pir_prior_params`: :math:`\\boldsymbol{\mathbf{a_{\pi,r}}}`
+                - `pir_prior_params`: :math:`\boldsymbol{\mathbf{a_{\pi,r}}}`
 
-                - `mur_prior_params`: :math:`\\boldsymbol{\mathbf{a_{\mu,r}}}`
+                - `mur_prior_params`: :math:`\boldsymbol{\mathbf{a_{\mu,r}}}`
 
                 - `epsilonr_prior_params`: only required if `error_model` is 
                   `same` or `different`, specifies 
-                  :math:`\\boldsymbol{\mathbf{a_{\epsilon,r}}}`
+                  :math:`\boldsymbol{\mathbf{a_{\epsilon,r}}}`
 
                 - `rhor_prior_params` : only required if `error_model` is 
                   `different`, specifies
-                  :math:`\\boldsymbol{\mathbf{a_{\\rho,r}}}`
+                  :math:`\boldsymbol{\mathbf{a_{\rho,r}}}`
 
         `seed` (int)
             Random number seed for MCMC. 
@@ -787,12 +787,12 @@ def prefsToMutFromWtEffects(prefs, charlist, wts):
 
 
 def prefsToMutEffects(prefs, charlist):
-    """Converts amino acid preferences to effects of specific mutations.
+    r"""Converts amino acid preferences to effects of specific mutations.
 
     If the preference of site :math:`r` for amino acid :math:`a` is
     :math:`\pi_{r,a}`, then the estimated effect (e.g., ratio of
     enrichment ratios) for mutating that site from :math:`x` to
-    :math:`y` is :math:`\\frac{\pi_{r,y}}{\pi_{r,x}}`. Very small
+    :math:`y` is :math:`\frac{\pi_{r,y}}{\pi_{r,x}}`. Very small
     values indicate disfavored mutations, and very large values
     indicate highly favored mutations. The logarithm base 2 of the
     expected effects is also a useful measure -- negative values
@@ -862,16 +862,16 @@ def prefsToMutEffects(prefs, charlist):
 
 
 def rescalePrefs(prefs, stringency):
-    """Re-scale amino acid preferences by stringency parameter.
+    r"""Re-scale amino acid preferences by stringency parameter.
 
     If the initial preference of site :math:`r` for amino-acid 
     :math:`a` is :math:`\pi_{r,a}`, then the re-scaled preference is
 
     .. math::
     
-        \\frac{\left(\pi_{r,a}\\right)^{\\beta}}{\sum_{a'} \left(\pi_{r,a'}\\right)}
+        \frac{\left(\pi_{r,a}\right)^{\beta}}{\sum_{a'} \left(\pi_{r,a'}\right)}
 
-    where :math:`\\beta` is the stringency parameter.
+    where :math:`\beta` is the stringency parameter.
 
     Args:
         `prefs` (pandas.DataFrame)
@@ -969,16 +969,16 @@ def avgPrefs(prefsfiles):
 
 
 def prefsEntropy(prefs, charlist):
-    """Calculate site entropy and number of effective characters.
+    r"""Calculate site entropy and number of effective characters.
 
     The site entropy :math:`h_r` for site :math:`r` is defined as
-    :math:`h_r = -\sum_{x} \pi_{r,x} \log\left(\pi_{r,x}\\right)`
+    :math:`h_r = -\sum_{x} \pi_{r,x} \log\left(\pi_{r,x}\right)`
     where :math:`\pi_{r,x}` is the preference for character (e.g.,
     amino acid) :math:`x` at site :math:`r`, and the log is
     the natural logarithm.
 
     The number of effective characters at site :math:`r`
-    is :math:`N_{\\rm{eff}, r} = \exp\left(h_r\\right)`.
+    is :math:`N_{\rm{eff}, r} = \exp\left(h_r\right)`.
 
     Args:
         `prefs` (pandas DataFrame)

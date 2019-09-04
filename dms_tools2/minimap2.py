@@ -405,18 +405,18 @@ class Mutations:
 
         else:
             sub_match = re.compile(
-                    '^(?P<wt>[ACGT])(?P<i>\d+)(?P<mut>[ACGT])'
-                    '(?: \(accuracy = (?P<acc>\d+\.{0,1}\d*)\)){0,1}$')
+                    r'^(?P<wt>[ACGT])(?P<i>\d+)(?P<mut>[ACGT])'
+                    r'(?: \(accuracy = (?P<acc>\d+\.{0,1}\d*)\)){0,1}$')
 
             del_match = re.compile(
-                    '^del(?P<istart>\d+)to(?P<iend>\d+)'
-                    '(?: \((?:accuracy = (?P<acc>\d+\.{0,1}\d*)){0,1}(?:\, ){0,1}'
-                    '(?:homopolymer length = (?P<hplen>\d+)){0,1}\)){0,1}$')
+                    r'^del(?P<istart>\d+)to(?P<iend>\d+)'
+                    r'(?: \((?:accuracy = (?P<acc>\d+\.{0,1}\d*)){0,1}(?:\, ){0,1}'
+                    r'(?:homopolymer length = (?P<hplen>\d+)){0,1}\)){0,1}$')
 
             ins_match = re.compile(
-                    'ins(?P<i>\d+)len(?P<ins_len>\d+)'
-                    '(?: \((?:accuracy = (?P<acc>\d+\.{0,1}\d*)){0,1}(?:\, ){0,1}'
-                    '(?:homopolymer length = (?P<hplen>\d+)){0,1}\)){0,1}$')
+                    r'ins(?P<i>\d+)len(?P<ins_len>\d+)'
+                    r'(?: \((?:accuracy = (?P<acc>\d+\.{0,1}\d*)){0,1}(?:\, ){0,1}'
+                    r'(?:homopolymer length = (?P<hplen>\d+)){0,1}\)){0,1}$')
 
             for s in map(str.strip, mut_str.split(';')):
 
@@ -992,7 +992,7 @@ class MutationCaller:
             for i, mut_str, q in substitution_tuples:
                 i_chrom = self.transcriptconverter.i_mRNAtoChromosome(
                         a.target, i, mRNAfragment=targetseq)
-                m = re.match('^(?P<wt_nt>[{0}])(?P<site>\d+)(?P<mut_nt>[{0}])$'
+                m = re.match(r'^(?P<wt_nt>[{0}])(?P<site>\d+)(?P<mut_nt>[{0}])$'
                         .format(''.join(NTS)), mut_str)
                 assert m, "can't match {0}".format(mut_str)
                 assert i == int(m.group('site'))
@@ -1015,7 +1015,7 @@ class MutationCaller:
             for i, ins_len, mut_str, q, hplen in insertion_tuples:
                 i_chrom = self.transcriptconverter.i_mRNAtoChromosome(
                         a.target, i, mRNAfragment=targetseq)
-                m = re.match('^ins(?P<i>\d+)len(?P<len>\d+)$',
+                m = re.match(r'^ins(?P<i>\d+)len(?P<len>\d+)$',
                         mut_str)
                 assert m, "can't match {0}".format(mut_str)
                 assert i == int(m.group('i'))
@@ -2039,10 +2039,10 @@ class TargetVariants:
 
 
 #: match indels for :meth:`shiftIndels`
-_INDELMATCH = re.compile('(?P<lead>=[A-Z]+)'
-                         '(?P<indeltype>[\-\+])'
-                         '(?P<indel>[a-z]+)'
-                         '(?P<trail>=[A-Z]+)')
+_INDELMATCH = re.compile(r'(?P<lead>=[A-Z]+)'
+                         r'(?P<indeltype>[\-\+])'
+                         r'(?P<indel>[a-z]+)'
+                         r'(?P<trail>=[A-Z]+)')
 
 def shiftIndels(cigar):
     """Shifts indels to consistent position.
@@ -2129,13 +2129,13 @@ def trimCigar(side, cigar):
     if side == 'start':
         if re.match('=[A-Z]{2}', cigar):
             return '=' + cigar[2 : ]
-        elif re.match('=[A-Z][\*\-\+]', cigar):
+        elif re.match(r'=[A-Z][\*\-\+]', cigar):
             return cigar[2 : ]
-        elif re.match('\*[a-z]{2}', cigar):
+        elif re.match(r'\*[a-z]{2}', cigar):
             return cigar[3 : ]
-        elif re.match('[\-\+][a-z]{2}', cigar):
+        elif re.match(r'[\-\+][a-z]{2}', cigar):
             return cigar[0] + cigar[2 : ]
-        elif re.match('[\-\+][a-z][^a-z]'):
+        elif re.match(r'[\-\+][a-z][^a-z]'):
             return cigar[2 : ]
         else:
             raise ValueError("Cannot match start of {0}".format(cigar))
@@ -2144,9 +2144,9 @@ def trimCigar(side, cigar):
             return cigar[ : -1]
         elif re.search('=[A-Z]$', cigar):
             return cigar[ : -2]
-        elif re.search('\*[a-z]{2}$', cigar):
+        elif re.search(r'\*[a-z]{2}$', cigar):
             return cigar[ : -3]
-        elif re.search('[\-\+][a-z]$', cigar):
+        elif re.search(r'[\-\+][a-z]$', cigar):
             return cigar[ : -2]
         elif re.search('[a-z]{2}$', cigar):
             return cigar[ : -1]
@@ -2240,12 +2240,12 @@ def parsePAF(paf_file, targets=None, introns_to_gaps=False):
 
     cigar_m = re.compile(
             'cs:Z:(?P<cigar_str>('
-            '\*[a-z]{2}|' # matches mutations
-            '=[A-Z]+|' # matches identities
-            '[\+\-][a-z]+|' # matches indels
-            '\~[a-z]{2}\d+[a-z]{2}' # matches introns
-            ')+)(?:\s+|$)')
-    score_m = re.compile('AS:i:(?P<score>[\-\+]?\d+)(?:\s+|$)')
+            r'\*[a-z]{2}|' # matches mutations
+            r'=[A-Z]+|' # matches identities
+            r'[\+\-][a-z]+|' # matches indels
+            r'\~[a-z]{2}\d+[a-z]{2}' # matches introns
+            r')+)(?:\s+|$)')
+    score_m = re.compile(r'AS:i:(?P<score>[\-\+]?\d+)(?:\s+|$)')
 
     close_paf_file = False
     if isinstance(paf_file, str):
@@ -2309,7 +2309,7 @@ def numExactMatches(cigar):
     return n
 
 
-_MUTATION_MATCH = re.compile('\*[a-z]{2}')
+_MUTATION_MATCH = re.compile(r'\*[a-z]{2}')
 
 def numAligned(cigar):
     """Gets number of aligned nucleotides from PAF long CIGAR.
@@ -2338,10 +2338,10 @@ def numAligned(cigar):
 
 
 #: matches individual group in long format CIGAR
-_CIGAR_GROUP_MATCH = re.compile('=[A-Z]+|' # exact matches
-                                '\*[a-z]{2}|' # mutation
-                                '[\-\+][a-z]+|' # indel
-                                '\~[a-z]{2}\d+[a-z]{2}' # intron
+_CIGAR_GROUP_MATCH = re.compile(r'=[A-Z]+|' # exact matches
+                                r'\*[a-z]{2}|' # mutation
+                                r'[\-\+][a-z]+|' # indel
+                                r'\~[a-z]{2}\d+[a-z]{2}' # intron
                                 )
 
 

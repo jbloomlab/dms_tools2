@@ -101,7 +101,7 @@ def generateReadPair(refseq, alignspec, bc1, bc2, r1ext=0, r2ext=0,
     q2 = ''.join(q2)
 
     # create names
-    assert not re.search('\s', rname)
+    assert not re.search(r'\s', rname)
     name1 = '@{0} 1:{1}:18:ATCACG'.format(rname, {False:'N', True:'Y'}[r1fail])
     name2 = '@{0} 2:{1}:18:ATCACG'.format(rname, {False:'N', True:'Y'}[r2fail])
 

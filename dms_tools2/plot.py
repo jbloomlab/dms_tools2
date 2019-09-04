@@ -439,7 +439,7 @@ def plotCumulMutCounts(names, countsfiles, plotfile, chartype,
                     legend_position='top', legend_direction='horizontal')
             + labs(color="") 
             + guides(color=guide_legend(title_position='left'))
-            + ylab('fraction $\leq$ this many counts')
+            + ylab(r'fraction $\leq$ this many counts')
             + scale_color_manual(COLOR_BLIND_PALETTE)
             )
     p.save(plotfile, verbose=False, limitsize=False)
