@@ -314,7 +314,7 @@ class TranscriptConverter:
             raise ValueError("invalid `chromosome` {0}".format(chromosome))
 
         if isinstance(mutation, str):
-            m = re.match('^(?P<wt>[{0}])(?P<i>\d+)(?P<mut>[{0}])$'
+            m = re.match(r'^(?P<wt>[{0}])(?P<i>\d+)(?P<mut>[{0}])$'
                     .format(''.join(NTS)), mutation)
             if not m:
                 raise ValueError("cannot parse mutation {0}"

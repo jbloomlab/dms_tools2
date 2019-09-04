@@ -1259,12 +1259,12 @@ def barcodeInfoToCodonVariantTable(samples, geneseq, path=None):
     """
 
     # Set up re matchers for looking at lines
-    matcher = re.compile('(?P<linetype>^.*\:) '
-                         '(?P<contents>.*$)')
+    matcher = re.compile(r'(?P<linetype>^.*\:) '
+                         r'(?P<contents>.*$)')
 
-    alt_matcher = re.compile('(?P<linetype>^R\d READS:$)')
+    alt_matcher = re.compile(r'(?P<linetype>^R\d READS:$)')
 
-    read_matcher = re.compile('(?P<read>^[ATGCN\s]*$)')
+    read_matcher = re.compile(r'(?P<read>^[ATGCN\s]*$)')
 
     # Create a dictionary to contain dictionaries of each library's barcodes
     libraries = {}

@@ -327,7 +327,7 @@ def simpleConsensus(df, *,
                 # order mutations based on first number in string
                 n_col_consensus = []
                 for mut in col_consensus:
-                    m = re.search('(\-{0,1}\d+)', mut)
+                    m = re.search(r'(\-{0,1}\d+)', mut)
                     if m is None:
                         n_col_consensus.append((math.nan, mut))
                     else:

@@ -52,7 +52,7 @@ def checkName(name, nametype):
     if not name or name.isspace():
         raise ValueError("{0} is all whitespace".format(nametype))
     illegal_chars = [c for c in name if 
-            re.search('^[a-zA-Z0-9\- \.]$', c) is None]
+            re.search(r'^[a-zA-Z0-9\- \.]$', c) is None]
     if illegal_chars:
         raise ValueError("{0} {1} contains following illegal characters: "
                 "{2}".format(nametype, name, ', '.join(illegal_chars)))

@@ -19,19 +19,17 @@ from ._metadata import __author_email__
 from ._metadata import __url__
 
 # define constants related to nucleotides / amino acids / codons
-import Bio.Alphabet.IUPAC
 import Bio.Seq
 
 #: alphabetized list of all 20 amino acids
-AAS = sorted([_aa.upper() for _aa in 
-        Bio.Alphabet.IUPAC.IUPACProtein.letters])
+AAS = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M',
+       'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
 
 #: like `AAS` but includes stop codon (``*``) at end
 AAS_WITHSTOP = AAS + ['*']
 
 #: alphabetized list of all nucleotides
-NTS = sorted([_nt.upper() for _nt in 
-        Bio.Alphabet.IUPAC.IUPACUnambiguousDNA.letters])
+NTS = ['A', 'C', 'G', 'T']
 
 #: dict mapping each nucleotide to its complement.
 NTCOMPLEMENT = dict([(_nt, str(Bio.Seq.Seq(_nt).reverse_complement()))
