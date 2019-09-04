@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_tools2.barcodes &#8212; dms_tools2 2.5.1 documentation</title>
+    <title>dms_tools2.barcodes &#8212; dms_tools2 2.6.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -150,113 +150,6 @@
     <span class="k">assert</span> <span class="ow">not</span> <span class="n">groups</span>
 
     <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dups</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">barcodes</span><span class="o">.</span><span class="n">index</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="fracIdentWithinBarcode"><a class="viewcode-back" href="../../dms_tools2.barcodes.html#dms_tools2.barcodes.fracIdentWithinBarcode">[docs]</a><span class="k">def</span> <span class="nf">fracIdentWithinBarcode</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">barcode_col</span><span class="o">=</span><span class="s1">&#39;barcode&#39;</span><span class="p">,</span>
-        <span class="n">variant_col</span><span class="o">=</span><span class="s1">&#39;variant&#39;</span><span class="p">,</span> <span class="n">library_col</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Gets fraction of identical variants within barcodes.</span>
-
-<span class="sd">    This function is designed for the case when you have barcoded</span>
-<span class="sd">    variants, and you want to determine how often the variants</span>
-<span class="sd">    with the same barcode are identical. To calculate this, all</span>
-<span class="sd">    variants with the same barcode are grouped, and for every pair</span>
-<span class="sd">    of variants within a barcode we compute the fraction that</span>
-<span class="sd">    are identical (note that this fraction is the</span>
-<span class="sd">    `Simpson diversity index without replacement &lt;https://en.wikipedia.org/wiki/Diversity_index&gt;`_.</span>
-<span class="sd">    We then compute the average of this fraction over all pairs.</span>
-
-<span class="sd">    In the case where we are sequencing barcoded genes, the square</span>
-<span class="sd">    root of this fraction can be interpreted as the sequencing accuracy</span>
-<span class="sd">    per variant.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        `df` (pandas Data Frame)</span>
-<span class="sd">            Holds barcodes, variants, and (optionally) library names.</span>
-<span class="sd">        `barcode_col` (str)</span>
-<span class="sd">            Name of column holding barcodes.</span>
-<span class="sd">        `variant_col` (str)</span>
-<span class="sd">            Name of column holding variants (these are what we</span>
-<span class="sd">            compare to see if they are identical).</span>
-<span class="sd">        `library_col` (str or None)</span>
-<span class="sd">            Name of libary. We do the computation separately</span>
-<span class="sd">            for each library. Set to `None` if only one library.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        A pandas data frame with columns named `fraction_identical`</span>
-<span class="sd">        and `accuracy` that contain the computed fraction identical</span>
-<span class="sd">        and accuracy for each library.</span>
-
-<span class="sd">    Here is an example. In this data frame, we see that</span>
-<span class="sd">    of the four pairs (one for barcode *AT* and three for</span>
-<span class="sd">    barcode *TA*), two are identical. As you can see</span>
-<span class="sd">    the function correctly calculates that 50% are identical,</span>
-<span class="sd">    and computes an accuracy that is the square root of 0.5:</span>
-
-<span class="sd">    &gt;&gt;&gt; df = pandas.DataFrame({</span>
-<span class="sd">    ...     &#39;barcode&#39;:[&#39;AT&#39;, &#39;AT&#39;, &#39;TG&#39;, &#39;TA&#39;, &#39;TA&#39;, &#39;TA&#39;],</span>
-<span class="sd">    ...     &#39;variant&#39;:[&#39;v1&#39;, &#39;v1&#39;, &#39;v2&#39;, &#39;v3&#39;, &#39;v4&#39;, &#39;v3&#39;]})</span>
-<span class="sd">    &gt;&gt;&gt; fracIdentWithinBarcode(df)</span>
-<span class="sd">       fraction_identical  accuracy</span>
-<span class="sd">    0                 0.5  0.707107</span>
-
-<span class="sd">    Now another example with two libraries and non-standard column</span>
-<span class="sd">    names. Note that we only get results for the two libraries</span>
-<span class="sd">    with barcodes found multiple times:</span>
-
-<span class="sd">    &gt;&gt;&gt; df = pandas.DataFrame({</span>
-<span class="sd">    ...     &#39;bc&#39;    :[&#39;AT&#39;, &#39;AT&#39;, &#39;TG&#39;, &#39;TA&#39;, &#39;TA&#39;, &#39;TA&#39;, &#39;TA&#39;],</span>
-<span class="sd">    ...     &#39;var&#39;   :[&#39;v1&#39;, &#39;v1&#39;, &#39;v2&#39;, &#39;v3&#39;, &#39;v4&#39;, &#39;v3&#39;, &#39;v3&#39;],</span>
-<span class="sd">    ...     &#39;library&#39;:[&#39;s1&#39;, &#39;s1&#39;, &#39;s2&#39;, &#39;s3&#39;, &#39;s3&#39;, &#39;s3&#39;, &#39;s4&#39;]})</span>
-<span class="sd">    &gt;&gt;&gt; fracIdentWithinBarcode(df, library_col=&#39;library&#39;,</span>
-<span class="sd">    ...     barcode_col=&#39;bc&#39;, variant_col=&#39;var&#39;)</span>
-<span class="sd">      library  fraction_identical  accuracy</span>
-<span class="sd">    0      s1            1.000000   1.00000</span>
-<span class="sd">    1      s3            0.333333   0.57735</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">library_col</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">library_col</span> <span class="o">=</span> <span class="s1">&#39;library&#39;</span>
-        <span class="n">drop_library_col</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">library</span><span class="o">=</span><span class="s1">&#39;dummy&#39;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">drop_library_col</span> <span class="o">=</span> <span class="kc">False</span>
-
-    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="n">barcode_col</span><span class="p">,</span> <span class="n">variant_col</span><span class="p">,</span> <span class="n">library_col</span><span class="p">]:</span>
-        <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;No columns </span><span class="si">{col}</span><span class="s2"> in df&quot;</span><span class="p">)</span>
-
-    <span class="n">result</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">df</span>
-        <span class="c1"># get just sequences that have a barcode found multiple times</span>
-        <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">barcode_counts</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">barcode_counts</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span>
-            <span class="n">x</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">library_col</span><span class="p">,</span> <span class="n">barcode_col</span><span class="p">])</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">))</span>
-        <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;barcode_counts &gt; 1&#39;</span><span class="p">)</span>
-        <span class="c1"># within each barcode, count number of sequences of each mutation combo</span>
-        <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">dummy</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">library_col</span><span class="p">,</span> <span class="n">barcode_col</span><span class="p">,</span> <span class="s1">&#39;barcode_counts&#39;</span><span class="p">,</span> <span class="n">variant_col</span><span class="p">])</span>
-        <span class="o">.</span><span class="n">dummy</span>
-        <span class="o">.</span><span class="n">count</span><span class="p">()</span>
-        <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;sequence_counts&#39;</span><span class="p">)</span>
-        <span class="c1"># compute Simpson diversity without replacement for each barcode</span>
-        <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">library_col</span><span class="p">,</span> <span class="n">barcode_col</span><span class="p">,</span> <span class="s1">&#39;barcode_counts&#39;</span><span class="p">])</span>
-        <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">sequence_counts</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">sequence_counts</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span>
-                      <span class="n">x</span><span class="o">.</span><span class="n">barcode_counts</span> <span class="o">/</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">barcode_counts</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
-        <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;simpson_diversity&#39;</span><span class="p">)</span>
-        <span class="c1"># compute weighted average of fraction identical across all pairs</span>
-        <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">npairs</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">barcode_counts</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">barcode_counts</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
-            <span class="n">weighted_diversity</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">npairs</span> <span class="o">*</span> <span class="n">x</span><span class="o">.</span><span class="n">simpson_diversity</span><span class="p">)</span>
-        <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">library_col</span><span class="p">)</span>
-        <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">weighted_diversity</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">x</span><span class="o">.</span><span class="n">npairs</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
-        <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;fraction_identical&#39;</span><span class="p">)</span>
-        <span class="c1"># estimate accuracy as square root of fraction identical</span>
-        <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">accuracy</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">fraction_identical</span><span class="p">))</span>
-        <span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">drop_library_col</span><span class="p">:</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">library_col</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;columns&#39;</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">result</span></div>
 
 
 <div class="viewcode-block" id="simpleConsensus"><a class="viewcode-back" href="../../dms_tools2.barcodes.html#dms_tools2.barcodes.simpleConsensus">[docs]</a><span class="k">def</span> <span class="nf">simpleConsensus</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
@@ -468,7 +361,7 @@
                 <span class="c1"># order mutations based on first number in string</span>
                 <span class="n">n_col_consensus</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">for</span> <span class="n">mut</span> <span class="ow">in</span> <span class="n">col_consensus</span><span class="p">:</span>
-                    <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;(\-{0,1}\d+)&#39;</span><span class="p">,</span> <span class="n">mut</span><span class="p">)</span>
+                    <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(\-{0,1}\d+)&#39;</span><span class="p">,</span> <span class="n">mut</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                         <span class="n">n_col_consensus</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">mut</span><span class="p">))</span>
                     <span class="k">else</span><span class="p">:</span>
@@ -588,24 +481,24 @@
 <span class="sd">    ...         &#39;@valid_CGTA_barcode_partial_flanking_region\\n&#39;</span>
 <span class="sd">    ...         &#39;AGTCCGTATCAT\\n&#39;</span>
 <span class="sd">    ...         &#39;+\\n&#39;</span>
-<span class="sd">    ...         &#39;??????????????\\n&#39;)</span>
+<span class="sd">    ...         &#39;????????????\\n&#39;)</span>
 <span class="sd">    ...     _ = f2.write(</span>
 <span class="sd">    ...         &#39;@valid_CGTA_barcode_partial_flanking_region\\n&#39;</span>
 <span class="sd">    ...         &#39;ACATGATACG\\n&#39;</span>
 <span class="sd">    ...         &#39;+\\n&#39;</span>
-<span class="sd">    ...         &#39;??????????????\\n&#39;)</span>
+<span class="sd">    ...         &#39;??????????\\n&#39;)</span>
 <span class="sd">    ...</span>
 <span class="sd">    ...     # valid GCCG barcode, extended flanking regions</span>
 <span class="sd">    ...     _ = f1.write(</span>
 <span class="sd">    ...         &#39;@valid_GCCG_barcode_extended_flanking_region\\n&#39;</span>
 <span class="sd">    ...         &#39;AGTCGCCGTCATGTTAC\\n&#39;</span>
 <span class="sd">    ...         &#39;+\\n&#39;</span>
-<span class="sd">    ...         &#39;??????????????\\n&#39;)</span>
+<span class="sd">    ...         &#39;?????????????????\\n&#39;)</span>
 <span class="sd">    ...     _ = f2.write(</span>
 <span class="sd">    ...         &#39;@valid_GCCG_barcode_extended_flanking_region\\n&#39;</span>
 <span class="sd">    ...         &#39;ACATGACGGCGACTGAC\\n&#39;</span>
 <span class="sd">    ...         &#39;+\\n&#39;</span>
-<span class="sd">    ...         &#39;??????????????\\n&#39;)</span>
+<span class="sd">    ...         &#39;?????????????????\\n&#39;)</span>
 <span class="sd">    ...</span>
 <span class="sd">    ...     # AAGT barcode in R1 but R2 differs</span>
 <span class="sd">    ...     _ = f1.write(</span>

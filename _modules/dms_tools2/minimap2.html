@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_tools2.minimap2 &#8212; dms_tools2 2.5.1 documentation</title>
+    <title>dms_tools2.minimap2 &#8212; dms_tools2 2.6.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -439,18 +439,18 @@
 
         <span class="k">else</span><span class="p">:</span>
             <span class="n">sub_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
-                    <span class="s1">&#39;^(?P&lt;wt&gt;[ACGT])(?P&lt;i&gt;\d+)(?P&lt;mut&gt;[ACGT])&#39;</span>
-                    <span class="s1">&#39;(?: \(accuracy = (?P&lt;acc&gt;\d+\.{0,1}\d*)\)){0,1}$&#39;</span><span class="p">)</span>
+                    <span class="sa">r</span><span class="s1">&#39;^(?P&lt;wt&gt;[ACGT])(?P&lt;i&gt;\d+)(?P&lt;mut&gt;[ACGT])&#39;</span>
+                    <span class="sa">r</span><span class="s1">&#39;(?: \(accuracy = (?P&lt;acc&gt;\d+\.{0,1}\d*)\)){0,1}$&#39;</span><span class="p">)</span>
 
             <span class="n">del_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
-                    <span class="s1">&#39;^del(?P&lt;istart&gt;\d+)to(?P&lt;iend&gt;\d+)&#39;</span>
-                    <span class="s1">&#39;(?: \((?:accuracy = (?P&lt;acc&gt;\d+\.{0,1}\d*)){0,1}(?:\, ){0,1}&#39;</span>
-                    <span class="s1">&#39;(?:homopolymer length = (?P&lt;hplen&gt;\d+)){0,1}\)){0,1}$&#39;</span><span class="p">)</span>
+                    <span class="sa">r</span><span class="s1">&#39;^del(?P&lt;istart&gt;\d+)to(?P&lt;iend&gt;\d+)&#39;</span>
+                    <span class="sa">r</span><span class="s1">&#39;(?: \((?:accuracy = (?P&lt;acc&gt;\d+\.{0,1}\d*)){0,1}(?:\, ){0,1}&#39;</span>
+                    <span class="sa">r</span><span class="s1">&#39;(?:homopolymer length = (?P&lt;hplen&gt;\d+)){0,1}\)){0,1}$&#39;</span><span class="p">)</span>
 
             <span class="n">ins_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
-                    <span class="s1">&#39;ins(?P&lt;i&gt;\d+)len(?P&lt;ins_len&gt;\d+)&#39;</span>
-                    <span class="s1">&#39;(?: \((?:accuracy = (?P&lt;acc&gt;\d+\.{0,1}\d*)){0,1}(?:\, ){0,1}&#39;</span>
-                    <span class="s1">&#39;(?:homopolymer length = (?P&lt;hplen&gt;\d+)){0,1}\)){0,1}$&#39;</span><span class="p">)</span>
+                    <span class="sa">r</span><span class="s1">&#39;ins(?P&lt;i&gt;\d+)len(?P&lt;ins_len&gt;\d+)&#39;</span>
+                    <span class="sa">r</span><span class="s1">&#39;(?: \((?:accuracy = (?P&lt;acc&gt;\d+\.{0,1}\d*)){0,1}(?:\, ){0,1}&#39;</span>
+                    <span class="sa">r</span><span class="s1">&#39;(?:homopolymer length = (?P&lt;hplen&gt;\d+)){0,1}\)){0,1}$&#39;</span><span class="p">)</span>
 
             <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">strip</span><span class="p">,</span> <span class="n">mut_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="p">)):</span>
 
@@ -1026,7 +1026,7 @@
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">mut_str</span><span class="p">,</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">substitution_tuples</span><span class="p">:</span>
                 <span class="n">i_chrom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transcriptconverter</span><span class="o">.</span><span class="n">i_mRNAtoChromosome</span><span class="p">(</span>
                         <span class="n">a</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">mRNAfragment</span><span class="o">=</span><span class="n">targetseq</span><span class="p">)</span>
-                <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;^(?P&lt;wt_nt&gt;[</span><span class="si">{0}</span><span class="s1">])(?P&lt;site&gt;\d+)(?P&lt;mut_nt&gt;[</span><span class="si">{0}</span><span class="s1">])$&#39;</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^(?P&lt;wt_nt&gt;[</span><span class="si">{0}</span><span class="s1">])(?P&lt;site&gt;\d+)(?P&lt;mut_nt&gt;[</span><span class="si">{0}</span><span class="s1">])$&#39;</span>
                         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">NTS</span><span class="p">)),</span> <span class="n">mut_str</span><span class="p">)</span>
                 <span class="k">assert</span> <span class="n">m</span><span class="p">,</span> <span class="s2">&quot;can&#39;t match </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mut_str</span><span class="p">)</span>
                 <span class="k">assert</span> <span class="n">i</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">))</span>
@@ -1049,7 +1049,7 @@
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ins_len</span><span class="p">,</span> <span class="n">mut_str</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">hplen</span> <span class="ow">in</span> <span class="n">insertion_tuples</span><span class="p">:</span>
                 <span class="n">i_chrom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transcriptconverter</span><span class="o">.</span><span class="n">i_mRNAtoChromosome</span><span class="p">(</span>
                         <span class="n">a</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">mRNAfragment</span><span class="o">=</span><span class="n">targetseq</span><span class="p">)</span>
-                <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;^ins(?P&lt;i&gt;\d+)len(?P&lt;len&gt;\d+)$&#39;</span><span class="p">,</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^ins(?P&lt;i&gt;\d+)len(?P&lt;len&gt;\d+)$&#39;</span><span class="p">,</span>
                         <span class="n">mut_str</span><span class="p">)</span>
                 <span class="k">assert</span> <span class="n">m</span><span class="p">,</span> <span class="s2">&quot;can&#39;t match </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mut_str</span><span class="p">)</span>
                 <span class="k">assert</span> <span class="n">i</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;i&#39;</span><span class="p">))</span>
@@ -2073,10 +2073,10 @@
 
 
 <span class="c1">#: match indels for :meth:`shiftIndels`</span>
-<span class="n">_INDELMATCH</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;(?P&lt;lead&gt;=[A-Z]+)&#39;</span>
-                         <span class="s1">&#39;(?P&lt;indeltype&gt;[\-\+])&#39;</span>
-                         <span class="s1">&#39;(?P&lt;indel&gt;[a-z]+)&#39;</span>
-                         <span class="s1">&#39;(?P&lt;trail&gt;=[A-Z]+)&#39;</span><span class="p">)</span>
+<span class="n">_INDELMATCH</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(?P&lt;lead&gt;=[A-Z]+)&#39;</span>
+                         <span class="sa">r</span><span class="s1">&#39;(?P&lt;indeltype&gt;[\-\+])&#39;</span>
+                         <span class="sa">r</span><span class="s1">&#39;(?P&lt;indel&gt;[a-z]+)&#39;</span>
+                         <span class="sa">r</span><span class="s1">&#39;(?P&lt;trail&gt;=[A-Z]+)&#39;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="shiftIndels"><a class="viewcode-back" href="../../dms_tools2.minimap2.html#dms_tools2.minimap2.shiftIndels">[docs]</a><span class="k">def</span> <span class="nf">shiftIndels</span><span class="p">(</span><span class="n">cigar</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Shifts indels to consistent position.</span>
@@ -2163,13 +2163,13 @@
     <span class="k">if</span> <span class="n">side</span> <span class="o">==</span> <span class="s1">&#39;start&#39;</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;=[A-Z]</span><span class="si">{2}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">cigar</span><span class="p">):</span>
             <span class="k">return</span> <span class="s1">&#39;=&#39;</span> <span class="o">+</span> <span class="n">cigar</span><span class="p">[</span><span class="mi">2</span> <span class="p">:</span> <span class="p">]</span>
-        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;=[A-Z][\*\-\+]&#39;</span><span class="p">,</span> <span class="n">cigar</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;=[A-Z][\*\-\+]&#39;</span><span class="p">,</span> <span class="n">cigar</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">cigar</span><span class="p">[</span><span class="mi">2</span> <span class="p">:</span> <span class="p">]</span>
-        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;\*[a-z]</span><span class="si">{2}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">cigar</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\*[a-z]</span><span class="si">{2}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">cigar</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">cigar</span><span class="p">[</span><span class="mi">3</span> <span class="p">:</span> <span class="p">]</span>
-        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;[\-\+][a-z]</span><span class="si">{2}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">cigar</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[\-\+][a-z]</span><span class="si">{2}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">cigar</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">cigar</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">cigar</span><span class="p">[</span><span class="mi">2</span> <span class="p">:</span> <span class="p">]</span>
-        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;[\-\+][a-z][^a-z]&#39;</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[\-\+][a-z][^a-z]&#39;</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">cigar</span><span class="p">[</span><span class="mi">2</span> <span class="p">:</span> <span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot match start of </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cigar</span><span class="p">))</span>
@@ -2178,9 +2178,9 @@
             <span class="k">return</span> <span class="n">cigar</span><span class="p">[</span> <span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;=[A-Z]$&#39;</span><span class="p">,</span> <span class="n">cigar</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">cigar</span><span class="p">[</span> <span class="p">:</span> <span class="o">-</span><span class="mi">2</span><span class="p">]</span>
-        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;\*[a-z]</span><span class="si">{2}</span><span class="s1">$&#39;</span><span class="p">,</span> <span class="n">cigar</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\*[a-z]</span><span class="si">{2}</span><span class="s1">$&#39;</span><span class="p">,</span> <span class="n">cigar</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">cigar</span><span class="p">[</span> <span class="p">:</span> <span class="o">-</span><span class="mi">3</span><span class="p">]</span>
-        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;[\-\+][a-z]$&#39;</span><span class="p">,</span> <span class="n">cigar</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[\-\+][a-z]$&#39;</span><span class="p">,</span> <span class="n">cigar</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">cigar</span><span class="p">[</span> <span class="p">:</span> <span class="o">-</span><span class="mi">2</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;[a-z]</span><span class="si">{2}</span><span class="s1">$&#39;</span><span class="p">,</span> <span class="n">cigar</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">cigar</span><span class="p">[</span> <span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -2274,12 +2274,12 @@
 
     <span class="n">cigar_m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
             <span class="s1">&#39;cs:Z:(?P&lt;cigar_str&gt;(&#39;</span>
-            <span class="s1">&#39;\*[a-z]</span><span class="si">{2}</span><span class="s1">|&#39;</span> <span class="c1"># matches mutations</span>
-            <span class="s1">&#39;=[A-Z]+|&#39;</span> <span class="c1"># matches identities</span>
-            <span class="s1">&#39;[\+\-][a-z]+|&#39;</span> <span class="c1"># matches indels</span>
-            <span class="s1">&#39;\~[a-z]</span><span class="si">{2}</span><span class="s1">\d+[a-z]</span><span class="si">{2}</span><span class="s1">&#39;</span> <span class="c1"># matches introns</span>
-            <span class="s1">&#39;)+)(?:\s+|$)&#39;</span><span class="p">)</span>
-    <span class="n">score_m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;AS:i:(?P&lt;score&gt;[\-\+]?\d+)(?:\s+|$)&#39;</span><span class="p">)</span>
+            <span class="sa">r</span><span class="s1">&#39;\*[a-z]</span><span class="si">{2}</span><span class="s1">|&#39;</span> <span class="c1"># matches mutations</span>
+            <span class="sa">r</span><span class="s1">&#39;=[A-Z]+|&#39;</span> <span class="c1"># matches identities</span>
+            <span class="sa">r</span><span class="s1">&#39;[\+\-][a-z]+|&#39;</span> <span class="c1"># matches indels</span>
+            <span class="sa">r</span><span class="s1">&#39;\~[a-z]</span><span class="si">{2}</span><span class="s1">\d+[a-z]</span><span class="si">{2}</span><span class="s1">&#39;</span> <span class="c1"># matches introns</span>
+            <span class="sa">r</span><span class="s1">&#39;)+)(?:\s+|$)&#39;</span><span class="p">)</span>
+    <span class="n">score_m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;AS:i:(?P&lt;score&gt;[\-\+]?\d+)(?:\s+|$)&#39;</span><span class="p">)</span>
 
     <span class="n">close_paf_file</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">paf_file</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -2343,7 +2343,7 @@
     <span class="k">return</span> <span class="n">n</span></div>
 
 
-<span class="n">_MUTATION_MATCH</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;\*[a-z]</span><span class="si">{2}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">_MUTATION_MATCH</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\*[a-z]</span><span class="si">{2}</span><span class="s1">&#39;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="numAligned"><a class="viewcode-back" href="../../dms_tools2.minimap2.html#dms_tools2.minimap2.numAligned">[docs]</a><span class="k">def</span> <span class="nf">numAligned</span><span class="p">(</span><span class="n">cigar</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Gets number of aligned nucleotides from PAF long CIGAR.</span>
@@ -2372,10 +2372,10 @@
 
 
 <span class="c1">#: matches individual group in long format CIGAR</span>
-<span class="n">_CIGAR_GROUP_MATCH</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;=[A-Z]+|&#39;</span> <span class="c1"># exact matches</span>
-                                <span class="s1">&#39;\*[a-z]</span><span class="si">{2}</span><span class="s1">|&#39;</span> <span class="c1"># mutation</span>
-                                <span class="s1">&#39;[\-\+][a-z]+|&#39;</span> <span class="c1"># indel</span>
-                                <span class="s1">&#39;\~[a-z]</span><span class="si">{2}</span><span class="s1">\d+[a-z]</span><span class="si">{2}</span><span class="s1">&#39;</span> <span class="c1"># intron</span>
+<span class="n">_CIGAR_GROUP_MATCH</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;=[A-Z]+|&#39;</span> <span class="c1"># exact matches</span>
+                                <span class="sa">r</span><span class="s1">&#39;\*[a-z]</span><span class="si">{2}</span><span class="s1">|&#39;</span> <span class="c1"># mutation</span>
+                                <span class="sa">r</span><span class="s1">&#39;[\-\+][a-z]+|&#39;</span> <span class="c1"># indel</span>
+                                <span class="sa">r</span><span class="s1">&#39;\~[a-z]</span><span class="si">{2}</span><span class="s1">\d+[a-z]</span><span class="si">{2}</span><span class="s1">&#39;</span> <span class="c1"># intron</span>
                                 <span class="p">)</span>
 
 

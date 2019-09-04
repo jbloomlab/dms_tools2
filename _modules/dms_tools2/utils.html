@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_tools2.utils &#8212; dms_tools2 2.5.1 documentation</title>
+    <title>dms_tools2.utils &#8212; dms_tools2 2.6.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -54,11 +54,11 @@
 <span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">re</span>
 
+<span class="kn">import</span> <span class="nn">pysam</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">scipy.misc</span>
 <span class="kn">import</span> <span class="nn">scipy.special</span>
 <span class="kn">import</span> <span class="nn">pandas</span>
-<span class="kn">import</span> <span class="nn">HTSeq</span>
 <span class="kn">import</span> <span class="nn">gzip</span>
 
 <span class="kn">import</span> <span class="nn">dms_variants.codonvarianttable</span>
@@ -78,7 +78,7 @@
                     <span class="n">sys</span><span class="o">.</span><span class="n">version</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)),</span>
             <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">dms_tools2 version: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dms_tools2</span><span class="o">.</span><span class="n">__version__</span><span class="p">),</span>
             <span class="p">]</span>
-    <span class="k">for</span> <span class="n">modname</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;Bio&#39;</span><span class="p">,</span> <span class="s1">&#39;HTSeq&#39;</span><span class="p">,</span> <span class="s1">&#39;pandas&#39;</span><span class="p">,</span> <span class="s1">&#39;numpy&#39;</span><span class="p">,</span> <span class="s1">&#39;IPython&#39;</span><span class="p">,</span>
+    <span class="k">for</span> <span class="n">modname</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;Bio&#39;</span><span class="p">,</span> <span class="s1">&#39;pandas&#39;</span><span class="p">,</span> <span class="s1">&#39;numpy&#39;</span><span class="p">,</span> <span class="s1">&#39;IPython&#39;</span><span class="p">,</span>
             <span class="s1">&#39;jupyter&#39;</span><span class="p">,</span> <span class="s1">&#39;matplotlib&#39;</span><span class="p">,</span> <span class="s1">&#39;plotnine&#39;</span><span class="p">,</span> <span class="s1">&#39;natsort&#39;</span><span class="p">,</span> <span class="s1">&#39;pystan&#39;</span><span class="p">,</span>
             <span class="s1">&#39;scipy&#39;</span><span class="p">,</span> <span class="s1">&#39;seaborn&#39;</span><span class="p">,</span> <span class="s1">&#39;phydmslib&#39;</span><span class="p">,</span> <span class="s1">&#39;statsmodels&#39;</span><span class="p">,</span> <span class="s1">&#39;rpy2&#39;</span><span class="p">,</span>
             <span class="s1">&#39;regex&#39;</span><span class="p">,</span> <span class="s1">&#39;umi_tools&#39;</span><span class="p">]:</span>
@@ -241,21 +241,31 @@
     <span class="k">elif</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">,</span> <span class="n">r2files</span><span class="p">)):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;cannot find all `r2files`&#39;</span><span class="p">)</span>
     <span class="k">for</span> <span class="p">(</span><span class="n">r1file</span><span class="p">,</span> <span class="n">r2file</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">r1files</span><span class="p">,</span> <span class="n">r2files</span><span class="p">):</span>
-        <span class="n">r1reader</span> <span class="o">=</span> <span class="n">HTSeq</span><span class="o">.</span><span class="n">FastqReader</span><span class="p">(</span><span class="n">r1file</span><span class="p">,</span> <span class="n">raw_iterator</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">r1reader</span> <span class="o">=</span> <span class="n">pysam</span><span class="o">.</span><span class="n">FastxFile</span><span class="p">(</span><span class="n">r1file</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">r2file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">read_iterator</span> <span class="o">=</span> <span class="n">r1reader</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">r2reader</span> <span class="o">=</span> <span class="n">HTSeq</span><span class="o">.</span><span class="n">FastqReader</span><span class="p">(</span><span class="n">r2file</span><span class="p">,</span> <span class="n">raw_iterator</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">r2reader</span> <span class="o">=</span> <span class="n">pysam</span><span class="o">.</span><span class="n">FastxFile</span><span class="p">(</span><span class="n">r2file</span><span class="p">)</span>
             <span class="n">read_iterator</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">r1reader</span><span class="p">,</span> <span class="n">r2reader</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">read_iterator</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">r2file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-               <span class="n">r1</span><span class="p">,</span> <span class="n">id1</span><span class="p">,</span> <span class="n">q1</span><span class="p">,</span> <span class="n">qs1</span> <span class="o">=</span> <span class="n">tup</span>
+               <span class="n">a1</span> <span class="o">=</span> <span class="n">tup</span>
                <span class="n">r2</span> <span class="o">=</span> <span class="n">q2</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="p">(</span><span class="n">r1</span><span class="p">,</span> <span class="n">id1</span><span class="p">,</span> <span class="n">q1</span><span class="p">,</span> <span class="n">qs1</span><span class="p">),</span> <span class="p">(</span><span class="n">r2</span><span class="p">,</span> <span class="n">id2</span><span class="p">,</span> <span class="n">q2</span><span class="p">,</span> <span class="n">qs2</span><span class="p">)</span> <span class="o">=</span> <span class="n">tup</span>
-                <span class="n">id2</span> <span class="o">=</span> <span class="n">id2</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span> <span class="o">=</span> <span class="n">tup</span>
+                <span class="n">r2</span> <span class="o">=</span> <span class="n">a2</span><span class="o">.</span><span class="n">sequence</span>
+                <span class="n">q2</span> <span class="o">=</span> <span class="n">a2</span><span class="o">.</span><span class="n">quality</span>
+                <span class="k">if</span> <span class="n">a2</span><span class="o">.</span><span class="n">comment</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">id2</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{a2.name}</span><span class="s2"> </span><span class="si">{a2.comment}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">id2</span> <span class="o">=</span> <span class="n">a2</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
                 <span class="n">name2</span> <span class="o">=</span> <span class="n">id2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">id1</span> <span class="o">=</span> <span class="n">id1</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="n">r1</span> <span class="o">=</span> <span class="n">a1</span><span class="o">.</span><span class="n">sequence</span>
+            <span class="n">q1</span> <span class="o">=</span> <span class="n">a1</span><span class="o">.</span><span class="n">quality</span>
+            <span class="k">if</span> <span class="n">a1</span><span class="o">.</span><span class="n">comment</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">id1</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{a1.name}</span><span class="s2"> </span><span class="si">{a1.comment}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">id1</span> <span class="o">=</span> <span class="n">a1</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
             <span class="n">name1</span> <span class="o">=</span> <span class="n">id1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">r2file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="c1"># trims last two chars, need for SRA downloaded files</span>
@@ -1283,12 +1293,12 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Set up re matchers for looking at lines</span>
-    <span class="n">matcher</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;(?P&lt;linetype&gt;^.*\:) &#39;</span>
-                         <span class="s1">&#39;(?P&lt;contents&gt;.*$)&#39;</span><span class="p">)</span>
+    <span class="n">matcher</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(?P&lt;linetype&gt;^.*\:) &#39;</span>
+                         <span class="sa">r</span><span class="s1">&#39;(?P&lt;contents&gt;.*$)&#39;</span><span class="p">)</span>
 
-    <span class="n">alt_matcher</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;(?P&lt;linetype&gt;^R\d READS:$)&#39;</span><span class="p">)</span>
+    <span class="n">alt_matcher</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(?P&lt;linetype&gt;^R\d READS:$)&#39;</span><span class="p">)</span>
 
-    <span class="n">read_matcher</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;(?P&lt;read&gt;^[ATGCN\s]*$)&#39;</span><span class="p">)</span>
+    <span class="n">read_matcher</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(?P&lt;read&gt;^[ATGCN\s]*$)&#39;</span><span class="p">)</span>
 
     <span class="c1"># Create a dictionary to contain dictionaries of each library&#39;s barcodes</span>
     <span class="n">libraries</span> <span class="o">=</span> <span class="p">{}</span>

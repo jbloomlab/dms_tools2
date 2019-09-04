@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_tools2.prefs &#8212; dms_tools2 2.5.1 documentation</title>
+    <title>dms_tools2.prefs &#8212; dms_tools2 2.6.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -291,7 +291,7 @@
 
 <div class="viewcode-block" id="inferPrefsByRatio"><a class="viewcode-back" href="../../dms_tools2.prefs.html#dms_tools2.prefs.inferPrefsByRatio">[docs]</a><span class="k">def</span> <span class="nf">inferPrefsByRatio</span><span class="p">(</span><span class="n">charlist</span><span class="p">,</span> <span class="n">sites</span><span class="p">,</span> <span class="n">wts</span><span class="p">,</span> <span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">,</span> <span class="n">errpre</span><span class="p">,</span>
         <span class="n">errpost</span><span class="p">,</span> <span class="n">pseudocount</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Site-specific preferences from normalized enrichment ratios.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Site-specific preferences from normalized enrichment ratios.</span>
 
 <span class="sd">    Calculates site-specific preference :math:`\pi_{r,a}` of each</span>
 <span class="sd">    site :math:`r` for each character :math:`a` using re-normalized</span>
@@ -303,7 +303,7 @@
 
 <span class="sd">    .. math::</span>
 
-<span class="sd">        \pi_{r,a} = \\frac{\phi_{r,a}}{\sum_{a&#39;} \phi_{r,a&#39;}}</span>
+<span class="sd">        \pi_{r,a} = \frac{\phi_{r,a}}{\sum_{a&#39;} \phi_{r,a&#39;}}</span>
 
 <span class="sd">    where :math:`\phi_{r,a}` is the enrichment ratio of character</span>
 <span class="sd">    :math:`a` relative to wildtype after selection. </span>
@@ -338,7 +338,7 @@
 
 <span class="sd">    .. math::</span>
 
-<span class="sd">       P_r^s = P \\times \\frac{N_r^s}{\min\limits_{s&#39;} N_r^{s&#39;}}.</span>
+<span class="sd">       P_r^s = P \times \frac{N_r^s}{\min\limits_{s&#39;} N_r^{s&#39;}}.</span>
 
 <span class="sd">    This equation makes the pseudocount :math:`P` for the lowest-depth</span>
 <span class="sd">    sample, and scales up the pseodocounts for all other samples</span>
@@ -350,7 +350,7 @@
 <span class="sd">    </span>
 <span class="sd">    .. math::</span>
 <span class="sd">    </span>
-<span class="sd">        f_{r,a}^s = \\frac{n_{r,a}^s + P_r^s}{N_{r}^s + A \\times P_r^s}</span>
+<span class="sd">        f_{r,a}^s = \frac{n_{r,a}^s + P_r^s}{N_{r}^s + A \times P_r^s}</span>
 
 <span class="sd">    where :math:`A` is the number of characters in the alphabet (e.g.,</span>
 <span class="sd">    20 for amino acids without stop codons).</span>
@@ -360,17 +360,17 @@
 
 <span class="sd">    .. math::</span>
 
-<span class="sd">        f_{r,a}^{before} &amp;= \max\left(\\frac{P_r^{pre}}{N_{r}^{pre} + A \\times P_r^{pre}},</span>
-<span class="sd">        \; f_{r,a}^{pre} + \delta_{a,\\rm{wt}\left(r\\right)}</span>
-<span class="sd">        - f_{r,a}^{errpre}\\right)</span>
+<span class="sd">        f_{r,a}^{before} &amp;= \max\left(\frac{P_r^{pre}}{N_{r}^{pre} + A \times P_r^{pre}},</span>
+<span class="sd">        \; f_{r,a}^{pre} + \delta_{a,\rm{wt}\left(r\right)}</span>
+<span class="sd">        - f_{r,a}^{errpre}\right)</span>
 
-<span class="sd">        f_{r,a}^{after} &amp;= \max\left(\\frac{P_r^{post}}{N_{r}^{post} + A \\times P_r^{post}},</span>
-<span class="sd">        \; f_{r,a}^{post} + \delta_{a,\\rm{wt}\left(r\\right)}</span>
-<span class="sd">        - f_{r,a}^{errpost}\\right)</span>
+<span class="sd">        f_{r,a}^{after} &amp;= \max\left(\frac{P_r^{post}}{N_{r}^{post} + A \times P_r^{post}},</span>
+<span class="sd">        \; f_{r,a}^{post} + \delta_{a,\rm{wt}\left(r\right)}</span>
+<span class="sd">        - f_{r,a}^{errpost}\right)</span>
 
-<span class="sd">    where :math:`\delta_{a,\\rm{wt}\left(r\\right)}` is the </span>
+<span class="sd">    where :math:`\delta_{a,\rm{wt}\left(r\right)}` is the </span>
 <span class="sd">    Kronecker-delta, equal to 1 if :math:`a` is the same as the</span>
-<span class="sd">    wildtype character :math:`\\rm{wt}\left(r\\right)` at site</span>
+<span class="sd">    wildtype character :math:`\rm{wt}\left(r\right)` at site</span>
 <span class="sd">    :math:`r`, and 0 otherwise. We use the :math:`\max` operator</span>
 <span class="sd">    to ensure that even if the error-control frequency exceeds</span>
 <span class="sd">    the actual estimate, our estimated frequency never drops</span>
@@ -381,15 +381,15 @@
 
 <span class="sd">    .. math::</span>
 
-<span class="sd">        \phi_{r,a} = \\frac{\left(f_{r,a}^{after}\\right) / </span>
-<span class="sd">        \left(f_{r,\\rm{wt}\left(r\\right)}^{after}\\right)}</span>
-<span class="sd">        {\left(f_{r,a}^{before}\\right) / </span>
-<span class="sd">        \left(f_{r,\\rm{wt}\left(r\\right)}^{before}\\right)}</span>
+<span class="sd">        \phi_{r,a} = \frac{\left(f_{r,a}^{after}\right) / </span>
+<span class="sd">        \left(f_{r,\rm{wt}\left(r\right)}^{after}\right)}</span>
+<span class="sd">        {\left(f_{r,a}^{before}\right) / </span>
+<span class="sd">        \left(f_{r,\rm{wt}\left(r\right)}^{before}\right)}</span>
 
 <span class="sd">    In the case where we are **not** using any error-controls, then</span>
 <span class="sd">    we simply set </span>
-<span class="sd">    :math:`f_{r,\\rm{wt}}^{errpre} = f_{r,\\rm{wt}}^{errpost} </span>
-<span class="sd">    = \delta_{a,\\rm{wt}\left(r\\right)}`.</span>
+<span class="sd">    :math:`f_{r,\rm{wt}}^{errpre} = f_{r,\rm{wt}}^{errpost} </span>
+<span class="sd">    = \delta_{a,\rm{wt}\left(r\right)}`.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        `charlist` (list)</span>
@@ -499,41 +499,41 @@
 <div class="viewcode-block" id="inferSitePrefs"><a class="viewcode-back" href="../../dms_tools2.prefs.html#dms_tools2.prefs.inferSitePrefs">[docs]</a><span class="k">def</span> <span class="nf">inferSitePrefs</span><span class="p">(</span><span class="n">charlist</span><span class="p">,</span> <span class="n">wtchar</span><span class="p">,</span> <span class="n">error_model</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> 
         <span class="n">priors</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">niter</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">increasetries</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> 
         <span class="n">r_max</span><span class="o">=</span><span class="mf">1.1</span><span class="p">,</span> <span class="n">neff_min</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">nchains</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">increasefac</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Infers site-specific preferences by MCMC for a specific site.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Infers site-specific preferences by MCMC for a specific site.</span>
 
 <span class="sd">    Infer the site-specific preferences :math:`\pi_{r,a}` for some site</span>
 <span class="sd">    :math:`r` for each character :math:`a` by integrating over the </span>
 <span class="sd">    posterior defined by the product of the following priors and </span>
-<span class="sd">    likelihoods, where :math:`\\boldsymbol{\mathbf{\pi_r}}` indicates</span>
+<span class="sd">    likelihoods, where :math:`\boldsymbol{\mathbf{\pi_r}}` indicates</span>
 <span class="sd">    the vector of :math:`\pi_{r,a}` values for all characters:</span>
 
 <span class="sd">    .. math::</span>
 
-<span class="sd">        \Pr\left(\\boldsymbol{\mathbf{\pi_r}}\\right) </span>
-<span class="sd">        &amp;= \mathrm{Dirichlet}\left(\\boldsymbol{\mathbf{a_{\pi,r}}}\\right)</span>
+<span class="sd">        \Pr\left(\boldsymbol{\mathbf{\pi_r}}\right) </span>
+<span class="sd">        &amp;= \mathrm{Dirichlet}\left(\boldsymbol{\mathbf{a_{\pi,r}}}\right)</span>
 
-<span class="sd">        \Pr\left(\\boldsymbol{\mathbf{\mu_r}}\\right) </span>
-<span class="sd">        &amp;= \mathrm{Dirichlet}\left(\\boldsymbol{\mathbf{a_{\mu,r}}}\\right)</span>
+<span class="sd">        \Pr\left(\boldsymbol{\mathbf{\mu_r}}\right) </span>
+<span class="sd">        &amp;= \mathrm{Dirichlet}\left(\boldsymbol{\mathbf{a_{\mu,r}}}\right)</span>
 
-<span class="sd">        \Pr\left(\\boldsymbol{\mathbf{\epsilon_r}}\\right) </span>
-<span class="sd">        &amp;= \mathrm{Dirichlet}\left(\\boldsymbol{\mathbf{a_{\epsilon,r}}}\\right)</span>
+<span class="sd">        \Pr\left(\boldsymbol{\mathbf{\epsilon_r}}\right) </span>
+<span class="sd">        &amp;= \mathrm{Dirichlet}\left(\boldsymbol{\mathbf{a_{\epsilon,r}}}\right)</span>
 
-<span class="sd">        \Pr\left(\\boldsymbol{\mathbf{\\rho_r}}\\right) </span>
-<span class="sd">        &amp;= \mathrm{Dirichlet}\left(\\boldsymbol{\mathbf{a_{\\rho,r}}}\\right)</span>
+<span class="sd">        \Pr\left(\boldsymbol{\mathbf{\rho_r}}\right) </span>
+<span class="sd">        &amp;= \mathrm{Dirichlet}\left(\boldsymbol{\mathbf{a_{\rho,r}}}\right)</span>
 
-<span class="sd">        \Pr\left(\\boldsymbol{\mathbf{n_r^{\\rm{pre}}}} \mid \\boldsymbol{\mathbf{\mu_r}}, \\boldsymbol{\mathbf{\epsilon_r}}\\right) </span>
-<span class="sd">        &amp;= \mathrm{Multinomial}\left(\\boldsymbol{\mathbf{n_r^{\\rm{pre}}}}; \\boldsymbol{\mathbf{\mu_r}} + \\boldsymbol{\mathbf{\epsilon_r}} - \\boldsymbol{\mathbf{\delta_r}}\\right)</span>
+<span class="sd">        \Pr\left(\boldsymbol{\mathbf{n_r^{\rm{pre}}}} \mid \boldsymbol{\mathbf{\mu_r}}, \boldsymbol{\mathbf{\epsilon_r}}\right) </span>
+<span class="sd">        &amp;= \mathrm{Multinomial}\left(\boldsymbol{\mathbf{n_r^{\rm{pre}}}}; \boldsymbol{\mathbf{\mu_r}} + \boldsymbol{\mathbf{\epsilon_r}} - \boldsymbol{\mathbf{\delta_r}}\right)</span>
 
-<span class="sd">        \Pr\left(\\boldsymbol{\mathbf{n_r^{\\rm{post}}}} \mid \\boldsymbol{\mathbf{\mu_r}}, \\boldsymbol{\mathbf{\epsilon_r}}\\right) </span>
-<span class="sd">        &amp;= \mathrm{Multinomial}\left(\\boldsymbol{\mathbf{n_r^{\\rm{post}}}}; \\frac{\\boldsymbol{\mathbf{\mu_r}} \circ \\boldsymbol{\mathbf{\pi_r}}}{\\boldsymbol{\mathbf{\mu_r}} \cdot \\boldsymbol{\mathbf{\pi_r}}} + \\boldsymbol{\mathbf{\\rho_r}} - \\boldsymbol{\mathbf{\delta_r}}\\right)</span>
+<span class="sd">        \Pr\left(\boldsymbol{\mathbf{n_r^{\rm{post}}}} \mid \boldsymbol{\mathbf{\mu_r}}, \boldsymbol{\mathbf{\epsilon_r}}\right) </span>
+<span class="sd">        &amp;= \mathrm{Multinomial}\left(\boldsymbol{\mathbf{n_r^{\rm{post}}}}; \frac{\boldsymbol{\mathbf{\mu_r}} \circ \boldsymbol{\mathbf{\pi_r}}}{\boldsymbol{\mathbf{\mu_r}} \cdot \boldsymbol{\mathbf{\pi_r}}} + \boldsymbol{\mathbf{\rho_r}} - \boldsymbol{\mathbf{\delta_r}}\right)</span>
 
-<span class="sd">        \Pr\left(\\boldsymbol{\mathbf{n_r^{\\rm{err,pre}}}} \mid \\boldsymbol{\mathbf{\epsilon_r}}\\right) </span>
-<span class="sd">        &amp;= \mathrm{Multinomial}\left(\\boldsymbol{\mathbf{n_r^{\\rm{err,pre}}}}; \\boldsymbol{\mathbf{\epsilon_r}}\\right)</span>
+<span class="sd">        \Pr\left(\boldsymbol{\mathbf{n_r^{\rm{err,pre}}}} \mid \boldsymbol{\mathbf{\epsilon_r}}\right) </span>
+<span class="sd">        &amp;= \mathrm{Multinomial}\left(\boldsymbol{\mathbf{n_r^{\rm{err,pre}}}}; \boldsymbol{\mathbf{\epsilon_r}}\right)</span>
 
-<span class="sd">        \Pr\left(\\boldsymbol{\mathbf{n_r^{\\rm{err,post}}}} \mid \\boldsymbol{\mathbf{\\rho_r}}\\right) </span>
-<span class="sd">        &amp;= \mathrm{Multinomial}\left(\\boldsymbol{\mathbf{n_r^{\\rm{err,post}}}}; \\boldsymbol{\mathbf{\\rho_r}}\\right)</span>
+<span class="sd">        \Pr\left(\boldsymbol{\mathbf{n_r^{\rm{err,post}}}} \mid \boldsymbol{\mathbf{\rho_r}}\right) </span>
+<span class="sd">        &amp;= \mathrm{Multinomial}\left(\boldsymbol{\mathbf{n_r^{\rm{err,post}}}}; \boldsymbol{\mathbf{\rho_r}}\right)</span>
 
-<span class="sd">    where :math:`\\boldsymbol{\mathbf{\delta_r}}` is a vector that is </span>
+<span class="sd">    where :math:`\boldsymbol{\mathbf{\delta_r}}` is a vector that is </span>
 <span class="sd">    zero except for a one at the element corresponding to the wildtype.</span>
 
 <span class="sd">    The MCMC tries to guarantee convergence via the parameters specified</span>
@@ -551,32 +551,32 @@
 <span class="sd">            as they will not need to be compiled. Can be:</span>
 
 <span class="sd">              - The str `none` or instance of `StanModelNoneErr`:</span>
-<span class="sd">                no errors (:math:`\\boldsymbol{\mathbf{\epsilon_r}} = \\boldsymbol{\mathbf{\\rho_r}} = \mathbf{0}`)</span>
+<span class="sd">                no errors (:math:`\boldsymbol{\mathbf{\epsilon_r}} = \boldsymbol{\mathbf{\rho_r}} = \mathbf{0}`)</span>
 
 <span class="sd">              - The str `same` or instance of `StanModelSameErr`: </span>
 <span class="sd">                same error rates  pre and post-selection </span>
-<span class="sd">                (:math:`\\boldsymbol{\mathbf{\epsilon_r}} = \\boldsymbol{\mathbf{\\rho_r}}`).</span>
+<span class="sd">                (:math:`\boldsymbol{\mathbf{\epsilon_r}} = \boldsymbol{\mathbf{\rho_r}}`).</span>
 
 <span class="sd">              - The str `different` or instance of `StanModelDifferentErr`: </span>
 <span class="sd">                different error rates pre- and post-selection</span>
-<span class="sd">                (:math:`\\boldsymbol{\mathbf{\epsilon_r}} \\ne \\boldsymbol{\mathbf{\\rho_r}}`).</span>
+<span class="sd">                (:math:`\boldsymbol{\mathbf{\epsilon_r}} \ne \boldsymbol{\mathbf{\rho_r}}`).</span>
 
 <span class="sd">        `counts` (dict)</span>
 <span class="sd">            Deep sequencing counts. Each string key should specify</span>
 <span class="sd">            a dict keyed by all characters in `charlist` with</span>
 <span class="sd">            the values giving integer counts for that character. The keys:</span>
 
-<span class="sd">                - `pre`: :math:`\\boldsymbol{\mathbf{n_r^{\\rm{pre}}}}`</span>
+<span class="sd">                - `pre`: :math:`\boldsymbol{\mathbf{n_r^{\rm{pre}}}}`</span>
 
-<span class="sd">                - `post`: :math:`\\boldsymbol{\mathbf{n_r^{\\rm{post}}}}`</span>
+<span class="sd">                - `post`: :math:`\boldsymbol{\mathbf{n_r^{\rm{post}}}}`</span>
 
 <span class="sd">                - *err*: required if `error_model` is `same`, specifies</span>
-<span class="sd">                  :math:`\\boldsymbol{\mathbf{n_r^{\\rm{err,pre}}}} = \\boldsymbol{\mathbf{n_r^{\\rm{err,post}}}}`</span>
+<span class="sd">                  :math:`\boldsymbol{\mathbf{n_r^{\rm{err,pre}}}} = \boldsymbol{\mathbf{n_r^{\rm{err,post}}}}`</span>
 
 <span class="sd">                - `errpre` and `errpost`: required if `error_model` is</span>
 <span class="sd">                  `different`, specify </span>
-<span class="sd">                  :math:`\\boldsymbol{\mathbf{n_r^{\\rm{err,pre}}}}` and</span>
-<span class="sd">                  :math:`\\boldsymbol{\mathbf{n_r^{\\rm{err,post}}}}`.</span>
+<span class="sd">                  :math:`\boldsymbol{\mathbf{n_r^{\rm{err,pre}}}}` and</span>
+<span class="sd">                  :math:`\boldsymbol{\mathbf{n_r^{\rm{err,post}}}}`.</span>
 
 <span class="sd">        `priors` (dict)</span>
 <span class="sd">            Specifies parameter vectors for Dirichlet priors. Each string</span>
@@ -584,17 +584,17 @@
 <span class="sd">            giving the prior for that character. Values less than </span>
 <span class="sd">            `PRIOR_MIN_VALUE` are set to `PRIOR_MIN_VALUE`. Keys are</span>
 
-<span class="sd">                - `pir_prior_params`: :math:`\\boldsymbol{\mathbf{a_{\pi,r}}}`</span>
+<span class="sd">                - `pir_prior_params`: :math:`\boldsymbol{\mathbf{a_{\pi,r}}}`</span>
 
-<span class="sd">                - `mur_prior_params`: :math:`\\boldsymbol{\mathbf{a_{\mu,r}}}`</span>
+<span class="sd">                - `mur_prior_params`: :math:`\boldsymbol{\mathbf{a_{\mu,r}}}`</span>
 
 <span class="sd">                - `epsilonr_prior_params`: only required if `error_model` is </span>
 <span class="sd">                  `same` or `different`, specifies </span>
-<span class="sd">                  :math:`\\boldsymbol{\mathbf{a_{\epsilon,r}}}`</span>
+<span class="sd">                  :math:`\boldsymbol{\mathbf{a_{\epsilon,r}}}`</span>
 
 <span class="sd">                - `rhor_prior_params` : only required if `error_model` is </span>
 <span class="sd">                  `different`, specifies</span>
-<span class="sd">                  :math:`\\boldsymbol{\mathbf{a_{\\rho,r}}}`</span>
+<span class="sd">                  :math:`\boldsymbol{\mathbf{a_{\rho,r}}}`</span>
 
 <span class="sd">        `seed` (int)</span>
 <span class="sd">            Random number seed for MCMC. </span>
@@ -680,7 +680,7 @@
         <span class="n">colnames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">fitsummary</span><span class="p">[</span><span class="s1">&#39;summary_colnames&#39;</span><span class="p">])</span>
         <span class="n">summary</span> <span class="o">=</span> <span class="n">fitsummary</span><span class="p">[</span><span class="s1">&#39;summary&#39;</span><span class="p">]</span>
         <span class="n">char_row_indices</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">c</span><span class="p">,</span> <span class="n">rownames</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;pir[</span><span class="si">{0}</span><span class="s1">]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">charlist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">c</span><span class="p">))))</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">])</span> 
+                <span class="n">charlist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)))</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">])</span> 
         <span class="n">rindex</span> <span class="o">=</span> <span class="n">colnames</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;Rhat&#39;</span><span class="p">)</span>
         <span class="n">neffindex</span> <span class="o">=</span> <span class="n">colnames</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;n_eff&#39;</span><span class="p">)</span>
         <span class="n">rlist</span> <span class="o">=</span> <span class="p">[</span><span class="n">summary</span><span class="p">[</span><span class="n">char_row_indices</span><span class="p">[</span><span class="n">c</span><span class="p">]][</span><span class="n">rindex</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">charlist</span><span class="p">]</span>
@@ -821,12 +821,12 @@
 
 
 <div class="viewcode-block" id="prefsToMutEffects"><a class="viewcode-back" href="../../dms_tools2.prefs.html#dms_tools2.prefs.prefsToMutEffects">[docs]</a><span class="k">def</span> <span class="nf">prefsToMutEffects</span><span class="p">(</span><span class="n">prefs</span><span class="p">,</span> <span class="n">charlist</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Converts amino acid preferences to effects of specific mutations.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Converts amino acid preferences to effects of specific mutations.</span>
 
 <span class="sd">    If the preference of site :math:`r` for amino acid :math:`a` is</span>
 <span class="sd">    :math:`\pi_{r,a}`, then the estimated effect (e.g., ratio of</span>
 <span class="sd">    enrichment ratios) for mutating that site from :math:`x` to</span>
-<span class="sd">    :math:`y` is :math:`\\frac{\pi_{r,y}}{\pi_{r,x}}`. Very small</span>
+<span class="sd">    :math:`y` is :math:`\frac{\pi_{r,y}}{\pi_{r,x}}`. Very small</span>
 <span class="sd">    values indicate disfavored mutations, and very large values</span>
 <span class="sd">    indicate highly favored mutations. The logarithm base 2 of the</span>
 <span class="sd">    expected effects is also a useful measure -- negative values</span>
@@ -896,16 +896,16 @@
 
 
 <div class="viewcode-block" id="rescalePrefs"><a class="viewcode-back" href="../../dms_tools2.prefs.html#dms_tools2.prefs.rescalePrefs">[docs]</a><span class="k">def</span> <span class="nf">rescalePrefs</span><span class="p">(</span><span class="n">prefs</span><span class="p">,</span> <span class="n">stringency</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Re-scale amino acid preferences by stringency parameter.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Re-scale amino acid preferences by stringency parameter.</span>
 
 <span class="sd">    If the initial preference of site :math:`r` for amino-acid </span>
 <span class="sd">    :math:`a` is :math:`\pi_{r,a}`, then the re-scaled preference is</span>
 
 <span class="sd">    .. math::</span>
 <span class="sd">    </span>
-<span class="sd">        \\frac{\left(\pi_{r,a}\\right)^{\\beta}}{\sum_{a&#39;} \left(\pi_{r,a&#39;}\\right)}</span>
+<span class="sd">        \frac{\left(\pi_{r,a}\right)^{\beta}}{\sum_{a&#39;} \left(\pi_{r,a&#39;}\right)}</span>
 
-<span class="sd">    where :math:`\\beta` is the stringency parameter.</span>
+<span class="sd">    where :math:`\beta` is the stringency parameter.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        `prefs` (pandas.DataFrame)</span>
@@ -1003,16 +1003,16 @@
 
 
 <div class="viewcode-block" id="prefsEntropy"><a class="viewcode-back" href="../../dms_tools2.prefs.html#dms_tools2.prefs.prefsEntropy">[docs]</a><span class="k">def</span> <span class="nf">prefsEntropy</span><span class="p">(</span><span class="n">prefs</span><span class="p">,</span> <span class="n">charlist</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Calculate site entropy and number of effective characters.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculate site entropy and number of effective characters.</span>
 
 <span class="sd">    The site entropy :math:`h_r` for site :math:`r` is defined as</span>
-<span class="sd">    :math:`h_r = -\sum_{x} \pi_{r,x} \log\left(\pi_{r,x}\\right)`</span>
+<span class="sd">    :math:`h_r = -\sum_{x} \pi_{r,x} \log\left(\pi_{r,x}\right)`</span>
 <span class="sd">    where :math:`\pi_{r,x}` is the preference for character (e.g.,</span>
 <span class="sd">    amino acid) :math:`x` at site :math:`r`, and the log is</span>
 <span class="sd">    the natural logarithm.</span>
 
 <span class="sd">    The number of effective characters at site :math:`r`</span>
-<span class="sd">    is :math:`N_{\\rm{eff}, r} = \exp\left(h_r\\right)`.</span>
+<span class="sd">    is :math:`N_{\rm{eff}, r} = \exp\left(h_r\right)`.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        `prefs` (pandas DataFrame)</span>

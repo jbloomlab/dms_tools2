@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_tools2.pacbio &#8212; dms_tools2 2.5.1 documentation</title>
+    <title>dms_tools2.pacbio &#8212; dms_tools2 2.6.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -55,7 +55,6 @@
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">pandas</span>
 <span class="kn">import</span> <span class="nn">pysam</span>
-<span class="kn">import</span> <span class="nn">HTSeq</span>
 <span class="kn">import</span> <span class="nn">Bio.SeqFeature</span>
 
 <span class="c1"># import dms_tools2.plot to set plotting contexts / themes</span>
@@ -351,21 +350,25 @@
                 <span class="n">d</span><span class="p">[</span><span class="s1">&#39;samplename&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samplename</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">ext</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;.fq&#39;</span><span class="p">,</span> <span class="s1">&#39;.fastq&#39;</span><span class="p">}:</span>
-            <span class="n">headmatch</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;^(?P&lt;name&gt;\S+)\s+&#39;</span>
-                                   <span class="s1">&#39;np:i:(?P&lt;passes&gt;\d+)\s+&#39;</span>
-                                   <span class="s1">&#39;rq:f:(?P&lt;accuracy&gt;\d+\.{0,1}\d*)&#39;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">head</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">qs</span> <span class="ow">in</span> <span class="n">HTSeq</span><span class="o">.</span><span class="n">FastqReader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ccsfile</span><span class="p">,</span>
-                                                    <span class="n">raw_iterator</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="n">headmatch</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^(?P&lt;name&gt;\S+)\s+&#39;</span>
+                                   <span class="sa">r</span><span class="s1">&#39;np:i:(?P&lt;passes&gt;\d+)\s+&#39;</span>
+                                   <span class="sa">r</span><span class="s1">&#39;rq:f:(?P&lt;accuracy&gt;\d+\.{0,1}\d*)&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">pysam</span><span class="o">.</span><span class="n">FastxFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ccsfile</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">comment</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">head</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{a.name}</span><span class="s2"> </span><span class="si">{a.comment}</span><span class="s2">&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">head</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">name</span>
                 <span class="n">m</span> <span class="o">=</span> <span class="n">headmatch</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">head</span><span class="p">)</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;could not match </span><span class="si">{head}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
-                <span class="n">qvals</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">ord</span><span class="p">(</span><span class="n">qi</span><span class="p">)</span> <span class="o">-</span> <span class="mi">33</span> <span class="k">for</span> <span class="n">qi</span> <span class="ow">in</span> <span class="n">q</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">sequence</span><span class="p">)</span>
+                <span class="n">qvals</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">ord</span><span class="p">(</span><span class="n">qi</span><span class="p">)</span> <span class="o">-</span> <span class="mi">33</span> <span class="k">for</span> <span class="n">qi</span> <span class="ow">in</span> <span class="n">a</span><span class="o">.</span><span class="n">quality</span><span class="p">],</span>
+                                    <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>
                 <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS_qvals&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">qvals</span><span class="p">)</span>
                 <span class="n">d</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">))</span>
                 <span class="n">d</span><span class="p">[</span><span class="s1">&#39;passes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;passes&#39;</span><span class="p">)))</span>
                 <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS_accuracy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;accuracy&#39;</span><span class="p">)))</span>
-                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS_length&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;CCS_length&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">sequence</span><span class="p">))</span>
                 <span class="n">d</span><span class="p">[</span><span class="s1">&#39;samplename&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samplename</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
@@ -1413,7 +1416,7 @@
 
 
 <div class="viewcode-block" id="qvalsToAccuracy"><a class="viewcode-back" href="../../dms_tools2.pacbio.html#dms_tools2.pacbio.qvalsToAccuracy">[docs]</a><span class="k">def</span> <span class="nf">qvalsToAccuracy</span><span class="p">(</span><span class="n">qvals</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;numbers&#39;</span><span class="p">,</span> <span class="n">no_avg</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Converts set of quality scores into average accuracy.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Converts set of quality scores into average accuracy.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        `qvals` (numpy array or number or str)</span>
@@ -1568,7 +1571,7 @@
     <span class="c1"># We simply do a simple replacement on all characters not in group</span>
     <span class="c1"># names. So first we must find group names:</span>
     <span class="n">groupname_indices</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span>
-    <span class="n">groupname_matcher</span> <span class="o">=</span> <span class="n">regex</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;\(\?P&lt;[^&gt;]*&gt;&#39;</span><span class="p">)</span>
+    <span class="n">groupname_matcher</span> <span class="o">=</span> <span class="n">regex</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\(\?P&lt;[^&gt;]*&gt;&#39;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">groupname_matcher</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">re_str</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(),</span> <span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">()):</span>
             <span class="n">groupname_indices</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>

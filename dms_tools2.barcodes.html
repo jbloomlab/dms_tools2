@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>barcodes &#8212; dms_tools2 2.5.1 documentation</title>
+    <title>barcodes &#8212; dms_tools2 2.6.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -129,24 +129,24 @@ of <code class="docutils literal notranslate"><span class="pre">?</span></code> 
 <span class="gp">... </span>        <span class="s1">&#39;@valid_CGTA_barcode_partial_flanking_region</span><span class="se">\n</span><span class="s1">&#39;</span>
 <span class="gp">... </span>        <span class="s1">&#39;AGTCCGTATCAT</span><span class="se">\n</span><span class="s1">&#39;</span>
 <span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
-<span class="gp">... </span>        <span class="s1">&#39;??????????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="s1">&#39;????????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
 <span class="gp">... </span>        <span class="s1">&#39;@valid_CGTA_barcode_partial_flanking_region</span><span class="se">\n</span><span class="s1">&#39;</span>
 <span class="gp">... </span>        <span class="s1">&#39;ACATGATACG</span><span class="se">\n</span><span class="s1">&#39;</span>
 <span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
-<span class="gp">... </span>        <span class="s1">&#39;??????????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="s1">&#39;??????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 <span class="gp">...</span>
 <span class="gp">... </span>    <span class="c1"># valid GCCG barcode, extended flanking regions</span>
 <span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f1</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
 <span class="gp">... </span>        <span class="s1">&#39;@valid_GCCG_barcode_extended_flanking_region</span><span class="se">\n</span><span class="s1">&#39;</span>
 <span class="gp">... </span>        <span class="s1">&#39;AGTCGCCGTCATGTTAC</span><span class="se">\n</span><span class="s1">&#39;</span>
 <span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
-<span class="gp">... </span>        <span class="s1">&#39;??????????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="s1">&#39;?????????????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
 <span class="gp">... </span>        <span class="s1">&#39;@valid_GCCG_barcode_extended_flanking_region</span><span class="se">\n</span><span class="s1">&#39;</span>
 <span class="gp">... </span>        <span class="s1">&#39;ACATGACGGCGACTGAC</span><span class="se">\n</span><span class="s1">&#39;</span>
 <span class="gp">... </span>        <span class="s1">&#39;+</span><span class="se">\n</span><span class="s1">&#39;</span>
-<span class="gp">... </span>        <span class="s1">&#39;??????????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="s1">&#39;?????????????????</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 <span class="gp">...</span>
 <span class="gp">... </span>    <span class="c1"># AAGT barcode in R1 but R2 differs</span>
 <span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f1</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
@@ -402,69 +402,6 @@ barcode (‘ATG’):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">almost_duplicated</span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">barcodes</span><span class="p">),</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">]))</span>
 <span class="go">True</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="function">
-<dt id="dms_tools2.barcodes.fracIdentWithinBarcode">
-<code class="sig-prename descclassname">dms_tools2.barcodes.</code><code class="sig-name descname">fracIdentWithinBarcode</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">*</em>, <em class="sig-param">barcode_col='barcode'</em>, <em class="sig-param">variant_col='variant'</em>, <em class="sig-param">library_col=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/barcodes.html#fracIdentWithinBarcode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.barcodes.fracIdentWithinBarcode" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets fraction of identical variants within barcodes.</p>
-<p>This function is designed for the case when you have barcoded
-variants, and you want to determine how often the variants
-with the same barcode are identical. To calculate this, all
-variants with the same barcode are grouped, and for every pair
-of variants within a barcode we compute the fraction that
-are identical (note that this fraction is the
-<a class="reference external" href="https://en.wikipedia.org/wiki/Diversity_index">Simpson diversity index without replacement</a>.
-We then compute the average of this fraction over all pairs.</p>
-<p>In the case where we are sequencing barcoded genes, the square
-root of this fraction can be interpreted as the sequencing accuracy
-per variant.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><dl class="simple">
-<dt><cite>df</cite> (pandas Data Frame)</dt><dd><p>Holds barcodes, variants, and (optionally) library names.</p>
-</dd>
-<dt><cite>barcode_col</cite> (str)</dt><dd><p>Name of column holding barcodes.</p>
-</dd>
-<dt><cite>variant_col</cite> (str)</dt><dd><p>Name of column holding variants (these are what we
-compare to see if they are identical).</p>
-</dd>
-<dt><cite>library_col</cite> (str or None)</dt><dd><p>Name of libary. We do the computation separately
-for each library. Set to <cite>None</cite> if only one library.</p>
-</dd>
-</dl>
-</dd>
-<dt>Returns:</dt><dd><p>A pandas data frame with columns named <cite>fraction_identical</cite>
-and <cite>accuracy</cite> that contain the computed fraction identical
-and accuracy for each library.</p>
-</dd>
-</dl>
-<p>Here is an example. In this data frame, we see that
-of the four pairs (one for barcode <em>AT</em> and three for
-barcode <em>TA</em>), two are identical. As you can see
-the function correctly calculates that 50% are identical,
-and computes an accuracy that is the square root of 0.5:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-<span class="gp">... </span>    <span class="s1">&#39;barcode&#39;</span><span class="p">:[</span><span class="s1">&#39;AT&#39;</span><span class="p">,</span> <span class="s1">&#39;AT&#39;</span><span class="p">,</span> <span class="s1">&#39;TG&#39;</span><span class="p">,</span> <span class="s1">&#39;TA&#39;</span><span class="p">,</span> <span class="s1">&#39;TA&#39;</span><span class="p">,</span> <span class="s1">&#39;TA&#39;</span><span class="p">],</span>
-<span class="gp">... </span>    <span class="s1">&#39;variant&#39;</span><span class="p">:[</span><span class="s1">&#39;v1&#39;</span><span class="p">,</span> <span class="s1">&#39;v1&#39;</span><span class="p">,</span> <span class="s1">&#39;v2&#39;</span><span class="p">,</span> <span class="s1">&#39;v3&#39;</span><span class="p">,</span> <span class="s1">&#39;v4&#39;</span><span class="p">,</span> <span class="s1">&#39;v3&#39;</span><span class="p">]})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">fracIdentWithinBarcode</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
-<span class="go">   fraction_identical  accuracy</span>
-<span class="go">0                 0.5  0.707107</span>
-</pre></div>
-</div>
-<p>Now another example with two libraries and non-standard column
-names. Note that we only get results for the two libraries
-with barcodes found multiple times:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-<span class="gp">... </span>    <span class="s1">&#39;bc&#39;</span>    <span class="p">:[</span><span class="s1">&#39;AT&#39;</span><span class="p">,</span> <span class="s1">&#39;AT&#39;</span><span class="p">,</span> <span class="s1">&#39;TG&#39;</span><span class="p">,</span> <span class="s1">&#39;TA&#39;</span><span class="p">,</span> <span class="s1">&#39;TA&#39;</span><span class="p">,</span> <span class="s1">&#39;TA&#39;</span><span class="p">,</span> <span class="s1">&#39;TA&#39;</span><span class="p">],</span>
-<span class="gp">... </span>    <span class="s1">&#39;var&#39;</span>   <span class="p">:[</span><span class="s1">&#39;v1&#39;</span><span class="p">,</span> <span class="s1">&#39;v1&#39;</span><span class="p">,</span> <span class="s1">&#39;v2&#39;</span><span class="p">,</span> <span class="s1">&#39;v3&#39;</span><span class="p">,</span> <span class="s1">&#39;v4&#39;</span><span class="p">,</span> <span class="s1">&#39;v3&#39;</span><span class="p">,</span> <span class="s1">&#39;v3&#39;</span><span class="p">],</span>
-<span class="gp">... </span>    <span class="s1">&#39;library&#39;</span><span class="p">:[</span><span class="s1">&#39;s1&#39;</span><span class="p">,</span> <span class="s1">&#39;s1&#39;</span><span class="p">,</span> <span class="s1">&#39;s2&#39;</span><span class="p">,</span> <span class="s1">&#39;s3&#39;</span><span class="p">,</span> <span class="s1">&#39;s3&#39;</span><span class="p">,</span> <span class="s1">&#39;s3&#39;</span><span class="p">,</span> <span class="s1">&#39;s4&#39;</span><span class="p">]})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">fracIdentWithinBarcode</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">library_col</span><span class="o">=</span><span class="s1">&#39;library&#39;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">barcode_col</span><span class="o">=</span><span class="s1">&#39;bc&#39;</span><span class="p">,</span> <span class="n">variant_col</span><span class="o">=</span><span class="s1">&#39;var&#39;</span><span class="p">)</span>
-<span class="go">  library  fraction_identical  accuracy</span>
-<span class="go">0      s1            1.000000   1.00000</span>
-<span class="go">1      s3            0.333333   0.57735</span>
 </pre></div>
 </div>
 </dd></dl>

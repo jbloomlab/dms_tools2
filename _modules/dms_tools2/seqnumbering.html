@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_tools2.seqnumbering &#8212; dms_tools2 2.5.1 documentation</title>
+    <title>dms_tools2.seqnumbering &#8212; dms_tools2 2.6.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -348,7 +348,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;invalid `chromosome` </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">chromosome</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mutation</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;^(?P&lt;wt&gt;[</span><span class="si">{0}</span><span class="s1">])(?P&lt;i&gt;\d+)(?P&lt;mut&gt;[</span><span class="si">{0}</span><span class="s1">])$&#39;</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^(?P&lt;wt&gt;[</span><span class="si">{0}</span><span class="s1">])(?P&lt;i&gt;\d+)(?P&lt;mut&gt;[</span><span class="si">{0}</span><span class="s1">])$&#39;</span>
                     <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">NTS</span><span class="p">)),</span> <span class="n">mutation</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;cannot parse mutation </span><span class="si">{0}</span><span class="s2">&quot;</span>
