@@ -646,7 +646,7 @@ def inferSitePrefs(charlist, wtchar, error_model, counts,
         colnames = list(fitsummary['summary_colnames'])
         summary = fitsummary['summary']
         char_row_indices = dict([(c, rownames.index('pir[{0}]'.format(
-                charlist.index(c)))) for c in charlist]) 
+                charlist.index(c) + 1))) for c in charlist]) 
         rindex = colnames.index('Rhat')
         neffindex = colnames.index('n_eff')
         rlist = [summary[char_row_indices[c]][rindex] for c in charlist]

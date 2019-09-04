@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.5.2
+-----
+* Support python3.7 and `pystan` >= 2.19 and removed limit that `scipy < 1.3`.
+
 2.5.1
 --------
 * Remove `barcodes.fracIdentWithinBarcode` as it is **not** correct. There is a new function being added in `alignparse` that calculates the empirical accuracy correctly.

@@ -60,8 +60,8 @@ setup(
         'matplotlib>=2.1.1',
         'plotnine>=0.3',
         'natsort>=5.0.3',
-        'pystan==2.16', # fails with 2.17
-        'scipy>=1.0,<1.3',
+        'pystan>=2.19',
+        'scipy>=1.0',
         'seaborn>=0.8',
         'phydms>=2.3.2',
         'statsmodels>=0.8',
