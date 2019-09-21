@@ -15,6 +15,7 @@ import platform
 import importlib
 import logging
 import tempfile
+import textwrap
 import itertools
 import collections
 import random
@@ -1221,6 +1222,77 @@ def getSubstitutions(wildtype, mutant, amino_acid=False):
     subs = ' '.join(subs)
 
     return subs
+
+
+def codon_to_nt_counts(codoncounts):
+    """Convert codon counts file to nucleotide counts.
+
+    Args:
+        `codoncounts` (str or pandas.DataFrame)
+            Codon counts in format produced by ``dms2_bcsubamp``,
+            either as CSV file or data frame holding CSV.
+
+    Returns:
+        pandas.DataFrame with nucleotide counts.
+
+    Example:
+
+    >>> with tempfile.NamedTemporaryFile('w') as f:
+    ...     _ = f.write(textwrap.dedent('''
+    ...             site,wildtype,AAA,AAC,AAG,AAT,ACA,ACC,ACG,ACT,AGA,AGC,AGG,AGT,ATA,ATC,ATG,ATT,CAA,CAC,CAG,CAT,CCA,CCC,CCG,CCT,CGA,CGC,CGG,CGT,CTA,CTC,CTG,CTT,GAA,GAC,GAG,GAT,GCA,GCC,GCG,GCT,GGA,GGC,GGG,GGT,GTA,GTC,GTG,GTT,TAA,TAC,TAG,TAT,TCA,TCC,TCG,TCT,TGA,TGC,TGG,TGT,TTA,TTC,TTG,TTT
+    ...             1,ATG,0,0,0,0,0,0,2,0,0,0,0,0,8,0,333985,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    ...             2,AAG,16,20,333132,41,13,12,27,14,8,6,67,8,9,13,29,9,10,11,12,8,10,15,15,11,6,9,3,7,8,10,17,4,3,7,49,7,9,14,9,4,10,7,7,7,9,11,11,5,14,14,11,6,13,16,15,14,9,9,15,8,9,11,8,15
+    ...             3,GCA,2,3,8,3,34,11,7,6,7,6,9,8,4,3,5,0,6,14,10,12,6,8,7,10,5,11,7,6,6,1,3,12,19,6,11,9,333250,10,6,9,15,3,5,5,37,9,9,7,8,4,8,3,23,5,7,8,6,11,7,10,7,9,3,6 
+    ...             '''.strip()))
+    ...     f.flush()
+    ...     nt_counts = codon_to_nt_counts(f.name)
+    >>> nt_counts
+       site wildtype       A       C       G       T
+    0     1        A  334009       0       6       0
+    1     2        T       0       2       0  334013
+    2     3        G       8       0  333993      14
+    3     4        A  333424     156     169     187
+    4     5        A  333361     211     186     178
+    5     6        G     156     185  333427     168
+    6     7        G     116     124  333410     125
+    7     8        C     126  333407     121     121
+    8     9        A  333435     114     112     114
+
+    """
+    if not isinstance(codoncounts, pandas.DataFrame):
+        codoncounts = pandas.read_csv(codoncounts)
+
+    if codoncounts['site'].dtype != int:
+        raise ValueError('`site` column in `codoncounts` must be integer')
+
+    nt_counts = []
+    for i_nt in [0, 1, 2]:
+        nt_counts.append(
+                codoncounts
+                .melt(id_vars=['site', 'wildtype'],
+                      var_name='codon',
+                      value_name='count',
+                      )
+                .assign(
+                    site=lambda x: 3 * (x['site'] - 1) + i_nt + 1,
+                    wildtype=lambda x: x['wildtype'].str[i_nt],
+                    nucleotide=lambda x: x['codon'].str[i_nt],
+                    )
+                .groupby(['site', 'wildtype', 'nucleotide'])
+                .aggregate({'count': 'sum'})
+                .reset_index()
+                .pivot_table(values='count',
+                             columns='nucleotide',
+                             index=['site', 'wildtype'])
+                .reset_index()
+                )
+
+    nt_counts = (pandas.concat(nt_counts)
+                 .sort_values('site')
+                 .reset_index(drop=True)
+                 )
+    del nt_counts.columns.name
+    return nt_counts
 
 
 def barcodeInfoToCodonVariantTable(samples, geneseq, path=None):
