@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.6.1
+------
+* Added `utils.codon_to_nt_counts`.
+
 2.6.0
 ------
 * Support python3.7 and `pystan` >= 2.19 and removed limit that `scipy < 1.3`.
