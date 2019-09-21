@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_tools2.utils &#8212; dms_tools2 2.6.0 documentation</title>
+    <title>dms_tools2.utils &#8212; dms_tools2 2.6.1 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -49,6 +49,7 @@
 <span class="kn">import</span> <span class="nn">importlib</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">textwrap</span>
 <span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">collections</span>
 <span class="kn">import</span> <span class="nn">random</span>
@@ -1257,6 +1258,77 @@
     <span class="k">return</span> <span class="n">subs</span></div>
 
 
+<div class="viewcode-block" id="codon_to_nt_counts"><a class="viewcode-back" href="../../dms_tools2.utils.html#dms_tools2.utils.codon_to_nt_counts">[docs]</a><span class="k">def</span> <span class="nf">codon_to_nt_counts</span><span class="p">(</span><span class="n">codoncounts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert codon counts file to nucleotide counts.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `codoncounts` (str or pandas.DataFrame)</span>
+<span class="sd">            Codon counts in format produced by ``dms2_bcsubamp``,</span>
+<span class="sd">            either as CSV file or data frame holding CSV.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        pandas.DataFrame with nucleotide counts.</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; with tempfile.NamedTemporaryFile(&#39;w&#39;) as f:</span>
+<span class="sd">    ...     _ = f.write(textwrap.dedent(&#39;&#39;&#39;</span>
+<span class="sd">    ...             site,wildtype,AAA,AAC,AAG,AAT,ACA,ACC,ACG,ACT,AGA,AGC,AGG,AGT,ATA,ATC,ATG,ATT,CAA,CAC,CAG,CAT,CCA,CCC,CCG,CCT,CGA,CGC,CGG,CGT,CTA,CTC,CTG,CTT,GAA,GAC,GAG,GAT,GCA,GCC,GCG,GCT,GGA,GGC,GGG,GGT,GTA,GTC,GTG,GTT,TAA,TAC,TAG,TAT,TCA,TCC,TCG,TCT,TGA,TGC,TGG,TGT,TTA,TTC,TTG,TTT</span>
+<span class="sd">    ...             1,ATG,0,0,0,0,0,0,2,0,0,0,0,0,8,0,333985,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</span>
+<span class="sd">    ...             2,AAG,16,20,333132,41,13,12,27,14,8,6,67,8,9,13,29,9,10,11,12,8,10,15,15,11,6,9,3,7,8,10,17,4,3,7,49,7,9,14,9,4,10,7,7,7,9,11,11,5,14,14,11,6,13,16,15,14,9,9,15,8,9,11,8,15</span>
+<span class="sd">    ...             3,GCA,2,3,8,3,34,11,7,6,7,6,9,8,4,3,5,0,6,14,10,12,6,8,7,10,5,11,7,6,6,1,3,12,19,6,11,9,333250,10,6,9,15,3,5,5,37,9,9,7,8,4,8,3,23,5,7,8,6,11,7,10,7,9,3,6 </span>
+<span class="sd">    ...             &#39;&#39;&#39;.strip()))</span>
+<span class="sd">    ...     f.flush()</span>
+<span class="sd">    ...     nt_counts = codon_to_nt_counts(f.name)</span>
+<span class="sd">    &gt;&gt;&gt; nt_counts</span>
+<span class="sd">       site wildtype       A       C       G       T</span>
+<span class="sd">    0     1        A  334009       0       6       0</span>
+<span class="sd">    1     2        T       0       2       0  334013</span>
+<span class="sd">    2     3        G       8       0  333993      14</span>
+<span class="sd">    3     4        A  333424     156     169     187</span>
+<span class="sd">    4     5        A  333361     211     186     178</span>
+<span class="sd">    5     6        G     156     185  333427     168</span>
+<span class="sd">    6     7        G     116     124  333410     125</span>
+<span class="sd">    7     8        C     126  333407     121     121</span>
+<span class="sd">    8     9        A  333435     114     112     114</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">codoncounts</span><span class="p">,</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="n">codoncounts</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">codoncounts</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">codoncounts</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`site` column in `codoncounts` must be integer&#39;</span><span class="p">)</span>
+
+    <span class="n">nt_counts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i_nt</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]:</span>
+        <span class="n">nt_counts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">codoncounts</span>
+                <span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">],</span>
+                      <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;codon&#39;</span><span class="p">,</span>
+                      <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;count&#39;</span><span class="p">,</span>
+                      <span class="p">)</span>
+                <span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+                    <span class="n">site</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">i_nt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="n">wildtype</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;wildtype&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="p">[</span><span class="n">i_nt</span><span class="p">],</span>
+                    <span class="n">nucleotide</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;codon&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="p">[</span><span class="n">i_nt</span><span class="p">],</span>
+                    <span class="p">)</span>
+                <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;nucleotide&#39;</span><span class="p">])</span>
+                <span class="o">.</span><span class="n">aggregate</span><span class="p">({</span><span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="s1">&#39;sum&#39;</span><span class="p">})</span>
+                <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="s1">&#39;count&#39;</span><span class="p">,</span>
+                             <span class="n">columns</span><span class="o">=</span><span class="s1">&#39;nucleotide&#39;</span><span class="p">,</span>
+                             <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">])</span>
+                <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+                <span class="p">)</span>
+
+    <span class="n">nt_counts</span> <span class="o">=</span> <span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">nt_counts</span><span class="p">)</span>
+                 <span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+                 <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                 <span class="p">)</span>
+    <span class="k">del</span> <span class="n">nt_counts</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">name</span>
+    <span class="k">return</span> <span class="n">nt_counts</span></div>
+
+
 <div class="viewcode-block" id="barcodeInfoToCodonVariantTable"><a class="viewcode-back" href="../../dms_tools2.utils.html#dms_tools2.utils.barcodeInfoToCodonVariantTable">[docs]</a><span class="k">def</span> <span class="nf">barcodeInfoToCodonVariantTable</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">geneseq</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Convert barcode info files into a CodonVariantTable</span>
 
@@ -1583,7 +1655,7 @@
       &copy;2017--2019, the Bloom lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
