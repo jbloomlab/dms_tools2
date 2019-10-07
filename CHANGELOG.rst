@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.6.2
+------
+* Added 'syn_selection'.
+
 2.6.1
 ------
 * Added `utils.codon_to_nt_counts`.
