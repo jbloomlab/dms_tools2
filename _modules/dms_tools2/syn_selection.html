@@ -1,0 +1,270 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dms_tools2.syn_selection &#8212; dms_tools2 2.6.2 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for dms_tools2.syn_selection</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">==============</span>
+<span class="sd">syn_selection</span>
+<span class="sd">==============</span>
+
+<span class="sd">Identifies enrichment of synonymous codons.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span>
+
+<span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="k">import</span> <span class="n">CODON_TO_AA</span>
+
+<div class="viewcode-block" id="syn_selection_by_codon"><a class="viewcode-back" href="../../dms_tools2.syn_selection.html#dms_tools2.syn_selection.syn_selection_by_codon">[docs]</a><span class="k">def</span> <span class="nf">syn_selection_by_codon</span><span class="p">(</span><span class="n">counts_pre</span><span class="p">,</span> <span class="n">counts_post</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Identify sites with selection on synonymous codons.</span>
+
+<span class="sd">    Runs two-tailed Fisher Exact test, which returns:</span>
+<span class="sd">     - an odds ratio reflecting the enrichment of codon_x after selection,</span>
+<span class="sd">       relative to other synonymous codons.</span>
+<span class="sd">     - P-value reflecting the significance of codon_x enrichment.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        `counts_pre` (str or pandas.DataFrame)</span>
+<span class="sd">            CSV file giving pre-selection codon counts with columns</span>
+<span class="sd">            named &#39;site&#39;, &#39;wildtype&#39;, and list of codons. Can also</span>
+<span class="sd">            be a pandas DataFrame containing the CSV file.</span>
+<span class="sd">        `counts_post` (str pandas.DataFrame)</span>
+<span class="sd">            Like `counts_pre` but for the post-selection counts.</span>
+<span class="sd">            CSV file giving post-selection codon counts in same format</span>
+<span class="sd">            as `counts_pre`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A pandas DataFrame with the following columns:</span>
+<span class="sd">         - &#39;site&#39;</span>
+<span class="sd">         - &#39;wildtype&#39; : wildtype codon at site</span>
+<span class="sd">         - &#39;codon&#39; : codon we are analyzing at site</span>
+<span class="sd">         - &#39;aa&#39; : amino acid</span>
+<span class="sd">         - &#39;codon_pre&#39; : counts for codon of interest pre-selection</span>
+<span class="sd">         - &#39;aa_pre&#39; : counts for all codons for amino acid pre-selection</span>
+<span class="sd">         - &#39;codon_post&#39; : counts for codon of interest post-selection</span>
+<span class="sd">         - &#39;aa_post&#39; : counts for all codons for amino acid post-selection</span>
+<span class="sd">         - &#39;odds_ratio&#39; : enrichment of codon post-selection</span>
+<span class="sd">         - &#39;P&#39; : P-value calculated using Fisher&#39;s exact test</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; pd.set_option(&#39;display.max_columns&#39;, None)  # display all columns</span>
+<span class="sd">    &gt;&gt;&gt; pd.set_option(&#39;expand_frame_repr&#39;, False)  # do not break lines</span>
+<span class="sd">    &gt;&gt;&gt; counts_pre = pd.DataFrame.from_records(</span>
+<span class="sd">    ...         [(1, &#39;ATC&#39;, 5, 100, 10), </span>
+<span class="sd">    ...          (2, &#39;ATT&#39;, 50, 10, 10),</span>
+<span class="sd">    ...          ],</span>
+<span class="sd">    ...         columns=[&#39;site&#39;, &#39;wildtype&#39;, &#39;ATT&#39;, &#39;ATC&#39;, &#39;ATA&#39;],</span>
+<span class="sd">    ...         )</span>
+<span class="sd">    &gt;&gt;&gt; counts_post = pd.DataFrame.from_records(</span>
+<span class="sd">    ...         [(1, &#39;ATC&#39;, 5, 50, 75), </span>
+<span class="sd">    ...          (2, &#39;ATT&#39;, 50, 9, 11),</span>
+<span class="sd">    ...          ],</span>
+<span class="sd">    ...         columns=[&#39;site&#39;, &#39;wildtype&#39;, &#39;ATT&#39;, &#39;ATC&#39;, &#39;ATA&#39;],</span>
+<span class="sd">    ...         )</span>
+<span class="sd">    &gt;&gt;&gt; syn_selection_by_codon(counts_pre, counts_post)</span>
+<span class="sd">       site wildtype codon aa  codon_pre  aa_pre  codon_post  aa_post  odds_ratio             P</span>
+<span class="sd">    0     1      ATC   ATT  I          5     115           5      130    0.880000  1.000000e+00</span>
+<span class="sd">    1     1      ATC   ATC  I        100     115          50      130    0.093750  1.798192e-15</span>
+<span class="sd">    2     1      ATC   ATA  I         10     115          75      130   14.318182  7.500709e-17</span>
+<span class="sd">    3     2      ATT   ATT  I         50      70          50       70    1.000000  1.000000e+00</span>
+<span class="sd">    4     2      ATT   ATC  I         10      70           9       70    0.885246  1.000000e+00</span>
+<span class="sd">    5     2      ATT   ATA  I         10      70          11       70    1.118644  1.000000e+00</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># translate codons and calculate aa_count for pre- and post-selection datasets</span>
+    <span class="n">counts_df_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">df</span><span class="p">,</span> <span class="n">df_type</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">counts_pre</span><span class="p">,</span> <span class="s1">&#39;pre&#39;</span><span class="p">),</span> <span class="p">(</span><span class="n">counts_post</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">)]:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="p">(</span>
+         <span class="n">df</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">],</span>
+                 <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;codon&#39;</span><span class="p">,</span>
+                 <span class="n">value_name</span><span class="o">=</span><span class="n">f</span><span class="s2">&quot;codon_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">)</span>
+         <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">aa</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;codon&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">CODON_TO_AA</span><span class="p">))</span>  <span class="c1"># translate codons</span>
+         <span class="p">[[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">,</span> <span class="s1">&#39;aa&#39;</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;codon_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">]]</span>
+         <span class="p">)</span>
+
+        <span class="c1"># group synonymous codons at each site</span>
+        <span class="n">aaGroups</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;aa&#39;</span><span class="p">])</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="p">(</span>
+         <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">aa_count</span><span class="o">=</span><span class="n">aaGroups</span><span class="p">[</span><span class="n">f</span><span class="s2">&quot;codon_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">))</span>
+         <span class="c1"># use in calculating significance of codon vs other synonymous codons</span>
+         <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">syn_codons</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;aa_count&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">f</span><span class="s2">&quot;codon_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">])</span>
+         <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;aa_count&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s2">&quot;aa_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">,</span>
+                          <span class="s1">&#39;syn_codons&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s2">&quot;syn_codons_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">})</span>
+         <span class="p">)</span>
+
+        <span class="n">counts_df_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+    <span class="c1"># merge counts_pre and counts_post</span>
+    <span class="n">df_merge</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">counts_df_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                        <span class="n">counts_df_list</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                        <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">,</span> <span class="s1">&#39;aa&#39;</span><span class="p">])</span>
+
+    <span class="c1"># apply Fisher&#39;s exact test to codon x vs other synonymous codons</span>
+    <span class="n">df_merge</span><span class="p">[</span><span class="s1">&#39;fishers&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">df_merge</span>
+        <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">fisher_exact</span><span class="p">(</span>
+                <span class="p">[[</span><span class="n">x</span><span class="o">.</span><span class="n">syn_codons_pre</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">syn_codons_post</span><span class="p">],</span>
+                 <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">codon_pre</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">codon_post</span><span class="p">]]),</span>
+               <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="c1"># split fishers results into &#39;odds_ratio&#39; and &#39;P&#39;</span>
+    <span class="n">new_col_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;odds_ratio&#39;</span><span class="p">,</span> <span class="s1">&#39;P&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">new_col_list</span><span class="p">):</span>
+        <span class="n">df_merge</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_merge</span><span class="p">[</span><span class="s1">&#39;fishers&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+
+    <span class="c1"># drop extra columns</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">df_merge</span>
+          <span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;syn_codons_pre&#39;</span><span class="p">,</span> <span class="s1">&#39;syn_codons_post&#39;</span><span class="p">,</span> <span class="s1">&#39;fishers&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+          <span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;aa&#39;</span><span class="p">])</span>
+          <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+          <span class="p">)</span>
+
+    <span class="k">return</span><span class="p">(</span><span class="n">df</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fracsurvive.html">Fraction surviving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../programs.html">Executable programs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017--2019, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

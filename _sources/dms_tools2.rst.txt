@@ -26,4 +26,5 @@ Submodules
    dms_tools2.rplot
    dms_tools2.seqnumbering
    dms_tools2.sra
+   dms_tools2.syn_selection
    dms_tools2.utils

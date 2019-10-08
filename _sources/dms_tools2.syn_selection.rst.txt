@@ -1,0 +1,4 @@
+.. automodule:: dms_tools2.syn_selection
+   :members:
+   :undoc-members:
+   :show-inheritance:

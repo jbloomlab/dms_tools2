@@ -1,0 +1,222 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>syn_selection &#8212; dms_tools2 2.6.2 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="utils" href="dms_tools2.utils.html" />
+    <link rel="prev" title="sra" href="dms_tools2.sra.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <span class="target" id="module-dms_tools2.syn_selection"></span><div class="section" id="syn-selection">
+<h1>syn_selection<a class="headerlink" href="#syn-selection" title="Permalink to this headline">¶</a></h1>
+<p>Identifies enrichment of synonymous codons.</p>
+<dl class="function">
+<dt id="dms_tools2.syn_selection.syn_selection_by_codon">
+<code class="sig-prename descclassname">dms_tools2.syn_selection.</code><code class="sig-name descname">syn_selection_by_codon</code><span class="sig-paren">(</span><em class="sig-param">counts_pre</em>, <em class="sig-param">counts_post</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/syn_selection.html#syn_selection_by_codon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.syn_selection.syn_selection_by_codon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Identify sites with selection on synonymous codons.</p>
+<dl class="simple">
+<dt>Runs two-tailed Fisher Exact test, which returns:</dt><dd><ul class="simple">
+<li><p>an odds ratio reflecting the enrichment of codon_x after selection,
+relative to other synonymous codons.</p></li>
+<li><p>P-value reflecting the significance of codon_x enrichment.</p></li>
+</ul>
+</dd>
+<dt>Args:</dt><dd><dl class="simple">
+<dt><cite>counts_pre</cite> (str or pandas.DataFrame)</dt><dd><p>CSV file giving pre-selection codon counts with columns
+named ‘site’, ‘wildtype’, and list of codons. Can also
+be a pandas DataFrame containing the CSV file.</p>
+</dd>
+<dt><cite>counts_post</cite> (str pandas.DataFrame)</dt><dd><p>Like <cite>counts_pre</cite> but for the post-selection counts.
+CSV file giving post-selection codon counts in same format
+as <cite>counts_pre</cite>.</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><dl class="simple">
+<dt>A pandas DataFrame with the following columns:</dt><dd><ul class="simple">
+<li><p>‘site’</p></li>
+<li><p>‘wildtype’ : wildtype codon at site</p></li>
+<li><p>‘codon’ : codon we are analyzing at site</p></li>
+<li><p>‘aa’ : amino acid</p></li>
+<li><p>‘codon_pre’ : counts for codon of interest pre-selection</p></li>
+<li><p>‘aa_pre’ : counts for all codons for amino acid pre-selection</p></li>
+<li><p>‘codon_post’ : counts for codon of interest post-selection</p></li>
+<li><p>‘aa_post’ : counts for all codons for amino acid post-selection</p></li>
+<li><p>‘odds_ratio’ : enrichment of codon post-selection</p></li>
+<li><p>‘P’ : P-value calculated using Fisher’s exact test</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.max_columns&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># display all columns</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;expand_frame_repr&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>  <span class="c1"># do not break lines</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">counts_pre</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_records</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;ATC&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> 
+<span class="gp">... </span>         <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;ATT&#39;</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+<span class="gp">... </span>         <span class="p">],</span>
+<span class="gp">... </span>        <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;ATT&#39;</span><span class="p">,</span> <span class="s1">&#39;ATC&#39;</span><span class="p">,</span> <span class="s1">&#39;ATA&#39;</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">counts_post</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_records</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;ATC&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">75</span><span class="p">),</span> 
+<span class="gp">... </span>         <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;ATT&#39;</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">11</span><span class="p">),</span>
+<span class="gp">... </span>         <span class="p">],</span>
+<span class="gp">... </span>        <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;ATT&#39;</span><span class="p">,</span> <span class="s1">&#39;ATC&#39;</span><span class="p">,</span> <span class="s1">&#39;ATA&#39;</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">syn_selection_by_codon</span><span class="p">(</span><span class="n">counts_pre</span><span class="p">,</span> <span class="n">counts_post</span><span class="p">)</span>
+<span class="go">   site wildtype codon aa  codon_pre  aa_pre  codon_post  aa_post  odds_ratio             P</span>
+<span class="go">0     1      ATC   ATT  I          5     115           5      130    0.880000  1.000000e+00</span>
+<span class="go">1     1      ATC   ATC  I        100     115          50      130    0.093750  1.798192e-15</span>
+<span class="go">2     1      ATC   ATA  I         10     115          75      130   14.318182  7.500709e-17</span>
+<span class="go">3     2      ATT   ATT  I         50      70          50       70    1.000000  1.000000e+00</span>
+<span class="go">4     2      ATT   ATC  I         10      70           9       70    0.885246  1.000000e+00</span>
+<span class="go">5     2      ATT   ATA  I         10      70          11       70    1.118644  1.000000e+00</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_tools2</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Tools for analyzing deep mutational scanning data.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_tools2&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_tools2">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_tools2.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bcsubamp.html">Barcoded-subamplicon sequencing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prefs.html">Amino-acid preferences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="diffsel.html">Differential selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fracsurvive.html">Fraction surviving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="programs.html">Executable programs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="api.html">Python API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="dms_tools2.html">dms_tools2 package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="citations.html">Citations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="api.html">Python API</a><ul>
+  <li><a href="dms_tools2.html">dms_tools2 package</a><ul>
+      <li>Previous: <a href="dms_tools2.sra.html" title="previous chapter">sra</a></li>
+      <li>Next: <a href="dms_tools2.utils.html" title="next chapter">utils</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017--2019, the Bloom lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/dms_tools2.syn_selection.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_tools2" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms2_logoplot &#8212; dms_tools2 2.6.1 documentation</title>
+    <title>dms2_logoplot &#8212; dms_tools2 2.6.2 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -37,17 +37,13 @@
 <span id="id1"></span><h1><code class="docutils literal notranslate"><span class="pre">dms2_logoplot</span></code><a class="headerlink" href="#dms2-logoplot" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#overview" id="id3">Overview</a></p></li>
-<li><p><a class="reference internal" href="#command-line-usage" id="id4">Command-line usage</a></p>
-<ul>
-<li><p><a class="reference internal" href="#Named Arguments" id="id5">Named Arguments</a></p></li>
-</ul>
-</li>
-<li><p><a class="reference internal" href="#output-files" id="id6">Output files</a></p></li>
+<li><p><a class="reference internal" href="#overview" id="id2">Overview</a></p></li>
+<li><p><a class="reference internal" href="#command-line-usage" id="id3">Command-line usage</a></p></li>
+<li><p><a class="reference internal" href="#output-files" id="id4">Output files</a></p></li>
 </ul>
 </div>
 <div class="section" id="overview">
-<h2><a class="toc-backref" href="#id3">Overview</a><a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id2">Overview</a><a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">dms2_logoplot</span></code> program makes logo-plot visualizations of the data.
 It uses a slightly modified version of <a class="reference external" href="https://code.google.com/p/weblogo/">weblogo</a> to make the logo plots themselves.</p>
 <p>If you run it using <code class="docutils literal notranslate"><span class="pre">--prefs</span></code> to specify the input file, then the plot will visualize <a class="reference internal" href="prefs.html#prefs"><span class="std std-ref">Amino-acid preferences</span></a>.</p>
@@ -59,153 +55,10 @@ The mutational effect calculated by this function is just the ratio of the prefe
 <p>If you run it using <code class="docutils literal notranslate"><span class="pre">--diffprefs</span></code> to specify the input file, then the plot will show the difference between preferences, showing negative and positive values.</p>
 </div>
 <div class="section" id="command-line-usage">
-<span id="logoplot-commandlineusage"></span><h2><a class="toc-backref" href="#id4">Command-line usage</a><a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
-<p><p>Create logo plot visualization. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.6.1) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
-</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">dms2_logoplot</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">outdir</span> <span class="n">OUTDIR</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">ncpus</span> <span class="n">NCPUS</span><span class="p">]</span>
-                     <span class="p">[</span><span class="o">--</span><span class="n">use_existing</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span>
-                     <span class="p">(</span><span class="o">--</span><span class="n">prefs</span> <span class="n">PREFS</span> <span class="o">|</span> <span class="o">--</span><span class="n">diffsel</span> <span class="n">DIFFSEL</span> <span class="o">|</span> <span class="o">--</span><span class="n">fracsurvive</span> <span class="n">FRACSURVIVE</span> <span class="o">|</span> <span class="o">--</span><span class="n">diffprefs</span> <span class="n">DIFFPREFS</span> <span class="o">|</span> <span class="o">--</span><span class="n">muteffects</span> <span class="n">MUTEFFECTS</span><span class="p">)</span>
-                     <span class="o">--</span><span class="n">name</span> <span class="n">NAME</span> <span class="p">[</span><span class="o">--</span><span class="n">nperline</span> <span class="n">NPERLINE</span><span class="p">]</span>
-                     <span class="p">[</span><span class="o">--</span><span class="n">numberevery</span> <span class="n">NUMBEREVERY</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">excludestop</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span>
-                     <span class="p">[</span><span class="o">--</span><span class="n">stringency</span> <span class="n">STRINGENCY</span><span class="p">]</span>
-                     <span class="p">[</span><span class="o">--</span><span class="n">restrictdiffsel</span> <span class="p">{</span><span class="nb">all</span><span class="p">,</span><span class="n">positive</span><span class="p">,</span><span class="n">negative</span><span class="p">}]</span>
-                     <span class="p">[</span><span class="o">--</span><span class="n">diffselrange</span> <span class="n">MINDIFFSEL</span> <span class="n">MAXDIFFSEL</span><span class="p">]</span>
-                     <span class="p">[</span><span class="o">--</span><span class="n">muteffectrange</span> <span class="n">MINMUTEFFECT</span> <span class="n">MAXMUTEFFECT</span><span class="p">]</span>
-                     <span class="p">[</span><span class="o">--</span><span class="n">fracsurvivemax</span> <span class="n">FRACSURVIVEMAX</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">sortsites</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span>
-                     <span class="p">[</span><span class="o">--</span><span class="n">mapmetric</span> <span class="p">{</span><span class="n">kd</span><span class="p">,</span><span class="n">mw</span><span class="p">,</span><span class="n">charge</span><span class="p">,</span><span class="n">functionalgroup</span><span class="p">,</span><span class="n">singlecolor</span><span class="p">}]</span>
-                     <span class="p">[</span><span class="o">--</span><span class="n">colormap</span> <span class="n">COLORMAP</span><span class="p">]</span>
-                     <span class="p">[</span><span class="o">--</span><span class="n">overlay1</span> <span class="n">FILE</span> <span class="n">SHORTNAME</span> <span class="n">LONGNAME</span><span class="p">]</span>
-                     <span class="p">[</span><span class="o">--</span><span class="n">overlay2</span> <span class="n">FILE</span> <span class="n">SHORTNAME</span> <span class="n">LONGNAME</span><span class="p">]</span>
-                     <span class="p">[</span><span class="o">--</span><span class="n">overlay3</span> <span class="n">FILE</span> <span class="n">SHORTNAME</span> <span class="n">LONGNAME</span><span class="p">]</span>
-                     <span class="p">[</span><span class="o">--</span><span class="n">underlay</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span> <span class="p">[</span><span class="o">--</span><span class="n">scalebar</span> <span class="n">BARHEIGHT</span> <span class="n">LABEL</span><span class="p">]</span>
-                     <span class="p">[</span><span class="o">--</span><span class="n">overlaycolormap</span> <span class="n">OVERLAYCOLORMAP</span><span class="p">]</span>
-                     <span class="p">[</span><span class="o">--</span><span class="n">letterheight</span> <span class="n">LETTERHEIGHT</span><span class="p">]</span>
-                     <span class="p">[</span><span class="o">--</span><span class="n">ignore_extracols</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span> <span class="p">[</span><span class="o">--</span><span class="n">sepline</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span>
-</pre></div>
-</div>
-<div class="section" id="Named Arguments">
-<h3><a class="toc-backref" href="#id5">Named Arguments</a><a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h3>
-<dl class="option-list">
-<dt><kbd>--outdir</kbd></dt>
-<dd><p>Output files to this directory (create if needed).</p>
-</dd>
-<dt><kbd>--ncpus</kbd></dt>
-<dd><p>Number of CPUs to use, -1 is all available.</p>
-<p>Default: -1</p>
-</dd>
-<dt><kbd>--use_existing</kbd></dt>
-<dd><p>Possible choices: yes, no</p>
-<p>If files with names of expected output already exist, do not re-run.</p>
-<p>Default: “no”</p>
-</dd>
-<dt><kbd>-v, --version</kbd></dt>
-<dd><p>show program’s version number and exit</p>
-</dd>
-<dt><kbd>--prefs</kbd></dt>
-<dd><p>CSV file of amino-acid preferences.</p>
-</dd>
-<dt><kbd>--diffsel</kbd></dt>
-<dd><p>CSV file of amino-acid differential selection.</p>
-</dd>
-<dt><kbd>--fracsurvive</kbd></dt>
-<dd><p>CSV file of amino-acid fraction surviving.</p>
-</dd>
-<dt><kbd>--diffprefs</kbd></dt>
-<dd><p>CSV file of differences in amino-acid preferences.</p>
-</dd>
-<dt><kbd>--muteffects</kbd></dt>
-<dd><p>CSV file of amino-acid mutational effects.</p>
-</dd>
-<dt><kbd>--name</kbd></dt>
-<dd><p>Name used for output files.</p>
-<p>This name should only contain letters, numbers, dashes, and spaces.
-Underscores are <strong>not</strong> allowed as they are a LaTex special character.</p>
-</dd>
-<dt><kbd>--nperline</kbd></dt>
-<dd><p>Number of sites per line.</p>
-<p>Default: 70</p>
-</dd>
-<dt><kbd>--numberevery</kbd></dt>
-<dd><p>Number sites at this interval.</p>
-<p>Default: 10</p>
-</dd>
-<dt><kbd>--excludestop</kbd></dt>
-<dd><p>Possible choices: yes, no</p>
-<p>Exclude stop codons as possible amino acid?</p>
-<p>Default: “no”</p>
-</dd>
-<dt><kbd>--stringency</kbd></dt>
-<dd><p>Stringency parameter to re-scale prefs.</p>
-<p>Default: 1</p>
-</dd>
-<dt><kbd>--restrictdiffsel</kbd></dt>
-<dd><p>Possible choices: all, positive, negative</p>
-<p>Plot all diffsel, or only positive or negative.</p>
-<p>Default: “all”</p>
-</dd>
-<dt><kbd>--diffselrange</kbd></dt>
-<dd><p>Specify a fixed range for <cite>diffsel</cite>. Otherwise determined from data range.</p>
-</dd>
-<dt><kbd>--muteffectrange</kbd></dt>
-<dd><p>Specify a fixed range for <cite>muteffects</cite>. Otherwise determined from data range.</p>
-</dd>
-<dt><kbd>--fracsurvivemax</kbd></dt>
-<dd><p>Specify maximum value for <cite>fracsurvive</cite>. Otherwise determined from data range.</p>
-</dd>
-<dt><kbd>--sortsites</kbd></dt>
-<dd><p>Possible choices: yes, no</p>
-<p>Sort sites from first to last before plotting.</p>
-<p>Default: “yes”</p>
-</dd>
-<dt><kbd>--mapmetric</kbd></dt>
-<dd><p>Possible choices: kd, mw, charge, functionalgroup, singlecolor</p>
-<p>Color amino acids by Kyte-Doolittle hydrophobicity, molecular weight, charge, or functional group.</p>
-<p>Default: “functionalgroup”</p>
-</dd>
-<dt><kbd>--colormap</kbd></dt>
-<dd><p><a class="reference external" href="http://matplotlib.org/users/colormaps.html">matplotlib color map</a> for amino acids when <cite>–mapmetric</cite> is ‘kd’ or ‘mw’; name of single color when it is ‘singlecolor’.</p>
-<p>Default: “jet”</p>
-</dd>
-<dt><kbd>--overlay1</kbd></dt>
-<dd><p>Color bar above logo plot to denote per-residue property. FILE is CSV format with column names <cite>site</cite> and SHORTNAME. SHORTNAME is &lt;= 5 character property name. LONGNAME is longer name for legend. Sites not in FILE are colored white. To show wildtype identity, make SHORTNAME and LONGNAME both <cite>wildtype</cite> and have this column in FILE give 1-letter wildtype amino-acid code. To show <code class="docutils literal notranslate"><span class="pre">omegabysite.txt</span></code> file from <code class="docutils literal notranslate"><span class="pre">phydms</span></code>, give that file and set both SHORTNAME and LONGNAME to <cite>omegabysite</cite>.</p>
-</dd>
-<dt><kbd>--overlay2</kbd></dt>
-<dd><p>Second overlay color bar.</p>
-</dd>
-<dt><kbd>--overlay3</kbd></dt>
-<dd><p>Third overlay color bar.</p>
-</dd>
-<dt><kbd>--underlay</kbd></dt>
-<dd><p>Possible choices: yes, no</p>
-<p>Plot underlay rather than overlay bars.</p>
-<p>Default: “no”</p>
-</dd>
-<dt><kbd>--scalebar</kbd></dt>
-<dd><p>Plot a scale bar indicating BARHEIGHT with LABEL. Only for <cite>diffsel</cite>, <cite>fracsurvive</cite>, and <cite>muteffects</cite>.</p>
-</dd>
-<dt><kbd>--overlaycolormap</kbd></dt>
-<dd><p><a class="reference external" href="http://matplotlib.org/users/colormaps.html">matplotlib color map</a> for overlay bars (e.g., ‘jet’ or ‘YlOrRd’).</p>
-<p>Default: “jet”</p>
-</dd>
-<dt><kbd>--letterheight</kbd></dt>
-<dd><p>Relative height of letter stacks in logo plot.</p>
-<p>Default: 1</p>
-</dd>
-<dt><kbd>--ignore_extracols</kbd></dt>
-<dd><p>Possible choices: yes, no</p>
-<p>Ignore extra columns in data</p>
-<p>Default: “no”</p>
-</dd>
-<dt><kbd>--sepline</kbd></dt>
-<dd><p>Possible choices: yes, no</p>
-<p>Separate positive and negative diffsel with black line?</p>
-<p>Default: “yes”</p>
-</dd>
-</dl>
-</div>
+<span id="logoplot-commandlineusage"></span><h2><a class="toc-backref" href="#id3">Command-line usage</a><a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="output-files">
-<h2><a class="toc-backref" href="#id6">Output files</a><a class="headerlink" href="#output-files" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id4">Output files</a><a class="headerlink" href="#output-files" title="Permalink to this headline">¶</a></h2>
 <p>Running <code class="docutils literal notranslate"><span class="pre">dms2_logoplot</span></code> produces output files in the directory specified by <code class="docutils literal notranslate"><span class="pre">--outdir</span></code>, and with the prefix specified by <code class="docutils literal notranslate"><span class="pre">--name</span></code>.</p>
 <p>There will be a log file with the suffix <code class="docutils literal notranslate"><span class="pre">.log</span></code> summarizing the program’s progress.</p>
 <p>If you run with <code class="docutils literal notranslate"><span class="pre">--prefs</span></code>, then the logo plot will be in a file with the suffix <code class="docutils literal notranslate"><span class="pre">_prefs.pdf</span></code>.

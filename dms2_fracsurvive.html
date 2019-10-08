@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms2_fracsurvive &#8212; dms_tools2 2.6.1 documentation</title>
+    <title>dms2_fracsurvive &#8212; dms_tools2 2.6.2 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -37,120 +37,38 @@
 <span id="id1"></span><h1><code class="docutils literal notranslate"><span class="pre">dms2_fracsurvive</span></code><a class="headerlink" href="#dms2-fracsurvive" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#overview" id="id3">Overview</a></p></li>
-<li><p><a class="reference internal" href="#command-line-usage" id="id4">Command-line usage</a></p>
+<li><p><a class="reference internal" href="#overview" id="id2">Overview</a></p></li>
+<li><p><a class="reference internal" href="#command-line-usage" id="id3">Command-line usage</a></p></li>
+<li><p><a class="reference internal" href="#output-files" id="id4">Output files</a></p>
 <ul>
-<li><p><a class="reference internal" href="#Named Arguments" id="id5">Named Arguments</a></p></li>
-</ul>
-</li>
-<li><p><a class="reference internal" href="#output-files" id="id6">Output files</a></p>
-<ul>
-<li><p><a class="reference internal" href="#log-file" id="id7">Log file</a></p></li>
-<li><p><a class="reference internal" href="#mutation-fraction-surviving-file" id="id8">Mutation fraction surviving file</a></p></li>
-<li><p><a class="reference internal" href="#site-fraction-surviving-file" id="id9">Site fraction surviving file</a></p></li>
+<li><p><a class="reference internal" href="#log-file" id="id5">Log file</a></p></li>
+<li><p><a class="reference internal" href="#mutation-fraction-surviving-file" id="id6">Mutation fraction surviving file</a></p></li>
+<li><p><a class="reference internal" href="#site-fraction-surviving-file" id="id7">Site fraction surviving file</a></p></li>
 </ul>
 </li>
 </ul>
 </div>
 <div class="section" id="overview">
-<h2><a class="toc-backref" href="#id3">Overview</a><a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id2">Overview</a><a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">dms2_fracsurvive</span></code> program processes files giving the number of observed counts of characters in a selected and mock-selected condition along with a measurement of the overall fraction of the library surviving the selection to estimate the <a class="reference internal" href="fracsurvive.html#fracsurvive"><span class="std std-ref">Fraction surviving</span></a> for each mutation.</p>
 <p>If you have multiple related replicates or samples (or even if you have just one), you should probably use the <a class="reference internal" href="dms2_batch_fracsurvive.html#dms2-batch-fracsurvive"><span class="std std-ref">dms2_batch_fracsurvive</span></a> program rather than running <code class="docutils literal notranslate"><span class="pre">dms2_fracsurvive</span></code> directly.
 This is because <a class="reference internal" href="dms2_batch_fracsurvive.html#dms2-batch-fracsurvive"><span class="std std-ref">dms2_batch_fracsurvive</span></a> runs <code class="docutils literal notranslate"><span class="pre">dms2_fracsurvive</span></code>, but then also makes some nice summary plots.</p>
 </div>
 <div class="section" id="command-line-usage">
-<span id="fracsurvive-commandlineusage"></span><h2><a class="toc-backref" href="#id4">Command-line usage</a><a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
-<p><p>Estimate fraction surviving for each mutation. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.6.1) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
-</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">dms2_fracsurvive</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">outdir</span> <span class="n">OUTDIR</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">ncpus</span> <span class="n">NCPUS</span><span class="p">]</span>
-                        <span class="p">[</span><span class="o">--</span><span class="n">use_existing</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">indir</span> <span class="n">INDIR</span><span class="p">]</span>
-                        <span class="p">[</span><span class="o">--</span><span class="n">chartype</span> <span class="p">{</span><span class="n">codon_to_aa</span><span class="p">}]</span> <span class="p">[</span><span class="o">--</span><span class="n">aboveavg</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span>
-                        <span class="p">[</span><span class="o">--</span><span class="n">excludestop</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span> <span class="p">[</span><span class="o">--</span><span class="n">pseudocount</span> <span class="n">PSEUDOCOUNT</span><span class="p">]</span>
-                        <span class="p">[</span><span class="o">--</span><span class="n">mincount</span> <span class="n">MINCOUNT</span><span class="p">]</span> <span class="o">--</span><span class="n">name</span> <span class="n">NAME</span> <span class="o">--</span><span class="n">sel</span> <span class="n">SEL</span> <span class="o">--</span><span class="n">mock</span>
-                        <span class="n">MOCK</span> <span class="o">--</span><span class="n">libfracsurvive</span> <span class="n">LIBFRACSURVIVE</span> <span class="p">[</span><span class="o">--</span><span class="n">err</span> <span class="n">ERR</span><span class="p">]</span>
-</pre></div>
-</div>
-<div class="section" id="Named Arguments">
-<h3><a class="toc-backref" href="#id5">Named Arguments</a><a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h3>
-<dl class="option-list">
-<dt><kbd>--outdir</kbd></dt>
-<dd><p>Output files to this directory (create if needed).</p>
-</dd>
-<dt><kbd>--ncpus</kbd></dt>
-<dd><p>Number of CPUs to use, -1 is all available.</p>
-<p>Default: -1</p>
-</dd>
-<dt><kbd>--use_existing</kbd></dt>
-<dd><p>Possible choices: yes, no</p>
-<p>If files with names of expected output already exist, do not re-run.</p>
-<p>Default: “no”</p>
-</dd>
-<dt><kbd>-v, --version</kbd></dt>
-<dd><p>show program’s version number and exit</p>
-</dd>
-<dt><kbd>--indir</kbd></dt>
-<dd><p>Input counts files in this directory.</p>
-<p>This option can be useful if the counts files are found in a common directory.
-Instead of repeatedly listing that directory name, you can just provide it here.</p>
-</dd>
-<dt><kbd>--chartype</kbd></dt>
-<dd><p>Possible choices: codon_to_aa</p>
-<p>Characters for which fraction surviving selection is estimated. <cite>codon_to_aa</cite> = amino acids from codon counts.</p>
-<p>Default: “codon_to_aa”</p>
-</dd>
-<dt><kbd>--aboveavg</kbd></dt>
-<dd><p>Possible choices: yes, no</p>
-<p>Report fracsurvive <strong>above</strong> the library average rather than direct fracsurvive values.</p>
-<p>Default: “no”</p>
-</dd>
-<dt><kbd>--excludestop</kbd></dt>
-<dd><p>Possible choices: yes, no</p>
-<p>Exclude stop codons as a possible amino acid?</p>
-<p>Default: “yes”</p>
-</dd>
-<dt><kbd>--pseudocount</kbd></dt>
-<dd><p>Pseudocount added to each count for sample with smaller depth; pseudocount for other sample scaled by relative depth.</p>
-<p>Default: 5</p>
-</dd>
-<dt><kbd>--mincount</kbd></dt>
-<dd><p>Report as <cite>NaN</cite> the fracsurvive of mutations for which both selected and mock-selected samples have &lt; this many counts.</p>
-<p>Default: 0</p>
-</dd>
-<dt><kbd>--name</kbd></dt>
-<dd><p>Name used for output files.</p>
-<p>The <a class="reference internal" href="#output-files">Output files</a> will have a prefix equal to the name specified here.
-This name should only contain letters, numbers, dashes, and spaces.
-Underscores are <strong>not</strong> allowed as they are a LaTex special character.</p>
-</dd>
-<dt><kbd>--sel</kbd></dt>
-<dd><p>Post-selection counts file or prefix used when creating this file.</p>
-<p>The counts files have the format of the files created by programs such as <code class="docutils literal notranslate"><span class="pre">dms2_bcsubamp</span></code>.
-Specifically, they must have the following columns: ‘site’, ‘wildtype’, and then a column for each possible character (e.g., codon).</p>
-</dd>
-<dt><kbd>--mock</kbd></dt>
-<dd><p>Like <code class="docutils literal notranslate"><span class="pre">--sel</span></code>, but for mock-selection counts.</p>
-</dd>
-<dt><kbd>--libfracsurvive</kbd></dt>
-<dd><p>Overall fraction of total library surviving selection versus mock condition. Should be between 0 and 1.</p>
-</dd>
-<dt><kbd>--err</kbd></dt>
-<dd><p>Like <code class="docutils literal notranslate"><span class="pre">--sel</span></code> but for error-control to correct mutation counts.</p>
-</dd>
-</dl>
-</div>
+<span id="fracsurvive-commandlineusage"></span><h2><a class="toc-backref" href="#id3">Command-line usage</a><a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="output-files">
-<span id="fracsurvive-outputfiles"></span><h2><a class="toc-backref" href="#id6">Output files</a><a class="headerlink" href="#output-files" title="Permalink to this headline">¶</a></h2>
+<span id="fracsurvive-outputfiles"></span><h2><a class="toc-backref" href="#id4">Output files</a><a class="headerlink" href="#output-files" title="Permalink to this headline">¶</a></h2>
 <p>The output files all have the prefix specified by <code class="docutils literal notranslate"><span class="pre">--outdir</span></code> and <code class="docutils literal notranslate"><span class="pre">--name</span></code>.
 For instance, if you use <code class="docutils literal notranslate"><span class="pre">--outdir</span> <span class="pre">results</span> <span class="pre">--name</span> <span class="pre">replicate-1</span></code>, then the output files will have the prefix <code class="docutils literal notranslate"><span class="pre">./results/replicate-1</span></code> and the suffixes described below.</p>
 <p>Here are the specific output files:</p>
 <div class="section" id="log-file">
-<h3><a class="toc-backref" href="#id7">Log file</a><a class="headerlink" href="#log-file" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id5">Log file</a><a class="headerlink" href="#log-file" title="Permalink to this headline">¶</a></h3>
 <p>This file has the suffix <code class="docutils literal notranslate"><span class="pre">.log</span></code>.
 It is a text file that logs the progress of the program.</p>
 </div>
 <div class="section" id="mutation-fraction-surviving-file">
-<h3><a class="toc-backref" href="#id8">Mutation fraction surviving file</a><a class="headerlink" href="#mutation-fraction-surviving-file" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id6">Mutation fraction surviving file</a><a class="headerlink" href="#mutation-fraction-surviving-file" title="Permalink to this headline">¶</a></h3>
 <p>This file has the suffix <code class="docutils literal notranslate"><span class="pre">_mutfracsurvive.csv</span></code>.
 It gives the fraction surviving for each mutation at each site, which is the <span class="math notranslate nohighlight">\(F_{r,x}\)</span> value defined in Equation <a class="reference internal" href="fracsurvive.html#equation-fracsurvive">(30)</a> of the <a class="reference internal" href="fracsurvive.html#fracsurvive"><span class="std std-ref">Fraction surviving</span></a> section.
 Note that the quantity is calculated for the wildtype as well as the mutant characters at each site.
@@ -172,7 +90,7 @@ If <code class="docutils literal notranslate"><span class="pre">--mincounts</spa
 <p>Note that the file is sorted from largest to smallest fraction surviving.</p>
 </div>
 <div class="section" id="site-fraction-surviving-file">
-<h3><a class="toc-backref" href="#id9">Site fraction surviving file</a><a class="headerlink" href="#site-fraction-surviving-file" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id7">Site fraction surviving file</a><a class="headerlink" href="#site-fraction-surviving-file" title="Permalink to this headline">¶</a></h3>
 <p>This file has the suffix <code class="docutils literal notranslate"><span class="pre">_sitefracsurvive.csv</span></code>
 It gives several measures that summarize the fraction surviving each site.
 All values in the <code class="docutils literal notranslate"><span class="pre">_sitefracsurvive.csv</span></code> file can be calculated from the values in the <code class="docutils literal notranslate"><span class="pre">_mutfracsurvive.csv</span></code> file, but the program outputs both files to make things simpler for the user.</p>
