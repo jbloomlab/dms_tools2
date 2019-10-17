@@ -1,4 +1,5 @@
 .*
 !.gitignore
 results
+!Doud2016/results
 FASTQ_files
