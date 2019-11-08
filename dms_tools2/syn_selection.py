@@ -82,6 +82,9 @@ def syn_selection_by_codon(counts_pre, counts_post):
          [['site', 'wildtype', 'codon', 'aa', f"codon_{df_type}"]]
          )
 
+        # add pseudocount of 1 to avoid inf or null odds ratios
+        df[f'codon_{df_type}'] += 1
+
         # group synonymous codons at each site
         aaGroups = df.groupby(['site', 'aa'])
 
