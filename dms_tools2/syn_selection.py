@@ -56,13 +56,13 @@ def syn_selection_by_codon(counts_pre, counts_post, pseudocount):
     >>> pd.set_option('display.max_columns', None)  # display all columns
     >>> pd.set_option('expand_frame_repr', False)  # do not break lines
     >>> counts_pre = pd.DataFrame.from_records(
-    ...         [(1, 'ATC', 5, 100, 10), 
+    ...         [(1, 'ATC', 5, 100, 10),
     ...          (2, 'ATT', 50, 10, 10),
     ...          ],
     ...         columns=['site', 'wildtype', 'ATT', 'ATC', 'ATA'],
     ...         )
     >>> counts_post = pd.DataFrame.from_records(
-    ...         [(1, 'ATC', 5, 50, 75), 
+    ...         [(1, 'ATC', 5, 50, 75),
     ...          (2, 'ATT', 50, 9, 11),
     ...          ],
     ...         columns=['site', 'wildtype', 'ATT', 'ATC', 'ATA'],
@@ -88,9 +88,6 @@ def syn_selection_by_codon(counts_pre, counts_post, pseudocount):
          .assign(aa=lambda x: x['codon'].map(CODON_TO_AA))  # translate codons
          [['site', 'wildtype', 'codon', 'aa', f"codon_{df_type}"]]
          )
-
-        # add pseudocount of 1 to avoid inf or null odds ratios
-        df[f'codon_{df_type}'] += 1
 
         # group synonymous codons at each site
         aaGroups = df.groupby(['site', 'aa'])
