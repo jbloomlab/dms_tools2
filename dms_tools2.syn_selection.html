@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>syn_selection &#8212; dms_tools2 2.6.2 documentation</title>
+    <title>syn_selection &#8212; dms_tools2 2.6.3 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -38,23 +38,35 @@
 <p>Identifies enrichment of synonymous codons.</p>
 <dl class="function">
 <dt id="dms_tools2.syn_selection.syn_selection_by_codon">
-<code class="sig-prename descclassname">dms_tools2.syn_selection.</code><code class="sig-name descname">syn_selection_by_codon</code><span class="sig-paren">(</span><em class="sig-param">counts_pre</em>, <em class="sig-param">counts_post</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/syn_selection.html#syn_selection_by_codon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.syn_selection.syn_selection_by_codon" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_tools2.syn_selection.</code><code class="sig-name descname">syn_selection_by_codon</code><span class="sig-paren">(</span><em class="sig-param">counts_pre</em>, <em class="sig-param">counts_post</em>, <em class="sig-param">pseudocount=0.5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_tools2/syn_selection.html#syn_selection_by_codon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_tools2.syn_selection.syn_selection_by_codon" title="Permalink to this definition">¶</a></dt>
 <dd><p>Identify sites with selection on synonymous codons.</p>
 <dl class="simple">
 <dt>Runs two-tailed Fisher Exact test, which returns:</dt><dd><ul class="simple">
-<li><p>an odds ratio reflecting the enrichment of codon_x after selection,
-relative to other synonymous codons.</p></li>
 <li><p>P-value reflecting the significance of codon_x enrichment.</p></li>
 </ul>
 </dd>
+</dl>
+<p>After calculating the Fisher P-value, a pseudocount is added
+for calculation of the odds ratio, which reflects the enrichment of
+codon_x after selection (relative to other synonymous codons).</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>The pseudocount removes 0’s to avoid returning NA or inf odds ratios.</p></li>
+<li><p>Rows where only one codon is represented pre-selection are dropped.</p></li>
+</ul>
+</div></blockquote>
+<dl class="simple">
 <dt>Args:</dt><dd><dl class="simple">
 <dt><cite>counts_pre</cite> (str or pandas.DataFrame)</dt><dd><p>CSV file giving pre-selection codon counts with columns
 named ‘site’, ‘wildtype’, and list of codons. Can also
 be a pandas DataFrame containing the CSV file.</p>
 </dd>
-<dt><cite>counts_post</cite> (str pandas.DataFrame)</dt><dd><p>Like <cite>counts_pre</cite> but for the post-selection counts.
+<dt><cite>counts_post</cite> (str or pandas.DataFrame)</dt><dd><p>Like <cite>counts_pre</cite> but for the post-selection counts.
 CSV file giving post-selection codon counts in same format
 as <cite>counts_pre</cite>.</p>
+</dd>
+<dt>‘pseudocount’ (float or int, default 0.5)</dt><dd><p>Number to add to each codon count before calculating the odds
+ratio.</p>
 </dd>
 </dl>
 </dd>
@@ -79,25 +91,25 @@ as <cite>counts_pre</cite>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.max_columns&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># display all columns</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;expand_frame_repr&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>  <span class="c1"># do not break lines</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">counts_pre</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_records</span><span class="p">(</span>
-<span class="gp">... </span>        <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;ATC&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> 
+<span class="gp">... </span>        <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;ATC&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
 <span class="gp">... </span>         <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;ATT&#39;</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
 <span class="gp">... </span>         <span class="p">],</span>
 <span class="gp">... </span>        <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;ATT&#39;</span><span class="p">,</span> <span class="s1">&#39;ATC&#39;</span><span class="p">,</span> <span class="s1">&#39;ATA&#39;</span><span class="p">],</span>
 <span class="gp">... </span>        <span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">counts_post</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_records</span><span class="p">(</span>
-<span class="gp">... </span>        <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;ATC&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">75</span><span class="p">),</span> 
+<span class="gp">... </span>        <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;ATC&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">75</span><span class="p">),</span>
 <span class="gp">... </span>         <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;ATT&#39;</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">11</span><span class="p">),</span>
 <span class="gp">... </span>         <span class="p">],</span>
 <span class="gp">... </span>        <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;ATT&#39;</span><span class="p">,</span> <span class="s1">&#39;ATC&#39;</span><span class="p">,</span> <span class="s1">&#39;ATA&#39;</span><span class="p">],</span>
 <span class="gp">... </span>        <span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">syn_selection_by_codon</span><span class="p">(</span><span class="n">counts_pre</span><span class="p">,</span> <span class="n">counts_post</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">syn_selection_by_codon</span><span class="p">(</span><span class="n">counts_pre</span><span class="p">,</span> <span class="n">counts_post</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="go">   site wildtype codon aa  codon_pre  aa_pre  codon_post  aa_post  odds_ratio             P</span>
-<span class="go">0     1      ATC   ATT  I          5     115           5      130    0.880000  1.000000e+00</span>
-<span class="go">1     1      ATC   ATC  I        100     115          50      130    0.093750  1.798192e-15</span>
-<span class="go">2     1      ATC   ATA  I         10     115          75      130   14.318182  7.500709e-17</span>
-<span class="go">3     2      ATT   ATT  I         50      70          50       70    1.000000  1.000000e+00</span>
-<span class="go">4     2      ATT   ATC  I         10      70           9       70    0.885246  1.000000e+00</span>
-<span class="go">5     2      ATT   ATA  I         10      70          11       70    1.118644  1.000000e+00</span>
+<span class="go">0     1      ATC   ATT  I          6     118           6      133    0.881890  1.000000e+00</span>
+<span class="go">1     1      ATC   ATC  I        101     118          51      133    0.104685  1.798192e-15</span>
+<span class="go">2     1      ATC   ATA  I         11     118          76      133   12.969697  7.500709e-17</span>
+<span class="go">3     2      ATT   ATT  I         51      73          51       73    1.000000  1.000000e+00</span>
+<span class="go">4     2      ATT   ATC  I         11      73          10       73    0.894661  1.000000e+00</span>
+<span class="go">5     2      ATT   ATA  I         11      73          12       73    1.108793  1.000000e+00</span>
 </pre></div>
 </div>
 </dd></dl>
