@@ -13,7 +13,7 @@ import scipy.stats
 
 from dms_tools2 import CODON_TO_AA
 
-def syn_selection_by_codon(counts_pre, counts_post, pseudocount):
+def syn_selection_by_codon(counts_pre, counts_post, pseudocount=0.5):
     """Identify sites with selection on synonymous codons.
 
     Runs two-tailed Fisher Exact test, which returns:
@@ -30,11 +30,11 @@ def syn_selection_by_codon(counts_pre, counts_post, pseudocount):
             CSV file giving pre-selection codon counts with columns
             named 'site', 'wildtype', and list of codons. Can also
             be a pandas DataFrame containing the CSV file.
-        `counts_post` (str pandas.DataFrame)
+        `counts_post` (str or pandas.DataFrame)
             Like `counts_pre` but for the post-selection counts.
             CSV file giving post-selection codon counts in same format
             as `counts_pre`.
-        'pseudocount' (float or int)
+        'pseudocount' (float or int, default 0.5)
             Number to add to each codon count before calculating the odds
             ratio.
 
@@ -154,7 +154,7 @@ def syn_selection_by_codon(counts_pre, counts_post, pseudocount):
       'aa_post', 'odds_ratio', 'P']]
         )
 
-    return (df)
+    return df
 
 
 if __name__ == '__main__':
