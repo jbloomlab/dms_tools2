@@ -312,7 +312,7 @@ class test_bcsubamp(unittest.TestCase):
                 '--maxmuts', str(self.MAXMUTS),
                 '--minfraccall', str(self.MINFRACCALL),
                 '--minconcur', str(self.MINCONCUR),
-                '--bcinfo',
+                '--bcinfo'
                ]
         if self.BCLEN2 is not None:
             cmds += ['--bclen2', str(self.bclen2)]
@@ -466,6 +466,12 @@ class test_bcsubamp_trimreads(unittest.TestCase):
                     bcstats.at[0, 'total'])
             self.assertEqual(aligned, bcstats.at[0, 'aligned'])
             self.assertEqual(unaligned, bcstats.at[0, 'not alignable'])
+
+            # check barcode info is expected csv
+            bcinfofile = '{0}/{1}_bcinfo.csv.gz'.format(self.testdir, name)
+            self.assertTrue(os.path.isfile(bcinfofile))
+            bcinfo = pandas.read_csv(bcinfofile)
+            self.assertEqual(bcstats.at[0, 'total'], len(bcinfo))
 
             # check on counts at each site
             countsfile = '{0}/{1}_codoncounts.csv'.format(

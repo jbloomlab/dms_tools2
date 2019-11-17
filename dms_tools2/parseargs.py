@@ -189,7 +189,8 @@ def bcsubampParentParser():
             "about each barcode."))
     parser.add_argument('--bcinfo_csv', dest='bcinfo_csv',
             action='store_true', help=("Store 'bcinfo' file as a csv "
-            "with the suffix 'bcinfo.csv.gz'."))
+            "with the suffix 'bcinfo.csv.gz'. Only has an effect if "
+            "`--bcinfo` is used."))
 
     return parser
 

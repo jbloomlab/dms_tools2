@@ -45,7 +45,7 @@ def bcInfo(bc, bcreads, retained, consensus, desc, to_csv):
         num_R1 = len(bcreads['R1'])
         num_R2 = len(bcreads['R2'])
         return(','.join([bc, str(retained), desc, str(consensus),
-                        str(num_R1), str(num_R2)]))
+                        str(num_R1), str(num_R2)+'\n']))
     else:
         return '\n'.join([
                 'BARCODE: {0}'.format(bc),
@@ -321,7 +321,7 @@ def main():
 
         if args['bcinfo_csv']:
             bcinfofile.write("Barcode,Retained,Description,Consensus,"
-                             "R1_Count,R2_Count")
+                             "R1_Count,R2_Count\n")
 
         for (ibc, (bc, bcreads)) in enumerate(barcodes.items()):
 
