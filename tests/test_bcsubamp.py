@@ -451,6 +451,7 @@ class test_bcsubamp_trimreads(unittest.TestCase):
                     '--maxmuts', '0',
                     '--minfraccall', '1.0',
                     '--bcinfo',
+                    '--bcinfo_csv',
                     '--R1trim'] + r1trim + [
                     '--R2trim'] + r2trim
             sys.stderr.write('\nRunning:\n{0}\n'.format(

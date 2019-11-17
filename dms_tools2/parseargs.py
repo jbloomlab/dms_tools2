@@ -183,10 +183,13 @@ def bcsubampParentParser():
             help=("Randomly purge barcodes with this probability to "
             "subsample data."))
 
-    parser.set_defaults(bcinfo=False)
+    parser.set_defaults(bcinfo=False, bcinfo_csv=False)
     parser.add_argument('--bcinfo', dest='bcinfo', action='store_true',
             help=("Create file with suffix 'bcinfo.txt.gz' with info "
             "about each barcode."))
+    parser.add_argument('--bcinfo_csv', dest='bcinfo_csv',
+            action='store_true', help=("Store 'bcinfo' file as a csv "
+            "with the suffix 'bcinfo.csv.gz'."))
 
     return parser
 
