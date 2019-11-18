@@ -208,8 +208,7 @@ def main():
                 zip(r1files, r2files)])))
 
         # collect reads by barcode while iterating over reads
-        logger.info("Now parsing read pairs test3...")
-        logger.info("here2")
+        logger.info("Now parsing read pairs...")
         nreads = {
                 'total':0,
                 'fail filter':0,
