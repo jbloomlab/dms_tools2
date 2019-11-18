@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.6.4
+------
+* Added `--bcinfo_csv` option to `dms2_bcsubamp`.
+
 2.6.3
 ------
 * Edited `syn_selection` to add pseudocounts for odds ratio calculations in order to avoid null/inf values.
