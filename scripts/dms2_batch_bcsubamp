@@ -132,7 +132,7 @@ def main():
                     newargs.append('--{0}'.format(arg))
                     if isinstance(val, list):
                         newargs += list(map(str, val))
-                    elif arg != 'bcinfo':
+                    elif (arg != 'bcinfo') & (arg != 'bcinfo_csv'):
                         newargs.append(str(val))
             argslist.append(newargs)
         pool = multiprocessing.dummy.Pool(ncpus)

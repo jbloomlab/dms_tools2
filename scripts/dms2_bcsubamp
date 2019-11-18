@@ -17,7 +17,7 @@ import dms_tools2.utils
 
 
 
-def bcInfo(bc, bcreads, retained, consensus, desc):
+def bcInfo(bc, bcreads, retained, consensus, desc, to_csv):
     """Returns string for writing to `bcinfofile`.
    
     Creates a string summarizing the barcode.
@@ -33,19 +33,29 @@ def bcInfo(bc, bcreads, retained, consensus, desc):
             The consensus sequence for the barcode if created.
         `desc` (str)
             String describing the barcode and its fate.
+        `to_csv` (bool)
+            If `to_csv` is `True`, outputs the barcode info as a
+            comma-delimited string. This string only retains the *number* of
+            reads for R1 and R2, not the actual reads.
 
     Returns:
         A string summarizing the barcode.
     """
-    return '\n'.join([
-            'BARCODE: {0}'.format(bc),
-            'RETAINED: {0}'.format(retained),
-            'DESCRIPTION: {0}'.format(desc),
-            'CONSENSUS: {0}'.format(consensus),
-            'R1 READS:\n\t{0}'.format('\n\t'.join(bcreads['R1'])),
-            'R2 READS:\n\t{0}'.format('\n\t'.join(bcreads['R1'])),
-            '',
-            ])
+    if to_csv:
+        num_R1 = len(bcreads['R1'])
+        num_R2 = len(bcreads['R2'])
+        return(','.join([bc, str(retained), desc, str(consensus),
+                        str(num_R1), str(num_R2)+'\n']))
+    else:
+        return '\n'.join([
+                'BARCODE: {0}'.format(bc),
+                'RETAINED: {0}'.format(retained),
+                'DESCRIPTION: {0}'.format(desc),
+                'CONSENSUS: {0}'.format(consensus),
+                'R1 READS:\n\t{0}'.format('\n\t'.join(bcreads['R1'])),
+                'R2 READS:\n\t{0}'.format('\n\t'.join(bcreads['R1'])),
+                '',
+                ])
 
 
 def main():
@@ -71,7 +81,10 @@ def main():
             'bcstats':'_bcstats.csv',
             }
     if args['bcinfo']:
-        filesuffixes['bcinfo'] = '_bcinfo.txt.gz'
+        if args['bcinfo_csv']:
+            filesuffixes['bcinfo'] = '_bcinfo.csv.gz'
+        else:
+            filesuffixes['bcinfo'] = '_bcinfo.txt.gz'
     files = dict([(f, os.path.join(args['outdir'], '{0}{1}'.format(
             args['name'], s))) for (f, s) in filesuffixes.items()])
 
@@ -305,6 +318,10 @@ def main():
         if args['bcinfo']:
             bcinfofile = gzip.open(files['bcinfo'], 'wt')
 
+        if args['bcinfo_csv']:
+            bcinfofile.write("Barcode,Retained,Description,Consensus,"
+                             "R1_Count,R2_Count\n")
+
         for (ibc, (bc, bcreads)) in enumerate(barcodes.items()):
 
             if (ibc + 1) % 2e5 == 0:
@@ -315,7 +332,8 @@ def main():
                 nbcs['too few reads'] += 1
                 if args['bcinfo']:
                     bcinfofile.write(bcInfo(bc, bcreads, retained=False, 
-                            consensus=None, desc='too few reads'))
+                            consensus=None, desc='too few reads',
+                            to_csv=args['bcinfo_csv']))
                 continue
 
             consensus = {}
@@ -345,9 +363,10 @@ def main():
 
                 if subamplicon:
                     if args['bcinfo']:
-                       bcinfofile.write(bcInfo(bc, bcreads, retained=True,
+                        bcinfofile.write(bcInfo(bc, bcreads, retained=True,
                             consensus=subamplicon, desc='aligned at '
-                            'position {0}'.format(refseqstart)))
+                            'position {0}'.format(refseqstart),
+                            to_csv=args['bcinfo_csv']))
                     nbcs['aligned'] += 1
                     dms_tools2.utils.incrementCounts(refseqstart,
                             subamplicon, args['chartype'], counts)
@@ -357,7 +376,8 @@ def main():
                 nbcs['not alignable'] += 1
                 if args['bcinfo']:
                     bcinfofile.write(bcInfo(bc, bcreads, retained=False,
-                            consensus=None, desc='could not align'))
+                            consensus=None, desc='could not align',
+                            to_csv=args['bcinfo_csv']))
 
         if args['bcinfo']:
             bcinfofile.close()
