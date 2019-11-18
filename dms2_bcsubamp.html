@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms2_bcsubamp &#8212; dms_tools2 2.6.3 documentation</title>
+    <title>dms2_bcsubamp &#8212; dms_tools2 2.6.4 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -94,7 +94,7 @@
 </div>
 <div class="section" id="command-line-usage">
 <span id="bcsubamp-commandlineusage"></span><h2><a class="toc-backref" href="#id5">Command-line usage</a><a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
-<p><p>Align barcoded subamplicons and count mutations. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.6.3) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
+<p><p>Align barcoded subamplicons and count mutations. Part of <a class="reference external" href="http://jbloomlab.github.io/dms_tools2">dms_tools2</a> (version 2.6.4) written by <a class="reference external" href="https://github.com/jbloomlab/dms_tools2/graphs/contributors">the Bloom Lab</a>.</p>
 </p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">dms2_bcsubamp</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">outdir</span> <span class="n">OUTDIR</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">ncpus</span> <span class="n">NCPUS</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">use_existing</span> <span class="p">{</span><span class="n">yes</span><span class="p">,</span><span class="n">no</span><span class="p">}]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span> <span class="o">--</span><span class="n">refseq</span> <span class="n">REFSEQ</span>
@@ -106,7 +106,7 @@
                      <span class="p">[</span><span class="o">--</span><span class="n">minreads</span> <span class="n">MINREADS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">minfraccall</span> <span class="n">MINFRACCALL</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">minconcur</span> <span class="n">MINCONCUR</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">sitemask</span> <span class="n">SITEMASK</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">purgeread</span> <span class="n">PURGEREAD</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">purgebc</span> <span class="n">PURGEBC</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">bcinfo</span><span class="p">]</span>
-                     <span class="o">--</span><span class="n">name</span> <span class="n">NAME</span> <span class="o">--</span><span class="n">R1</span> <span class="n">R1</span> <span class="p">[</span><span class="n">R1</span> <span class="o">...</span><span class="p">]</span>
+                     <span class="p">[</span><span class="o">--</span><span class="n">bcinfo_csv</span><span class="p">]</span> <span class="o">--</span><span class="n">name</span> <span class="n">NAME</span> <span class="o">--</span><span class="n">R1</span> <span class="n">R1</span> <span class="p">[</span><span class="n">R1</span> <span class="o">...</span><span class="p">]</span>
 </pre></div>
 </div>
 <div class="section" id="Named Arguments">
@@ -204,6 +204,10 @@ Instead of repeatedly listing that directory name, you can just provide it here 
 <dd><p>Create file with suffix ‘bcinfo.txt.gz’ with info about each barcode.</p>
 <p>Default: False</p>
 <p>This will be a very large file and creating it will take some time, so only use this option if you need to look at this file for debugging.</p>
+</dd>
+<dt><kbd>--bcinfo_csv</kbd></dt>
+<dd><p>Store ‘bcinfo’ file as a csv with the suffix ‘bcinfo.csv.gz’. Only has an effect if <cite>–bcinfo</cite> is used.</p>
+<p>Default: False</p>
 </dd>
 <dt><kbd>--name</kbd></dt>
 <dd><p>Sample name used for output files.</p>

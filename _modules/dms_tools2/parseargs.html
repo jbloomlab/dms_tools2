@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_tools2.parseargs &#8212; dms_tools2 2.6.3 documentation</title>
+    <title>dms_tools2.parseargs &#8212; dms_tools2 2.6.4 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -217,10 +217,14 @@
             <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Randomly purge barcodes with this probability to &quot;</span>
             <span class="s2">&quot;subsample data.&quot;</span><span class="p">))</span>
 
-    <span class="n">parser</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">bcinfo</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">bcinfo</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">bcinfo_csv</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--bcinfo&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;bcinfo&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
             <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Create file with suffix &#39;bcinfo.txt.gz&#39; with info &quot;</span>
             <span class="s2">&quot;about each barcode.&quot;</span><span class="p">))</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--bcinfo_csv&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;bcinfo_csv&#39;</span><span class="p">,</span>
+            <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Store &#39;bcinfo&#39; file as a csv &quot;</span>
+            <span class="s2">&quot;with the suffix &#39;bcinfo.csv.gz&#39;. Only has an effect if &quot;</span>
+            <span class="s2">&quot;`--bcinfo` is used.&quot;</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">parser</span></div>
 
