@@ -417,7 +417,7 @@ def rarefactionCurve(barcodes, *, maxpoints=1e5, logspace=True):
     if logspace and N > maxpoints:
         nreads = list(numpy.unique(numpy.logspace(
                 math.log10(1), math.log10(N),
-                num=min(N, maxpoints)).astype('int')))
+                num=int(min(N, maxpoints))).astype('int')))
     else:
         nreads = list(numpy.unique(numpy.linspace(
                 1, N, num=min(N, maxpoints)).astype('int')))
