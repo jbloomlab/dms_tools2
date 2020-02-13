@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_tools2.diffsel &#8212; dms_tools2 2.6.4 documentation</title>
+    <title>dms_tools2.diffsel &#8212; dms_tools2 2.6.5 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -49,7 +49,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">pandas</span>
 <span class="kn">import</span> <span class="nn">scipy.stats</span>
-<span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="k">import</span> <span class="n">CODONS</span><span class="p">,</span> <span class="n">CODON_TO_AA</span>
+<span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="kn">import</span> <span class="n">CODONS</span><span class="p">,</span> <span class="n">CODON_TO_AA</span>
 
 
 <div class="viewcode-block" id="beta_diversity"><a class="viewcode-back" href="../../dms_tools2.diffsel.html#dms_tools2.diffsel.beta_diversity">[docs]</a><span class="k">def</span> <span class="nf">beta_diversity</span><span class="p">(</span><span class="n">tidy_df</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">samplecol</span><span class="p">,</span> <span class="n">sitecol</span><span class="p">,</span> <span class="n">valcol</span><span class="p">,</span>
@@ -180,7 +180,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">samplecol</span><span class="p">,</span> <span class="n">sitecol</span><span class="p">,</span> <span class="n">valcol</span><span class="p">]</span>
     <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">set</span><span class="p">(</span><span class="n">tidy_df</span><span class="o">.</span><span class="n">columns</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`tidy_df` lacks required columns: </span><span class="si">{cols}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`tidy_df` lacks required columns: </span><span class="si">{cols}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tidy_df</span><span class="p">[</span><span class="n">samplecol</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`tidy_df` must have at least two unique samples&#39;</span><span class="p">)</span>
     <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">tidy_df</span>
@@ -188,7 +188,7 @@
           <span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
           <span class="p">)</span>
     <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tidy_df</span><span class="p">))</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">dropdups</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`tidy_df` has duplicate entries in columns: </span><span class="si">{cols}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`tidy_df` has duplicate entries in columns: </span><span class="si">{cols}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sites</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">sitecol</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
     <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">idf</span><span class="p">[</span><span class="n">sitecol</span><span class="p">])</span> <span class="o">!=</span> <span class="n">sites</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">idf</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">samplecol</span><span class="p">)):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;not same set of sites for all samples in `tidy_df`&#39;</span><span class="p">)</span>
@@ -244,7 +244,7 @@
             <span class="o">.</span><span class="n">mean</span><span class="p">()</span>
             <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `index` of </span><span class="si">{index}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `index` of </span><span class="si">{index}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">gamma_diversity</span> <span class="o">/</span> <span class="n">alpha_diversity</span></div>
 
@@ -670,11 +670,11 @@
             <span class="n">filename</span> <span class="o">=</span> <span class="n">row_df</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">col</span><span class="p">]</span>
             <span class="n">file_df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">dummy</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">order_sites</span> <span class="ow">and</span> <span class="s1">&#39;site&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">file_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;no `site` column in </span><span class="si">{filename}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no `site` column in </span><span class="si">{filename}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">sharedcols</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">file_df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">df_cols</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">sharedcols</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`df` and </span><span class="si">{filename}</span><span class="s2"> share columns &quot;</span>
-                                 <span class="n">f</span><span class="s2">&quot;</span><span class="si">{sharedcols}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`df` and </span><span class="si">{filename}</span><span class="s2"> share columns &quot;</span>
+                                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{sharedcols}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">row_df</span> <span class="o">=</span> <span class="n">row_df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">file_df</span><span class="p">)</span>
         <span class="n">df_filecols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row_df</span><span class="p">)</span>
 
@@ -789,7 +789,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017--2019, the Bloom lab.
+      &copy;2017--2020, the Bloom lab.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>

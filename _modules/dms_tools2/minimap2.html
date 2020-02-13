@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_tools2.minimap2 &#8212; dms_tools2 2.6.4 documentation</title>
+    <title>dms_tools2.minimap2 &#8212; dms_tools2 2.6.5 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -57,7 +57,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">Bio.SeqIO</span>
 
-<span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="k">import</span> <span class="n">NTS</span>
+<span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="kn">import</span> <span class="n">NTS</span>
 <span class="kn">import</span> <span class="nn">dms_tools2.pacbio</span>
 <span class="kn">import</span> <span class="nn">dms_tools2.seqnumbering</span>
 
@@ -298,7 +298,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">substitution_tuples</span><span class="p">,</span> <span class="n">insertion_tuples</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">substitution_tuples</span><span class="p">,</span> <span class="n">insertion_tuples</span><span class="p">,</span>
             <span class="n">deletion_tuples</span><span class="p">,</span> <span class="n">acc_not_q</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;See main class doc string.&quot;&quot;&quot;</span>
 
@@ -331,40 +331,40 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_deletion_tuples</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="n">mut_str</span><span class="p">,</span> <span class="n">acc</span><span class="p">,</span> <span class="n">hplen</span><span class="p">))</span>
 
 
-    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span>
 
 
-    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">s</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">mut_str</span><span class="p">,</span> <span class="n">acc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_substitution_tuples</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">acc</span><span class="p">):</span>
                 <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mut_str</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{mut_str}</span><span class="s1"> (accuracy = </span><span class="si">{acc:.6f}</span><span class="s1">)&#39;</span><span class="p">)</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{mut_str}</span><span class="s1"> (accuracy = </span><span class="si">{acc:.6f}</span><span class="s1">)&#39;</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ins_len</span><span class="p">,</span> <span class="n">mut_str</span><span class="p">,</span> <span class="n">acc</span><span class="p">,</span> <span class="n">hplen</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_insertion_tuples</span><span class="p">:</span>
             <span class="n">i_str</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">acc</span><span class="p">):</span>
-                <span class="n">i_str</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;accuracy = </span><span class="si">{acc:.6f}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">i_str</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;accuracy = </span><span class="si">{acc:.6f}</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">hplen</span><span class="p">):</span>
-                <span class="n">i_str</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;homopolymer length = </span><span class="si">{hplen}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">i_str</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;homopolymer length = </span><span class="si">{hplen}</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">i_str</span><span class="p">:</span>
                 <span class="n">i_str</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">i_str</span><span class="p">)</span>
-                <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{mut_str}</span><span class="s1"> (</span><span class="si">{i_str}</span><span class="s1">)&#39;</span><span class="p">)</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{mut_str}</span><span class="s1"> (</span><span class="si">{i_str}</span><span class="s1">)&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mut_str</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">istart</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="n">mut_str</span><span class="p">,</span> <span class="n">acc</span><span class="p">,</span> <span class="n">hplen</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deletion_tuples</span><span class="p">:</span>
             <span class="n">i_str</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">acc</span><span class="p">):</span>
-                <span class="n">i_str</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;accuracy = </span><span class="si">{acc:.6f}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">i_str</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;accuracy = </span><span class="si">{acc:.6f}</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">hplen</span><span class="p">):</span>
-                <span class="n">i_str</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;homopolymer length = </span><span class="si">{hplen}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">i_str</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;homopolymer length = </span><span class="si">{hplen}</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">i_str</span><span class="p">:</span>
                 <span class="n">i_str</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">i_str</span><span class="p">)</span>
-                <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{mut_str}</span><span class="s1"> (</span><span class="si">{i_str}</span><span class="s1">)&#39;</span><span class="p">)</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{mut_str}</span><span class="s1"> (</span><span class="si">{i_str}</span><span class="s1">)&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mut_str</span><span class="p">)</span>
 
@@ -510,9 +510,9 @@
                             <span class="p">))</span>
                     <span class="k">continue</span>
 
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;could not match </span><span class="si">{s}</span><span class="s2"> in </span><span class="si">{mut_str}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;could not match </span><span class="si">{s}</span><span class="s2"> in </span><span class="si">{mut_str}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;could not match </span><span class="si">{s}</span><span class="s2"> in </span><span class="si">{mut_str}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;could not match </span><span class="si">{s}</span><span class="s2"> in </span><span class="si">{mut_str}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">substitution_tuples</span><span class="o">=</span><span class="n">sub_tups</span><span class="p">,</span>
                    <span class="n">insertion_tuples</span><span class="o">=</span><span class="n">ins_tups</span><span class="p">,</span>
@@ -836,7 +836,7 @@
 <span class="sd">    [3, 13]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mapper</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">transcriptconverter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mapper</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">transcriptconverter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">targetindex</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">target_clip</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">query_softclip</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;See main class docstring.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span> <span class="o">=</span> <span class="n">mapper</span>
@@ -1303,7 +1303,7 @@
 <span class="sd">    &#39;del5to5 del9to10&#39;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">n_mut</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">min_acc</span><span class="o">=</span><span class="mf">0.999</span><span class="p">,</span> <span class="n">min_sub_frac</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">n_mut</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">min_acc</span><span class="o">=</span><span class="mf">0.999</span><span class="p">,</span> <span class="n">min_sub_frac</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
             <span class="n">min_indel_frac</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">group_indel_frac</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
             <span class="n">homopolymer_calling</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;n_mut&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">},</span>
             <span class="p">):</span>
@@ -1591,7 +1591,7 @@
 <span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">targetfile</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="s1">&#39;minimap2&#39;</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">targetfile</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="s1">&#39;minimap2&#39;</span><span class="p">,</span>
             <span class="n">target_isoforms</span><span class="o">=</span><span class="p">{}):</span>
         <span class="sd">&quot;&quot;&quot;See main :class:`Mapper` doc string.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">prog</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1921,7 +1921,7 @@
 <span class="sd">    &#39;unknown&#39;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variantfiles</span><span class="p">,</span> <span class="n">mapper</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variantfiles</span><span class="p">,</span> <span class="n">mapper</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
             <span class="n">variantsites_min_acc</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;See main class doc string.&quot;&quot;&quot;</span>
 
@@ -2801,7 +2801,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017--2019, the Bloom lab.
+      &copy;2017--2020, the Bloom lab.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>

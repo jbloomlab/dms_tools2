@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_tools2.codonvarianttable &#8212; dms_tools2 2.6.4 documentation</title>
+    <title>dms_tools2.codonvarianttable &#8212; dms_tools2 2.6.5 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -58,10 +58,10 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="c1"># use plotnine for plotting</span>
-<span class="kn">from</span> <span class="nn">plotnine</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">plotnine</span> <span class="kn">import</span> <span class="o">*</span>
 
-<span class="kn">from</span> <span class="nn">dms_tools2.plot</span> <span class="k">import</span> <span class="n">latexSciNot</span>
-<span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="k">import</span> <span class="p">(</span><span class="n">CODON_TO_AA</span><span class="p">,</span>
+<span class="kn">from</span> <span class="nn">dms_tools2.plot</span> <span class="kn">import</span> <span class="n">latexSciNot</span>
+<span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="kn">import</span> <span class="p">(</span><span class="n">CODON_TO_AA</span><span class="p">,</span>
                         <span class="n">CODONS</span><span class="p">,</span>
                         <span class="n">AAS_WITHSTOP</span><span class="p">,</span>
                         <span class="n">AA_TO_CODONS</span><span class="p">,</span>
@@ -422,7 +422,7 @@
 <span class="sd">    3   lib_2      input    selected     CAT    0.378452        8.329463        923        1200             0              0          0.5             GGA2GGC                      1                                    0</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="c1"># following here: https://stackoverflow.com/a/390640</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">False</span>
@@ -514,7 +514,7 @@
                                                                <span class="n">mutcodon</span><span class="p">)):</span>
                         <span class="k">if</span> <span class="n">wt_nt</span> <span class="o">!=</span> <span class="n">mut_nt</span><span class="p">:</span>
                             <span class="n">igene</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="n">icodon</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">i_nt</span> <span class="o">+</span> <span class="mi">1</span>
-                            <span class="n">substitutions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{wt_nt}{igene}{mut_nt}</span><span class="s1">&#39;</span><span class="p">)</span>
+                            <span class="n">substitutions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{wt_nt}{igene}{mut_nt}</span><span class="s1">&#39;</span><span class="p">)</span>
                 <span class="n">substitutions</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">substitutions</span><span class="p">)</span>
 
                 <span class="n">barcode_variant_dict</span><span class="p">[</span><span class="s1">&#39;barcode&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">barcode</span><span class="p">)</span>
@@ -564,8 +564,8 @@
         <span class="n">req_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;variant_call_support&#39;</span><span class="p">,</span>
                     <span class="s1">&#39;codon_substitutions&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">req_cols</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{variant_count_df}</span><span class="s2"> lacks required &quot;</span>
-                             <span class="n">f</span><span class="s2">&quot;columns </span><span class="si">{req_cols}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{variant_count_df}</span><span class="s2"> lacks required &quot;</span>
+                             <span class="sa">f</span><span class="s2">&quot;columns </span><span class="si">{req_cols}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">req_cols</span><span class="p">]</span>
 
@@ -598,15 +598,15 @@
         <span class="k">return</span> <span class="n">cvt</span></div>
 
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">barcode_variant_file</span><span class="p">,</span> <span class="n">geneseq</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">barcode_variant_file</span><span class="p">,</span> <span class="n">geneseq</span><span class="p">,</span>
                  <span class="n">substitutions_are_codon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">extra_cols</span><span class="o">=</span><span class="p">[]):</span>
         <span class="sd">&quot;&quot;&quot;See main class doc string.&quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">geneseq</span> <span class="o">=</span> <span class="n">geneseq</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;^[ATGC]+$&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geneseq</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid nucleotides in </span><span class="si">{self.geneseq}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid nucleotides in </span><span class="si">{self.geneseq}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">geneseq</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">geneseq</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`geneseq` of invalid length {len(self.geneseq)}&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`geneseq` of invalid length {len(self.geneseq)}&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sites</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">geneseq</span><span class="p">)</span> <span class="o">//</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">codons</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">([</span>
                 <span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geneseq</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="p">:</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">r</span><span class="p">])</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sites</span><span class="p">])</span>
@@ -618,10 +618,10 @@
                          <span class="s1">&#39;substitutions&#39;</span><span class="p">,</span> <span class="s1">&#39;variant_call_support&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">.</span><span class="n">issuperset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">required_cols</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`variantfile` does not have &quot;</span>
-                             <span class="n">f</span><span class="s2">&quot;required columns </span><span class="si">{required_cols}</span><span class="s2">&quot;</span><span class="p">)</span>
+                             <span class="sa">f</span><span class="s2">&quot;required columns </span><span class="si">{required_cols}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">extra_cols</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">.</span><span class="n">issuperset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">extra_cols</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`variantfile` does not have &quot;</span>
-                             <span class="n">f</span><span class="s2">&quot;`extra_cols` </span><span class="si">{extra_cols}</span><span class="s2">&quot;</span><span class="p">)</span>
+                             <span class="sa">f</span><span class="s2">&quot;`extra_cols` </span><span class="si">{extra_cols}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">required_cols</span> <span class="o">+</span> <span class="n">extra_cols</span><span class="p">]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">libraries</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">library</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
@@ -629,7 +629,7 @@
         <span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">libraries</span><span class="p">:</span>
             <span class="n">barcodes</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;library == @lib&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">barcode</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">barcodes</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">barcodes</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;duplicated barcodes for </span><span class="si">{lib}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;duplicated barcodes for </span><span class="si">{lib}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_valid_barcodes</span><span class="p">[</span><span class="n">lib</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">barcodes</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_samples</span> <span class="o">=</span> <span class="p">{</span><span class="n">lib</span><span class="p">:[]</span> <span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">libraries</span><span class="p">}</span>
@@ -684,17 +684,17 @@
                           <span class="s1">&#39;(?P&lt;mut&gt;[ATGC]</span><span class="si">{3}</span><span class="s1">)$&#39;</span><span class="p">,</span>
                          <span class="n">codonmut</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid mutation </span><span class="si">{codonmut}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid mutation </span><span class="si">{codonmut}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">wt</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span>
             <span class="n">r</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">))</span>
             <span class="n">mut</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;mut&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">r</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sites</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid site </span><span class="si">{r}</span><span class="s2"> in codon mutation </span><span class="si">{codonmut}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid site </span><span class="si">{r}</span><span class="s2"> in codon mutation </span><span class="si">{codonmut}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">codons</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">!=</span> <span class="n">wt</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Wrong wildtype codon in </span><span class="si">{codonmut}</span><span class="s2">. &quot;</span>
-                                 <span class="n">f</span><span class="s2">&quot;Expected wildtype of </span><span class="si">{codons[r]}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wrong wildtype codon in </span><span class="si">{codonmut}</span><span class="s2">. &quot;</span>
+                                 <span class="sa">f</span><span class="s2">&quot;Expected wildtype of </span><span class="si">{codons[r]}</span><span class="s2">.&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">wt</span> <span class="o">==</span> <span class="n">mut</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid mutation </span><span class="si">{codonmut}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid mutation </span><span class="si">{codonmut}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># define some colors for plotting</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mutation_type_colors</span> <span class="o">=</span> <span class="p">{</span>
@@ -718,7 +718,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_samples</span><span class="p">[</span><span class="n">library</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `library` </span><span class="si">{library}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `library` </span><span class="si">{library}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="CodonVariantTable.addSampleCounts"><a class="viewcode-back" href="../../dms_tools2.codonvarianttable.html#dms_tools2.codonvarianttable.CodonVariantTable.addSampleCounts">[docs]</a>    <span class="k">def</span> <span class="nf">addSampleCounts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">library</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="n">barcodecounts</span><span class="p">):</span>
@@ -739,20 +739,20 @@
 <span class="sd">                by :class:`dms_tools2.barcodes.IlluminaBarcodeParser.parse`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">library</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">libraries</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid library </span><span class="si">{library}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid library </span><span class="si">{library}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">sample</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">(</span><span class="n">library</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`library` </span><span class="si">{library}</span><span class="s2"> already &quot;</span>
-                             <span class="n">f</span><span class="s2">&quot;has `sample` </span><span class="si">{sample}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`library` </span><span class="si">{library}</span><span class="s2"> already &quot;</span>
+                             <span class="sa">f</span><span class="s2">&quot;has `sample` </span><span class="si">{sample}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="n">req_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">barcodecounts</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">.</span><span class="n">issuperset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">req_cols</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`barcodecounts` lacks columns </span><span class="si">{req_cols}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`barcodecounts` lacks columns </span><span class="si">{req_cols}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">barcodecounts</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">barcodecounts</span><span class="o">.</span><span class="n">barcode</span><span class="o">.</span><span class="n">unique</span><span class="p">())):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`barcodecounts` has non-unique barcodes&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">barcodecounts</span><span class="o">.</span><span class="n">barcode</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span><span class="p">(</span><span class="n">library</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;barcodes in `barcodecounts` do not match &quot;</span>
-                             <span class="n">f</span><span class="s2">&quot;those expected for `library` </span><span class="si">{library}</span><span class="s2">&quot;</span><span class="p">)</span>
+                             <span class="sa">f</span><span class="s2">&quot;those expected for `library` </span><span class="si">{library}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_samples</span><span class="p">[</span><span class="n">library</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
 
@@ -808,8 +808,8 @@
 <div class="viewcode-block" id="CodonVariantTable.valid_barcodes"><a class="viewcode-back" href="../../dms_tools2.codonvarianttable.html#dms_tools2.codonvarianttable.CodonVariantTable.valid_barcodes">[docs]</a>    <span class="k">def</span> <span class="nf">valid_barcodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">library</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set of valid barcodes for `library`.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">library</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">libraries</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `library` </span><span class="si">{library}</span><span class="s2">; &quot;</span>
-                             <span class="n">f</span><span class="s2">&quot;valid libraries are </span><span class="si">{self.libraries}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `library` </span><span class="si">{library}</span><span class="s2">; &quot;</span>
+                             <span class="sa">f</span><span class="s2">&quot;valid libraries are </span><span class="si">{self.libraries}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valid_barcodes</span><span class="p">[</span><span class="n">library</span><span class="p">]</span></div>
 
@@ -905,7 +905,7 @@
         <span class="n">samples</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">preselection</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">preselection</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">samples</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">ordered_samples</span><span class="p">)):</span>
             <span class="n">extra_samples</span> <span class="o">=</span> <span class="n">samples</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">ordered_samples</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid samples: </span><span class="si">{extra_samples}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid samples: </span><span class="si">{extra_samples}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># get data frame with samples of interest</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">variant_count_df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -918,7 +918,7 @@
             <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">s</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">(</span><span class="n">lib</span><span class="p">)</span> <span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">libraries</span>
                                               <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;cannot use `combine_libs`, not every &#39;</span>
-                                 <span class="n">f</span><span class="s2">&quot;library has every sample: </span><span class="si">{samples}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                 <span class="sa">f</span><span class="s2">&quot;library has every sample: </span><span class="si">{samples}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">addMergedLibraries</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
                   <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;library == &quot;all libraries&quot;&#39;</span><span class="p">)</span>
                   <span class="p">)</span>
@@ -937,7 +937,7 @@
                 <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
                 <span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">wt_counts</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">permit_zero_wt</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;no wildtype counts:</span><span class="se">\n</span><span class="si">{wt_counts}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no wildtype counts:</span><span class="se">\n</span><span class="si">{wt_counts}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># sum counts in groups specified by `by`</span>
         <span class="n">group_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;codon_substitutions&#39;</span><span class="p">,</span> <span class="s1">&#39;n_codon_substitutions&#39;</span><span class="p">,</span>
@@ -945,7 +945,7 @@
         <span class="k">if</span> <span class="n">by</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;aa_substitutions&#39;</span><span class="p">,</span> <span class="s1">&#39;codon_substitutions&#39;</span><span class="p">}:</span>
             <span class="n">group_cols</span> <span class="o">=</span> <span class="n">group_cols</span><span class="p">[</span><span class="n">group_cols</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">by</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:</span> <span class="p">]</span>
         <span class="k">elif</span> <span class="n">by</span> <span class="o">!=</span> <span class="s1">&#39;barcode&#39;</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `by` of </span><span class="si">{by}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `by` of </span><span class="si">{by}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span>
               <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="n">by</span><span class="p">]</span> <span class="o">+</span> <span class="n">group_cols</span><span class="p">)</span>
               <span class="o">.</span><span class="n">aggregate</span><span class="p">({</span><span class="s1">&#39;count&#39;</span><span class="p">:</span><span class="s1">&#39;sum&#39;</span><span class="p">})</span>
@@ -963,12 +963,12 @@
                 <span class="n">sample_dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                         <span class="n">df</span>
                         <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;sample == @s&#39;</span><span class="p">)</span>
-                        <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;count&#39;</span><span class="p">:</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{stype}</span><span class="s2">_count&quot;</span><span class="p">})</span>
+                        <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;count&#39;</span><span class="p">:</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{stype}</span><span class="s2">_count&quot;</span><span class="p">})</span>
                         <span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">wt_counts</span>
-                               <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;count&#39;</span><span class="p">:</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{stype}</span><span class="s2">_count_wt&quot;</span><span class="p">}),</span>
+                               <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;count&#39;</span><span class="p">:</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{stype}</span><span class="s2">_count_wt&quot;</span><span class="p">}),</span>
                                <span class="n">how</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="s1">&#39;many_to_one&#39;</span>
                                <span class="p">)</span>
-                        <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;sample&#39;</span><span class="p">:</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{stype}</span><span class="s2">_sample&quot;</span><span class="p">})</span>
+                        <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;sample&#39;</span><span class="p">:</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{stype}</span><span class="s2">_sample&quot;</span><span class="p">})</span>
                         <span class="p">)</span>
             <span class="n">df_func_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                     <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">sample_dfs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sample_dfs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
@@ -979,7 +979,7 @@
 
         <span class="c1"># check pseudocount</span>
         <span class="k">if</span> <span class="n">pseudocount</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`pseudocount` is &lt; 0: </span><span class="si">{pseudocount}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`pseudocount` is &lt; 0: </span><span class="si">{pseudocount}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="p">(</span><span class="n">pseudocount</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">((</span><span class="n">df_func_scores</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span>
                                     <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;pre_count&#39;</span><span class="p">,</span> <span class="s1">&#39;post_count&#39;</span><span class="p">,</span>
                                     <span class="s1">&#39;pre_count_wt&#39;</span><span class="p">,</span> <span class="s1">&#39;post_count_wt&#39;</span><span class="p">]):</span>
@@ -1040,11 +1040,11 @@
 
         <span class="k">if</span> <span class="n">variant_type</span> <span class="o">==</span> <span class="s1">&#39;single&#39;</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">mut_type</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;aa&#39;</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">}:</span>
-                <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;n_</span><span class="si">{mut_type}</span><span class="s2">_substitutions &lt;= 1&quot;</span><span class="p">)</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n_</span><span class="si">{mut_type}</span><span class="s2">_substitutions &lt;= 1&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`mut_type` must be &quot;aa&quot; or &quot;single&quot;&#39;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">variant_type</span> <span class="o">!=</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `variant_type` </span><span class="si">{variant_type}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `variant_type` </span><span class="si">{variant_type}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">(</span><span class="n">df</span>
                 <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">])</span>
@@ -1085,14 +1085,14 @@
             <span class="n">chars</span> <span class="o">=</span> <span class="n">AAS_WITHSTOP</span>
             <span class="n">mutation_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;nonsynonymous&#39;</span><span class="p">,</span> <span class="s1">&#39;stop&#39;</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid mut_type </span><span class="si">{mut_type}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid mut_type </span><span class="si">{mut_type}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># data frame listing all mutations with count 0</span>
         <span class="n">mut_list</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">wt</span> <span class="ow">in</span> <span class="n">wts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">for</span> <span class="n">mut</span> <span class="ow">in</span> <span class="n">chars</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">mut</span> <span class="o">!=</span> <span class="n">wt</span><span class="p">:</span>
-                    <span class="n">mut_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{wt}{r}{mut}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="n">mut_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{wt}{r}{mut}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">all_muts</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span>
                     <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;mutation&#39;</span><span class="p">:</span><span class="n">mut_list</span><span class="p">,</span>
                                      <span class="s1">&#39;library&#39;</span><span class="p">:</span><span class="n">library</span><span class="p">,</span>
@@ -1102,11 +1102,11 @@
                     <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">librarylist</span><span class="p">,</span> <span class="n">samplelist</span><span class="p">)])</span>
 
         <span class="k">if</span> <span class="n">variant_type</span> <span class="o">==</span> <span class="s1">&#39;single&#39;</span><span class="p">:</span>
-            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;n_</span><span class="si">{mut_type}</span><span class="s1">_substitutions == 1&#39;</span><span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;n_</span><span class="si">{mut_type}</span><span class="s1">_substitutions == 1&#39;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">variant_type</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
-            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;n_</span><span class="si">{mut_type}</span><span class="s1">_substitutions &gt;= 1&#39;</span><span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;n_</span><span class="si">{mut_type}</span><span class="s1">_substitutions &gt;= 1&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid variant_type </span><span class="si">{variant_type}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid variant_type </span><span class="si">{variant_type}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">def</span> <span class="nf">_classify_mutation</span><span class="p">(</span><span class="n">mut_str</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">mut_type</span> <span class="o">==</span> <span class="s1">&#39;aa&#39;</span><span class="p">:</span>
@@ -1137,7 +1137,7 @@
 
         <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span>
               <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span>
-                  <span class="p">{</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{mut_type}</span><span class="s2">_substitutions&quot;</span><span class="p">:</span><span class="s2">&quot;mutation&quot;</span><span class="p">}</span>
+                  <span class="p">{</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{mut_type}</span><span class="s2">_substitutions&quot;</span><span class="p">:</span><span class="s2">&quot;mutation&quot;</span><span class="p">}</span>
                   <span class="p">)</span>
               <span class="p">[[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;mutation&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">]]</span>
               <span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">tidy_split</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="s1">&#39;mutation&#39;</span><span class="p">)</span>
@@ -1225,8 +1225,8 @@
               <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">count_or_frequency</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="s1">&#39;frequency&#39;</span><span class="p">}:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid count_or_frequency &quot;</span>
-                             <span class="n">f</span><span class="s2">&quot;</span><span class="si">{count_or_frequency}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid count_or_frequency &quot;</span>
+                             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{count_or_frequency}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="n">nlibraries</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
         <span class="n">nsamples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
@@ -1238,7 +1238,7 @@
             <span class="n">height_per</span> <span class="o">=</span> <span class="mf">1.7</span>
             <span class="n">mut_desc</span> <span class="o">=</span> <span class="s1">&#39;amino acid&#39;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid mut_type </span><span class="si">{mut_type}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid mut_type </span><span class="si">{mut_type}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;h&#39;</span><span class="p">:</span>
             <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~ library&#39;</span>
@@ -1249,7 +1249,7 @@
             <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.6</span> <span class="o">+</span> <span class="mf">3.5</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
             <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.8</span> <span class="o">+</span> <span class="n">height_per</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `orientation` </span><span class="si">{orientation}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `orientation` </span><span class="si">{orientation}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;mut_char&#39;</span><span class="p">,</span>
                             <span class="n">fill</span><span class="o">=</span><span class="n">count_or_frequency</span><span class="p">))</span> <span class="o">+</span>
@@ -1260,7 +1260,7 @@
                    <span class="n">axis_text_y</span><span class="o">=</span><span class="n">element_text</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
                    <span class="p">)</span> <span class="o">+</span>
              <span class="n">scale_x_continuous</span><span class="p">(</span>
-                <span class="n">name</span><span class="o">=</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{mut_desc}</span><span class="s1"> site&#39;</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{mut_desc}</span><span class="s1"> site&#39;</span><span class="p">,</span>
                 <span class="n">limits</span><span class="o">=</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sites</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sites</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
                 <span class="n">expand</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
                 <span class="p">)</span> <span class="o">+</span>
@@ -1322,7 +1322,7 @@
             <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.6</span> <span class="o">+</span> <span class="mf">1.8</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
             <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.8</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `orientation` </span><span class="si">{orientation}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `orientation` </span><span class="si">{orientation}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">mut_type</span> <span class="o">==</span> <span class="s1">&#39;aa&#39;</span><span class="p">:</span>
             <span class="n">mut_desc</span> <span class="o">=</span> <span class="s1">&#39;amino-acid&#39;</span>
@@ -1330,11 +1330,11 @@
             <span class="n">mut_desc</span> <span class="o">=</span> <span class="n">mut_type</span>
 
         <span class="k">if</span> <span class="n">height</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">ylabel</span> <span class="o">=</span> <span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{mut_desc}</span><span class="s1"> mutation</span><span class="se">\n</span><span class="s1">frequency &#39;</span>
-                      <span class="n">f</span><span class="s1">&#39;(</span><span class="si">{variant_type}</span><span class="s1"> mutants)&#39;</span><span class="p">)</span>
+            <span class="n">ylabel</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{mut_desc}</span><span class="s1"> mutation</span><span class="se">\n</span><span class="s1">frequency &#39;</span>
+                      <span class="sa">f</span><span class="s1">&#39;(</span><span class="si">{variant_type}</span><span class="s1"> mutants)&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">ylabel</span> <span class="o">=</span> <span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{mut_desc}</span><span class="s1"> mutation frequency &#39;</span>
-                      <span class="n">f</span><span class="s1">&#39;(</span><span class="si">{variant_type}</span><span class="s1"> mutants)&#39;</span><span class="p">)</span>
+            <span class="n">ylabel</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{mut_desc}</span><span class="s1"> mutation frequency &#39;</span>
+                      <span class="sa">f</span><span class="s1">&#39;(</span><span class="si">{variant_type}</span><span class="s1"> mutants)&#39;</span><span class="p">)</span>
 
         <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;freq&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;mutation_type&#39;</span><span class="p">))</span> <span class="o">+</span>
              <span class="n">geom_step</span><span class="p">()</span> <span class="o">+</span>
@@ -1344,7 +1344,7 @@
                 <span class="n">name</span><span class="o">=</span><span class="s1">&#39;mutation type&#39;</span>
                 <span class="p">)</span> <span class="o">+</span>
              <span class="n">scale_x_continuous</span><span class="p">(</span>
-                <span class="n">name</span><span class="o">=</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{mut_desc}</span><span class="s1"> site&#39;</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{mut_desc}</span><span class="s1"> site&#39;</span><span class="p">,</span>
                 <span class="n">limits</span><span class="o">=</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sites</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sites</span><span class="p">))</span>
                 <span class="p">)</span> <span class="o">+</span>
              <span class="n">ylab</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span> <span class="o">+</span>
@@ -1393,13 +1393,13 @@
             <span class="k">elif</span> <span class="n">mut_type</span> <span class="o">==</span> <span class="s1">&#39;codon&#39;</span><span class="p">:</span>
                 <span class="n">mutstr</span> <span class="o">=</span> <span class="n">mut_type</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `mut_type` </span><span class="si">{mut_type}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">ylabel</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;single </span><span class="si">{mutstr}</span><span class="s2"> variants with &gt;= this many counts&quot;</span>
-            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;n_</span><span class="si">{mut_type}</span><span class="s2">_substitutions &lt;= 1&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `mut_type` </span><span class="si">{mut_type}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">ylabel</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;single </span><span class="si">{mutstr}</span><span class="s2"> variants with &gt;= this many counts&quot;</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n_</span><span class="si">{mut_type}</span><span class="s2">_substitutions &lt;= 1&quot;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">variant_type</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
             <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;variants with &gt;= this many counts&#39;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `variant_type` </span><span class="si">{variant_type}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `variant_type` </span><span class="si">{variant_type}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;h&#39;</span><span class="p">:</span>
             <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~ library&#39;</span>
@@ -1410,7 +1410,7 @@
             <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
             <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.6</span> <span class="o">+</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `orientation` </span><span class="si">{orientation}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `orientation` </span><span class="si">{orientation}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">getCumulVariantsByCount</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">group_cols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">])</span>
               <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;count &gt; 0&#39;</span><span class="p">)</span>
@@ -1481,18 +1481,18 @@
             <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.6</span> <span class="o">+</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
             <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.2</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `orientation` </span><span class="si">{orientation}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `orientation` </span><span class="si">{orientation}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">width</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">:</span>
-            <span class="n">xlabel</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;counts among </span><span class="si">{variant_type}</span><span class="s1"> mutants&#39;</span>
+            <span class="n">xlabel</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;counts among </span><span class="si">{variant_type}</span><span class="s1"> mutants&#39;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">xlabel</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;counts among</span><span class="se">\n</span><span class="si">{variant_type}</span><span class="s1"> mutants&#39;</span>
+            <span class="n">xlabel</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;counts among</span><span class="se">\n</span><span class="si">{variant_type}</span><span class="s1"> mutants&#39;</span>
 
         <span class="n">mut_desc</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;aa&#39;</span><span class="p">:</span><span class="s1">&#39;amino-acid&#39;</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">:</span><span class="s1">&#39;codon&#39;</span><span class="p">}[</span><span class="n">mut_type</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">height</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">ylabel</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;frac </span><span class="si">{mut_desc}</span><span class="s1"> mutations found &lt; this many times&#39;</span>
+            <span class="n">ylabel</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;frac </span><span class="si">{mut_desc}</span><span class="s1"> mutations found &lt; this many times&#39;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">ylabel</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;frac </span><span class="si">{mut_desc}</span><span class="s1"> mutations</span><span class="se">\n</span><span class="s1">found &lt; this many times&#39;</span>
+            <span class="n">ylabel</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;frac </span><span class="si">{mut_desc}</span><span class="s1"> mutations</span><span class="se">\n</span><span class="s1">found &lt; this many times&#39;</span>
 
         <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;mutation_type&#39;</span><span class="p">))</span> <span class="o">+</span>
              <span class="n">stat_ecdf</span><span class="p">(</span><span class="n">geom</span><span class="o">=</span><span class="s1">&#39;step&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mf">0.75</span><span class="p">)</span> <span class="o">+</span>
@@ -1543,7 +1543,7 @@
         <span class="k">if</span> <span class="n">variant_type</span> <span class="o">==</span> <span class="s1">&#39;single&#39;</span><span class="p">:</span>
             <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;n_codon_substitutions &lt;= 1&#39;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">variant_type</span> <span class="o">!=</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid variant_type </span><span class="si">{variant_type}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid variant_type </span><span class="si">{variant_type}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;h&#39;</span><span class="p">:</span>
             <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~ library&#39;</span>
@@ -1554,12 +1554,12 @@
             <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.4</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
             <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `orientation` </span><span class="si">{orientation}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `orientation` </span><span class="si">{orientation}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">height</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">ylabel</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;mutations per variant (</span><span class="si">{variant_type}</span><span class="s1"> mutants)&#39;</span>
+            <span class="n">ylabel</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;mutations per variant (</span><span class="si">{variant_type}</span><span class="s1"> mutants)&#39;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">ylabel</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;mutations per variant</span><span class="se">\n</span><span class="s1">(</span><span class="si">{variant_type}</span><span class="s1"> mutants)&#39;</span>
+            <span class="n">ylabel</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;mutations per variant</span><span class="se">\n</span><span class="s1">(</span><span class="si">{variant_type}</span><span class="s1"> mutants)&#39;</span>
 
         <span class="n">codon_mut_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;nonsynonymous&#39;</span><span class="p">,</span> <span class="s1">&#39;synonymous&#39;</span><span class="p">,</span> <span class="s1">&#39;stop&#39;</span><span class="p">]</span>
 
@@ -1663,7 +1663,7 @@
             <span class="n">mut_col</span> <span class="o">=</span> <span class="s1">&#39;n_codon_substitutions&#39;</span>
             <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;codon mutations&#39;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid mut_type </span><span class="si">{mut_type}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid mut_type </span><span class="si">{mut_type}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;h&#39;</span><span class="p">:</span>
             <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~ library&#39;</span>
@@ -1674,7 +1674,7 @@
             <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
             <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.6</span> <span class="o">+</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `orientation` </span><span class="si">{orientation}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `orientation` </span><span class="si">{orientation}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="n">df</span><span class="p">[</span><span class="n">mut_col</span><span class="p">]</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">mut_col</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_muts</span><span class="p">)</span>
 
@@ -1733,9 +1733,9 @@
 <span class="sd">            createad CSV file, ``&lt;library&gt;_&lt;sample&gt;_codoncounts.csv``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">codonmatch</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;^(?P&lt;wt&gt;{&quot;|&quot;.join(CODONS)})&#39;</span>
+        <span class="n">codonmatch</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;^(?P&lt;wt&gt;{&quot;|&quot;.join(CODONS)})&#39;</span>
                                  <span class="s1">&#39;(?P&lt;r&gt;\d+)&#39;</span>
-                                <span class="n">f</span><span class="s1">&#39;(?P&lt;mut&gt;{&quot;|&quot;.join(CODONS)})$&#39;</span>
+                                <span class="sa">f</span><span class="s1">&#39;(?P&lt;mut&gt;{&quot;|&quot;.join(CODONS)})$&#39;</span>
                                 <span class="p">)</span>
         <span class="k">def</span> <span class="nf">_parseCodonMut</span><span class="p">(</span><span class="n">mutstr</span><span class="p">):</span>
             <span class="n">m</span> <span class="o">=</span> <span class="n">codonmatch</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">mutstr</span><span class="p">)</span>
@@ -1745,7 +1745,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;no samples with counts&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">single_or_all</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;single&#39;</span><span class="p">,</span> <span class="s1">&#39;all&#39;</span><span class="p">}:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `single_or_all` </span><span class="si">{single_or_all}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `single_or_all` </span><span class="si">{single_or_all}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">outdir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1772,7 +1772,7 @@
                 <span class="k">continue</span> <span class="c1"># no data for this library and sample</span>
 
             <span class="n">countfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span>
-                            <span class="n">f</span><span class="s1">&#39;</span><span class="si">{lib}</span><span class="s1">_</span><span class="si">{sample}</span><span class="s1">_codoncounts.csv&#39;</span><span class="p">)</span>
+                            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{lib}</span><span class="s1">_</span><span class="si">{sample}</span><span class="s1">_codoncounts.csv&#39;</span><span class="p">)</span>
             <span class="n">countfiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">countfile</span><span class="p">)</span>
             <span class="n">liblist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lib</span><span class="p">)</span>
             <span class="n">samplelist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
@@ -1811,7 +1811,7 @@
                         <span class="n">codoncounts</span><span class="p">[</span><span class="n">wtcodon</span><span class="p">][</span><span class="n">r</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-=</span> <span class="n">count</span>
 
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `single_or_all` </span><span class="si">{single_or_all}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `single_or_all` </span><span class="si">{single_or_all}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="n">counts_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">(</span>
                          <span class="p">[(</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sites</span><span class="p">),</span>
@@ -1885,7 +1885,7 @@
         <span class="n">req_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;aa_substitutions&#39;</span><span class="p">,</span> <span class="s1">&#39;n_aa_substitutions&#39;</span><span class="p">,</span>
                     <span class="s1">&#39;n_codon_substitutions&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">req_cols</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`df` does not have columns </span><span class="si">{req_cols}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`df` does not have columns </span><span class="si">{req_cols}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">def</span> <span class="nf">_classify_func</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;n_codon_substitutions&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -1895,9 +1895,9 @@
             <span class="k">elif</span> <span class="s1">&#39;*&#39;</span> <span class="ow">in</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;aa_substitutions&#39;</span><span class="p">]:</span>
                 <span class="k">return</span> <span class="s1">&#39;stop&#39;</span>
             <span class="k">elif</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;n_aa_substitutions&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">max_aa</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{row[&#39;n_aa_substitutions&#39;]}</span><span class="s2"> nonsynonymous&quot;</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{row[&#39;n_aa_substitutions&#39;]}</span><span class="s2"> nonsynonymous&quot;</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;&gt;=</span><span class="si">{max_aa}</span><span class="s2"> nonsynonymous&quot;</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&gt;=</span><span class="si">{max_aa}</span><span class="s2"> nonsynonymous&quot;</span>
 
         <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">variant_class_col</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span>
                                                <span class="n">x</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">_classify_func</span><span class="p">,</span>
@@ -1931,7 +1931,7 @@
             <span class="k">return</span> <span class="n">df</span>
 
         <span class="k">if</span> <span class="n">all_lib</span> <span class="ow">in</span> <span class="n">libs</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;library </span><span class="si">{all_lib}</span><span class="s2"> already exists&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;library </span><span class="si">{all_lib}</span><span class="s2"> already exists&quot;</span><span class="p">)</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df</span><span class="p">,</span>
                              <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
@@ -1983,17 +1983,17 @@
             <span class="n">all_samples</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">(</span><span class="n">lib</span><span class="p">)</span> <span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">libraries</span><span class="p">))</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">all_samples</span><span class="o">.</span><span class="n">issuperset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">samples</span><span class="p">)):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid sample(s) in </span><span class="si">{samples}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid sample(s) in </span><span class="si">{samples}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">samples</span><span class="p">)):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;duplicate samples in </span><span class="si">{samples}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;duplicate samples in </span><span class="si">{samples}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variant_count_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;sample in @samples&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `samples` </span><span class="si">{samples}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `samples` </span><span class="si">{samples}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;variant_call_support &gt;= @min_support&#39;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;no samples </span><span class="si">{samples}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no samples </span><span class="si">{samples}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">nsamples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
 
@@ -2005,14 +2005,14 @@
                   <span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">libraries</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">libraries</span><span class="p">)</span><span class="o">.</span><span class="n">issuperset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">libraries</span><span class="p">)):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid library in </span><span class="si">{libraries}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid library in </span><span class="si">{libraries}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">libraries</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">libraries</span><span class="p">)):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;duplicate library in </span><span class="si">{libraries}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;duplicate library in </span><span class="si">{libraries}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;library in @libraries&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `libraries` </span><span class="si">{libraries}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `libraries` </span><span class="si">{libraries}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;no libraries </span><span class="si">{libraries}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no libraries </span><span class="si">{libraries}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">nlibraries</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
 
@@ -2039,18 +2039,18 @@
             <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;^(?P&lt;wt&gt;[ATGC]</span><span class="si">{3}</span><span class="s1">)(?P&lt;r&gt;\d+)(?P&lt;mut&gt;[ATGC]</span><span class="si">{3}</span><span class="s1">)$&#39;</span><span class="p">,</span>
                          <span class="n">mut</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid mutation </span><span class="si">{mut}</span><span class="s2"> in </span><span class="si">{codon_mut_str}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid mutation </span><span class="si">{mut}</span><span class="s2"> in </span><span class="si">{codon_mut_str}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">r</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">))</span>
             <span class="k">if</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">aa_muts</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;duplicate codon mutation for </span><span class="si">{r}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;duplicate codon mutation for </span><span class="si">{r}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">wt_codon</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span>
             <span class="n">mut_codon</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;mut&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">wt_codon</span> <span class="o">==</span> <span class="n">mut_codon</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid mutation </span><span class="si">{mut}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid mutation </span><span class="si">{mut}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">wt_aa</span> <span class="o">=</span> <span class="n">CODON_TO_AA</span><span class="p">[</span><span class="n">wt_codon</span><span class="p">]</span>
             <span class="n">mut_aa</span> <span class="o">=</span> <span class="n">CODON_TO_AA</span><span class="p">[</span><span class="n">mut_codon</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">wt_aa</span> <span class="o">!=</span> <span class="n">mut_aa</span><span class="p">:</span>
-                <span class="n">aa_muts</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{wt_aa}{r}{mut_aa}</span><span class="s2">&quot;</span>
+                <span class="n">aa_muts</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{wt_aa}{r}{mut_aa}</span><span class="s2">&quot;</span>
 
         <span class="k">return</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">mut_str</span> <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">mut_str</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">aa_muts</span><span class="o">.</span><span class="n">items</span><span class="p">())])</span></div>
 
@@ -2074,18 +2074,18 @@
             <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;^(?P&lt;wt&gt;[ATCG]</span><span class="si">{3}</span><span class="s1">)(?P&lt;r&gt;\d+)(?P&lt;mut&gt;[ACTG]</span><span class="si">{3}</span><span class="s1">)$&#39;</span><span class="p">,</span>
                          <span class="n">mut</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid codon mutation </span><span class="si">{mut}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid codon mutation </span><span class="si">{mut}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">wt_codon</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span>
             <span class="n">r</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">))</span>
             <span class="n">mut_codon</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;mut&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">wt_codon</span> <span class="o">==</span> <span class="n">mut_codon</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid codon mutation </span><span class="si">{mut}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid codon mutation </span><span class="si">{mut}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">r</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sites</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid site in codon mutation </span><span class="si">{mut}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid site in codon mutation </span><span class="si">{mut}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">wt_codon</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">codons</span><span class="p">[</span><span class="n">r</span><span class="p">]:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid wt in codon mutation </span><span class="si">{mut}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid wt in codon mutation </span><span class="si">{mut}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">muts</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;duplicate mutation at codon </span><span class="si">{mut}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;duplicate mutation at codon </span><span class="si">{mut}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">muts</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">=</span> <span class="n">mut</span>
         <span class="k">return</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mut</span> <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">mut</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">muts</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
 
@@ -2123,22 +2123,22 @@
         <span class="k">for</span> <span class="n">mut</span> <span class="ow">in</span> <span class="n">nt_mut_str</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
             <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;^(?P&lt;wt&gt;[ATCG])(?P&lt;i&gt;\d+)(?P&lt;mut&gt;[ATCG])$&#39;</span><span class="p">,</span> <span class="n">mut</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid mutation </span><span class="si">{mut}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid mutation </span><span class="si">{mut}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">wt_nt</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span>
             <span class="n">i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;i&#39;</span><span class="p">))</span>
             <span class="n">mut_nt</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;mut&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">wt_nt</span> <span class="o">==</span> <span class="n">mut_nt</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid mutation </span><span class="si">{mut}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid mutation </span><span class="si">{mut}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">geneseq</span><span class="p">)</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid nucleotide site </span><span class="si">{i}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid nucleotide site </span><span class="si">{i}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">geneseq</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">wt_nt</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;nucleotide </span><span class="si">{i}</span><span class="s2"> should be &quot;</span>
-                                 <span class="n">f</span><span class="s2">&quot;</span><span class="si">{self.geneseq[i - 1]}</span><span class="s2"> not </span><span class="si">{wt_nt}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;nucleotide </span><span class="si">{i}</span><span class="s2"> should be &quot;</span>
+                                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{self.geneseq[i - 1]}</span><span class="s2"> not </span><span class="si">{wt_nt}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">icodon</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span>
             <span class="n">i_nt</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span>
             <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">codons</span><span class="p">[</span><span class="n">icodon</span><span class="p">][</span><span class="n">i_nt</span><span class="p">]</span> <span class="o">==</span> <span class="n">wt_nt</span>
             <span class="k">if</span> <span class="n">i_nt</span> <span class="ow">in</span> <span class="n">mut_codons</span><span class="p">[</span><span class="n">icodon</span><span class="p">]:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;duplicate mutations </span><span class="si">{i_nt}</span><span class="s2"> in </span><span class="si">{icodon}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;duplicate mutations </span><span class="si">{i_nt}</span><span class="s2"> in </span><span class="si">{icodon}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">mut_codons</span><span class="p">[</span><span class="n">icodon</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">i_nt</span><span class="p">,</span> <span class="n">mut_nt</span><span class="p">))</span>
 
         <span class="n">codon_mut_list</span> <span class="o">=</span> <span class="p">[]</span>
@@ -2147,7 +2147,7 @@
             <span class="n">mut_codon</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">wt_codon</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">mut_nt</span> <span class="ow">in</span> <span class="n">r_muts</span><span class="p">:</span>
                 <span class="n">mut_codon</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">mut_nt</span>
-            <span class="n">codon_mut_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{wt_codon}{r}</span><span class="s2">{&#39;&#39;.join(mut_codon)}&quot;</span><span class="p">)</span>
+            <span class="n">codon_mut_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{wt_codon}{r}</span><span class="s2">{&#39;&#39;.join(mut_codon)}&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">codon_mut_list</span><span class="p">)</span></div>
 
@@ -2278,7 +2278,7 @@
                 <span class="n">wtcodon</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">codons</span><span class="p">[</span><span class="n">errorsite</span><span class="p">]</span>
                 <span class="n">mutcodon</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">CODONS</span>
                                                 <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="n">wtcodon</span><span class="p">])</span>
-                <span class="n">muts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{wtcodon}{errorsite}{mutcodon}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">muts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{wtcodon}{errorsite}{mutcodon}</span><span class="s1">&#39;</span><span class="p">)</span>
                 <span class="k">return</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">muts</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># remove mutation</span>
@@ -2307,8 +2307,8 @@
         <span class="c1"># pre-sample counts specified</span>
         <span class="n">req_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">req_cols</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">pre_sample</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;pre_sample lacks cols </span><span class="si">{req_cols}</span><span class="s2">:&quot;</span>
-                             <span class="n">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{pre_sample}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pre_sample lacks cols </span><span class="si">{req_cols}</span><span class="s2">:&quot;</span>
+                             <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{pre_sample}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">pre_sample</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span> <span class="o">!=</span>
             <span class="n">barcode_variant_df</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
@@ -2337,7 +2337,7 @@
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pre_sample</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="n">pre_req_keys</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;uniformity&#39;</span><span class="p">,</span> <span class="s1">&#39;total_count&#39;</span><span class="p">}</span>
         <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">pre_sample</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">!=</span> <span class="n">pre_req_keys</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;pre_sample lacks required keys </span><span class="si">{pre_req_keys}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pre_sample lacks required keys </span><span class="si">{pre_req_keys}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="n">pre_df_list</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="n">libraries</span><span class="p">:</span>
@@ -2358,16 +2358,16 @@
 
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;pre_sample not DataFrame / dict: &quot;</span>
-                         <span class="n">f</span><span class="s2">&quot;</span><span class="si">{pre_sample}</span><span class="s2">&quot;</span><span class="p">)</span>
+                         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{pre_sample}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">,</span>
             <span class="s1">&#39;pre_freq&#39;</span><span class="p">,</span> <span class="s1">&#39;phenotype&#39;</span><span class="p">]</span>
     <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">barcode_variant_df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">cols</span><span class="p">),</span> <span class="p">(</span>
-            <span class="n">f</span><span class="s2">&quot;cols = {set(cols)}</span><span class="se">\n</span><span class="s2">barcode_variant_df.columns = &quot;</span>
-            <span class="n">f</span><span class="s2">&quot;{set(barcode_variant_df.columns)}&quot;</span><span class="p">)</span>
+            <span class="sa">f</span><span class="s2">&quot;cols = {set(cols)}</span><span class="se">\n</span><span class="s2">barcode_variant_df.columns = &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;{set(barcode_variant_df.columns)}&quot;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">post_samples</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;post_samples can&#39;t have key </span><span class="si">{col}</span><span class="s2">; &quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;post_samples can&#39;t have key </span><span class="si">{col}</span><span class="s2">; &quot;</span>
                              <span class="s2">&quot;choose another sample name&quot;</span><span class="p">)</span>
 
     <span class="n">df_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">barcode_variant_df</span><span class="p">[</span><span class="n">cols</span><span class="p">[</span> <span class="p">:</span> <span class="mi">4</span><span class="p">]]]</span>
@@ -2383,7 +2383,7 @@
             <span class="n">libraries</span><span class="p">,</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">post_samples</span><span class="o">.</span><span class="n">items</span><span class="p">())):</span>
 
         <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">sample_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">!=</span> <span class="n">post_req_keys</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;post_samples </span><span class="si">{sample}</span><span class="s2"> lacks keys </span><span class="si">{post_req_keys}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;post_samples </span><span class="si">{sample}</span><span class="s2"> lacks keys </span><span class="si">{post_req_keys}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="n">lib_df</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">barcode_variant_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;library == @lib&#39;</span><span class="p">)</span>
@@ -2454,7 +2454,7 @@
 <span class="sd">            Effects on latent phenotype of each amino-acid mutation.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geneseq</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">wt_latent</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geneseq</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">wt_latent</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                  <span class="n">norm_weights</span><span class="o">=</span><span class="p">[(</span><span class="mf">0.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">)],</span>
                  <span class="n">stop_effect</span><span class="o">=-</span><span class="mi">10</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;See main class docstring for how to initialize.&quot;&quot;&quot;</span>
@@ -2476,7 +2476,7 @@
                         <span class="n">i</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">cumweights</span> <span class="o">&lt;</span> <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">())</span>
                         <span class="c1"># draw mutational effect from chosen Gaussian</span>
                         <span class="n">muteffect</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">means</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">sds</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">muteffects</span><span class="p">[</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{wt_aa}</span><span class="s1">{icodon + 1}</span><span class="si">{mut_aa}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">muteffect</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">muteffects</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{wt_aa}</span><span class="s1">{icodon + 1}</span><span class="si">{mut_aa}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">muteffect</span>
 
 <div class="viewcode-block" id="PhenotypeSimulator.latentPhenotype"><a class="viewcode-back" href="../../dms_tools2.codonvarianttable.html#dms_tools2.codonvarianttable.PhenotypeSimulator.latentPhenotype">[docs]</a>    <span class="k">def</span> <span class="nf">latentPhenotype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Returns latent phenotype of a variant.</span>
@@ -2564,8 +2564,8 @@
                     <span class="n">aes</span><span class="p">(</span><span class="s1">&#39;phenotype&#39;</span><span class="p">))</span> <span class="o">+</span>
              <span class="n">geom_histogram</span><span class="p">(</span><span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">)</span> <span class="o">+</span>
              <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">3.5</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">))</span> <span class="o">+</span>
-             <span class="n">ylab</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;number of </span><span class="si">{mutant_order}</span><span class="s2">-mutants&quot;</span><span class="p">)</span> <span class="o">+</span>
-             <span class="n">xlab</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{latent_or_observed}</span><span class="s2"> phenotype&quot;</span><span class="p">)</span> <span class="o">+</span>
+             <span class="n">ylab</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;number of </span><span class="si">{mutant_order}</span><span class="s2">-mutants&quot;</span><span class="p">)</span> <span class="o">+</span>
+             <span class="n">xlab</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{latent_or_observed}</span><span class="s2"> phenotype&quot;</span><span class="p">)</span> <span class="o">+</span>
              <span class="n">geom_vline</span><span class="p">(</span><span class="n">xintercept</span><span class="o">=</span><span class="n">phenoFunc</span><span class="p">({</span><span class="s1">&#39;aa_substitutions&#39;</span><span class="p">:</span><span class="s1">&#39;&#39;</span><span class="p">}),</span>
                         <span class="n">color</span><span class="o">=</span><span class="n">CBPALETTE</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">linetype</span><span class="o">=</span><span class="s1">&#39;dashed&#39;</span><span class="p">)</span>
              <span class="p">)</span>
@@ -2773,7 +2773,7 @@
             <span class="n">group_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">group_cols</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">group_cols</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `group_cols` </span><span class="si">{group_cols}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `group_cols` </span><span class="si">{group_cols}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="n">df</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">df</span>
@@ -2860,24 +2860,24 @@
     <span class="k">for</span> <span class="n">codon</span> <span class="ow">in</span> <span class="n">codon_subs</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
         <span class="n">m</span> <span class="o">=</span> <span class="n">submatcher</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">codon</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Invalid codon substitution </span><span class="si">{codon}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid codon substitution </span><span class="si">{codon}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">site</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">site</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">codon_list</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Codon site out of bounds&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">aa_subs</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="n">codon_list</span><span class="p">[</span><span class="n">site</span><span class="p">]:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Invalid wildtype codon in </span><span class="si">{codon}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid wildtype codon in </span><span class="si">{codon}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="n">CODON_TO_AA</span><span class="p">[</span><span class="n">codon_list</span><span class="p">[</span><span class="n">site</span><span class="p">]]:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Invalid wildtype aa in </span><span class="si">{codon}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid wildtype aa in </span><span class="si">{codon}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;mut&#39;</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;wildtype and mutant the same in </span><span class="si">{codon}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;wildtype and mutant the same in </span><span class="si">{codon}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">aa_subs</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;mut&#39;</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">CODON_TO_AA</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Invalid mutant codon in </span><span class="si">{codon}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid mutant codon in </span><span class="si">{codon}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;mut&#39;</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">AAS_WITHSTOP</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Invalid mutant aa in </span><span class="si">{codon}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid mutant aa in </span><span class="si">{codon}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="c1"># Change to the mutant codon</span>
         <span class="n">sub</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;mut&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">aa_subs</span><span class="p">:</span>
@@ -3033,7 +3033,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017--2019, the Bloom lab.
+      &copy;2017--2020, the Bloom lab.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>

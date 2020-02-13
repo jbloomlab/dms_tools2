@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_tools2.syn_selection &#8212; dms_tools2 2.6.4 documentation</title>
+    <title>dms_tools2.syn_selection &#8212; dms_tools2 2.6.5 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -45,7 +45,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">scipy.stats</span>
 
-<span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="k">import</span> <span class="n">CODON_TO_AA</span>
+<span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="kn">import</span> <span class="n">CODON_TO_AA</span>
 
 <div class="viewcode-block" id="syn_selection_by_codon"><a class="viewcode-back" href="../../dms_tools2.syn_selection.html#dms_tools2.syn_selection.syn_selection_by_codon">[docs]</a><span class="k">def</span> <span class="nf">syn_selection_by_codon</span><span class="p">(</span><span class="n">counts_pre</span><span class="p">,</span> <span class="n">counts_post</span><span class="p">,</span> <span class="n">pseudocount</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Identify sites with selection on synonymous codons.</span>
@@ -118,20 +118,20 @@
         <span class="n">df</span> <span class="o">=</span> <span class="p">(</span>
          <span class="n">df</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">],</span>
                  <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;codon&#39;</span><span class="p">,</span>
-                 <span class="n">value_name</span><span class="o">=</span><span class="n">f</span><span class="s2">&quot;codon_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">)</span>
+                 <span class="n">value_name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;codon_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">)</span>
          <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">aa</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;codon&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">CODON_TO_AA</span><span class="p">))</span>  <span class="c1"># translate codons</span>
-         <span class="p">[[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">,</span> <span class="s1">&#39;aa&#39;</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;codon_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">]]</span>
+         <span class="p">[[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">,</span> <span class="s1">&#39;aa&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;codon_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">]]</span>
          <span class="p">)</span>
 
         <span class="c1"># group synonymous codons at each site</span>
         <span class="n">aaGroups</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;aa&#39;</span><span class="p">])</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="p">(</span>
-         <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">aa_count</span><span class="o">=</span><span class="n">aaGroups</span><span class="p">[</span><span class="n">f</span><span class="s2">&quot;codon_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">))</span>
+         <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">aa_count</span><span class="o">=</span><span class="n">aaGroups</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;codon_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">))</span>
          <span class="c1"># use in calculating significance of codon vs other synonymous codons</span>
-         <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">syn_codons</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;aa_count&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">f</span><span class="s2">&quot;codon_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">])</span>
-         <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;aa_count&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s2">&quot;aa_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">,</span>
-                          <span class="s1">&#39;syn_codons&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s2">&quot;syn_codons_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">})</span>
+         <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">syn_codons</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;aa_count&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;codon_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">])</span>
+         <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;aa_count&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;aa_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">,</span>
+                          <span class="s1">&#39;syn_codons&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;syn_codons_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">})</span>
          <span class="p">)</span>
 
         <span class="n">counts_df_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
@@ -158,15 +158,15 @@
 
     <span class="k">for</span> <span class="n">df_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;pre&#39;</span><span class="p">,</span> <span class="s1">&#39;post&#39;</span><span class="p">]:</span>
         <span class="c1"># add pseudocount</span>
-        <span class="n">df_merge</span><span class="p">[</span><span class="n">f</span><span class="s1">&#39;codon_</span><span class="si">{df_type}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">pseudocount</span>
+        <span class="n">df_merge</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;codon_</span><span class="si">{df_type}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">pseudocount</span>
         <span class="c1"># recalculate aa and syn_codon sums with pseudocount</span>
         <span class="n">aaGroups</span> <span class="o">=</span> <span class="n">df_merge</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;aa&#39;</span><span class="p">])</span>
         <span class="n">df_merge</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">df_merge</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">aa_count</span><span class="o">=</span><span class="n">aaGroups</span><span class="p">[</span><span class="n">f</span><span class="s2">&quot;codon_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">))</span>
+            <span class="n">df_merge</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">aa_count</span><span class="o">=</span><span class="n">aaGroups</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;codon_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">))</span>
                 <span class="c1"># use in calculating significance of codon vs other synonymous codons</span>
-                <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">syn_codons</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;aa_count&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">f</span><span class="s2">&quot;codon_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">])</span>
-                <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;aa_count&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s2">&quot;aa_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">,</span>
-                                 <span class="s1">&#39;syn_codons&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s2">&quot;syn_codons_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">})</span>
+                <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">syn_codons</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;aa_count&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;codon_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">])</span>
+                <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;aa_count&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;aa_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">,</span>
+                                 <span class="s1">&#39;syn_codons&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;syn_codons_</span><span class="si">{df_type}</span><span class="s2">&quot;</span><span class="p">})</span>
         <span class="p">)</span>
 
     <span class="c1"># drop rows where syn_codons_pre = 0</span>
@@ -284,7 +284,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017--2019, the Bloom lab.
+      &copy;2017--2020, the Bloom lab.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>

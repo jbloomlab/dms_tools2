@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_tools2.utils &#8212; dms_tools2 2.6.4 documentation</title>
+    <title>dms_tools2.utils &#8212; dms_tools2 2.6.5 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -65,7 +65,7 @@
 <span class="kn">import</span> <span class="nn">dms_variants.codonvarianttable</span>
 
 <span class="kn">import</span> <span class="nn">dms_tools2</span>
-<span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="k">import</span> <span class="n">CODONS</span><span class="p">,</span> <span class="n">CODON_TO_AA</span><span class="p">,</span> <span class="n">AAS_WITHSTOP</span><span class="p">,</span> <span class="n">AA_TO_CODONS</span><span class="p">,</span> <span class="n">NTS</span>
+<span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="kn">import</span> <span class="n">CODONS</span><span class="p">,</span> <span class="n">CODON_TO_AA</span><span class="p">,</span> <span class="n">AAS_WITHSTOP</span><span class="p">,</span> <span class="n">AA_TO_CODONS</span><span class="p">,</span> <span class="n">NTS</span>
 <span class="kn">import</span> <span class="nn">dms_tools2._cutils</span>
 
 
@@ -257,14 +257,14 @@
                 <span class="n">r2</span> <span class="o">=</span> <span class="n">a2</span><span class="o">.</span><span class="n">sequence</span>
                 <span class="n">q2</span> <span class="o">=</span> <span class="n">a2</span><span class="o">.</span><span class="n">quality</span>
                 <span class="k">if</span> <span class="n">a2</span><span class="o">.</span><span class="n">comment</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">id2</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{a2.name}</span><span class="s2"> </span><span class="si">{a2.comment}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                    <span class="n">id2</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{a2.name}</span><span class="s2"> </span><span class="si">{a2.comment}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">id2</span> <span class="o">=</span> <span class="n">a2</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
                 <span class="n">name2</span> <span class="o">=</span> <span class="n">id2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">r1</span> <span class="o">=</span> <span class="n">a1</span><span class="o">.</span><span class="n">sequence</span>
             <span class="n">q1</span> <span class="o">=</span> <span class="n">a1</span><span class="o">.</span><span class="n">quality</span>
             <span class="k">if</span> <span class="n">a1</span><span class="o">.</span><span class="n">comment</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">id1</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{a1.name}</span><span class="s2"> </span><span class="si">{a1.comment}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="n">id1</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{a1.name}</span><span class="s2"> </span><span class="si">{a1.comment}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">id1</span> <span class="o">=</span> <span class="n">a1</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
             <span class="n">name1</span> <span class="o">=</span> <span class="n">id1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -274,7 +274,7 @@
                     <span class="n">name1</span> <span class="o">=</span> <span class="n">name1</span><span class="p">[</span> <span class="p">:</span> <span class="o">-</span><span class="mi">2</span><span class="p">]</span>
                     <span class="n">name2</span> <span class="o">=</span> <span class="n">name2</span><span class="p">[</span> <span class="p">:</span> <span class="o">-</span><span class="mi">2</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">name1</span> <span class="o">!=</span> <span class="n">name2</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;name mismatch </span><span class="si">{name1}</span><span class="s2"> vs </span><span class="si">{name2}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;name mismatch </span><span class="si">{name1}</span><span class="s2"> vs </span><span class="si">{name2}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="c1"># parse chastity filter assuming CASAVA 1.8 header</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">f1</span> <span class="o">=</span> <span class="n">id1</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
@@ -451,7 +451,7 @@
     <span class="k">if</span> <span class="n">logspace</span> <span class="ow">and</span> <span class="n">N</span> <span class="o">&gt;</span> <span class="n">maxpoints</span><span class="p">:</span>
         <span class="n">nreads</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span>
                 <span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">N</span><span class="p">),</span>
-                <span class="n">num</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">maxpoints</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)))</span>
+                <span class="n">num</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">maxpoints</span><span class="p">)))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">nreads</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
                 <span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">maxpoints</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)))</span>
@@ -1203,14 +1203,14 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;currently only handles numbers &gt; 0&#39;</span><span class="p">)</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;{{:.</span><span class="si">{nsig}</span><span class="s2">g}}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;{{:.</span><span class="si">{nsig}</span><span class="s2">g}}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">nsig</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
         <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{:d}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">predecimal</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="n">postdecimal</span> <span class="o">=</span> <span class="n">nsig</span> <span class="o">-</span> <span class="n">predecimal</span>
         <span class="k">assert</span> <span class="n">postdecimal</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;{{:.</span><span class="si">{postdecimal}</span><span class="s2">f}}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;{{:.</span><span class="si">{postdecimal}</span><span class="s2">f}}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="getSubstitutions"><a class="viewcode-back" href="../../dms_tools2.utils.html#dms_tools2.utils.getSubstitutions">[docs]</a><span class="k">def</span> <span class="nf">getSubstitutions</span><span class="p">(</span><span class="n">wildtype</span><span class="p">,</span> <span class="n">mutant</span><span class="p">,</span> <span class="n">amino_acid</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Get space delimited string of substitutions</span>
@@ -1242,17 +1242,17 @@
         <span class="n">mut</span> <span class="o">=</span> <span class="n">mutant</span><span class="p">[</span><span class="n">site</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">amino_acid</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">wt</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">AAS_WITHSTOP</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span> <span class="p">(</span><span class="n">f</span><span class="s2">&quot;Invalid wt residue </span><span class="si">{wt}</span><span class="s2"> at site {site+1}&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid wt residue </span><span class="si">{wt}</span><span class="s2"> at site {site+1}&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">mut</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">AAS_WITHSTOP</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span> <span class="p">(</span><span class="n">f</span><span class="s2">&quot;Invalid mutant residue </span><span class="si">{mut}</span><span class="s2"> at site {site+1}&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid mutant residue </span><span class="si">{mut}</span><span class="s2"> at site {site+1}&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">wt</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">NTS</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span> <span class="p">(</span><span class="n">f</span><span class="s2">&quot;Invalid wt nucleotide </span><span class="si">{wt}</span><span class="s2"> at site {site+1}&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid wt nucleotide </span><span class="si">{wt}</span><span class="s2"> at site {site+1}&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">mut</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">NTS</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span> <span class="p">(</span><span class="n">f</span><span class="s2">&quot;Invalid mutant nucleotide </span><span class="si">{mut}</span><span class="s2"> at site {site+1}&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid mutant nucleotide </span><span class="si">{mut}</span><span class="s2"> at site {site+1}&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">wt</span><span class="o">!=</span><span class="n">mut</span><span class="p">:</span>
             <span class="n">pos</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">site</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="n">subs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{wt}{pos}{mut}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">subs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{wt}{pos}{mut}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">subs</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">subs</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">subs</span></div>
@@ -1395,7 +1395,7 @@
             <span class="n">description_skipped</span> <span class="o">=</span> <span class="kc">False</span>
 
             <span class="c1"># Find the file</span>
-            <span class="n">f</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{sample}</span><span class="s2">_bcinfo.txt.gz&quot;</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{sample}</span><span class="s2">_bcinfo.txt.gz&quot;</span>
             <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
                 <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">f</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -1409,7 +1409,7 @@
                 <span class="n">firstline</span> <span class="o">=</span> <span class="n">firstline</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
                 <span class="n">first_match</span> <span class="o">=</span> <span class="n">matcher</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">firstline</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">first_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;BARCODE:&#39;</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unexpected first line </span><span class="si">{firstline}</span><span class="s2">: may be &quot;</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected first line </span><span class="si">{firstline}</span><span class="s2">: may be &quot;</span>
                     <span class="s2">&quot;unexpected file type&quot;</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">previous_line</span> <span class="o">=</span> <span class="n">first_match</span>
@@ -1423,18 +1423,18 @@
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">line_match</span><span class="p">:</span>
                         <span class="n">read_match</span> <span class="o">=</span> <span class="n">read_matcher</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
                         <span class="k">if</span> <span class="ow">not</span> <span class="n">read_match</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unable to recognize line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to recognize line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="n">line_is_read</span> <span class="o">=</span> <span class="kc">True</span>
                             <span class="n">previous_linetype</span> <span class="o">=</span> <span class="n">previous_line</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span>
                             <span class="k">if</span> <span class="n">previous_linetype</span> <span class="o">!=</span> <span class="s1">&#39;R1 READS:&#39;</span> <span class="ow">and</span> \
                                <span class="n">previous_linetype</span> <span class="o">!=</span> <span class="s1">&#39;R2 READS:&#39;</span><span class="p">:</span>
-                               <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
+                               <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">line_is_read</span> <span class="o">=</span> <span class="kc">False</span>
                     <span class="k">if</span> <span class="n">previous_line</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;BARCODE:&#39;</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">line_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;RETAINED:&#39;</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
                         <span class="c1"># Decide whether to retain the next consensus or not</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="k">if</span> <span class="n">line_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;contents&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;False&#39;</span><span class="p">:</span>
@@ -1442,17 +1442,17 @@
                             <span class="k">elif</span> <span class="n">line_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;contents&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;True&#39;</span><span class="p">:</span>
                                 <span class="n">retain</span> <span class="o">=</span> <span class="kc">True</span>
                             <span class="k">else</span><span class="p">:</span>
-                                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
                     <span class="k">elif</span> <span class="n">previous_line</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;RETAINED:&#39;</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">line_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;DESCRIPTION:&#39;</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
                     <span class="k">elif</span> <span class="n">previous_line</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;DESCRIPTION:&#39;</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">line_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;CONSENSUS:&#39;</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
                         <span class="c1"># Make sure we know whether to retain or not</span>
                         <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">retain</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
                             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                            <span class="n">f</span><span class="s2">&quot;Unclear whether to retain {line_match.group(&#39;contents&#39;)}&quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;Unclear whether to retain {line_match.group(&#39;contents&#39;)}&quot;</span>
                             <span class="p">)</span>
                         <span class="k">elif</span> <span class="n">retain</span><span class="p">:</span>
                             <span class="n">read</span> <span class="o">=</span> <span class="n">line_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;contents&#39;</span><span class="p">)</span>
@@ -1486,15 +1486,15 @@
                         <span class="n">retain</span> <span class="o">=</span> <span class="kc">None</span>
                     <span class="k">elif</span> <span class="n">previous_line</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;CONSENSUS:&#39;</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">line_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;R1 READS:&#39;</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
                     <span class="k">elif</span> <span class="n">previous_line</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;R1 READS:&#39;</span><span class="p">:</span>
                         <span class="k">if</span> <span class="ow">not</span> <span class="n">line_is_read</span><span class="p">:</span>
                             <span class="k">if</span> <span class="n">line_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;R2 READS:&#39;</span><span class="p">:</span>
-                                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
                     <span class="k">elif</span> <span class="n">previous_line</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;R2 READS:&#39;</span><span class="p">:</span>
                         <span class="k">if</span> <span class="ow">not</span> <span class="n">line_is_read</span><span class="p">:</span>
                             <span class="k">if</span> <span class="n">line_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;linetype&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;BARCODE:&#39;</span><span class="p">:</span>
-                                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected line </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
                     <span class="c1"># Save this line as the previous line if it is not a read</span>
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">line_is_read</span><span class="p">:</span>
                         <span class="n">previous_line</span> <span class="o">=</span> <span class="n">line_match</span>
@@ -1652,7 +1652,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017--2019, the Bloom lab.
+      &copy;2017--2020, the Bloom lab.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_tools2.barcodes &#8212; dms_tools2 2.6.4 documentation</title>
+    <title>dms_tools2.barcodes &#8212; dms_tools2 2.6.5 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -53,13 +53,13 @@
 <span class="kn">import</span> <span class="nn">Bio.SeqUtils.ProtParamData</span>
 
 <span class="c1"># use plotnine for plotting</span>
-<span class="kn">from</span> <span class="nn">plotnine</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">plotnine</span> <span class="kn">import</span> <span class="o">*</span>
 
 <span class="kn">import</span> <span class="nn">dms_tools2.plot</span>
-<span class="kn">from</span> <span class="nn">dms_tools2.plot</span> <span class="k">import</span> <span class="n">COLOR_BLIND_PALETTE_GRAY</span>
+<span class="kn">from</span> <span class="nn">dms_tools2.plot</span> <span class="kn">import</span> <span class="n">COLOR_BLIND_PALETTE_GRAY</span>
 <span class="kn">import</span> <span class="nn">dms_tools2.utils</span>
 <span class="kn">import</span> <span class="nn">dms_tools2.pacbio</span>
-<span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="k">import</span> <span class="n">CODON_TO_AA</span><span class="p">,</span> <span class="n">CODONS</span><span class="p">,</span> <span class="n">AAS_WITHSTOP</span><span class="p">,</span> <span class="n">AA_TO_CODONS</span>
+<span class="kn">from</span> <span class="nn">dms_tools2</span> <span class="kn">import</span> <span class="n">CODON_TO_AA</span><span class="p">,</span> <span class="n">CODONS</span><span class="p">,</span> <span class="n">AAS_WITHSTOP</span><span class="p">,</span> <span class="n">AA_TO_CODONS</span>
 
 <span class="n">_umi_clusterer</span> <span class="o">=</span> <span class="n">umi_tools</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">UMIClusterer</span><span class="p">()</span>
 
@@ -126,7 +126,7 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">barcodes</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Iterable</span><span class="p">):</span>
             <span class="n">barcodes</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">barcodes</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`barcodes` invalid type {type(barcodes)}&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`barcodes` invalid type {type(barcodes)}&quot;</span><span class="p">)</span>
     <span class="n">barcodes</span> <span class="o">=</span> <span class="n">barcodes</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
 
     <span class="n">counts</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">Counter</span><span class="p">(</span><span class="n">barcodes</span><span class="p">)</span>
@@ -297,15 +297,15 @@
     <span class="n">all_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">library_col</span><span class="p">,</span> <span class="n">barcode_col</span><span class="p">]</span> <span class="o">+</span> <span class="n">mut_cols</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">all_cols</span><span class="p">]):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Cannot find column </span><span class="si">{col}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot find column </span><span class="si">{col}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
     <span class="c1"># make sure no mutations duplicated, otherwise approach below fails</span>
     <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">mut_cols</span><span class="p">:</span>
         <span class="n">duplicated</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">len</span><span class="p">)</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">len</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">duplicated</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;duplicated </span><span class="si">{col}</span><span class="s2">:</span><span class="se">\n</span><span class="s2">&quot;</span>
-                             <span class="n">f</span><span class="s2">&quot;</span><span class="si">{df[col][duplicated &gt; 0]}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;duplicated </span><span class="si">{col}</span><span class="s2">:</span><span class="se">\n</span><span class="s2">&quot;</span>
+                             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{df[col][duplicated &gt; 0]}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="n">dropped</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">consensus</span> <span class="o">=</span> <span class="p">[]</span>
@@ -339,7 +339,7 @@
                     <span class="p">[</span><span class="n">d</span> <span class="o">&gt;</span> <span class="n">max_diffs</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">min_variant_diffs</span><span class="o">.</span><span class="n">values</span><span class="p">()]):</span>
                 <span class="c1"># need to add to `dropped` because of max_diffs failing</span>
                 <span class="n">dropped</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="n">g</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">drop_reason</span><span class="o">=</span><span class="n">f</span><span class="s2">&quot;excess </span><span class="si">{difftype}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="n">g</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">drop_reason</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;excess </span><span class="si">{difftype}</span><span class="s2">&quot;</span><span class="p">)</span>
                         <span class="p">)</span>
                 <span class="n">consensus_failed</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="k">break</span>
@@ -659,7 +659,7 @@
     <span class="c1">#: valid nucleotide characters</span>
     <span class="n">VALID_NTS</span> <span class="o">=</span> <span class="s1">&#39;ACGTN&#39;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">bclen</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">bclen</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">upstream</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">downstream</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
             <span class="n">upstream_mismatch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">downstream_mismatch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
             <span class="n">valid_barcodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rc_barcode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">minq</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
@@ -668,14 +668,14 @@
 
         <span class="c1"># first make all arguments into attributes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bclen</span> <span class="o">=</span> <span class="n">bclen</span>
-        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;^[</span><span class="si">{self.VALID_NTS}</span><span class="s2">]*$&quot;</span><span class="p">,</span> <span class="n">upstream</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;^[</span><span class="si">{self.VALID_NTS}</span><span class="s2">]*$&quot;</span><span class="p">,</span> <span class="n">upstream</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">upstream</span> <span class="o">=</span> <span class="n">upstream</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid chars in upstream </span><span class="si">{upstream}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;^[</span><span class="si">{self.VALID_NTS}</span><span class="s2">]*$&quot;</span><span class="p">,</span> <span class="n">downstream</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid chars in upstream </span><span class="si">{upstream}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;^[</span><span class="si">{self.VALID_NTS}</span><span class="s2">]*$&quot;</span><span class="p">,</span> <span class="n">downstream</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">downstream</span> <span class="o">=</span> <span class="n">downstream</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid chars in downstream </span><span class="si">{downstream}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid chars in downstream </span><span class="si">{downstream}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">upstream_mismatch</span> <span class="o">=</span> <span class="n">upstream_mismatch</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">downstream_mismatch</span> <span class="o">=</span> <span class="n">downstream_mismatch</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span> <span class="o">=</span> <span class="n">valid_barcodes</span>
@@ -763,26 +763,26 @@
                 <span class="c1"># get or build matcher for read of this length</span>
                 <span class="n">len_past_bc</span> <span class="o">=</span> <span class="n">rlen</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bcend</span><span class="p">[</span><span class="n">read</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">len_past_bc</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{read}</span><span class="s2"> too short: </span><span class="si">{rlen}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{read}</span><span class="s2"> too short: </span><span class="si">{rlen}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="n">rlen</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_matches</span><span class="p">[</span><span class="n">read</span><span class="p">]:</span>
                     <span class="n">matcher</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_matches</span><span class="p">[</span><span class="n">read</span><span class="p">][</span><span class="n">rlen</span><span class="p">]</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">read</span> <span class="o">==</span> <span class="s1">&#39;R1&#39;</span><span class="p">:</span>
                         <span class="n">match_str</span> <span class="o">=</span> <span class="p">(</span>
-                                <span class="n">f</span><span class="s1">&#39;^(</span><span class="si">{self._rcdownstream}</span><span class="s1">)&#39;</span>
-                                <span class="n">f</span><span class="s1">&#39;{{s&lt;=</span><span class="si">{self.downstream_mismatch}</span><span class="s1">}}&#39;</span> <span class="o">+</span>
-                                <span class="n">f</span><span class="s1">&#39;(?P&lt;bc&gt;N{{</span><span class="si">{self.bclen}</span><span class="s1">}})&#39;</span> <span class="o">+</span>
-                                <span class="n">f</span><span class="s1">&#39;(</span><span class="si">{self._rcupstream[ : len_past_bc]}</span><span class="s1">)&#39;</span> <span class="o">+</span>
-                                <span class="n">f</span><span class="s1">&#39;{{s&lt;=</span><span class="si">{self.upstream_mismatch}</span><span class="s1">}}&#39;</span>
+                                <span class="sa">f</span><span class="s1">&#39;^(</span><span class="si">{self._rcdownstream}</span><span class="s1">)&#39;</span>
+                                <span class="sa">f</span><span class="s1">&#39;{{s&lt;=</span><span class="si">{self.downstream_mismatch}</span><span class="s1">}}&#39;</span> <span class="o">+</span>
+                                <span class="sa">f</span><span class="s1">&#39;(?P&lt;bc&gt;N{{</span><span class="si">{self.bclen}</span><span class="s1">}})&#39;</span> <span class="o">+</span>
+                                <span class="sa">f</span><span class="s1">&#39;(</span><span class="si">{self._rcupstream[ : len_past_bc]}</span><span class="s1">)&#39;</span> <span class="o">+</span>
+                                <span class="sa">f</span><span class="s1">&#39;{{s&lt;=</span><span class="si">{self.upstream_mismatch}</span><span class="s1">}}&#39;</span>
                                 <span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">assert</span> <span class="n">read</span> <span class="o">==</span> <span class="s1">&#39;R2&#39;</span>
                         <span class="n">match_str</span> <span class="o">=</span> <span class="p">(</span>
-                                <span class="n">f</span><span class="s1">&#39;^(</span><span class="si">{self.upstream}</span><span class="s1">)&#39;</span> <span class="o">+</span>
-                                <span class="n">f</span><span class="s1">&#39;{{s&lt;=</span><span class="si">{self.upstream_mismatch}</span><span class="s1">}}&#39;</span> <span class="o">+</span>
-                                <span class="n">f</span><span class="s1">&#39;(?P&lt;bc&gt;N{{</span><span class="si">{self.bclen}</span><span class="s1">}})&#39;</span> <span class="o">+</span>
-                                <span class="n">f</span><span class="s1">&#39;(</span><span class="si">{self.downstream[ : len_past_bc]}</span><span class="s1">)&#39;</span> <span class="o">+</span>
-                                <span class="n">f</span><span class="s1">&#39;{{s&lt;=</span><span class="si">{self.downstream_mismatch}</span><span class="s1">}}&#39;</span>
+                                <span class="sa">f</span><span class="s1">&#39;^(</span><span class="si">{self.upstream}</span><span class="s1">)&#39;</span> <span class="o">+</span>
+                                <span class="sa">f</span><span class="s1">&#39;{{s&lt;=</span><span class="si">{self.upstream_mismatch}</span><span class="s1">}}&#39;</span> <span class="o">+</span>
+                                <span class="sa">f</span><span class="s1">&#39;(?P&lt;bc&gt;N{{</span><span class="si">{self.bclen}</span><span class="s1">}})&#39;</span> <span class="o">+</span>
+                                <span class="sa">f</span><span class="s1">&#39;(</span><span class="si">{self.downstream[ : len_past_bc]}</span><span class="s1">)&#39;</span> <span class="o">+</span>
+                                <span class="sa">f</span><span class="s1">&#39;{{s&lt;=</span><span class="si">{self.downstream_mismatch}</span><span class="s1">}}&#39;</span>
                                 <span class="p">)</span>
                     <span class="n">matcher</span> <span class="o">=</span> <span class="n">regex</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
                             <span class="n">dms_tools2</span><span class="o">.</span><span class="n">pacbio</span><span class="o">.</span><span class="n">re_expandIUPAC</span><span class="p">(</span><span class="n">match_str</span><span class="p">),</span>
@@ -987,7 +987,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017--2019, the Bloom lab.
+      &copy;2017--2020, the Bloom lab.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>

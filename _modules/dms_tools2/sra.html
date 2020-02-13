@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_tools2.sra &#8212; dms_tools2 2.6.4 documentation</title>
+    <title>dms_tools2.sra &#8212; dms_tools2 2.6.5 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -114,7 +114,12 @@
     <span class="k">assert</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">fastq_dump</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;fastq-dump not installed in a &quot;</span>
             <span class="s2">&quot;location accessible with command </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fastq_dump</span><span class="p">))</span>
     <span class="n">fastq_dump_version</span> <span class="o">=</span> <span class="p">(</span><span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">([</span><span class="n">fastq_dump</span><span class="p">,</span> <span class="s1">&#39;--version&#39;</span><span class="p">])</span>
-            <span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                          <span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fastq_dump_version</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">fastq_dump_version</span> <span class="o">=</span> <span class="n">fastq_dump_version</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fastq_dump_version</span> <span class="o">=</span> <span class="p">(</span><span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">([</span><span class="n">fastq_dump</span><span class="p">,</span> <span class="s1">&#39;--help&#39;</span><span class="p">])</span>
+                              <span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
     <span class="n">fastq_dump_minversion</span> <span class="o">=</span> <span class="s1">&#39;2.8&#39;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">distutils</span><span class="o">.</span><span class="n">version</span><span class="o">.</span><span class="n">LooseVersion</span><span class="p">(</span><span class="n">fastq_dump_version</span><span class="p">)</span> <span class="o">&gt;=</span>
             <span class="n">distutils</span><span class="o">.</span><span class="n">version</span><span class="o">.</span><span class="n">LooseVersion</span><span class="p">(</span><span class="n">fastq_dump_minversion</span><span class="p">)):</span>
@@ -328,7 +333,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017--2019, the Bloom lab.
+      &copy;2017--2020, the Bloom lab.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>

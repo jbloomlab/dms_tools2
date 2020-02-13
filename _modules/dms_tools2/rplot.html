@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_tools2.rplot &#8212; dms_tools2 2.6.4 documentation</title>
+    <title>dms_tools2.rplot &#8212; dms_tools2 2.6.5 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -71,12 +71,12 @@
     <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;You must install `rpy2` to use `rplot`&quot;</span><span class="p">)</span>
 <span class="kn">import</span> <span class="nn">rpy2.rinterface</span> <span class="k">as</span> <span class="nn">rinterface</span>
 <span class="n">rinterface</span><span class="o">.</span><span class="n">initr</span><span class="p">()</span>
-<span class="kn">from</span> <span class="nn">rpy2.robjects</span> <span class="k">import</span> <span class="n">pandas2ri</span><span class="p">,</span> <span class="n">r</span>
+<span class="kn">from</span> <span class="nn">rpy2.robjects</span> <span class="kn">import</span> <span class="n">pandas2ri</span><span class="p">,</span> <span class="n">r</span>
 <span class="n">pandas2ri</span><span class="o">.</span><span class="n">activate</span><span class="p">()</span>
-<span class="kn">from</span> <span class="nn">rpy2.robjects.packages</span> <span class="k">import</span> <span class="n">importr</span>
-<span class="kn">from</span> <span class="nn">rpy2.robjects.vectors</span> <span class="k">import</span> <span class="n">StrVector</span><span class="p">,</span> <span class="n">ListVector</span><span class="p">,</span> <span class="n">FloatVector</span>
-<span class="kn">from</span> <span class="nn">rpy2.rlike.container</span> <span class="k">import</span> <span class="n">TaggedList</span>
-<span class="kn">from</span> <span class="nn">rpy2.robjects.packages</span> <span class="k">import</span> <span class="n">SignatureTranslatedAnonymousPackage</span>
+<span class="kn">from</span> <span class="nn">rpy2.robjects.packages</span> <span class="kn">import</span> <span class="n">importr</span>
+<span class="kn">from</span> <span class="nn">rpy2.robjects.vectors</span> <span class="kn">import</span> <span class="n">StrVector</span><span class="p">,</span> <span class="n">ListVector</span><span class="p">,</span> <span class="n">FloatVector</span>
+<span class="kn">from</span> <span class="nn">rpy2.rlike.container</span> <span class="kn">import</span> <span class="n">TaggedList</span>
+<span class="kn">from</span> <span class="nn">rpy2.robjects.packages</span> <span class="kn">import</span> <span class="n">SignatureTranslatedAnonymousPackage</span>
 
 <span class="c1">#: Show warnings when running ``R`` code? Plausible values: `default`,</span>
 <span class="c1">#: `ignore`, and `always`. The `R` code gives many warnings, so</span>
@@ -446,7 +446,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017--2019, the Bloom lab.
+      &copy;2017--2020, the Bloom lab.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
