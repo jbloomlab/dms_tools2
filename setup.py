@@ -53,7 +53,7 @@ setup(
         'attrs>=17.4.0',
         'biopython>=1.68',
         'pysam>=0.13',
-        'pandas>=0.23',
+        'pandas>=0.23,<1.0',
         'numpy>=1.16',
         'IPython>=5.1',
         'jupyter>=1.0.0',

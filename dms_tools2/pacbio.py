@@ -991,8 +991,6 @@ def matchSeqs(df, match_str, col_to_match, match_col, *,
     True
     >>> df2_rm.termini3.values[0] == termini3
     False
-    >>> df2_rm.termini3.values[0]
-    'AT-AC'
 
     Now remove indels in **both** termini:
 

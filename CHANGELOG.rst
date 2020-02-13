@@ -5,6 +5,8 @@ Change Log
 -----
 * Fix bug in `fastqFromSRA` for newer versions of ``fastq-dump``.
 
+* Specify `pandas` < 1.0
+
 2.6.4
 ------
 * Added `--bcinfo_csv` option to `dms2_bcsubamp`.
