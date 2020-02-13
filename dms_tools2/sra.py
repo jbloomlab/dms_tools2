@@ -80,7 +80,12 @@ def fastqFromSRA(samples, fastq_dump, fastqdir, aspera=None,
     assert shutil.which(fastq_dump), ("fastq-dump not installed in a "
             "location accessible with command {0}".format(fastq_dump))
     fastq_dump_version = (subprocess.check_output([fastq_dump, '--version'])
-            .decode('utf-8').split(':')[1].strip())
+                          .decode('utf-8').split(':'))
+    if len(fastq_dump_version) == 2:
+        fastq_dump_version = fastq_dump_version[1].strip()
+    else:
+        fastq_dump_version = (subprocess.check_output([fastq_dump, '--help'])
+                              .decode('utf-8').split(':')[-1].strip())
     fastq_dump_minversion = '2.8'
     if not (distutils.version.LooseVersion(fastq_dump_version) >=
             distutils.version.LooseVersion(fastq_dump_minversion)):
