@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>diffsel &#8212; dms_tools2 2.6.5 documentation</title>
+    <title>diffsel &#8212; dms_tools2 2.6.6 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -160,7 +160,7 @@ Sample <cite>a</cite> is similar to <cite>b</cite>, but both are quite different
 <p>Calculate beta diversity of all three samples using Shannon index.
 The value is relatively high because sample <cite>c</cite> is a lot different
 than <cite>a</cite> and <cite>b</cite>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">scipy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">beta_diversity</span><span class="p">(</span><span class="n">tidy_df</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">beta_diversity</span><span class="p">(</span><span class="n">tidy_df</span><span class="p">,</span>
 <span class="gp">... </span>                     <span class="n">samplecol</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span>
 <span class="gp">... </span>                     <span class="n">sitecol</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span>
 <span class="gp">... </span>                     <span class="n">valcol</span><span class="o">=</span><span class="s1">&#39;positive_diffsel&#39;</span><span class="p">,</span>
@@ -172,7 +172,7 @@ than <cite>a</cite> and <cite>b</cite>:</p>
 <p>If we repeat the same using the Simpson index we get a higher
 diversity because the large-selection sites (which are up-weighted by
 Simpson index relative to Shannon) are diferent between <cite>c</cite> and <cite>a</cite> / <cite>b</cite>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">scipy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">beta_diversity</span><span class="p">(</span><span class="n">tidy_df</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">beta_diversity</span><span class="p">(</span><span class="n">tidy_df</span><span class="p">,</span>
 <span class="gp">... </span>                     <span class="n">samplecol</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span>
 <span class="gp">... </span>                     <span class="n">sitecol</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span>
 <span class="gp">... </span>                     <span class="n">valcol</span><span class="o">=</span><span class="s1">&#39;positive_diffsel&#39;</span><span class="p">,</span>
@@ -183,7 +183,7 @@ Simpson index relative to Shannon) are diferent between <cite>c</cite> and <cite
 </div>
 <p>If we calculate the beta diversity of just samples <cite>a</cite> and <cite>b</cite>, we
 get a smaller value because those samples are quite similar:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">scipy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">beta_diversity</span><span class="p">(</span><span class="n">tidy_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;sample in [&quot;a&quot;, &quot;b&quot;]&#39;</span><span class="p">),</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">beta_diversity</span><span class="p">(</span><span class="n">tidy_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;sample in [&quot;a&quot;, &quot;b&quot;]&#39;</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">samplecol</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span>
 <span class="gp">... </span>                     <span class="n">sitecol</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span>
 <span class="gp">... </span>                     <span class="n">valcol</span><span class="o">=</span><span class="s1">&#39;positive_diffsel&#39;</span><span class="p">,</span>
@@ -194,7 +194,7 @@ get a smaller value because those samples are quite similar:</p>
 </div>
 <p>Here the Simpson index gives lower diversity than the Shannon since
 <cite>a</cite> and <cite>b</cite> share the largest selection site:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">scipy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">beta_diversity</span><span class="p">(</span><span class="n">tidy_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;sample in [&quot;a&quot;, &quot;b&quot;]&#39;</span><span class="p">),</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">beta_diversity</span><span class="p">(</span><span class="n">tidy_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;sample in [&quot;a&quot;, &quot;b&quot;]&#39;</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">samplecol</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span>
 <span class="gp">... </span>                     <span class="n">sitecol</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span>
 <span class="gp">... </span>                     <span class="n">valcol</span><span class="o">=</span><span class="s1">&#39;positive_diffsel&#39;</span><span class="p">,</span>
@@ -204,7 +204,7 @@ get a smaller value because those samples are quite similar:</p>
 </pre></div>
 </div>
 <p>And of course the beta diversity of two identical samples is one:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">scipy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">beta_diversity</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">beta_diversity</span><span class="p">(</span>
 <span class="gp">... </span>                     <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">a_df</span><span class="p">,</span> <span class="n">a_df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">sample</span><span class="o">=</span><span class="s1">&#39;a2&#39;</span><span class="p">)]),</span>
 <span class="gp">... </span>                     <span class="n">samplecol</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span>
 <span class="gp">... </span>                     <span class="n">sitecol</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span>
@@ -212,7 +212,7 @@ get a smaller value because those samples are quite similar:</p>
 <span class="gp">... </span>                     <span class="n">index</span><span class="o">=</span><span class="s1">&#39;shannon&#39;</span><span class="p">),</span>
 <span class="gp">... </span>               <span class="mi">1</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
 <span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">scipy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">beta_diversity</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">beta_diversity</span><span class="p">(</span>
 <span class="gp">... </span>                     <span class="n">pandas</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">a_df</span><span class="p">,</span> <span class="n">a_df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">sample</span><span class="o">=</span><span class="s1">&#39;a2&#39;</span><span class="p">)]),</span>
 <span class="gp">... </span>                     <span class="n">samplecol</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span>
 <span class="gp">... </span>                     <span class="n">sitecol</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span>

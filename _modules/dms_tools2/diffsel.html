@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_tools2.diffsel &#8212; dms_tools2 2.6.5 documentation</title>
+    <title>dms_tools2.diffsel &#8212; dms_tools2 2.6.6 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -116,7 +116,7 @@
 <span class="sd">    The value is relatively high because sample `c` is a lot different</span>
 <span class="sd">    than `a` and `b`:</span>
 
-<span class="sd">    &gt;&gt;&gt; scipy.allclose(beta_diversity(tidy_df,</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(beta_diversity(tidy_df,</span>
 <span class="sd">    ...                      samplecol=&#39;sample&#39;,</span>
 <span class="sd">    ...                      sitecol=&#39;site&#39;,</span>
 <span class="sd">    ...                      valcol=&#39;positive_diffsel&#39;,</span>
@@ -128,7 +128,7 @@
 <span class="sd">    diversity because the large-selection sites (which are up-weighted by</span>
 <span class="sd">    Simpson index relative to Shannon) are diferent between `c` and `a` / `b`:</span>
 
-<span class="sd">    &gt;&gt;&gt; scipy.allclose(beta_diversity(tidy_df,</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(beta_diversity(tidy_df,</span>
 <span class="sd">    ...                      samplecol=&#39;sample&#39;,</span>
 <span class="sd">    ...                      sitecol=&#39;site&#39;,</span>
 <span class="sd">    ...                      valcol=&#39;positive_diffsel&#39;,</span>
@@ -139,7 +139,7 @@
 <span class="sd">    If we calculate the beta diversity of just samples `a` and `b`, we</span>
 <span class="sd">    get a smaller value because those samples are quite similar:</span>
 
-<span class="sd">    &gt;&gt;&gt; scipy.allclose(beta_diversity(tidy_df.query(&#39;sample in [&quot;a&quot;, &quot;b&quot;]&#39;),</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(beta_diversity(tidy_df.query(&#39;sample in [&quot;a&quot;, &quot;b&quot;]&#39;),</span>
 <span class="sd">    ...                      samplecol=&#39;sample&#39;,</span>
 <span class="sd">    ...                      sitecol=&#39;site&#39;,</span>
 <span class="sd">    ...                      valcol=&#39;positive_diffsel&#39;,</span>
@@ -150,7 +150,7 @@
 <span class="sd">    Here the Simpson index gives lower diversity than the Shannon since</span>
 <span class="sd">    `a` and `b` share the largest selection site:</span>
 
-<span class="sd">    &gt;&gt;&gt; scipy.allclose(beta_diversity(tidy_df.query(&#39;sample in [&quot;a&quot;, &quot;b&quot;]&#39;),</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(beta_diversity(tidy_df.query(&#39;sample in [&quot;a&quot;, &quot;b&quot;]&#39;),</span>
 <span class="sd">    ...                      samplecol=&#39;sample&#39;,</span>
 <span class="sd">    ...                      sitecol=&#39;site&#39;,</span>
 <span class="sd">    ...                      valcol=&#39;positive_diffsel&#39;,</span>
@@ -160,7 +160,7 @@
 
 <span class="sd">    And of course the beta diversity of two identical samples is one:</span>
 
-<span class="sd">    &gt;&gt;&gt; scipy.allclose(beta_diversity(</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(beta_diversity(</span>
 <span class="sd">    ...                      pandas.concat([a_df, a_df.assign(sample=&#39;a2&#39;)]),</span>
 <span class="sd">    ...                      samplecol=&#39;sample&#39;,</span>
 <span class="sd">    ...                      sitecol=&#39;site&#39;,</span>
@@ -168,7 +168,7 @@
 <span class="sd">    ...                      index=&#39;shannon&#39;),</span>
 <span class="sd">    ...                1, atol=1e-4)</span>
 <span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; scipy.allclose(beta_diversity(</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(beta_diversity(</span>
 <span class="sd">    ...                      pandas.concat([a_df, a_df.assign(sample=&#39;a2&#39;)]),</span>
 <span class="sd">    ...                      samplecol=&#39;sample&#39;,</span>
 <span class="sd">    ...                      sitecol=&#39;site&#39;,</span>
