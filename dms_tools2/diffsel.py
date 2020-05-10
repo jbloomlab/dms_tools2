@@ -82,7 +82,7 @@ def beta_diversity(tidy_df, *, samplecol, sitecol, valcol,
     The value is relatively high because sample `c` is a lot different
     than `a` and `b`:
 
-    >>> scipy.allclose(beta_diversity(tidy_df,
+    >>> numpy.allclose(beta_diversity(tidy_df,
     ...                      samplecol='sample',
     ...                      sitecol='site',
     ...                      valcol='positive_diffsel',
@@ -94,7 +94,7 @@ def beta_diversity(tidy_df, *, samplecol, sitecol, valcol,
     diversity because the large-selection sites (which are up-weighted by
     Simpson index relative to Shannon) are diferent between `c` and `a` / `b`:
 
-    >>> scipy.allclose(beta_diversity(tidy_df,
+    >>> numpy.allclose(beta_diversity(tidy_df,
     ...                      samplecol='sample',
     ...                      sitecol='site',
     ...                      valcol='positive_diffsel',
@@ -105,7 +105,7 @@ def beta_diversity(tidy_df, *, samplecol, sitecol, valcol,
     If we calculate the beta diversity of just samples `a` and `b`, we
     get a smaller value because those samples are quite similar:
 
-    >>> scipy.allclose(beta_diversity(tidy_df.query('sample in ["a", "b"]'),
+    >>> numpy.allclose(beta_diversity(tidy_df.query('sample in ["a", "b"]'),
     ...                      samplecol='sample',
     ...                      sitecol='site',
     ...                      valcol='positive_diffsel',
@@ -116,7 +116,7 @@ def beta_diversity(tidy_df, *, samplecol, sitecol, valcol,
     Here the Simpson index gives lower diversity than the Shannon since
     `a` and `b` share the largest selection site:
 
-    >>> scipy.allclose(beta_diversity(tidy_df.query('sample in ["a", "b"]'),
+    >>> numpy.allclose(beta_diversity(tidy_df.query('sample in ["a", "b"]'),
     ...                      samplecol='sample',
     ...                      sitecol='site',
     ...                      valcol='positive_diffsel',
@@ -126,7 +126,7 @@ def beta_diversity(tidy_df, *, samplecol, sitecol, valcol,
 
     And of course the beta diversity of two identical samples is one:
 
-    >>> scipy.allclose(beta_diversity(
+    >>> numpy.allclose(beta_diversity(
     ...                      pandas.concat([a_df, a_df.assign(sample='a2')]),
     ...                      samplecol='sample',
     ...                      sitecol='site',
@@ -134,7 +134,7 @@ def beta_diversity(tidy_df, *, samplecol, sitecol, valcol,
     ...                      index='shannon'),
     ...                1, atol=1e-4)
     True
-    >>> scipy.allclose(beta_diversity(
+    >>> numpy.allclose(beta_diversity(
     ...                      pandas.concat([a_df, a_df.assign(sample='a2')]),
     ...                      samplecol='sample',
     ...                      sitecol='site',

@@ -89,7 +89,7 @@ def almost_duplicated(barcodes, threshold=1):
     if threshold < 0:
         raise ValueError("`threshold` must be >= 0")
     if not isinstance(barcodes, pandas.Series):
-        if isinstance(barcodes, collections.Iterable):
+        if isinstance(barcodes, collections.abc.Iterable):
             barcodes = pandas.Series(barcodes)
         else:
             raise TypeError(f"`barcodes` invalid type {type(barcodes)}")
