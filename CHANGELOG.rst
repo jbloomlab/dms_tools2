@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.6.6
+-----
+* Ensure that ``dms2_batch_bcsubamp`` propagates ``--bclen`` / ``--bclen2`` values of 0.
+
 2.6.5
 -----
 * Fix bug in `fastqFromSRA` for newer versions of ``fastq-dump``.

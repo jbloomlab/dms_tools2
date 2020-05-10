@@ -29,7 +29,7 @@ from statsmodels.sandbox.stats.multicomp import multipletests
 import matplotlib
 backend = matplotlib.get_backend()
 try:
-    matplotlib.use('pdf', warn=False)
+    matplotlib.use('pdf')
     import matplotlib.pyplot as plt
 except:
     matplotlib.use(backend, warn=False, force=True)
@@ -273,7 +273,7 @@ def plotReadsPerBC(names, readsperbcfiles, plotfile,
                 position='stack')
             + scale_x_continuous(breaks=[1, maxreads // 2, maxreads],
                     labels=['$1$', '${0}$'.format(maxreads // 2), 
-                    '$\geq {0}$'.format(maxreads)])
+                    r'$\geq {0}$'.format(maxreads)])
             + scale_y_continuous(labels=latexSciNot)
             + facet_wrap('~name', ncol=ncol)
             + theme(figure_size=(1.9 * (0.8 + ncol), 1.3 * (0.4 + nrow)))
@@ -1000,11 +1000,11 @@ def findSigSel(df, valcol, plotfile, fdr=0.05, title=None,
 
     .. nbplot::
 
-        >>> scipy.allclose(shape_sim, gamma_params[0], rtol=0.1, atol=1e-3)
+        >>> numpy.allclose(shape_sim, gamma_params[0], rtol=0.1, atol=1e-3)
         True
-        >>> scipy.allclose(scale_sim, gamma_params[1], rtol=0.1, atol=1e-3)
+        >>> numpy.allclose(scale_sim, gamma_params[1], rtol=0.1, atol=1e-3)
         True
-        >>> scipy.allclose(loc_sim, gamma_params[2], rtol=0.1, atol=1e-3)
+        >>> numpy.allclose(loc_sim, gamma_params[2], rtol=0.1, atol=1e-3)
         True
 
     Check that we find the correct significant sites:
