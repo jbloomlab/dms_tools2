@@ -52,7 +52,7 @@ AA_TO_CODONS = {
 NT_TO_REGEXP = dict(
         map(lambda tup: (tup[0], tup[1]) if len(tup[1]) == 1 else
                         (tup[0], '[' + ''.join(sorted(tup[1])) + ']'), 
-        Bio.Seq.IUPAC.IUPACData.ambiguous_dna_values.items()))
+        Bio.Data.IUPACData.ambiguous_dna_values.items()))
 
 # import all modules as here: https://stackoverflow.com/a/1057534
 # but do not import `rplot` as it is optional.
