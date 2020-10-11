@@ -28,8 +28,6 @@ import scipy.special
 import pandas
 import gzip
 
-import dms_variants.codonvarianttable
-
 import dms_tools2
 from dms_tools2 import CODONS, CODON_TO_AA, AAS_WITHSTOP, AA_TO_CODONS, NTS
 import dms_tools2._cutils
