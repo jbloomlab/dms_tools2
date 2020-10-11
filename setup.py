@@ -59,6 +59,7 @@ setup(
         'jupyter>=1.0.0',
         'matplotlib>=2.1.1,<3.3',
         'plotnine>=0.3,<0.7',
+        'mizani<0.7',
         'natsort>=5.0.3',
         'pystan>=2.19',
         'scipy>=1.0',
