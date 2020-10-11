@@ -51,7 +51,7 @@ setup(
     license = 'GPLv3',
     install_requires = [
         'attrs>=17.4.0',
-        'biopython>=1.68',
+        'biopython>=1.68,<1.78',
         'pysam>=0.13',
         'pandas>=0.23,<1.0',
         'numpy>=1.16',
