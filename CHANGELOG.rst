@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.6.7
+-----
+* Pin ``matplotlib``, ``pandas``, and ``biopython`` versions to avoid errors, and stop testing ``barcodeInfoToCodonVariantTable`` as ``dms_variants`` has incompatible versions.
+
 2.6.6
 -----
 * Ensure that ``dms2_batch_bcsubamp`` propagates ``--bclen`` / ``--bclen2`` values of 0.

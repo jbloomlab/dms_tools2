@@ -51,14 +51,15 @@ setup(
     license = 'GPLv3',
     install_requires = [
         'attrs>=17.4.0',
-        'biopython>=1.68',
+        'biopython>=1.68,<1.78',
         'pysam>=0.13',
         'pandas>=0.23,<1.0',
         'numpy>=1.16',
         'IPython>=5.1',
         'jupyter>=1.0.0',
-        'matplotlib>=2.1.1',
-        'plotnine>=0.3',
+        'matplotlib>=2.1.1,<3.3',
+        'plotnine>=0.3,<0.7',
+        'mizani<0.7',
         'natsort>=5.0.3',
         'pystan>=2.19',
         'scipy>=1.0',
@@ -68,7 +69,6 @@ setup(
         'regex>=2.4.153',
         'packaging',
         'umi_tools>=1.0.0',
-        'dms_variants>=0.1',
         ],
     extras_require = {
         'rplot':[
