@@ -64,7 +64,7 @@ setup(
         'pystan>=2.19',
         'scipy>=1.0',
         'seaborn>=0.8',
-        'phydms>=2.3.2',
+        'phydms>=2.4.1',
         'statsmodels>=0.8',
         'regex>=2.4.153',
         'packaging',

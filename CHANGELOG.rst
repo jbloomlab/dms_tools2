@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.6.8
+------
+* Fix issue with parsing ``fastq-dump`` version.
+
 2.6.7
 -----
 * Pin ``matplotlib``, ``pandas``, and ``plotnine`` versions to avoid errors, and stop testing ``barcodeInfoToCodonVariantTable`` as ``dms_variants`` has incompatible versions.
