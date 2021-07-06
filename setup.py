@@ -54,7 +54,7 @@ setup(
         'biopython>=1.68',
         'pysam>=0.13',
         'pandas>=0.23,<1.0',
-        'numpy>=1.16',
+        'numpy>=1.16,<1.20',  # https://github.com/numpy/numpy/issues/18355
         'IPython>=5.1',
         'jupyter>=1.0.0',
         'matplotlib>=2.1.1,<3.3',
