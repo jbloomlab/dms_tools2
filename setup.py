@@ -61,7 +61,7 @@ setup(
         'plotnine>=0.3,<0.7',
         'mizani<0.7',
         'natsort>=5.0.3',
-        'pystan>=2.19',
+        'pystan>=2.19,<3',
         'scipy>=1.0',
         'seaborn>=0.8',
         'phydms>=2.4.1',
