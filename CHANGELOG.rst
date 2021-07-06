@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.6.9
+-----
+* Pin ``pystan`` version to < 3.
+
 2.6.8
 ------
 * Fix issue with parsing ``fastq-dump`` version.
