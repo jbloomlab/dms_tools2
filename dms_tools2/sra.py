@@ -11,6 +11,7 @@ Functions for downloading / handling data from the
 import distutils.version
 import multiprocessing
 import os
+import re
 import shutil
 import subprocess
 
@@ -79,16 +80,11 @@ def fastqFromSRA(samples, fastq_dump, fastqdir, aspera=None,
 
     assert shutil.which(fastq_dump), ("fastq-dump not installed in a "
             "location accessible with command {0}".format(fastq_dump))
-    fastq_dump_version = (subprocess.check_output([fastq_dump, '--version'])
-                          .decode('utf-8')
-                          .replace('"fastq-dump" version', '').split(':'))
-    if len(fastq_dump_version) == 1:
-        fastq_dump_version = fastq_dump_version[0].strip()
-    elif len(fastq_dump_version) == 2:
-        fastq_dump_version = fastq_dump_version[1].strip()
-    else:
-        fastq_dump_version = (subprocess.check_output([fastq_dump, '--help'])
-                              .decode('utf-8').split(':')[-1].strip())
+    fastq_dump_version_stdout = subprocess.check_output([fastq_dump, '--version']).decode('utf-8')
+    match = re.search(r'fastq-dump\s*:?\s*([.0-9]*)', fastq_dump_version_stdout)
+    if not match:
+        raise RuntimeError("fastq-dump version string {} could not be parsed".format(fastq_dump_version_stdout))
+    fastq_dump_version = match.groups()[0]
     fastq_dump_minversion = '2.8'
     if not (distutils.version.LooseVersion(fastq_dump_version) >=
             distutils.version.LooseVersion(fastq_dump_minversion)):
