@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.6.11
+-------
+* Fix parsing of ``fastq-dump`` version.
+
 2.6.10
 -------
 * Pin ``numpy`` to < 1.2 for this: https://github.com/numpy/numpy/issues/18355
