@@ -81,7 +81,13 @@ def fastqFromSRA(samples, fastq_dump, fastqdir, aspera=None,
     assert shutil.which(fastq_dump), ("fastq-dump not installed in a "
             "location accessible with command {0}".format(fastq_dump))
     fastq_dump_version_stdout = subprocess.check_output([fastq_dump, '--version']).decode('utf-8')
-    match = re.search(r'fastq-dump\s*:?\s*([.0-9]*)', fastq_dump_version_stdout)
+
+    # check version, including new versioning scheme for fastq-dump >= 3.0.0
+    if '"fastq-dump"' in fastq_dump_version_stdout:
+        match = re.search('"fastq-dump" version ([.0-9]*)', fastq_dump_version_stdout)
+    else:
+        match = re.search(r'fastq-dump\s*:?\s*([.0-9]*)', fastq_dump_version_stdout)
+    
     if not match:
         raise RuntimeError("fastq-dump version string {} could not be parsed".format(fastq_dump_version_stdout))
     fastq_dump_version = match.groups()[0]
