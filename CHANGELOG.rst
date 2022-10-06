@@ -1,6 +1,10 @@
 Change Log
 ===========
 
+2.6.12
+------
+* Parse ``fastq-dump`` version 3.*
+
 2.6.11
 -------
 * Fix parsing of ``fastq-dump`` version.
